@@ -6,7 +6,7 @@ import PostCard from "../../components/Post/PostCard";
 import TweetCard from "../../components/TweetCard/TweetCard";
 import BottomNav from "../../components/LeftSideBar/BottomNav";
 import { NavLink } from "react-router-dom";
-import BottomSwipeNav from "../../components/BottomSwipeNav/BottomSwipeNav";
+import BottomToggleNav from "../../components/BottomToggleNav/BottomToggleNav";
 
 const Home = () => {
   return (
@@ -25,7 +25,7 @@ const Home = () => {
         </div>
         <RightSidebar />
       </div>
-      <BottomSwipeNav /> 
+      <BottomToggleNav /> 
     </>
   );
 };

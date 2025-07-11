@@ -1,7 +1,7 @@
 import React from "react";
 import Sidebar from "../../components/LeftSideBar/Sidebar";
 import ExploreFeed from "../../components/Feeds/ExploreFeed/ExploreFeed";
-import BottomSwipeNav from "../../components/BottomSwipeNav/BottomSwipeNav";
+import BottomToggleNav from "../../components/BottomToggleNav/BottomToggleNav";
 import styles from "./Discover.module.css";
 
 const Discover = () => {
@@ -9,7 +9,7 @@ const Discover = () => {
     <div className={styles.discover}>
       <Sidebar />
       <ExploreFeed />
-      <BottomSwipeNav /> 
+      <BottomToggleNav /> 
     </div>
   );
 };

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import SavedPanel from "../../components/SavedPage/SavedPanel/SavedPanel";
 import Sidebar from "../../components/LeftSideBar/Sidebar";
 import ContentDisplay from "../../components/SavedPage/ContentDisplay/ContentDisplay";
-import FloatingToggleNav from "../../components/BottomSwipeNav/BottomSwipeNav";
+import BottomToggleNav from "../../components/BottomToggleNav/BottomToggleNav";
 import MobileSavedPage from "../../components/SavedPage/MobileSavedPage/MobileSavedPage"; 
 import styles from "./SavedPage.module.css";
 
@@ -21,7 +21,7 @@ const SavedPage = () => {
   return (
     <>
       <MobileSavedPage />
-      <FloatingToggleNav />
+      <BottomToggleNav />
     </>
   );
 }
@@ -33,7 +33,7 @@ const SavedPage = () => {
         <SavedPanel />
         <ContentDisplay title="Box" />
       </div>
-      <FloatingToggleNav />
+      <BottomToggleNav />
     </div>
   );
 };

@@ -4,7 +4,7 @@ import BottomNav from "../../components/LeftSideBar/BottomNav";
 import MessagesSection from "../../components/Messages/MessagesSection";
 import Styles from "./MessagesPage.module.css";
 import MessagesMobile from "../../components/Messages/MessagesMobile/MessagesMobile";
-import BottomSwipeNav from "../../components/BottomSwipeNav/BottomSwipeNav";
+import BottomToggleNav from "../../components/BottomToggleNav/BottomToggleNav";
 
 const MessagesPage = () => {
   const [showBottomNav, setShowBottomNav] = useState(true);
@@ -20,7 +20,7 @@ const MessagesPage = () => {
           hideBottomNav={(shouldHide) => setShowBottomNav(!shouldHide)}
         />
       </div>
-      {showBottomNav && <BottomSwipeNav />}
+      {showBottomNav && <BottomToggleNav />}
     </div>
   );
 };
