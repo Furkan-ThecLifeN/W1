@@ -1,0 +1,132 @@
+.notification_page {
+  max-width: 700px;
+  width: 100%;
+  padding: 24px;
+  color: var(--color-white);
+}
+
+.page_title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: var(--color-white);
+}
+
+.notification_list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #fff transparent;
+}
+
+.notification_item {
+  background: var(--blur-bg);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+.icon_wrapper {
+  font-size: 22px;
+  color: var(--color-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.text_wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.username {
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+.message {
+  color: #ccc;
+}
+
+.time {
+  font-size: 12px;
+  color: #888;
+  margin-top: 4px;
+}
+
+.button_group {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.accept_btn,
+.reject_btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.accept_btn {
+  background-color: var(--color-blue);
+  color: white;
+}
+
+.reject_btn {
+  background-color: #333;
+  color: #ccc;
+}
+
+.accept_btn:hover {
+  background-color: #0087cc;
+}
+
+.reject_btn:hover {
+  background-color: #444;
+}
+
+/* Mobil uyum */
+@media (max-width: 768px) {
+  .notification_page {
+    padding: 16px;
+  }
+
+  .page_title {
+    font-size: 20px;
+  }
+
+  .notification_item {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .icon_wrapper {
+    font-size: 20px;
+  }
+
+  .username {
+    font-size: 14px;
+  }
+
+  .message {
+    font-size: 13px;
+  }
+
+  .time {
+    font-size: 11px;
+  }
+}

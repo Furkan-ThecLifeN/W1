@@ -1,0 +1,85 @@
+.contentContainer {
+  width: 100%;
+  background: var(--special-background08);
+  border-radius: 20px;
+  padding: 24px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  box-sizing: border-box;
+  height: calc(100vh - 25px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  min-height: 0;
+}
+
+.profileWrapper {
+  display: flex;
+  justify-content: right;
+  align-items: center;
+}
+
+.profileOuter {
+  width: 55px;
+  height: 55px;
+  background-color: black;
+  border-radius: 50%;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profileInner {
+  width: 50px;
+  height: 50px;
+  background-color: #fff;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.profileImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.scrollableGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 16px;
+  flex: 1;
+}
+
+.scrollableGrid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollableGrid::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.contentItem {
+  background-color: #e0e0e0;
+  height: 120px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  color: #333;
+}
+
+@media (max-width: 600px) {
+  .profileWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}

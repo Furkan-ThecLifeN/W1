@@ -1,0 +1,124 @@
+.floatingNavWrapper {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .floatingNavWrapper {
+    display: block;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    width: 95%;
+  }
+
+  .bottomNav {
+    background: rgba(20, 20, 20, 0.65);
+    backdrop-filter: blur(12px);
+    border-radius: 20px;
+    padding: 10px 12px;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-around;
+    gap: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+.link,
+.active {
+  padding: 10px;
+  border-radius: 12px;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+  color: #d1d1d1;
+}
+
+.link:hover {
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
+.active {
+  color: #00c3ff;
+  background-color: rgba(0, 195, 255, 0.1);
+  text-shadow: 0 0 6px #00c3ff;
+}
+
+
+  .createWrapper {
+    position: relative;
+    top: -30px;
+    z-index: 2;
+    flex: 0 0 auto;
+  }
+
+  .createButton {
+    background: linear-gradient(135deg, #00c3ff, #66e0ff);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 15px rgba(0, 195, 255, 0.6);
+    transition: 0.3s ease;
+  }
+
+  .createButton:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 18px rgba(0, 195, 255, 0.8);
+  }
+}
+
+@media (max-width: 540px) {
+  .bottomNav {
+    padding: 8px 12px;
+    gap: 16px;
+  }
+
+  .link,
+  .active {
+    font-size: 20px;
+    padding: 6px;
+  }
+
+  .createButton {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+  }
+
+  .createWrapper {
+    top: -24px;
+  }
+}
+
+@media (max-width: 400px) {
+  .bottomNav {
+    padding: 6px 8px;
+    gap: 12px;
+  }
+
+  .link,
+  .active {
+    font-size: 18px;
+    padding: 5px;
+  }
+
+  .createButton {
+    width: 44px;
+    height: 44px;
+    font-size: 22px;
+  }
+
+  .createWrapper {
+    top: -22px;
+  }
+}

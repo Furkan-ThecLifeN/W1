@@ -1,0 +1,51 @@
+:root {
+  --light-purple: #ede9fe;
+  --dark: #1e1e2f;
+  --text: #333333;
+  --text-muted: #888;
+  --border: #e0e0e0;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.page {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  color: var(--color-white);
+  background-color: var(--color-black);
+}
+
+.header {
+  display: flex;
+  justify-content: left;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.messagesTitle {
+  font-size: 24px;
+  color: var(--color-white);
+  font-weight: 500;
+}
+
+.chatArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar {
+  width: 350px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: auto;
+}
+
+.profileArea {
+  width: 350px;
+  overflow-y: hidden;
+  overflow-x: hidden;
+}

@@ -1,0 +1,193 @@
+.video_card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 95vh;
+  position: relative;
+}
+
+/* Video Wrapper */
+.video_wrapper {
+  width: 100%;
+  max-width: 420px;
+  height: 100%;
+  position: relative;
+  background: black;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+/* Video */
+.video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Double-tap heart */
+.double_tap {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 6rem;
+  color: var(--color-white);
+  animation: ping 1s cubic-bezier(0,0,0.2,1) forwards;
+  z-index: 20;
+}
+
+@keyframes ping {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  75%, 100% {
+    transform: translate(-50%, -50%) scale(2.5);
+    opacity: 0;
+  }
+}
+
+/* Icon Kutusu */
+.actions {
+  position: absolute;
+  bottom: 140px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  z-index: 10;
+}
+
+.icon {
+  font-size: 1.6rem;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.icon_box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.icon:hover {
+  transform: scale(1.15);
+}
+
+/* Save icon özel */
+.saved {
+  color: var(--color-white);
+}
+
+/* Info kutusu */
+.info_box {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--blur-bg);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 10;
+}
+
+/* Header (Reklam Banner) */
+.ad_header {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  padding: 8px 16px;
+  background: #fff;
+  backdrop-filter: blur(8px);
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 15;
+  box-shadow: 0px 2px 6px rgba(0,0,0,0.3);
+}
+
+.ad_text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.ad_btn {
+  background: #00aaff;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.ad_btn:hover {
+  background: #008ecc;
+}
+
+/* Info içeriği */
+.info_top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+.username {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: white;
+}
+
+.follow_btn {
+  background: white;
+  color: black;
+  padding: 4px 12px;
+  font-size: 0.85rem;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.follow_btn:hover {
+  background: #e0e0e0;
+}
+
+.description {
+  max-height: 64px;
+  overflow-y: auto;
+  font-size: 0.85rem;
+  line-height: 1.3;
+  color: white;
+  padding-right: 4px;
+}
+
+.description::-webkit-scrollbar {
+  width: 4px;
+}
+
+.description::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.3);
+  border-radius: 4px;
+}

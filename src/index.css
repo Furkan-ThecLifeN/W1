@@ -1,0 +1,123 @@
+body {
+  margin: 0;
+  font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+#root {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* Genel CSS Reset (Sıfırlama) */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* HTML5 elementleri için varsayılan stil */
+html, body {
+  height: 100%;
+  font-family: Arial, sans-serif;
+  background-color: #fff;
+  color: #000;
+  line-height: 1.6;
+  scroll-behavior: smooth;
+  min-height: 100vh;
+  overflow: auto;
+}
+
+/* Görsellerin taşmasını engellemek için */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Liste stillerini temizlemek için */
+ul, ol {
+  list-style: none;
+}
+
+/* Bağlantılar için temel ayar */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Form elemanları için varsayılan stil */
+input, button, textarea, select {
+  font-family: inherit;
+  font-size: 100%;
+  outline: none;
+  border: none;
+  background: none;
+}
+
+/* Butonlar için cursor ayarı */
+button {
+  cursor: pointer;
+}
+
+/* Tablo sıfırlama */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+/* Başlıklar için boşluk ayarı */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: normal;
+}
+
+iframe, video {
+  max-width: 100%;
+}
+
+pre, code {
+  font-family: monospace;
+  white-space: pre-wrap;
+}
+
+
+/* Scrollbar genişliği */
+body::-webkit-scrollbar {
+  width: 8px;
+}
+
+/* Track yani arkaplan görünmez */
+body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Thumb yani kaydırma çubuğu beyaz neon */
+body::-webkit-scrollbar-thumb {
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 0 8px 2px rgba(255, 255, 255, 0.8);
+  transition: background-color 0.3s ease;
+}
+
+/* Hover efekti */
+body::-webkit-scrollbar-thumb:hover {
+  background: #e0e0e0;
+  box-shadow: 0 0 12px 4px rgba(255, 255, 255, 1);
+}
+
+/* Firefox uyumluluğu */
+body {
+  scrollbar-width: thin;
+  scrollbar-color: #fff transparent;
+}
+

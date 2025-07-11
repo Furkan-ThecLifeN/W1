@@ -1,0 +1,46 @@
+.header {
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #171717;
+  background: #0e0e0e;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-white);
+}
+
+.userInfo img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.userInfo h3 {
+  font-size: 18px;
+  margin: 0;
+  font-weight: 600;
+}
+
+.userInfo p {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.actions {
+  display: flex;
+  gap: 16px;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.actions svg:hover {
+  color: var(--purple);
+}
+

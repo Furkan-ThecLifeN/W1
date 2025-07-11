@@ -1,0 +1,110 @@
+/* SavedPanel.module.css */
+:root {
+  --color-bg: #1a1a1a;
+  --radius-panel: 16px;
+  --radius-item: 8px;
+  --spacing: 16px;
+  --font-large: 24px;
+  --font-medium: 16px;
+}
+
+.panelContainer {
+  background: var(--special-background02);
+  width: 260px;
+  height: 100vh;
+  padding: var(--spacing);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-left: 10px;
+}
+
+.panelTitle {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: var(--spacing);
+  color: var(--color-white);
+  text-align: center;
+  margin-top: 10px;
+  transition: all 0.3s ease-in-out;
+}
+
+.panelTitle:hover {
+  opacity: 0.3;
+}
+
+.itemList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.itemBox {
+  background-color: var(--color-white);
+  color: var(--color-black);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: var(--radius-item);
+  transition: background 0.3s ease;
+  position: relative;
+  cursor: pointer;
+}
+
+.itemBox:hover {
+  background-color: #252525;
+  color: var(--color-white);
+}
+
+.itemIcon {
+  font-size: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.itemLabel {
+  flex: 1;
+  margin-left: 12px;
+  font-size: var(--font-medium);
+}
+
+.itemGhost {
+  font-size: var(--font-medium);
+  color: #aaaaaa;
+  opacity: 1;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease-in-out;
+}
+
+.itemGhost:hover {
+  color: var(--color-white);
+}
+
+.panelFooter {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-white);
+  text-align: center;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.panelFooter:hover {
+  opacity: 0.3;
+}
+
+@media (max-width: 1024px) {
+  .panelContainer {
+    width: 60%;
+    height: 60vh;
+  }
+}

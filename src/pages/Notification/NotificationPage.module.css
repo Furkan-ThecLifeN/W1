@@ -1,0 +1,10 @@
+.notification_container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background-color: var(--color-pagecolor);
+  width: 100%;
+  min-height: 100vh;
+  font-family: var(--font-main);
+  box-sizing: border-box;
+}

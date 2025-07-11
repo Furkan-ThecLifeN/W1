@@ -1,0 +1,162 @@
+.authpage_section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100vh;
+  background: var(--text-white);
+  border: 2px solid var(--color-grey);
+}
+
+.auth_container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 90%;
+  height: 90vh;
+  border-radius: 30px;
+  background: var(--background-special);
+  color: var(--text-white);
+}
+
+.authBox_logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50%;
+  height: 100%;
+  flex-direction: column;
+}
+
+.authBox_logo .AuthTitleLogo {
+  font-size: 200px;
+  padding: 0;
+  margin: 0;
+}
+
+.welcome_title {
+  fill: transparent;
+  stroke: var(--text-stroke);
+  stroke-width: 2;
+  stroke-linecap: round;
+  font-size: 30px;
+  font-family: var(--font-main);
+  font-weight: 700;
+  stroke-dasharray: 500;
+  stroke-dashoffset: 500;
+  transition: fill 0.5s ease-in-out;
+  margin: 0;
+  padding: 0;
+}
+
+.welcome_title,
+.AuthTitleLogo {
+  fill: white;
+  font-family: var(--font-main);
+  font-weight: bold;
+  filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.8))
+    drop-shadow(0 0 40px rgba(255, 255, 255, 0.5));
+}
+
+.auth_toggleBox {
+  width: 50%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background-color: var(--text-white);
+  border: 1px solid var(--color-grey);
+  border-radius: 15px;
+}
+
+.handleToggle {
+  color: var(--color-black);
+}
+
+.handletoggle_Btn {
+  text-decoration: underline;
+}
+
+
+@media (max-width: 1024px) {
+  .auth_container {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .authBox_logo {
+    width: 100%;
+    height: auto;
+    padding: 20px 0;
+  }
+
+  .authBox_logo .AuthTitleLogo {
+    font-size: 150px;
+  }
+
+  .welcome_title {
+    font-size: 24px;
+  }
+
+  .auth_toggleBox {
+    width: 100%;
+    height: auto;
+    padding: 30px 20px;
+    border-radius: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .auth_container {
+    width: 95%;
+    border-radius: 20px;
+  }
+
+  .authBox_logo .AuthTitleLogo {
+    font-size: 100px;
+  }
+
+  .welcome_title {
+    font-size: 20px;
+  }
+
+  .auth_toggleBox {
+  }
+}
+
+@media (max-width: 480px) {
+  .authBox_logo .AuthTitleLogo {
+    font-size: 70px;
+  }
+
+  .welcome_title {
+    font-size: 18px;
+  }
+
+  .auth_toggleBox {
+    border-radius: 15px;
+  }
+
+  .auth_form {
+    padding: 20px 15px !important;
+  }
+
+  .auth_form h2 {
+    font-size: 28px;
+  }
+
+  .auth_form label {
+    font-size: 0.9rem;
+  }
+
+  .auth_form input {
+    font-size: 0.9rem;
+    padding: 10px;
+  }
+
+  .auth_form button {
+    padding: 10px;
+    font-size: 0.95rem;
+  }
+}

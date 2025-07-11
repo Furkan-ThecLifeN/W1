@@ -1,0 +1,125 @@
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@700&display=swap");
+
+.SplashScreen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100vh;
+  background-color: var(--background-special);
+  overflow: hidden;
+}
+
+.SplashScreen_container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.SplashScreen_container::before {
+  content: "";
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  background-color: var(--blur-circle);
+  border-radius: 50%;
+  filter: blur(45px);
+  z-index: 0;
+  opacity: 0;
+  animation: fadeIn 0.8s ease-out forwards;
+  animation-delay: 1.5s;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+.svg {
+  width: 300px;
+  height: 100px;
+  z-index: 1;
+  transition: transform 2s ease-in-out;
+}
+
+.expand {
+  transform: scale(300);
+}
+
+.writingText {
+  fill: transparent;
+  stroke: var(--text-stroke);
+  stroke-width: 2;
+  stroke-linecap: round;
+  font-size: 60px;
+  font-family: var(--font-main);
+  font-weight: 700;
+  stroke-dasharray: 500;
+  stroke-dashoffset: 500;
+  animation: draw 3s ease-out forwards, fillIn 0.5s ease-out forwards;
+  animation-delay: 0s, 1.5s;
+  transition: fill 0.5s ease-in-out;
+}
+
+.fillWhite {
+  fill: var(--text-white);
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes fillIn {
+  to {
+    fill: var(--text-white);
+  }
+}
+
+/* ===== Responsive CSS ===== */
+
+@media (max-width: 900px) and (min-width: 600px) {
+  .svg {
+    width: 270px;      
+    height: 90px;      
+  }
+
+  .writingText {
+    font-size: 55px;   
+    stroke-width: 1.8; 
+    stroke-dasharray: 460; 
+    stroke-dashoffset: 460;
+  }
+  .expand {
+    transform: scale(260); 
+  }
+  .SplashScreen_container::before {
+    width: 200px;       
+    height: 200px;
+    filter: blur(38px); 
+  }
+}
+
+@media (max-width: 599px) {
+  .svg {
+    width: 240px;       
+    height: 80px;       
+  }
+  .writingText {
+    font-size: 50px;    
+    stroke-width: 1.6;  
+    stroke-dasharray: 420;
+    stroke-dashoffset: 420;
+  }
+  .expand {
+    transform: scale(220); 
+  }
+  .SplashScreen_container::before {
+    width: 170px;       
+    height: 170px;
+    filter: blur(35px); 
+  }
+}

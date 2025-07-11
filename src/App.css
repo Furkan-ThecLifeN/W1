@@ -1,0 +1,53 @@
+:root {
+  --special-background: linear-gradient(
+    135deg,
+    rgba(113, 201, 248, 0.85),
+    rgba(168, 225, 255, 0.85),
+    rgba(244, 252, 255, 0.85)
+  );
+  --special-background02: linear-gradient(to top, #09203f 0%, #537895 100%);
+  --special-background03: linear-gradient(60deg, #29323c 0%, #485563 100%);
+  --special-background04: linear-gradient(to top, #e8198b 0%, #c7eafd 100%);
+  --special-background05: linear-gradient(
+    -225deg,
+    #22e1ff 0%,
+    #1d8fe1 48%,
+    #625eb1 100%
+  );
+  --special-background06: linear-gradient(
+    -225deg,
+    #7742b2 0%,
+    #f180ff 52%,
+    #fd8bd9 100%
+  );
+  --special-background07: linear-gradient(to top, #5f72bd 0%, #9b23ea 100%);
+  --special-background08: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+
+  backdrop-filter: blur(16px);
+  --background-special: #131621;
+  --secondary-bg: #1a1a1a;
+  --color-dark: #131621;
+  --color-pagecolor: #000000;
+  --text-white: #ffffff;
+  --text-stroke: #ffffff;
+  --color-grey: #ccc;
+  --color-gray888: #888;
+  --color-blue: #00aaff;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --blur-circle: rgba(255, 255, 255, 0.15);
+  --font-main: "Open Sans", sans-serif;
+  --blur-size: 45px;
+  --hover-bg: rgba(0, 170, 255, 0.08);
+  --blur-bg: rgba(255, 255, 255, 0.1);
+  --color-green: #1aff00;
+  --color-offgrey: #1f1f1f;
+  --online: #10b981;
+  --idle: #f59e0b;
+  --busy: #ef4444;
+}
+
+.App {
+  width: 100%;
+  height: 100vh;
+}

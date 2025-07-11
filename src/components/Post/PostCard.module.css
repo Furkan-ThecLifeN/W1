@@ -1,0 +1,259 @@
+.desktop {
+  display: block;
+}
+.mobile {
+  display: none;
+}
+
+.post_card {
+  width: 100%;
+  max-width: 700px;
+  aspect-ratio: 700 / 580;
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: var(--color-black);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.post_image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.post_header {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--blur-bg);
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 2;
+}
+
+.user_info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-white);
+}
+
+.avatar_widget {
+  width: 48px;
+  height: 48px;
+  border: 2px solid #00ff1e;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  background-color: var(--color-white);
+  border-radius: 50%;
+}
+
+.username {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.follow_btn {
+  padding: 6px 14px;
+  background: var(--color-blue);
+  color: var(--color-white);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.3s ease;
+}
+
+.follow_btn:hover {
+  background-color: #0094d3;
+}
+
+.more_icon {
+  color: var(--color-white);
+  font-size: 22px;
+  cursor: pointer;
+}
+.post_footer {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--blur-bg);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+  color: var(--color-white);
+  z-index: 2;
+}
+
+.footer_text {
+  max-height: 80px;
+  overflow-y: auto;
+  width: 100%;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--color-white);
+  scrollbar-width: thin;
+  scrollbar-color: #fff transparent;
+}
+
+.footer_text::-webkit-scrollbar {
+  width: 6px;
+}
+
+.footer_text::-webkit-scrollbar-thumb {
+  background-color: #ffffffaa;
+  border-radius: 4px;
+}
+
+.footer_actions {
+  display: flex;
+  padding: 10px 0;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  justify-content: left;
+}
+
+.icon {
+  font-size: 20px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  color: var(--color-white);
+  position: relative;
+  user-select: none;
+}
+
+.liked {
+  color: red;
+}
+
+.save_icon_wrapper {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.save_icon_wrapper .icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: opacity 0.4s ease;
+  width: 20px;
+  height: 20px;
+  color: var(--color-white);
+}
+
+.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.post_card_mobile {
+  display: none;
+}
+
+.post_card_mobile {
+  width: 100%;
+  max-width: 450px;
+  background: var(--color-black);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  flex-direction: column;
+}
+
+.post_image_mobile {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+}
+
+.post_header_mobile,
+.post_footer_mobile {
+  padding: 8px 12px;
+  background: var(--blur-bg);
+  backdrop-filter: blur(10px);
+  color: var(--color-white);
+}
+
+.post_header_mobile {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer_actions_mobile {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background-color: #1a1a1a;
+  font-size: 18px;
+}
+
+.post_footer_mobile {
+  font-size: 14px;
+  max-height: 80px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #fff transparent;
+  padding: 10px 12px;
+}
+
+.post_footer_mobile::-webkit-scrollbar {
+  width: 5px;
+}
+
+.post_footer_mobile::-webkit-scrollbar-thumb {
+  background: #fff;
+  border-radius: 4px;
+}
+
+/* Medya sorgusu */
+@media (max-width: 1024px) {
+  .desktop {
+    display: none;
+  }
+  .mobile {
+    display: block;
+  }
+  .post_card_mobile {
+    display: block;
+  }
+}

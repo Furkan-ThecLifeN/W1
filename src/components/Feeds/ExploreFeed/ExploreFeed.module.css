@@ -1,0 +1,11 @@
+.feed {
+  height: 100vh;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+
+.feed > * {
+  scroll-snap-align: start;
+  height: 100vh;
+}

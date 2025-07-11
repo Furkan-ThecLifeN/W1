@@ -1,0 +1,121 @@
+.sidebar {
+  width: 80px;
+  height: 100vh;
+  background-color: var(--color-black);
+  border-right: 1px solid #202020;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding: 20px 0;
+  z-index: 1000;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.05);
+}
+
+.logo {
+  font-size: 28px;
+  font-weight: bold;
+  color: var(--color-white);
+  margin-bottom: 40px;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.link {
+  background-color: rgb(10 26 33);
+  color: var(--color-black);
+  font-size: 22px;
+  display: flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  transition: background-color 0.3s ease;
+}
+
+.link:hover {
+  background-color: var(--hover-bg);
+}
+
+.active {
+  background-color: rgb(30 73 94);
+  color: var(--color-blue);
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 22px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.icon {
+  pointer-events: none;
+  color: var(--color-blue);
+}
+
+.SiApostrophe {
+  color: white
+}
+
+.tooltip {
+  position: absolute;
+  top: -10px;
+  left: 60px;
+  background-color: var(--color-white);
+  color: var(--color-black);
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(-100%) translateX(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.link:hover .tooltip {
+  opacity: 1;
+  transform: translateY(50%) translateX(10px);
+}
+
+.post {
+  margin-bottom: 20px;
+}
+
+.createButton {
+  background: linear-gradient(135deg, var(--color-blue), #66d9ff);
+  color: var(--color-white);
+  padding: 12px;
+  border-radius: 50%;
+  display: flex;
+  font-size: 28px;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.createButton:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 12px rgba(0, 170, 255, 0.4);
+}
+
+.createIcon {
+  pointer-events: none;
+}
+
+@media (max-width: 1024px) {
+
+  .sidebar {
+    display: none;
+  }
+
+}
