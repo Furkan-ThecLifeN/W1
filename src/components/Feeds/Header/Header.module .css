@@ -17,4 +17,25 @@
   background: #222;
   border-radius: 8px;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toggleNavBtn {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  display: none; /* varsayılan olarak gizli */
+}
+
+/* Sadece 1024px altı için görünür */
+@media (max-width: 1024px) {
+  .toggleNavBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
 }

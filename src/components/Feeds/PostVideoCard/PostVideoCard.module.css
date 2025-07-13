@@ -51,7 +51,7 @@
 /* Icon Kutusu */
 .actions {
   position: absolute;
-  bottom: 140px;
+  bottom: 220px;
   right: 12px;
   display: flex;
   flex-direction: column;
@@ -99,41 +99,35 @@
 }
 
 /* Header (Reklam Banner) */
-.ad_header {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  right: 12px;
-  padding: 8px 16px;
-  background: #fff;
-  backdrop-filter: blur(8px);
-  border-radius: 8px;
+.header {
+  width: 100%;
+  max-width: 420px;
+  height: 48px;
+  background-color: white;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  z-index: 15;
-  box-shadow: 0px 2px 6px rgba(0,0,0,0.3);
+  position: fixed;
+  border-radius: 12px;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.ad_header {
+  width: 100%;
+  max-width: 800px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .ad_text {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #333;
+  font-size: 14px;
+  color: #444;
 }
 
-.ad_btn {
-  background: #00aaff;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.ad_btn:hover {
-  background: #008ecc;
-}
 
 /* Info içeriği */
 .info_top {
@@ -190,4 +184,18 @@
 .description::-webkit-scrollbar-thumb {
   background: rgba(255,255,255,0.3);
   border-radius: 4px;
+}
+
+
+/* 1024px altı için görünür, diğerleri tamamen gizlenir */
+@media (max-width: 1024px) {
+  .ad_toggle_btn {
+    display: inline-flex;
+  }
+}
+
+@media (min-width: 1025px) {
+  .ad_toggle_btn {
+    display: none !important; /* kesinlikle gizle */
+  }
 }

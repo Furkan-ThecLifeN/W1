@@ -1,6 +1,6 @@
 .contentContainer {
   width: 100%;
-  background: var(--special-background08);
+  background: var(--secondary-bg);
   border-radius: 20px;
   padding: 24px;
   flex-grow: 1;

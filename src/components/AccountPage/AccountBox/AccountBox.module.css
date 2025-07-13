@@ -13,6 +13,7 @@
   flex-direction: column;
   align-items: center;
   background-color: var(--color-black);
+  color: var(--color-white);
   min-height: 100vh;
   width: 100%;
   margin-left: 80px;
@@ -21,6 +22,8 @@
 .fixedTopBox {
   position: fixed;
   top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
   background-color: #111827;
   color: white;
   padding: 10px 20px;
@@ -28,7 +31,35 @@
   font-weight: 600;
   z-index: 1000;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
 }
+
+.fixedSettingsBtn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.actionBtn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 22px;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.actionBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.icon {
+  font-size: 22px;
+}
+
 
 .mainProfileBox {
   margin-top: 40px;
@@ -207,14 +238,12 @@
   width: 90%;
   text-align: center;
   font-size: 16px;
-  color: #4b5563;
   min-height: 150px;
   padding-bottom: 60px;
 }
 
 .section {
   padding: 16px;
-  background-color: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }

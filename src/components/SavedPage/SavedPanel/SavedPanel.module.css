@@ -9,7 +9,7 @@
 }
 
 .panelContainer {
-  background: var(--special-background02);
+  background: var(--secondary-bg);
   width: 260px;
   height: 100vh;
   padding: var(--spacing);

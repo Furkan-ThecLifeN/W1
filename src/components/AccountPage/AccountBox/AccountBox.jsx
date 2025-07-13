@@ -1,12 +1,20 @@
 import React, { useState } from "react";
 import styles from "./AccountBox.module.css";
+import { IoIosSettings } from "react-icons/io";
 
 const AccountBox = () => {
   const [activeTab, setActiveTab] = useState("posts");
 
   return (
     <div className={styles.pageWrapper}>
-      <div className={styles.fixedTopBox}>furkan_theclifen</div>
+      <div className={styles.account_top}>
+        <div className={styles.fixedTopBox}>furkan_theclifen</div>
+        <div className={styles.fixedSettingsBtn}>
+          <button className={styles.actionBtn}>
+            <IoIosSettings className={styles.icon} />
+          </button>
+        </div>
+      </div>
 
       <div className={styles.mainProfileBox}>
         <div className={styles.profileImageSection}>

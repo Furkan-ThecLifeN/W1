@@ -4,16 +4,19 @@ import {
   FiMessageCircle,
   FiBookmark,
   FiSend,
-  FiMoreVertical
+  FiMoreVertical,
 } from "react-icons/fi";
 import {
   FaHeart,
   FaCommentDots,
   FaBookmark,
   FaShare,
-  FaEllipsisV
+  FaEllipsisV,
 } from "react-icons/fa";
 import styles from "./PostVideoCard.module.css";
+import BottomNav from "../../LeftSideBar/BottomNav";
+import { MdMenu } from "react-icons/md";
+import BottomToggleNav from "../../BottomToggleNav/BottomToggleNav";
 
 export default function PostVideoCard({ videoSrc }) {
   const [liked, setLiked] = useState(false);
@@ -29,13 +32,11 @@ export default function PostVideoCard({ videoSrc }) {
   };
 
   const toggleIcon = (name) =>
-    setActiveIcons(prev => ({ ...prev, [name]: !prev[name] }));
+    setActiveIcons((prev) => ({ ...prev, [name]: !prev[name] }));
 
-  const handleLikeClick = () =>
-    setLiked(prev => !prev);
+  const handleLikeClick = () => setLiked((prev) => !prev);
 
-  const handleSaveClick = () =>
-    setSaved(prev => !prev);
+  const handleSaveClick = () => setSaved((prev) => !prev);
 
   return (
     <div className={styles.video_card} onDoubleClick={handleDoubleClick}>
@@ -43,16 +44,19 @@ export default function PostVideoCard({ videoSrc }) {
         <video
           src={videoSrc}
           className={styles.video}
-          autoPlay muted loop playsInline
+          autoPlay
+          muted
+          loop
+          playsInline
         />
 
         {doubleTap && <FaHeart className={styles.double_tap} />}
 
-        <div className={styles.ad_header}>
-          <span className={styles.ad_text}>Sponsored</span>
-          <button className={styles.ad_btn} onClick={() => window.open("#")}>
-            Learn More
-          </button>
+        <div className={styles.header}>
+          <div className={styles.ad_header}>
+            <span className={styles.ad_text}>Sponsored</span>
+            <BottomToggleNav />
+          </div>
         </div>
 
         <div className={styles.actions}>
@@ -63,7 +67,10 @@ export default function PostVideoCard({ videoSrc }) {
               <FiHeart className={styles.icon} />
             )}
           </div>
-          <FiMessageCircle className={styles.icon} onClick={() => toggleIcon("comment")} />
+          <FiMessageCircle
+            className={styles.icon}
+            onClick={() => toggleIcon("comment")}
+          />
           <div className={styles.icon_box} onClick={handleSaveClick}>
             {saved ? (
               <FaBookmark className={`${styles.icon} ${styles.saved}`} />
@@ -72,7 +79,10 @@ export default function PostVideoCard({ videoSrc }) {
             )}
           </div>
           <FiSend className={styles.icon} onClick={() => toggleIcon("send")} />
-          <FiMoreVertical className={styles.icon} onClick={() => toggleIcon("more")} />
+          <FiMoreVertical
+            className={styles.icon}
+            onClick={() => toggleIcon("more")}
+          />
         </div>
 
         <div className={styles.info_box}>

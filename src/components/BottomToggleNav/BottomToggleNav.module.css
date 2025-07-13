@@ -1,33 +1,24 @@
-.floatingButton {
-  width: 56px;
-  height: 56px;
-  background: linear-gradient(135deg, #4fc3f7, #0288d1);
-  border-radius: 50%;
-  box-shadow: 0 6px 12px rgba(79, 195, 247, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: grab;
-  user-select: none;
-  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
-  z-index: 10000;
-  border: none;
-  outline: none;
-}
-
-.floatingButton:active {
-  cursor: grabbing;
-  transform: scale(0.95);
-  box-shadow: 0 4px 8px rgba(79, 195, 247, 0.7);
-}
-
-.floatingButton:hover {
-  background: linear-gradient(135deg, #81d4fa, #039be5);
-  box-shadow: 0 8px 16px rgba(33, 150, 243, 0.7);
-}
-
-.icon {
+.toggleButton {
+  position: fixed;
+  bottom: 150px;
+  right: 16px;
+  z-index: 100;
+  background-color: #111;
   color: white;
-  font-size: 28px;
-  pointer-events: none; /* ikon tıklamayı engeller, buton bazında event olur */
+  border: none;
+  padding: 12px;
+  border-radius: 50%;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: none;
+}
+
+/* Sadece mobilde göster */
+@media (max-width: 1024px) {
+  .toggleButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
 }

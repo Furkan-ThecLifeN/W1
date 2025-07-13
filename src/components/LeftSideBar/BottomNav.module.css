@@ -2,11 +2,18 @@
   display: none;
 }
 
+@media (min-width: 1025px) {
+  .floatingNavWrapper {
+    display: none !important; /* Kesin gizle */
+  }
+}
+
+
 @media (max-width: 1024px) {
   .floatingNavWrapper {
     display: block;
     position: fixed;
-    bottom: 20px;
+    bottom: 5px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 1000;

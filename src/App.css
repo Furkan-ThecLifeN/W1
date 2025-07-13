@@ -22,8 +22,8 @@
   );
   --special-background07: linear-gradient(to top, #5f72bd 0%, #9b23ea 100%);
   --special-background08: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-
-  backdrop-filter: blur(16px);
+  --special-color: #e0e7ff;
+  --backdrop-filter: blur(16px);
   --background-special: #131621;
   --secondary-bg: #1a1a1a;
   --color-dark: #131621;
