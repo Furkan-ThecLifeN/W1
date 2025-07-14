@@ -1,9 +1,15 @@
 .discover {
-    background-color: var(--color-black);
-    color: var(--color-white);
-    margin-left: 80px;
-    overflow-y: hidden;
+  background-color: var(--color-black);
+  color: var(--color-white);
+  margin-left: 80px;
+  min-height: 100vh;
+  padding-bottom: 70px; /* BottomNav için boşluk bırak */
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
+
+
 
 /* Discover.module.css - responsive */
 
@@ -21,7 +27,6 @@
     flex-direction: column;
     align-items: center;
     margin-left: 0;
-    padding: 0 12px;
   }
 }
 
@@ -29,7 +34,6 @@
   .discover {
     flex-direction: column;
     margin-left: 0;
-    padding: 0 8px;
     gap: 16px;
   }
 }

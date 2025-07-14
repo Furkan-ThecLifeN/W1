@@ -1,23 +1,23 @@
 body {
   margin: 0;
-  font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+    "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
 
 #root {
   width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
-
 
 /* Genel CSS Reset (Sıfırlama) */
 * {
@@ -27,15 +27,14 @@ code {
 }
 
 /* HTML5 elementleri için varsayılan stil */
-html, body {
+html,
+body {
   height: 100%;
   font-family: Arial, sans-serif;
-  background-color: #fff;
-  color: #000;
   line-height: 1.6;
   scroll-behavior: smooth;
   min-height: 100vh;
-  overflow: auto;
+  overflow-y: auto;
 }
 
 /* Görsellerin taşmasını engellemek için */
@@ -46,7 +45,8 @@ img {
 }
 
 /* Liste stillerini temizlemek için */
-ul, ol {
+ul,
+ol {
   list-style: none;
 }
 
@@ -57,7 +57,10 @@ a {
 }
 
 /* Form elemanları için varsayılan stil */
-input, button, textarea, select {
+input,
+button,
+textarea,
+select {
   font-family: inherit;
   font-size: 100%;
   outline: none;
@@ -77,19 +80,25 @@ table {
 }
 
 /* Başlıklar için boşluk ayarı */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: normal;
 }
 
-iframe, video {
+iframe,
+video {
   max-width: 100%;
 }
 
-pre, code {
+pre,
+code {
   font-family: monospace;
   white-space: pre-wrap;
 }
-
 
 /* Scrollbar genişliği */
 body::-webkit-scrollbar {
@@ -120,4 +129,3 @@ body {
   scrollbar-width: thin;
   scrollbar-color: #fff transparent;
 }
-

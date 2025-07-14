@@ -3,7 +3,8 @@
   top: 50%;
   right: 15px;
   transform: translateY(-50%);
-  width: 350px;
+  width: 100%;
+  max-width: 280px;
   height: 95vh;
   background-color: var(--color-white);
   border-left: 1px solid #ddd;

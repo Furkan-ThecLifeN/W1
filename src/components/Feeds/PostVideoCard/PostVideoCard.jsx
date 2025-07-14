@@ -14,9 +14,8 @@ import {
   FaEllipsisV,
 } from "react-icons/fa";
 import styles from "./PostVideoCard.module.css";
-import BottomNav from "../../LeftSideBar/BottomNav";
 import { MdMenu } from "react-icons/md";
-import BottomToggleNav from "../../BottomToggleNav/BottomToggleNav";
+import BottomToggleNav from "../../BottomNav/BottomNav";
 
 export default function PostVideoCard({ videoSrc }) {
   const [liked, setLiked] = useState(false);
@@ -52,10 +51,12 @@ export default function PostVideoCard({ videoSrc }) {
 
         {doubleTap && <FaHeart className={styles.double_tap} />}
 
-        <div className={styles.header}>
-          <div className={styles.ad_header}>
-            <span className={styles.ad_text}>Sponsored</span>
-            <BottomToggleNav />
+        <div className={styles.adBanner}>
+          <div className={styles.adContent}>
+            <span className={styles.adLabel}>Ad</span>
+            <span className={styles.adText}>
+              Upgrade your workflow with ThecLife Pro Tools!
+            </span>
           </div>
         </div>
 

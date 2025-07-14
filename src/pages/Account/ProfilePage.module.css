@@ -3,7 +3,7 @@
   width: 100%;
   min-height: 100vh;
   background-color: var(--color-black);
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 .profilePage_box {
