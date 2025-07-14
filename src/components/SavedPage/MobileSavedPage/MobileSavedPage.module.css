@@ -176,3 +176,26 @@
   font-weight: 500;
   font-size: 14px;
 }
+
+@media (max-width: 600px) {
+  .pageContainer {
+    padding: 16px 12px;
+    height: 100vh;         
+    display: flex;
+    flex-direction: column;
+  }
+
+  .buttonRow {
+    flex-shrink: 0;        
+    margin-bottom: 12px;
+  }
+
+  .contentGrid {
+    flex: 1;               
+    overflow-y: auto;       
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 14px;
+    width: 100%;
+  }
+}
