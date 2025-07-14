@@ -48,7 +48,7 @@
 /* Icon Kutusu */
 .actions {
   position: absolute;
-  bottom: 200px;
+  bottom: 150px;
   right: 12px;
   display: flex;
   flex-direction: column;
@@ -82,7 +82,7 @@
 /* Info kutusu */
 .info_box {
   position: absolute;
-  bottom: 45px;
+  bottom: 10px;
   left: 12px;
   right: 12px;
   padding: 10px 16px;
@@ -190,15 +190,22 @@
   border-radius: 4px;
 }
 
-/* 1024px altı için görünür, diğerleri tamamen gizlenir */
 @media (max-width: 1024px) {
   .ad_toggle_btn {
     display: inline-flex;
+  }
+
+  .info_box {
+    bottom: 45px;
+  }
+
+ .actions {
+    bottom: 200px;
   }
 }
 
 @media (min-width: 1025px) {
   .ad_toggle_btn {
-    display: none !important; /* kesinlikle gizle */
+    display: none !important; 
   }
 }

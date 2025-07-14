@@ -3,13 +3,10 @@
   color: var(--color-white);
   margin-left: 80px;
   min-height: 100vh;
-  padding-bottom: 70px; /* BottomNav için boşluk bırak */
   overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
-
-
 
 /* Discover.module.css - responsive */
 
