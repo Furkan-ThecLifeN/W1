@@ -1,0 +1,13 @@
+.settingsWrapper {
+  width: 100%;
+  min-height: 100vh;   
+  padding-left: 80px;
+  background-color: var(--color-black);
+  overflow-y: auto; 
+}
+
+@media (max-width: 1024px) {
+  .settingsWrapper {
+    padding-left: 0;
+  }
+}

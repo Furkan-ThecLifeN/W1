@@ -1,16 +1,21 @@
 import React, { useState } from "react";
 import styles from "./AccountBox.module.css";
 import { IoIosSettings } from "react-icons/io";
+import { useNavigate } from "react-router-dom";
 
 const AccountBox = () => {
   const [activeTab, setActiveTab] = useState("posts");
+  const navigate = useNavigate();
 
   return (
     <div className={styles.pageWrapper}>
       <div className={styles.account_top}>
         <div className={styles.fixedTopBox}>furkan_theclifen</div>
         <div className={styles.fixedSettingsBtn}>
-          <button className={styles.actionBtn}>
+          <button
+            className={styles.actionBtn}
+            onClick={() => navigate("/settings")}
+          >
             <IoIosSettings className={styles.icon} />
           </button>
         </div>
