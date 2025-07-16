@@ -1,0 +1,178 @@
+:root {
+  --bg-dark: #000000;
+  --bg-light: #111111;
+  --text: #ffffff;
+  --muted: #999999;
+  --accent: #00bfff;
+  --glow: 0 0 12px #00bfff, 0 0 24px #00bfff;
+}
+
+.wrapper {
+  background: var(--bg-dark);
+  color: var(--text);
+  padding: 32px;
+  border-radius: 16px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.heading {
+  font-size: 28px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.subtext {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+
+.chart {
+  position: relative;
+  display: flex;
+  gap: 18px;
+  padding-top: 40px;
+  align-items: flex-end;
+  justify-content: center;
+  height: 220px; /* Grafik yüksekliği */
+  border-left: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  margin-bottom: 24px;
+}
+
+/* Ortalama çizgisi */
+.avgLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #00bfffaa; /* yarı saydam neon mavi */
+  border-radius: 2px;
+  box-shadow: 0 0 8px #00bfff99;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.avgLabel {
+  position: absolute;
+  right: 10px;
+  top: -18px;
+  font-size: 12px;
+  color: #00bfffcc;
+  font-weight: 600;
+  text-shadow: 0 0 6px #00bfff99;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.barGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 40px;
+}
+
+.barContainer {
+  width: 100%;
+  height: 200px;  /* Sabit yükseklik */
+  background: #1a1a1a; /* koyu kutu arka planı */
+  border-radius: 8px;
+  display: flex;
+  align-items: flex-end; /* bar aşağıdan yükselsin */
+  padding: 4px;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.barContainer:hover {
+  background-color: #222222;
+}
+
+.bar {
+  width: 100%;
+  background: var(--accent);
+  border-radius: 6px 6px 0 0;
+  transition: height 0.3s ease;
+}
+
+.label {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.summary {
+  text-align: center;
+  font-size: 16px;
+  color: var(--muted);
+}
+
+.minutes {
+  color: var(--accent);
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .wrapper {
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .heading {
+    font-size: 22px;
+    margin-bottom: 4px; /* heading ile subtext arasını biraz sık tuttum */
+  }
+
+  .subtext {
+    font-size: 12px;
+    margin-bottom: 40px; /* grafikle subtext arasındaki mesafe artırıldı */
+    text-align: center;
+    max-width: 90%;
+  }
+
+  .chart {
+    height: 170px;
+    gap: 12px;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .barGroup {
+    width: 28px;
+  }
+
+  .barContainer {
+    height: 140px;
+    padding: 3px;
+    border-radius: 6px;
+  }
+
+  .bar {
+    border-radius: 4px 4px 0 0;
+  }
+
+  .label {
+    font-size: 11px;
+    margin-top: 6px;
+    text-align: center;
+  }
+
+  .avgLabel {
+    font-size: 11px;
+    right: 6px;
+  }
+
+  .summary {
+    font-size: 13px;
+    margin-top: 14px;
+  }
+}

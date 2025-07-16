@@ -1,0 +1,167 @@
+:root {
+  --bg-light: #f9f9f9;
+  --bg-dark: #1a1a1a;
+  --text-primary: #222222;
+  --text-muted: #777777;
+  --accent-warning: #ff0000;
+  --accent-info: #5a9bd4;
+  --border-color: #dddddd;
+  --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.wrapper {
+  max-width: 720px;
+  margin: 0 auto;
+  background: var(--bg-light);
+  padding: 24px 32px;
+  border-radius: 12px;
+  box-sizing: border-box;
+  box-shadow: var(--shadow-subtle);
+}
+
+.heading {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  user-select: none;
+}
+
+.noAlerts {
+  font-size: 16px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 40px 0;
+}
+
+.alertList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 400px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+.alertList::-webkit-scrollbar {
+  width: 8px;
+}
+
+.alertList::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 4px;
+}
+
+.alertItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.3s ease;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  background-color: #ffffff;
+  box-sizing: border-box;
+}
+
+.alertItem:last-child {
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+.alertItem.unread {
+  background-color: #eef6ff;
+  border-left: 6px solid var(--accent-info);
+}
+
+.alertItem.read {
+  color: var(--text-muted);
+  background-color: #fafafa;
+  border-left: 6px solid #cccccc;
+}
+
+.alertItem.warning.unread {
+  border-left-color: var(--accent-warning);
+  background-color: #fff0f0;
+  color: var(--text-primary);
+}
+
+.alertItem.warning.read {
+  border-left-color: #e5b0b0;
+  background-color: #fcf6f6;
+  color: var(--text-muted);
+}
+
+.alertContent {
+  flex: 1 1 auto;
+  padding-right: 20px;
+}
+
+.alertTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 6px 0;
+}
+
+.alertDescription {
+  font-size: 14px;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+}
+
+.alertDate {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.markReadBtn,
+.removeBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 20px;
+  transition: color 0.3s ease;
+  padding: 4px;
+  line-height: 1;
+}
+
+.markReadBtn:hover {
+  color: var(--accent-info);
+}
+
+.removeBtn:hover {
+  color: var(--accent-warning);
+}
+
+@media (max-width: 768px) {
+  .wrapper {
+    padding: 16px 20px;
+  }
+
+  .alertItem {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 14px 16px;
+  }
+
+  .alertContent {
+    padding-right: 0;
+    margin-bottom: 12px;
+  }
+
+  .actions {
+    gap: 20px;
+  }
+}

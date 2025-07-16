@@ -3,6 +3,8 @@ import SettingsScreen from "../../components/Settings/SettingsScreen/SettingsScr
 import styles from "./SettingsPage.module.css";
 import Sidebar from "../../components/LeftSideBar/Sidebar";
 import MobileSettings from "../../components/Settings/MobileSettings/MobileSettings";
+import BottomNav from "../../components/BottomNav/BottomNav";
+
 
 const SettingsPage = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
@@ -18,10 +20,15 @@ const SettingsPage = () => {
 
   return (
     <div className={styles.settingsWrapper}>
-      {isMobile ? <MobileSettings /> : (
+      {isMobile ? (
+        <>
+        <MobileSettings />
+         <BottomNav /></>
+      ) : (
         <>
           <Sidebar />
           <SettingsScreen />
+          <BottomNav />
         </>
       )}
     </div>

@@ -1,0 +1,450 @@
+:root {
+  /* Light Blue Color Variables */
+  --bg-main: #0b0b0b;
+  --bg-card: rgba(255, 255, 255, 0.9);
+  --bg-option: rgba(240, 248, 255, 0.8);
+  --bg-option-hover: rgba(230, 242, 255, 0.9);
+  --bg-option-active: rgba(100, 181, 246, 0.2);
+  --bg-toggle: #e0e0e0;
+  --bg-toggle-active: #4dabf7;
+  --bg-modal: #ffffff;
+  --bg-overlay: rgba(240, 248, 255, 0.9);
+  --bg-search: rgba(240, 248, 255, 0.7);
+  --bg-search-focus: rgba(255, 255, 255, 0.9);
+  --bg-allowed: rgba(100, 221, 223, 0.2);
+  --bg-denied: rgba(255, 138, 128, 0.2);
+  --bg-glass-button: rgba(100, 181, 246, 0.1);
+  --bg-glass-button-hover: rgba(100, 181, 246, 0.2);
+  --bg-save-button: #4dabf7;
+  --bg-save-button-hover: #3d8fd6;
+
+  /* Border Colors */
+  --border-card: 1px solid rgba(176, 216, 255, 0.5);
+  --border-option: 1px solid rgba(176, 216, 255, 0.3);
+  --border-strong: 1px solid #4dabf7;
+
+  /* Text Colors */
+  --text-main: #2c3e50;
+  --text-muted: #7f8c8d;
+  --text-placeholder: #95a5a6;
+  --text-accent: #4dabf7;
+  --text-glass-button: #4dabf7;
+  --text-success: #27ae60;
+  --text-error: #e74c3c;
+  --text-title-gradient: linear-gradient(90deg, #00dbde 0%, #fc00ff 100%);
+}
+
+/* Base Styles */
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  color: var(--text-main);
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: var(--bg-main);
+  border-radius: 12px;
+  min-height: 100vh;
+}
+
+.header {
+  margin-bottom: 2.5rem;
+  text-align: center;
+}
+
+.title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  background: var(--text-title-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Settings Cards */
+.settingsContainer {
+  display: grid;
+  gap: 2rem;
+}
+
+.settingCard {
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: var(--border-card);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.settingHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.settingIcon {
+  font-size: 1.5rem;
+  margin-right: 1rem;
+  color: var(--text-accent);
+}
+
+.settingTitle {
+  font-size: 1.5rem;
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Options */
+.optionGroup {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  background: var(--bg-option);
+  border: var(--border-option);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.option:hover {
+  background: var(--bg-option-hover);
+  transform: translateY(-2px);
+}
+
+.option.active {
+  background: var(--bg-option-active);
+  border: var(--border-strong);
+}
+
+.optionContent {
+  display: flex;
+  align-items: center;
+}
+
+.optionIcon {
+  font-size: 1.25rem;
+  margin-right: 1rem;
+  color: var(--text-accent);
+}
+
+.optionTitle {
+  font-size: 1rem;
+  margin: 0 0 0.25rem 0;
+  font-weight: 500;
+}
+
+.optionDescription {
+  font-size: 0.85rem;
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.checkIcon {
+  font-size: 1.25rem;
+  color: var(--text-accent);
+}
+
+/* Toggle Switch */
+.toggleOption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: var(--border-option);
+}
+
+.toggleContent {
+  flex: 1;
+}
+
+.toggleTitle {
+  font-size: 1rem;
+  margin: 0 0 0.25rem 0;
+  font-weight: 500;
+}
+
+.toggleDescription {
+  font-size: 0.85rem;
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+  margin-left: 1rem;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-toggle);
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--bg-toggle-active);
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+/* Custom Controls */
+.customControls {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.customButton {
+  flex: 1;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: var(--bg-glass-button);
+  border: 1px solid rgba(77, 171, 247, 0.3);
+  color: var(--text-glass-button);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.customButton:hover {
+  background: var(--bg-glass-button-hover);
+  border-color: var(--text-accent);
+}
+
+/* Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-overlay);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal {
+  background: var(--bg-modal);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  border: var(--border-card);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.modalHeader {
+  padding: 1.5rem;
+  border-bottom: var(--border-option);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalTitle {
+  font-size: 1.25rem;
+  margin: 0;
+  font-weight: 600;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.closeButton:hover {
+  color: var(--text-main);
+}
+
+.searchContainer {
+  padding: 1rem 1.5rem;
+  border-bottom: var(--border-option);
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--bg-search);
+  color: var(--text-main);
+  font-size: 0.95rem;
+}
+
+.searchInput::placeholder {
+  color: var(--text-placeholder);
+}
+
+.searchInput:focus {
+  outline: none;
+  background: var(--bg-search-focus);
+}
+
+.userList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 1.5rem;
+}
+
+.userItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: var(--border-option);
+}
+
+.userItem:last-child {
+  border-bottom: none;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+}
+
+.userAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 1rem;
+  object-fit: cover;
+}
+
+.userName {
+  font-size: 0.95rem;
+  margin: 0 0 0.1rem 0;
+  font-weight: 500;
+}
+
+.userUsername {
+  font-size: 0.8rem;
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.permissionButton {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  background: var(--bg-search);
+  color: var(--text-main);
+}
+
+.permissionButton:hover {
+  background: var(--bg-search-focus);
+}
+
+.permissionButton.allowed {
+  background: var(--bg-allowed);
+  color: var(--text-success);
+}
+
+.permissionButton.denied {
+  background: var(--bg-denied);
+  color: var(--text-error);
+}
+
+.emptyState {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-placeholder);
+}
+
+.modalFooter {
+  padding: 1.5rem;
+  border-top: var(--border-option);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.saveButton {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  background: var(--bg-save-button);
+  color: white;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.saveButton:hover {
+  background: var(--bg-save-button-hover);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem;
+  }
+
+  .title {
+    font-size: 1.8rem;
+  }
+
+  .customControls {
+    flex-direction: column;
+  }
+}

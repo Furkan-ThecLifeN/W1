@@ -1,0 +1,265 @@
+:root {
+  --color-bg-dark: #000000;
+  --color-bg-light: #111111;
+  --color-text: #ffffff;
+  --color-muted: #cccccc;
+  --color-accent: #00bfff;
+  --color-accent-glow: 0 0 12px #00bfff, 0 0 24px #00bfff;
+}
+
+.wrapper {
+  padding: 32px;
+  background: var(--color-bg-dark);
+  border-radius: 16px;
+  color: var(--color-text);
+  max-width: 700px;
+  margin: 0 auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.heading {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.subtext {
+  font-size: 14px;
+  color: var(--color-muted);
+  margin-bottom: 24px;
+}
+
+.section {
+  margin-top: 20px;
+}
+
+.toggleLabel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggleLabel input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--color-accent);
+}
+
+.methods {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.methodBtn {
+  background: var(--color-bg-light);
+  color: var(--color-muted);
+  border: 2px solid transparent;
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  transition: 0.3s ease;
+}
+
+.methodBtn:hover {
+  border-color: var(--color-accent);
+  box-shadow: var(--color-accent-glow);
+}
+
+.active {
+  color: var(--color-text);
+  border-color: var(--color-accent);
+  background: var(--color-black);
+  box-shadow: var(--color-accent-glow);
+}
+
+.verifyBtn {
+  margin-top: 20px;
+  background: var(--color-accent);
+  color: var(--color-white);
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.5s ease-in-out;
+}
+
+.verifyBtn:hover {
+  box-shadow: var(--color-accent-glow);
+}
+
+.verifiedBox {
+  margin-top: 20px;
+  font-size: 14px;
+  color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-shadow: 0 0 6px var(--color-accent);
+}
+
+.modal {
+  background: var(--color-bg-light);
+  padding: 24px;
+  border-radius: 12px;
+  max-width: 400px;
+  margin: auto;
+  color: var(--color-text);
+  box-shadow: var(--color-accent-glow);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.overlay {
+  background: rgba(0, 0, 0, 0.8);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalTitle {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.modalText {
+  font-size: 14px;
+  color: var(--color-muted);
+}
+
+.codeInput {
+  padding: 10px;
+  font-size: 16px;
+  border: 2px solid var(--color-accent);
+  border-radius: 8px;
+  background: var(--color-bg-dark);
+  color: var(--color-text);
+  outline: none;
+  text-align: center;
+  letter-spacing: 4px;
+  width: 100%;
+}
+
+.modalButtons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.confirmBtn {
+  background: var(--color-accent);
+  color: var(--color-white);
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.5s ease-in-out;
+}
+
+.confirmBtn:hover {
+  box-shadow: var(--color-accent-glow);
+}
+
+.cancelBtn {
+  background: transparent;
+  color: var(--color-muted);
+  border: 1px solid var(--color-muted);
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--color-white);
+  color: #00bfff;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  z-index: 9999;
+  box-shadow: 0 0 12px #00bfff, 0 0 24px #00bfff;
+  animation: fadeInOut 4s ease-in-out forwards;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+@media (max-width: 768px) {
+  .wrapper {
+    padding: 24px;
+  }
+
+  .methods {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .verifyBtn {
+    width: 100%;
+  }
+
+  .verifiedBox {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .toggleLabel {
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .modal {
+    width: 90%;
+    padding: 20px;
+  }
+
+  .modalButtons {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .confirmBtn,
+  .cancelBtn {
+    width: 100%;
+  }
+
+  .codeInput {
+    font-size: 18px;
+    letter-spacing: 5px;
+  }
+}

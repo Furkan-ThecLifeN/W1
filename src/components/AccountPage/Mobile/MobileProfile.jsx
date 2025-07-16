@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { IoIosSettings } from "react-icons/io";
 import styles from "./MobileProfile.module.css";
+import SettingsPage from "../../../pages/Settings/SettingsPage";
+import { Link } from "react-router-dom";
 
 const MobileProfile = () => {
   const [activeTab, setActiveTab] = useState("posts");
@@ -18,7 +20,9 @@ const MobileProfile = () => {
         <div className={styles.username}>furkan_theclifen</div>
         <div className={styles.actions}>
           <button className={styles.actionBtn}>
-            <IoIosSettings className={styles.icon} />
+            <Link to="/settings">
+              <IoIosSettings className={styles.icon} />
+            </Link>
           </button>
         </div>
       </header>
@@ -39,23 +43,23 @@ const MobileProfile = () => {
         <div className={styles.stats}>
           <div className={styles.stat_content}>
             <div className={styles.stat}>
-            <span className={styles.statNumber}>120</span>
-            <span className={styles.statLabel}>Posts</span>
-          </div>
-          <div className={styles.stat}>
-            <span className={styles.statNumber}>340</span>
-            <span className={styles.statLabel}>RTA</span>
-          </div>
+              <span className={styles.statNumber}>120</span>
+              <span className={styles.statLabel}>Posts</span>
+            </div>
+            <div className={styles.stat}>
+              <span className={styles.statNumber}>340</span>
+              <span className={styles.statLabel}>RTA</span>
+            </div>
           </div>
           <div className={styles.stat_content}>
             <div className={styles.stat}>
-            <span className={styles.statNumber}>875</span>
-            <span className={styles.statLabel}>Followers</span>
-          </div>
-          <div className={styles.stat}>
-            <span className={styles.statNumber}>52</span>
-            <span className={styles.statLabel}>Following</span>
-          </div>
+              <span className={styles.statNumber}>875</span>
+              <span className={styles.statLabel}>Followers</span>
+            </div>
+            <div className={styles.stat}>
+              <span className={styles.statNumber}>52</span>
+              <span className={styles.statLabel}>Following</span>
+            </div>
           </div>
         </div>
       </div>

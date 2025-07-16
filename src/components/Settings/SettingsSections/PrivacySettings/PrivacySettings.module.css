@@ -1,0 +1,140 @@
+:root {
+  --bg-dark: #000000;
+  --bg-light: #111111;
+  --text: #ffffff;
+  --muted: #cccccc;
+  --accent: #00bfff;
+  --glow: 0 0 12px #00bfff, 0 0 24px #00bfff;
+}
+
+.wrapper {
+  padding: 32px;
+  background: var(--bg-dark);
+  color: var(--text);
+  max-width: 500px;
+  margin: 0 auto;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+}
+
+.heading {
+  font-size: 26px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.subtext {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+
+.privacyBox {
+  background: var(--bg-light);
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.privacyText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.privacyText strong {
+  font-size: 16px;
+  color: var(--text);
+}
+
+.privacyText span {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.switch {
+  width: 50px;
+  height: 26px;
+  background-color: #444;
+  border-radius: 13px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.3s;
+}
+
+.switch.active {
+  background-color: var(--accent);
+  box-shadow: var(--glow);
+}
+
+.slider {
+  width: 22px;
+  height: 22px;
+  background: var(--text);
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: left 0.3s;
+}
+
+.switch.active .slider {
+  left: 26px;
+}
+
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #ffffff;
+  color: #00bfff;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  z-index: 9999;
+  box-shadow: var(--glow);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: fadeInOut 4s ease-in-out forwards;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+@media (max-width: 768px) {
+  .wrapper {
+    padding: 24px;
+  }
+
+  .privacyBox {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .switch {
+    align-self: flex-end;
+  }
+}

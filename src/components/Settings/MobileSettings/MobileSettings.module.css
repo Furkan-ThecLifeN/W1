@@ -7,7 +7,6 @@
   padding: 20px;
   overflow-y: auto;
   overflow-x: hidden;
-  background: linear-gradient(135deg, #0f172a, #1e293b);
   color: white;
 }
 
@@ -256,6 +255,15 @@
     rgba(16, 185, 129, 0) 70%
   );
   z-index: 0;
+}
+
+.backButton {
+  color: var(--color-white);
+  margin-bottom: 20px;
+}
+
+.mobileComponent_Title {
+  margin-bottom: 20px;
 }
 
 /* Responsive Adjustments */
