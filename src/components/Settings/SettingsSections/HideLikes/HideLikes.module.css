@@ -1,0 +1,150 @@
+.container {
+  padding: 24px;
+  background: var(--special-background03);
+  border-radius: 20px;
+  box-shadow: 0 0 24px rgba(0, 170, 255, 0.15);
+  backdrop-filter: var(--backdrop-filter);
+  max-width: 620px;
+  margin: 0 auto;
+  color: var(--special-color);
+  font-family: var(--font-main);
+  transition: all 0.3s ease;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  background: var(--text-title-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  user-select: none;
+}
+
+.description {
+  color: var(--special-color);
+  font-size: 0.95rem;
+  margin-bottom: 28px;
+  line-height: 1.6;
+  user-select: none;
+}
+
+.toggleCard {
+  background: rgba(168, 225, 255, 0.15);
+  border: 1px solid rgba(0, 170, 255, 0.3);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  backdrop-filter: var(--backdrop-filter);
+  box-shadow: 0 4px 20px rgba(0, 170, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.toggleCard:hover {
+  background: rgba(244, 252, 255, 0.3);
+  box-shadow: 0 6px 24px rgba(0, 200, 255, 0.35);
+}
+
+.toggleContent {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.icon {
+  font-size: 1.8rem;
+  color: var(--color-blue);
+  user-select: none;
+}
+
+.toggleTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--special-color);
+  user-select: none;
+}
+
+.toggleSubtitle {
+  font-size: 0.9rem;
+  color: var(--special-color);
+  margin: 4px 0 0 0;
+  opacity: 0.85;
+  user-select: none;
+}
+
+/* Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(168, 225, 255, 0.4);
+  transition: 0.4s;
+  border-radius: 50px;
+  box-shadow:
+    0 0 8px rgba(0, 170, 255, 0.7),
+    inset 0 0 8px rgba(244, 252, 255, 0.3);
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 4px;
+  bottom: 3px;
+  background-color: var(--special-color);
+  transition: 0.4s;
+  border-radius: 50%;
+  box-shadow:
+    0 2px 8px rgba(244, 252, 255, 0.9);
+}
+
+input:checked + .slider {
+  background-color: var(--color-blue);
+  box-shadow:
+    0 0 15px var(--color-blue),
+    inset 0 0 12px var(--color-blue);
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .container {
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 1.6rem;
+  }
+
+  .toggleCard {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .switch {
+    align-self: flex-end;
+  }
+}

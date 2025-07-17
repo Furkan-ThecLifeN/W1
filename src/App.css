@@ -23,6 +23,8 @@
   --special-background07: linear-gradient(to top, #5f72bd 0%, #9b23ea 100%);
   --special-background08: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   --special-color: #e0e7ff;
+  --bg-main: #0b0b0b;
+  --text-title-gradient: linear-gradient(90deg, #00dbde 0%, #fc00ff 100%);
   --backdrop-filter: blur(16px);
   --background-special: #131621;
   --secondary-bg: #1a1a1a;

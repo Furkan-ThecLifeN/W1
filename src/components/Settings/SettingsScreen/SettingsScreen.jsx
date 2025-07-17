@@ -28,7 +28,7 @@ import CommentControls from "../SettingsSections/CommentControls/CommentControls
 
 // ✅ Uygulama Bazlı Ayarlar
 import ThemeAppearance from "../SettingsSections/ThemeAppearance/ThemeAppearance";
-import LanguageTranslations from "../SettingsSections/LanguageTranslations/LanguageTranslations";
+import Languages from "../SettingsSections/Languages/Languages";
 import Licenses from "../SettingsSections/Licenses/Licenses";
 import TermsAndConditions from "../SettingsSections/TermsAndConditions/TermsAndConditions";
 import AboutApp from "../SettingsSections/AboutApp/AboutApp";
@@ -62,7 +62,7 @@ const sections = {
   ],
   "Uygulama Bazlı Ayarlar": [
     "Tema ve Görünüm",
-    "Dil ve Çeviriler",
+    "Diller",
     "Lisanslar",
     "Sözleşme",
     "Uygulama Hakkında",
@@ -93,7 +93,7 @@ const componentMap = {
   "İçerik Hassasiyet Filtresi": <ContentSensitivityFilter />,
   "Yorum Kontrolleri": <CommentControls />,
   "Tema ve Görünüm": <ThemeAppearance />,
-  "Dil ve Çeviriler": <LanguageTranslations />,
+  "Diller": <Languages />,
   Lisanslar: <Licenses />,
   Sözleşme: <TermsAndConditions />,
   "Uygulama Hakkında": <AboutApp />,

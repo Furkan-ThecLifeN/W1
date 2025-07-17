@@ -40,7 +40,6 @@
   margin: 0 auto;
   padding: 2rem;
   color: var(--text-main);
-  font-family: "Segoe UI", system-ui, sans-serif;
   background: var(--bg-main);
   border-radius: 12px;
   min-height: 100vh;

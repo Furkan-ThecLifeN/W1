@@ -34,7 +34,7 @@ import HideLikes from "../SettingsSections/HideLikes/HideLikes";
 import ContentSensitivityFilter from "../SettingsSections/ContentSensitivityFilter/ContentSensitivityFilter";
 import CommentControls from "../SettingsSections/CommentControls/CommentControls";
 import ThemeAppearance from "../SettingsSections/ThemeAppearance/ThemeAppearance";
-import LanguageTranslations from "../SettingsSections/LanguageTranslations/LanguageTranslations";
+import Languages from "../SettingsSections/Languages/Languages";
 import Licenses from "../SettingsSections/Licenses/Licenses";
 import TermsAndConditions from "../SettingsSections/TermsAndConditions/TermsAndConditions";
 import AboutApp from "../SettingsSections/AboutApp/AboutApp";
@@ -63,7 +63,7 @@ const componentMap = {
   "İçerik Hassasiyet Filtresi": <ContentSensitivityFilter />,
   "Yorum Kontrolleri": <CommentControls />,
   "Tema ve Görünüm": <ThemeAppearance />,
-  "Dil ve Çeviriler": <LanguageTranslations />,
+  "Diller": <Languages />,
   "Lisanslar": <Licenses />,
   "Sözleşme": <TermsAndConditions />,
   "Uygulama Hakkında": <AboutApp />,
@@ -112,7 +112,7 @@ const categories = {
     color: "#f59e0b",
     items: [
       "Tema ve Görünüm",
-      "Dil ve Çeviriler",
+      "Diller",
       "Lisanslar",
       "Sözleşme",
       "Uygulama Hakkında",

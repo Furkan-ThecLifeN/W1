@@ -5,12 +5,10 @@
   min-height: 100vh;
   max-height: none;
   padding: 20px;
-  overflow-y: auto;
+  overflow-y: hidden;
   overflow-x: hidden;
   color: white;
 }
-
-
 
 /* Floating Header */
 .header {

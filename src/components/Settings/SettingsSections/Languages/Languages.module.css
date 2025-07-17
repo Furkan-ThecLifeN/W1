@@ -1,0 +1,143 @@
+.container {
+  max-width: 600px;
+  margin: 2rem auto;
+  background: var(--special-background03);
+  border-radius: 1.5rem;
+  padding: 2rem 2.5rem;
+  box-shadow: 0 0 30px rgba(0, 170, 255, 0.25);
+  backdrop-filter: var(--backdrop-filter);
+  color: var(--text-white);
+  font-family: var(--font-main);
+  user-select: none;
+  transition: background 0.3s ease;
+  position: relative;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.icon {
+  font-size: 2rem;
+  color: var(--color-blue);
+  flex-shrink: 0;
+}
+
+h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  background: var(--text-title-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  user-select: none;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.langButton {
+  background: var(--background-special);
+  border-radius: 1rem;
+  padding: 0.8rem 1rem;
+  color: var(--text-white);
+  font-weight: 600;
+  font-size: 1rem;
+  border: 2px solid transparent;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.2s ease;
+  position: relative;
+  box-shadow: 0 0 10px rgba(0, 170, 255, 0.1);
+}
+
+.langButton:hover:not(:disabled) {
+  box-shadow: 0 0 15px rgba(0, 170, 255, 0.5);
+  transform: translateY(-3px);
+}
+
+.langButton.active {
+  border-color: var(--color-blue);
+  background: var(--special-background05);
+  box-shadow: 0 0 20px var(--color-blue);
+  color: var(--text-white);
+}
+
+.langButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.checkIcon {
+  color: var(--color-blue);
+  font-size: 1.2rem;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.saveButton {
+  width: 100%;
+  background: var(--color-blue);
+  color: var(--text-white);
+  font-weight: 700;
+  padding: 1rem 0;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 1rem;
+  cursor: pointer;
+  box-shadow: 0 0 15px var(--color-blue);
+  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.saveButton:hover:not(:disabled) {
+  background: var(--special-background05);
+  box-shadow: 0 0 30px var(--color-blue);
+  transform: translateY(-2px);
+}
+
+.saveButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Responsive */
+
+@media (max-width: 480px) {
+  .container {
+    padding: 1.5rem 1.75rem;
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.8rem;
+  }
+
+  .langButton {
+    font-size: 0.9rem;
+    padding: 0.7rem 0.9rem;
+  }
+
+  .checkIcon {
+    font-size: 1rem;
+    top: 6px;
+    right: 6px;
+  }
+
+  .saveButton {
+    font-size: 1rem;
+    padding: 0.8rem 0;
+  }
+}

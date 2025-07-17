@@ -19,7 +19,6 @@
   height: 100vh;
   background-color: var(--color-black);
   color: var(--color-text);
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   overflow: hidden;
 }
 
