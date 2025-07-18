@@ -46,7 +46,7 @@
   --color-offgrey: #1f1f1f;
   --online: #10b981;
   --idle: #f59e0b;
-  --busy: #ef4444;
+  --busy: #ff0000;
 }
 
 .App {

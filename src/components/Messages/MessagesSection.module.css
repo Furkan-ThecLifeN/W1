@@ -35,13 +35,13 @@
   flex-direction: column;
 }
 
-.sidebar {
+.leftBar {
   width: 350px;
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 24px;
-  overflow-y: auto;
+  overflow-y: hidden;
 }
 
 .profileArea {
