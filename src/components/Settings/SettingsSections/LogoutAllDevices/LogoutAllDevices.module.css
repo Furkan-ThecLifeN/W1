@@ -8,14 +8,17 @@
 }
 
 .wrapper {
+  background: var(--special-background03);
+  padding: 2rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 0 20px rgba(0, 170, 255, 0.15);
+  backdrop-filter: var(--backdrop-filter);
+  color: var(--text-white);
   max-width: 700px;
-  margin: 0 auto;
-  padding: 32px;
-  background: var(--bg-dark);
-  color: var(--text);
-  border-radius: 16px;
-  box-sizing: border-box;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  margin: auto;
+  margin-top: 3rem;
+  font-family: var(--font-main);
+  transition: all 0.3s ease;
 }
 
 .heading {

@@ -10,19 +10,23 @@
 }
 
 .wrapper {
-  max-width: 720px;
-  margin: 0 auto;
-  background: var(--bg-light);
-  padding: 24px 32px;
-  border-radius: 12px;
-  box-sizing: border-box;
-  box-shadow: var(--shadow-subtle);
+   background: var(--special-background03);
+  padding: 2rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 0 20px rgba(0, 170, 255, 0.15);
+  backdrop-filter: var(--backdrop-filter);
+  color: var(--text-white);
+  max-width: 700px;
+  margin: auto;
+  margin-top: 3rem;
+  font-family: var(--font-main);
+  transition: all 0.3s ease;
 }
 
 .heading {
   font-size: 28px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--color-white);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -64,7 +68,6 @@
   transition: background-color 0.3s ease;
   border-radius: 8px;
   margin-bottom: 12px;
-  background-color: #ffffff;
   box-sizing: border-box;
 }
 
@@ -87,7 +90,7 @@
 .alertItem.warning.unread {
   border-left-color: var(--accent-warning);
   background-color: #fff0f0;
-  color: var(--text-primary);
+  color: var(--color-black); 
 }
 
 .alertItem.warning.read {

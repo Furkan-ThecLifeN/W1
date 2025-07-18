@@ -36,12 +36,17 @@
 
 /* Base Styles */
 .container {
-  max-width: 800px;
-  margin: 0 auto;
+    background: var(--special-background03);
   padding: 2rem;
-  color: var(--text-main);
-  background: var(--bg-main);
-  border-radius: 12px;
+  border-radius: 1.5rem;
+  box-shadow: 0 0 20px rgba(0, 170, 255, 0.15);
+  backdrop-filter: var(--backdrop-filter);
+  color: var(--color-black);
+  max-width: 900px;
+  margin: auto;
+  margin-top: 3rem;
+  font-family: var(--font-main);
+  transition: all 0.3s ease;
   min-height: 100vh;
 }
 
@@ -54,10 +59,7 @@
   font-size: 2.2rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
-  background: var(--text-title-gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--color-white);
   letter-spacing: -0.5px;
 }
 

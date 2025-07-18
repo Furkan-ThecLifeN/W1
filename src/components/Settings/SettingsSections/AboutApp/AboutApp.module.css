@@ -17,12 +17,7 @@
   text-align: center;
   margin-bottom: 64px;
   font-weight: 900;
-  background: var(
-    --text-title-gradient,
-    linear-gradient(90deg, #00dbde 0%, #fc00ff 100%)
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--color-white);
   letter-spacing: 1.2px;
   user-select: none;
 }

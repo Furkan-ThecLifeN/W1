@@ -15,9 +15,7 @@
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 12px;
-  background: var(--text-title-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--color-white);
   user-select: none;
 }
 
@@ -94,12 +92,14 @@
 .slider {
   position: absolute;
   cursor: pointer;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background-color: rgba(168, 225, 255, 0.4);
   transition: 0.4s;
   border-radius: 50px;
-  box-shadow:
-    0 0 8px rgba(0, 170, 255, 0.7),
+  box-shadow: 0 0 8px rgba(0, 170, 255, 0.7),
     inset 0 0 8px rgba(244, 252, 255, 0.3);
 }
 
@@ -113,15 +113,12 @@
   background-color: var(--special-color);
   transition: 0.4s;
   border-radius: 50%;
-  box-shadow:
-    0 2px 8px rgba(244, 252, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(244, 252, 255, 0.9);
 }
 
 input:checked + .slider {
   background-color: var(--color-blue);
-  box-shadow:
-    0 0 15px var(--color-blue),
-    inset 0 0 12px var(--color-blue);
+  box-shadow: 0 0 15px var(--color-blue), inset 0 0 12px var(--color-blue);
 }
 
 input:checked + .slider:before {

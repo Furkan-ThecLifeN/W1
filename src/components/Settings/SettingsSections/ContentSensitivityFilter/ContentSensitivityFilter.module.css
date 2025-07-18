@@ -14,9 +14,7 @@
 
 .title {
   font-size: 1.8rem;
-  background: var(--text-title-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--color-white);
   margin-bottom: 2rem;
   text-align: center;
 }

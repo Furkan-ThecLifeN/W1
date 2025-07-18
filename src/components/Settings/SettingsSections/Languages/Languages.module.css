@@ -29,10 +29,7 @@
 h1 {
   font-size: 1.8rem;
   font-weight: 700;
-  background: var(--text-title-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  user-select: none;
+  color: var(--color-white);
 }
 
 .grid {
