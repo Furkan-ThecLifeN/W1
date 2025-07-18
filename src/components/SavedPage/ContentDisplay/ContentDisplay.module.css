@@ -1,6 +1,7 @@
 .contentContainer {
   width: 100%;
-  background: var(--secondary-bg);
+  background: var(--special-background03);
+  backdrop-filter: var(--backdrop-filter);
   border-radius: 20px;
   padding: 24px;
   flex-grow: 1;

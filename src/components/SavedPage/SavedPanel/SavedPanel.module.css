@@ -9,8 +9,10 @@
 }
 
 .panelContainer {
-  background: var(--secondary-bg);
+  background: var(--special-background03);
   width: 260px;
+  backdrop-filter: var(--backdrop-filter);
+
   height: 100vh;
   padding: var(--spacing);
   display: flex;

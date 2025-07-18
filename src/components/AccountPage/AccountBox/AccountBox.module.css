@@ -238,7 +238,6 @@
   justify-content: center;
   gap: 20px;
   flex-wrap: wrap;
-  border-bottom: 2px solid #e5e7eb;
   padding-bottom: 12px;
   width: 90%;
 }
