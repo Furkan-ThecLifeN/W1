@@ -29,7 +29,7 @@ const dummyUsers = [
   },
 ];
 
-const MessagesLeftMobile = () => {
+const MessagesMobile = () => {
   const [selectedUser, setSelectedUser] = useState(null);
 
   if (selectedUser) {
@@ -74,4 +74,4 @@ const MessagesLeftMobile = () => {
   );
 };
 
-export default MessagesLeftMobile;
+export default MessagesMobile;
