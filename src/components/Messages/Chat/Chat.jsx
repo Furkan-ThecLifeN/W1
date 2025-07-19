@@ -12,21 +12,36 @@ import userAvatar from "../../../assets/W1.png";
 import { MdAddBox } from "react-icons/md";
 import { AiFillFileAdd } from "react-icons/ai";
 
-const ChatWindow = () => {
+const Chat = ({ user, onBack }) => {
   const [message, setMessage] = useState("");
-
-  const handleInputChange = (e) => setMessage(e.target.value);
-
-  const canSend = message.trim().length > 0;
-
   const [isPlaying, setIsPlaying] = useState(false);
 
+  const handleInputChange = (e) => setMessage(e.target.value);
   const togglePlay = () => setIsPlaying((prev) => !prev);
+  const canSend = message.trim().length > 0;
 
   return (
-    <div className={styles.ChatComponent}>
+    <div className={styles.Chat}>
       <div className={styles.chatHeader}>
-        <h2>Chat</h2>
+        <button className={styles.backButton} onClick={onBack}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+            className={styles.backIcon}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          <span className={styles.backBtnSpan}>Geri</span>
+        </button>
+
+        <h2>{user?.name || "Chat"}</h2>
       </div>
 
       <div className={styles.chatBox}>
@@ -107,4 +122,4 @@ const ChatWindow = () => {
   );
 };
 
-export default ChatWindow;
+export default Chat;

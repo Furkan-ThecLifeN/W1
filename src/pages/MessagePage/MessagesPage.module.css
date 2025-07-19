@@ -1,52 +1,30 @@
-.messages_box {
-  display: block;
-}
-
-.messages_mobile {
-  display: none;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
+.page {
+  display: flex;
   height: 100vh;
+  width: calc(100% - 80px);
+  background-color: var(--color-black);
+  color: var(--color-white);
+  overflow: hidden;
   margin-left: 80px;
 }
 
-.messages_container {
+.leftBar {
+  width: 300px;
+  overflow-y: auto;
+}
+
+.chat {
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: var(--color-pagecolor);
-  width: 100%;
-  height: 100vh;
-  font-family: var(--font-main);
-  box-sizing: border-box;
-  overflow-x: hidden;
-  overflow-y: hidden;
+  overflow-y: auto;
 }
 
-.messages_box {
+.rightBar {
+  width: 320px;
+  overflow-y: auto;
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
-  height: 100%;
-  margin-left: 80px;  
-}
-
-@media (max-width: 1200px) {
-  .messages_box {
-  display: none;
-}
-
-.messages_mobile {
-  display: block;
-  width: 90%;
-  height: auto;
-}
-}
-
-@media (max-width: 1024px) {
-  .messages_mobile {
-  margin-left: 0;
-}
 }

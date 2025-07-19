@@ -1,25 +1,35 @@
 import React, { useState } from "react";
-import Sidebar from "../../components/LeftSideBar/Sidebar";
-import MessagesSection from "../../components/Messages/MessagesSection";
-import Styles from "./MessagesPage.module.css";
-import MessagesMobile from "../../components/Messages/MessagesMobile/MessagesMobile";
-import BottomNav from "../../components/BottomNav/BottomNav";
+import styles from "./MessagesPage.module.css";
+import MessagesLeftBar from "../../components/Messages/MessagesLeftBar/MessagesLeftBar";
+import Chat from "../../components/Messages/Chat/Chat";
+import ChatComponent from "../../components/Messages/Chat/ChatComponent";
+import MessagesRightBar from "../../components/Messages/MessagesRightBar/MessagesRightBar";
+import RightBar from "../../components/Messages/MessagesRightBar/RightBar";
+import Sidebar from "../../components/LeftSideBar/Sidebar"; 
 
 const MessagesPage = () => {
-  const [showBottomNav, setShowBottomNav] = useState(true);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   return (
-    <div className={Styles.messages_container}>
+    <div className={styles.wrapper}>
       <Sidebar />
-      <div className={Styles.messages_box}>
-        <MessagesSection />
+      <div className={styles.page}>
+        <aside className={styles.leftBar}>
+          <MessagesLeftBar onSelectUser={setSelectedUser} />
+        </aside>
+
+        <main className={styles.chat}>
+          {selectedUser ? (
+            <Chat user={selectedUser} onBack={() => setSelectedUser(null)} />
+          ) : (
+            <ChatComponent />
+          )}
+        </main>
+
+        <section className={styles.rightBar}>
+          {selectedUser ? <MessagesRightBar /> : <RightBar />}
+        </section>
       </div>
-      <div className={Styles.messages_mobile}>
-        <MessagesMobile
-          hideBottomNav={(shouldHide) => setShowBottomNav(!shouldHide)}
-        />
-      </div>
-      {showBottomNav && <BottomNav />}
     </div>
   );
 };

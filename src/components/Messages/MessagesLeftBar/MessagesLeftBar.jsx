@@ -69,18 +69,22 @@ const dummyUsers = [
   },
 ];
 
-const MessagesLeftBar = () => {
+const MessagesLeftBar = ({ onSelectUser }) => {
   return (
     <div className={styles.MessagesLeftBar}>
       <div className={styles.left_SearchInputBox}>
-        <IoSearchSharp />
+        <IoSearchSharp className={styles.searchInputIcon} />
         <input type="text" placeholder="Search messages..." />
-        <FaMicrophone />
+        <FaMicrophone className={styles.searchInputIcon} />
       </div>
 
       <ul className={styles.usersMessagesBox}>
-        {dummyUsers.map(user => (
-          <li key={user.id} className={styles.userCard}>
+        {dummyUsers.map((user, index) => (
+          <li
+            key={`${user.id}-${index}`}
+            className={styles.userCard}
+            onClick={() => onSelectUser(user)}
+          >
             <div className={styles.userProfileBox}>
               <div className={styles.userProfileBackground}>
                 <img src={user.profileImage} alt={user.name} />
@@ -97,5 +101,6 @@ const MessagesLeftBar = () => {
     </div>
   );
 };
+
 
 export default MessagesLeftBar;
