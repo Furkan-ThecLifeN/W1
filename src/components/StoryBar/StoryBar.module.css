@@ -1,7 +1,7 @@
 .storyBar {
   display: flex;
   gap: 16px;
-  padding: 10px;
+  padding: 10px 30px;
   justify-content: flex-start; /* Center yaparsan scroll sorun çıkabilir */
   align-items: center;
   white-space: nowrap; /* Satır kırma olmasın */

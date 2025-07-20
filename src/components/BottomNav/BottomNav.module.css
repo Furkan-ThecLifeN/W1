@@ -8,7 +8,7 @@
   backdrop-filter: blur(12px);
   background: rgba(17, 17, 17, 0.6);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  display: none; /* test için sabit bırak */
+  display: none; 
 }
 
 
@@ -40,7 +40,7 @@
 }
 
 .activeLink {
-  color: var(--color-blue);
+  color: var(--color-white);
 }
 
 .icon {

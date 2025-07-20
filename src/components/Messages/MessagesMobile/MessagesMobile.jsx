@@ -55,7 +55,7 @@ const MessagesMobile = () => {
           <li
             key={`${user.id}-${index}`}
             className={styles.userCard}
-            onClick={() => setSelectedUser(user)} // Tıklayınca seçilen kullanıcıyı ayarla
+            onClick={() => setSelectedUser(user)} 
           >
             <div className={styles.userProfileBox}>
               <div className={styles.userProfileBackground}>

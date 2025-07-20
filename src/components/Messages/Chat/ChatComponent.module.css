@@ -40,9 +40,79 @@
   }
 }
 
-.storyArea {
+.storyAreaWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
   margin-bottom: 30px;
 }
+
+.storyArea {
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-behavior: smooth;
+  padding-bottom: 4px;
+  flex: 1;
+}
+
+.storyArea::-webkit-scrollbar {
+  height: 6px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.storyArea:hover::-webkit-scrollbar {
+  opacity: 1;
+}
+
+.storyArea::-webkit-scrollbar-track {
+  background: transparent;
+}
+.storyArea::-webkit-scrollbar-thumb {
+  background: rgba(100, 100, 100, 0.4);
+  border-radius: 4px;
+}
+
+.storyItem {
+  display: inline-block;
+  width: 120px;
+  height: 120px;
+  margin: 0 8px;
+  background: #ddd;
+  border-radius: 12px;
+  line-height: 120px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.scrollButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-90%);
+  background: white;
+  border: none;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scrollButton.left {
+  left: -12px;
+}
+
+.scrollButton.right {
+  right: -12px;
+}
+
 
 .messageArea {
   flex: 1;

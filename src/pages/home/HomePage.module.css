@@ -105,9 +105,21 @@
   max-width: 900px;
 }
 
-/* Scrollbar ayarı */
+.mainContent {
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox için gizle */
+  -ms-overflow-style: none; /* IE/Edge için gizle */
+}
+
+/* Webkit (Chrome/Safari) için */
 .mainContent::-webkit-scrollbar {
   width: 8px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.mainContent:hover::-webkit-scrollbar {
+  opacity: 1;
 }
 
 .mainContent::-webkit-scrollbar-thumb {
@@ -118,6 +130,7 @@
 .mainContent::-webkit-scrollbar-track {
   background: transparent;
 }
+
 
 @media (max-width: 1024px) {
   .mainContent {
