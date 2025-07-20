@@ -1,0 +1,43 @@
+.draftsWrapper {
+  padding: 30px;
+  text-align: center;
+  color: white;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.title {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  text-shadow: 0 0 10px cyan;
+}
+
+.info {
+  font-size: 1.1rem;
+  margin-bottom: 30px;
+  opacity: 0.7;
+}
+
+.placeholder {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 40px;
+  font-size: 1.2rem;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+.closeBtn {
+  margin-top: 30px;
+  background: transparent;
+  border: 2px solid cyan;
+  color: white;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.closeBtn:hover {
+  background: cyan;
+  color: black;
+}

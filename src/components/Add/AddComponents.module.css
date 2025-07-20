@@ -1,0 +1,99 @@
+.addContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+background: linear-gradient(135deg, #003b6f, #000000, #003b6f);
+  color: white;
+
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.title {
+  font-size: 3rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-shadow: 0 0 20px rgba(0, 255, 255, 0.7);
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  opacity: 0.7;
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 30px;
+  width: 100%;
+  max-width: 1000px;
+}
+
+.card {
+  position: relative;
+  border-radius: 20px;
+  padding: 30px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 0 30px var(--card-glow);
+}
+
+.cardContent {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+.cardIcon {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+}
+
+.cardTitle {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.cardDescription {
+  font-size: 1rem;
+  opacity: 0.85;
+}
+
+.cardGlow {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--card-glow);
+  opacity: 0.15;
+  filter: blur(30px);
+  transition: opacity 0.3s ease;
+}
+
+.hovered .cardGlow {
+  opacity: 0.35;
+}
+
+.formContainer {
+  width: 100%;
+  height: 100vh;
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 40px rgba(0, 255, 255, 0.1);
+}
