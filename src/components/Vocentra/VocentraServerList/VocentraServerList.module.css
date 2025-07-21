@@ -1,6 +1,6 @@
 :root {
   --color-dark: #1e1e1e;
-  --color-dark-hover: #dbdbdb;
+  --color-dark-hover: #171717;
   --color-accent: #00cfff;
   --color-danger: #f44336;
 }
@@ -39,8 +39,8 @@
   padding-right: 2px;
 
   /* Scroll'u gizle ama çalıştır */
-  scrollbar-width: none;       /* Firefox */
-  -ms-overflow-style: none;    /* IE 10+ */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
 }
 .list::-webkit-scrollbar {
   width: 0;
@@ -54,7 +54,8 @@
   position: relative;
   padding: 15px;
   border-radius: 8px;
-  background-color: var(--color-white);
+  background-color: var(--bg-main);
+  color: var(--color-white);
   transition: background-color 0.2s ease;
   cursor: pointer;
   gap: 12px;
@@ -107,13 +108,16 @@
   font-weight: 600;
   color: var(--color-accent);
   margin-right: 2px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background-color: var(--color-white);
 }
 
 /* Aktif kullanıcı sayısı */
 .userCount {
   position: absolute;
-  top: -10px;
-  right: -14px;
+  top: -12px;
+  right: -16px;
   background: var(--color-accent);
   color: var(--color-white);
   font-size: 10px;

@@ -7,7 +7,7 @@ const dummyServers = [
   {
     id: 1,
     name: "Fynex Nexus",
-    profileImage: "https://i.pinimg.com/736x/3c/ae/07/3cae079ca0b9e55ec6bfc1b358c9b1e2.jpg",
+    profileImage: "https://i.pinimg.com/736x/c3/87/37/c38737919bf32817c0aa2c0093501f56.jpg",
     isMuted: false,
     hasVoiceUsers: true,
     activeUsers: 3,
@@ -15,7 +15,7 @@ const dummyServers = [
   {
     id: 2,
     name: "Cyber Core",
-    profileImage: "https://i.pinimg.com/736x/3c/ae/07/3cae079ca0b9e55ec6bfc1b358c9b1e2.jpg",
+    profileImage: "https://i.pinimg.com/736x/c3/87/37/c38737919bf32817c0aa2c0093501f56.jpg",
     isMuted: true,
     hasVoiceUsers: false,
     activeUsers: 0,
@@ -23,7 +23,7 @@ const dummyServers = [
   {
     id: 3,
     name: "AI Matrix",
-    profileImage: "https://i.pinimg.com/736x/3c/ae/07/3cae079ca0b9e55ec6bfc1b358c9b1e2.jpg",
+    profileImage: "https://i.pinimg.com/736x/c3/87/37/c38737919bf32817c0aa2c0093501f56.jpg",
     isMuted: false,
     hasVoiceUsers: false,
     activeUsers: 0,
@@ -31,7 +31,7 @@ const dummyServers = [
   {
     id: 4,
     name: "Quantum Realm",
-    profileImage: "https://i.pinimg.com/736x/3c/ae/07/3cae079ca0b9e55ec6bfc1b358c9b1e2.jpg",
+    profileImage: "https://i.pinimg.com/736x/c3/87/37/c38737919bf32817c0aa2c0093501f56.jpg",
     isMuted: false,
     hasVoiceUsers: true,
     activeUsers: 5,
@@ -39,7 +39,7 @@ const dummyServers = [
   {
     id: 5,
     name: "Neon Hub",
-    profileImage: "https://i.pinimg.com/736x/3c/ae/07/3cae079ca0b9e55ec6bfc1b358c9b1e2.jpg",
+    profileImage: "https://i.pinimg.com/736x/c3/87/37/c38737919bf32817c0aa2c0093501f56.jpg",
     isMuted: true,
     hasVoiceUsers: false,
     activeUsers: 0,
@@ -47,7 +47,7 @@ const dummyServers = [
   {
     id: 6,
     name: "Nova Circuit",
-    profileImage: "https://i.pinimg.com/736x/3c/ae/07/3cae079ca0b9e55ec6bfc1b358c9b1e2.jpg",
+    profileImage: "https://i.pinimg.com/736x/c3/87/37/c38737919bf32817c0aa2c0093501f56.jpg",
     isMuted: false,
     hasVoiceUsers: true,
     activeUsers: 2,
@@ -55,7 +55,7 @@ const dummyServers = [
   {
     id: 7,
     name: "Echo Syndicate",
-    profileImage: "https://i.pinimg.com/736x/3c/ae/07/3cae079ca0b9e55ec6bfc1b358c9b1e2.jpg",
+    profileImage: "https://i.pinimg.com/736x/c3/87/37/c38737919bf32817c0aa2c0093501f56.jpg",
     isMuted: false,
     hasVoiceUsers: false,
     activeUsers: 0,
@@ -63,7 +63,7 @@ const dummyServers = [
   {
     id: 8,
     name: "Synapse Protocol",
-    profileImage: "https://i.pinimg.com/736x/3c/ae/07/3cae079ca0b9e55ec6bfc1b358c9b1e2.jpg",
+    profileImage: "https://i.pinimg.com/736x/c3/87/37/c38737919bf32817c0aa2c0093501f56.jpg",
     isMuted: true,
     hasVoiceUsers: false,
     activeUsers: 0,
@@ -71,7 +71,7 @@ const dummyServers = [
   {
     id: 9,
     name: "Digital Hollow",
-    profileImage: "https://i.pinimg.com/736x/3c/ae/07/3cae079ca0b9e55ec6bfc1b358c9b1e2.jpg",
+    profileImage: "https://i.pinimg.com/736x/c3/87/37/c38737919bf32817c0aa2c0093501f56.jpg",
     isMuted: false,
     hasVoiceUsers: true,
     activeUsers: 4,
@@ -79,7 +79,7 @@ const dummyServers = [
   {
     id: 10,
     name: "Crimson Orbit",
-    profileImage: "https://i.pinimg.com/736x/3c/ae/07/3cae079ca0b9e55ec6bfc1b358c9b1e2.jpg",
+    profileImage: "https://i.pinimg.com/736x/c3/87/37/c38737919bf32817c0aa2c0093501f56.jpg",
     isMuted: false,
     hasVoiceUsers: false,
     activeUsers: 0,
@@ -87,7 +87,7 @@ const dummyServers = [
   {
     id: 11,
     name: "Void Enclave",
-    profileImage: "https://i.pinimg.com/736x/3c/ae/07/3cae079ca0b9e55ec6bfc1b358c9b1e2.jpg",
+    profileImage: "https://i.pinimg.com/736x/c3/87/37/c38737919bf32817c0aa2c0093501f56.jpg",
     isMuted: true,
     hasVoiceUsers: false,
     activeUsers: 0,
@@ -95,7 +95,7 @@ const dummyServers = [
   {
     id: 12,
     name: "Stellar Grid",
-    profileImage: "https://i.pinimg.com/736x/3c/ae/07/3cae079ca0b9e55ec6bfc1b358c9b1e2.jpg",
+    profileImage: "https://i.pinimg.com/736x/c3/87/37/c38737919bf32817c0aa2c0093501f56.jpg",
     isMuted: false,
     hasVoiceUsers: true,
     activeUsers: 1,
@@ -103,7 +103,7 @@ const dummyServers = [
   {
     id: 13,
     name: "Orbital Spire",
-    profileImage: "https://i.pinimg.com/736x/3c/ae/07/3cae079ca0b9e55ec6bfc1b358c9b1e2.jpg",
+    profileImage: "https://i.pinimg.com/736x/c3/87/37/c38737919bf32817c0aa2c0093501f56.jpg",
     isMuted: false,
     hasVoiceUsers: false,
     activeUsers: 0,
@@ -111,7 +111,7 @@ const dummyServers = [
   {
     id: 14,
     name: "Eclipse Sector",
-    profileImage: "https://i.pinimg.com/736x/3c/ae/07/3cae079ca0b9e55ec6bfc1b358c9b1e2.jpg",
+    profileImage: "https://i.pinimg.com/736x/c3/87/37/c38737919bf32817c0aa2c0093501f56.jpg",
     isMuted: true,
     hasVoiceUsers: false,
     activeUsers: 0,
@@ -119,7 +119,7 @@ const dummyServers = [
   {
     id: 15,
     name: "Flux Horizon",
-    profileImage: "https://i.pinimg.com/736x/3c/ae/07/3cae079ca0b9e55ec6bfc1b358c9b1e2.jpg",
+    profileImage: "https://i.pinimg.com/736x/c3/87/37/c38737919bf32817c0aa2c0093501f56.jpg",
     isMuted: false,
     hasVoiceUsers: true,
     activeUsers: 6,
@@ -129,9 +129,9 @@ const dummyServers = [
 
 const VocentraServerList = ({ onSelectServer }) => (
   <div className={styles.container}>
-    <div className={styles.container_header}>
+    {/* <div className={styles.container_header}>
       <h2>Vocentra</h2>
-    </div>
+    </div> */}
     <ul className={styles.list}>
       {dummyServers.map((server) => (
         <li

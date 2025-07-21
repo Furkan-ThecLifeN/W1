@@ -2,12 +2,15 @@ import React, { useState } from "react";
 import styles from "./Vocentra.module.css";
 import VocentraServerList from "./VocentraServerList/VocentraServerList";
 import VocentraRoster from "./VocentraRoster/VocentraRoster";
+import VoiceChannelWidget from "./VoiceChannelWidget/VoiceChannelWidget";
 
 const Vocentra = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   return (
     <div className={styles.Vocentra}>
       <div className={styles.VoicentraleftBar}>
+        
+
         <VocentraServerList onSelectUser={setSelectedUser} />
       </div>
 
@@ -15,7 +18,13 @@ const Vocentra = () => {
         <VocentraRoster />
       </div>
 
-      <div className={styles.profileArea}></div>
+      <div className={styles.profileArea}>
+        <VoiceChannelWidget 
+        userName="Furkan ThecLifeN"
+        channelName="Ses Kanalı"
+        serverName="W1 Communication"
+      />
+      </div>
     </div>
   );
 };

@@ -13,7 +13,7 @@
   --color-scrollbar-thumb: #00cfff88;
   --color-border-light: #2a2f3d;
 
-  --color-shadow-light: rgba(0, 207, 255, 0.3);
+  --color-shadow-light: rgb(0, 170, 255);
   --color-shadow-success: rgba(0, 255, 157, 0.2);
   --color-shadow-error: rgba(255, 94, 94, 0.2);
 }
@@ -237,8 +237,8 @@
 }
 
 .modal {
-  background-color: var(--color-white);
-  color: var(--color-black);
+  background-color: var(--bg-main);
+  color: var(--color-white);
   border-radius: 12px;
   width: 100%;
   max-width: 450px;
@@ -254,7 +254,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  border-bottom: 1px solid var(--color-bg-hover);
+  border-bottom: 1px solid #1e1e1e;
 }
 
 .modalHeader h3 {
@@ -272,7 +272,7 @@
 }
 
 .closeButton:hover {
-  color: var(--color-black);
+  color: var(--color-white);
 }
 
 .searchContainer {
@@ -286,15 +286,15 @@
 .searchIcon {
   position: absolute;
   left: 36px;
-  color: var(--color-text-secondary);
+  color: var(--color-white);
   font-size: 14px;
 }
 
 .searchInput {
   width: 100%;
   padding: 12px 16px 12px 40px;
-  background-color: var(--color-white);
-  border: 1px solid var(--color-grey);
+  background-color: transparent;
+  border: 1px solid #1c1c1c;
   border-radius: 8px;
   color: var(--color-white);
   font-size: 14px;
@@ -315,23 +315,30 @@
 
 .searchResults {
   list-style: none;
-  padding: 0 20px;
+  padding: 20px;
   margin: 0;
-  overflow-y: auto;
+  overflow-y: scroll; /* scroll çalışsın */
   flex-grow: 1;
+
+  /* Scrollbar'ı gizle (tüm tarayıcılar için uyumlu şekilde) */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
 }
+
+.searchResults::-webkit-scrollbar {
+  display: none; /* Chrome, Safari ve Opera */
+}
+
 
 .searchCard {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 12px;
-      background-color: var(--color-white);
-      border: 1px solid var(--color-grey);
+      background-color: transparent;
+      border: 1px solid #191919;
 margin-top: 12px;
 border-radius: 12px;
-color: var(--color-black);
-
 }
 
 .searchCard:last-child {
