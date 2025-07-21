@@ -1,0 +1,134 @@
+:root {
+  --color-dark: #1e1e1e;
+  --color-dark-hover: #dbdbdb;
+  --color-accent: #00cfff;
+  --color-danger: #f44336;
+}
+
+/* Ana konteyner */
+.container {
+  width: 100%;
+  max-width: 320px;
+  padding: 10px 20px;
+  box-sizing: border-box;
+  color: var(--color-black);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  gap: 20px;
+}
+
+/* Başlık alanı */
+.container_header h2 {
+  font-size: 28px;
+  font-weight: bold;
+  color: var(--color-white);
+  margin: 0;
+}
+
+/* Liste alanı */
+.list {
+  flex: 1;
+  width: 100%;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 2px;
+
+  /* Scroll'u gizle ama çalıştır */
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE 10+ */
+}
+.list::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* Sunucu kartı */
+.card {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: var(--color-white);
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+  gap: 12px;
+  width: 100%;
+  min-height: 70px;
+}
+.card:hover {
+  background-color: var(--color-dark-hover);
+}
+
+/* Avatar */
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 30%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* İsim */
+.name {
+  flex-grow: 1;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Sessiz ikon */
+.statusIcon {
+  font-size: 18px;
+  color: var(--color-danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+}
+
+/* Sesli kullanıcı bilgisi */
+.voiceInfo {
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-right: 6px;
+}
+
+.waveIcon {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-accent);
+  margin-right: 2px;
+}
+
+/* Aktif kullanıcı sayısı */
+.userCount {
+  position: absolute;
+  top: -10px;
+  right: -14px;
+  background: var(--color-accent);
+  color: var(--color-white);
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 5px;
+  border-radius: 8px;
+  animation: glow 1.5s ease-in-out infinite alternate;
+}
+
+/* Neon parıltı efekti */
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 4px var(--color-accent), 0 0 6px rgba(0, 207, 255, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 10px var(--color-accent), 0 0 14px rgba(0, 207, 255, 0.8);
+  }
+}

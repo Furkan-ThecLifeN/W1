@@ -1,0 +1,46 @@
+.Vocentra {
+
+}
+
+.Vocentra_main {
+
+}
+
+:root {
+  --light-purple: #ede9fe;
+  --dark: #1e1e2f;
+  --text: #333333;
+  --text-muted: #888;
+  --border: #e0e0e0;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.Vocentra {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  color: var(--color-white);
+  background-color: var(--color-black);
+}
+
+.Vocentra_main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.VoicentraleftBar {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: hidden;
+}
+
+.profileArea {
+  width: 350px;
+  overflow-y: hidden;
+  overflow-x: hidden;
+}

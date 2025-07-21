@@ -12,6 +12,7 @@ import SavedPage from "./pages/SavedPage/SavedPage";
 import ProfilePage from "./pages/Account/ProfilePage";
 import SettingsPage from "./pages/Settings/SettingsPage";
 import StoryAddPage from "./pages/AddPage/AddPage";
+import SoundRoomPage from "./pages/VocentraPage/VocentraPage";
 
 const App = () => {
   return (
@@ -24,6 +25,7 @@ const App = () => {
       <Route path="/messages" element={<Messages />} />
       <Route path="/discover" element={<Discover />} />
       <Route path="/saved" element={<SavedPage />} />
+      <Route path="/vocentra" element={<SoundRoomPage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/create" element={<StoryAddPage />} />
       <Route path="/settings" element={<SettingsPage />} />
