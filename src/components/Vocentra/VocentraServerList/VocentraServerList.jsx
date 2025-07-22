@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "./VocentraServerList.module.css";
+import styles from "./VoCentraServerList.module.css";
 import { MdVolumeOff } from "react-icons/md";
 import { FaWaveSquare } from "react-icons/fa";
 
@@ -127,7 +127,7 @@ const dummyServers = [
 ];
 
 
-const VocentraServerList = ({ onSelectServer }) => (
+const VoCentraServerList = ({ onSelectServer }) => (
   <div className={styles.container}>
     {/* <div className={styles.container_header}>
       <h2>Vocentra</h2>
@@ -167,4 +167,4 @@ const VocentraServerList = ({ onSelectServer }) => (
   </div>
 );
 
-export default VocentraServerList;
+export default VoCentraServerList;

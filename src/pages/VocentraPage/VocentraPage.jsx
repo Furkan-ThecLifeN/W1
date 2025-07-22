@@ -1,17 +1,17 @@
 import React from "react";
-import styles from "./VocentraPage.module.css";
+import styles from "./VoCentraPage.module.css";
 import Sidebar from "../../components/LeftSideBar/Sidebar";
-import Vocentra from "../../components/Vocentra/Vocentra";
+import VoCentra from "../../components/Vocentra/VoCentra";
 
-const VocentraPage = () => {
+const VoCentraPage = () => {
   return (
     <div className={styles.vocentraLayout}>
       <Sidebar />
       <main className={styles.mainContent}>
-        <Vocentra />
+        <VoCentra />
       </main>
     </div>
   );
 };
 
-export default VocentraPage;
+export default VoCentraPage;

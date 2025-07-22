@@ -1,32 +1,50 @@
 import React, { useState } from "react";
-import { FaPlus, FaCircle, FaSearch, FaUserPlus, FaCheck, FaTimes, FaUserCheck } from "react-icons/fa";
-import styles from "./VocentraRoster.module.css";
+import { FaCircle, FaSearch, FaUserPlus } from "react-icons/fa";
+import styles from "./VoCentraRoster.module.css";
 
 const dummyUsers = [
-  { id: 1, name: "John Doe", note: "Online çalışıyorum.", status: "online", isPrivate: false },
+  {
+    id: 1,
+    name: "John Doe",
+    note: "Online çalışıyorum.",
+    status: "online",
+    isPrivate: false,
+  },
   { id: 2, name: "Jane Smith", note: "", status: "busy", isPrivate: true },
-  { id: 3, name: "Ali Veli", note: "Yarın toplantı.", status: "offline", isPrivate: false },
+  {
+    id: 3,
+    name: "Ali Veli",
+    note: "Yarın toplantı.",
+    status: "offline",
+    isPrivate: false,
+  },
   { id: 4, name: "Elif Yılmaz", note: "", status: "online", isPrivate: true },
-  { id: 5, name: "Mert Kaya", note: "Kod yazıyorum...", status: "busy", isPrivate: false },
+  {
+    id: 5,
+    name: "Mert Kaya",
+    note: "Kod yazıyorum...",
+    status: "busy",
+    isPrivate: false,
+  },
 ];
 
 const pendingRequests = [
   { id: 6, name: "Ahmet Yıldız" },
-  { id: 7, name: "Zeynep Demir" }
+  { id: 7, name: "Zeynep Demir" },
 ];
 
-const VocentraRoster = () => {
+const VoCentraRoster = () => {
   const [activeTab, setActiveTab] = useState("online");
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  
-  const filteredUsers = dummyUsers.filter(u => {
+
+  const filteredUsers = dummyUsers.filter((u) => {
     if (activeTab === "online") return u.status === "online";
     if (activeTab === "pending") return pendingRequests;
     return true;
   });
 
-  const searchedUsers = dummyUsers.filter(u => 
+  const searchedUsers = dummyUsers.filter((u) =>
     u.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -34,7 +52,7 @@ const VocentraRoster = () => {
     <div className={styles.panel}>
       <div className={styles.header}>
         <h2 className={styles.title}>Arkadaş Listesi</h2>
-        <button 
+        <button
           className={styles.addFriendButton}
           onClick={() => setShowAddFriendModal(true)}
         >
@@ -45,19 +63,25 @@ const VocentraRoster = () => {
 
       <div className={styles.tabBar}>
         <button
-          className={`${styles.tabButton} ${activeTab === "online" ? styles.active : ""}`}
+          className={`${styles.tabButton} ${
+            activeTab === "online" ? styles.active : ""
+          }`}
           onClick={() => setActiveTab("online")}
         >
-          Çevrimiçi ({dummyUsers.filter(u => u.status === "online").length})
+          Çevrimiçi ({dummyUsers.filter((u) => u.status === "online").length})
         </button>
         <button
-          className={`${styles.tabButton} ${activeTab === "all" ? styles.active : ""}`}
+          className={`${styles.tabButton} ${
+            activeTab === "all" ? styles.active : ""
+          }`}
           onClick={() => setActiveTab("all")}
         >
           Tüm Arkadaşlar ({dummyUsers.length})
         </button>
         <button
-          className={`${styles.tabButton} ${activeTab === "pending" ? styles.active : ""}`}
+          className={`${styles.tabButton} ${
+            activeTab === "pending" ? styles.active : ""
+          }`}
           onClick={() => setActiveTab("pending")}
         >
           Bekleyenler ({pendingRequests.length})
@@ -65,43 +89,37 @@ const VocentraRoster = () => {
       </div>
 
       <ul className={styles.userList}>
-        {activeTab === "pending" ? (
-          pendingRequests.map(u => (
-            <li key={u.id} className={styles.userCard}>
-              <div className={styles.avatar}></div>
-              <div className={styles.userInfo}>
-                <span className={styles.userName}>{u.name}</span>
-              </div>
-              <div className={styles.requestActions}>
-                <button className={styles.acceptButton}>
-                  <FaCheck /> Onayla
-                </button>
-                <button className={styles.declineButton}>
-                  <FaTimes /> Reddet
-                </button>
-              </div>
-            </li>
-          ))
-        ) : (
-          filteredUsers.map(u => (
-            <li key={u.id} className={styles.userCard}>
-              <div className={styles.avatar}></div>
-              <div className={styles.userInfo}>
-                <span className={styles.userName}>{u.name}</span>
-                {u.note && <span className={styles.userNote}>{u.note}</span>}
-              </div>
-              <FaCircle
-                className={`${styles.statusIcon} ${
-                  u.status === "online"
-                    ? styles.online
-                    : u.status === "busy"
-                    ? styles.busy
-                    : styles.offline
-                }`}
-              />
-            </li>
-          ))
-        )}
+        {activeTab === "pending"
+          ? pendingRequests.map((u) => (
+              <li key={u.id} className={styles.userCard}>
+                <div className={styles.avatar}></div>
+                <div className={styles.userInfo}>
+                  <span className={styles.userName}>{u.name}</span>
+                </div>
+                <div className={styles.requestActions}>
+                  <button className={styles.acceptButton}>Onayla</button>
+                  <button className={styles.declineButton}>Yoksay</button>
+                </div>
+              </li>
+            ))
+          : filteredUsers.map((u) => (
+              <li key={u.id} className={styles.userCard}>
+                <div className={styles.avatar}></div>
+                <div className={styles.userInfo}>
+                  <span className={styles.userName}>{u.name}</span>
+                  {u.note && <span className={styles.userNote}>{u.note}</span>}
+                </div>
+                <FaCircle
+                  className={`${styles.statusIcon} ${
+                    u.status === "online"
+                      ? styles.online
+                      : u.status === "busy"
+                      ? styles.busy
+                      : styles.offline
+                  }`}
+                />
+              </li>
+            ))}
       </ul>
 
       {showAddFriendModal && (
@@ -109,7 +127,7 @@ const VocentraRoster = () => {
           <div className={styles.modal}>
             <div className={styles.modalHeader}>
               <h3>Yeni Bağlantı Ekle</h3>
-              <button 
+              <button
                 className={styles.closeButton}
                 onClick={() => {
                   setShowAddFriendModal(false);
@@ -119,7 +137,7 @@ const VocentraRoster = () => {
                 &times;
               </button>
             </div>
-            
+
             <div className={styles.searchContainer}>
               <FaSearch className={styles.searchIcon} />
               <input
@@ -130,20 +148,23 @@ const VocentraRoster = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            
+
             <p className={styles.searchHint}>
               {searchQuery ? "Arama sonuçları" : "Popüler kullanıcılar"}
             </p>
-            
+
             <ul className={styles.searchResults}>
-              {searchedUsers.map(u => (
+              {searchedUsers.map((u) => (
                 <li key={u.id} className={styles.searchCard}>
                   <div className={styles.avatar}></div>
                   <div className={styles.userInfo}>
                     <span className={styles.userName}>{u.name}</span>
                     <span className={styles.userStatus}>
-                      {u.status === "online" ? "Çevrimiçi" : 
-                       u.status === "busy" ? "Meşgul" : "Çevrimdışı"}
+                      {u.status === "online"
+                        ? "Çevrimiçi"
+                        : u.status === "busy"
+                        ? "Meşgul"
+                        : "Çevrimdışı"}
                     </span>
                   </div>
                   <button className={styles.addButton}>
@@ -151,7 +172,7 @@ const VocentraRoster = () => {
                   </button>
                 </li>
               ))}
-              
+
               {searchedUsers.length === 0 && searchQuery && (
                 <div className={styles.noResults}>
                   "{searchQuery}" ile eşleşen kullanıcı bulunamadı
@@ -165,4 +186,4 @@ const VocentraRoster = () => {
   );
 };
 
-export default VocentraRoster;
+export default VoCentraRoster;
