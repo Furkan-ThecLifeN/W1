@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "./VoCentraPage.module.css";
 import Sidebar from "../../components/LeftSideBar/Sidebar";
-import VoCentra from "../../components/Vocentra/VoCentra";
+import VoCentra from "../../components/VoCentra/VoCentra";
 
 const VoCentraPage = () => {
   return (

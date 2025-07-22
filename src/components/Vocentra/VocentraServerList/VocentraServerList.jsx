@@ -2,6 +2,7 @@ import React from "react";
 import styles from "./VoCentraServerList.module.css";
 import { MdVolumeOff } from "react-icons/md";
 import { FaWaveSquare } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const dummyServers = [
   {
@@ -127,44 +128,51 @@ const dummyServers = [
 ];
 
 
-const VoCentraServerList = ({ onSelectServer }) => (
-  <div className={styles.container}>
-    {/* <div className={styles.container_header}>
-      <h2>Vocentra</h2>
-    </div> */}
-    <ul className={styles.list}>
-      {dummyServers.map((server) => (
-        <li
-          key={server.id}
-          className={styles.card}
-          onClick={() => onSelectServer?.(server)}
-          title={server.name}
-        >
-          <img
-            src={server.profileImage}
-            alt={server.name}
-            className={styles.avatar}
-            width={40}
-            height={40}
-          />
-          <span className={styles.name}>{server.name}</span>
+const VoCentraServerList = () => {
+  const navigate = useNavigate();
 
-          {server.hasVoiceUsers && (
-            <div className={styles.voiceInfo}>
-              <span className={styles.waveIcon}>W</span>
-              <span className={styles.userCount}>+{server.activeUsers}</span>
-            </div>
-          )}
+  const handleSelectServer = (server) => {
+    const formattedName = server.name.toLowerCase().replace(/\s+/g, "-"); // örnek: "Fynex Nexus" → "fynex-nexus"
+    navigate(`/server/${formattedName}`);
+  };
 
-          {server.isMuted && (
-            <span className={styles.statusIcon}>
-              <MdVolumeOff title="Sunucu sessize alındı" />
-            </span>
-          )}
-        </li>
-      ))}
-    </ul>
-  </div>
-);
+  return (
+    <div className={styles.container}>
+      <ul className={styles.list}>
+        {dummyServers.map((server) => (
+          <li
+            key={server.id}
+            className={styles.card}
+            onClick={() => handleSelectServer(server)}
+            title={server.name}
+          >
+            <img
+              src={server.profileImage}
+              alt={server.name}
+              className={styles.avatar}
+              width={40}
+              height={40}
+            />
+            <span className={styles.name}>{server.name}</span>
+
+            {server.hasVoiceUsers && (
+              <div className={styles.voiceInfo}>
+                <span className={styles.waveIcon}>W</span>
+                <span className={styles.userCount}>+{server.activeUsers}</span>
+              </div>
+            )}
+
+            {server.isMuted && (
+              <span className={styles.statusIcon}>
+                <MdVolumeOff title="Sunucu sessize alındı" />
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
 
 export default VoCentraServerList;
+

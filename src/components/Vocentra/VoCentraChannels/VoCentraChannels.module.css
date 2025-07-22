@@ -1,23 +1,43 @@
-.discordLayout {
+.appContainer {
   display: flex;
   height: 100vh;
   width: 100%;
-  background: #313338;
-  color: #dbdee1;
+  padding: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  position: relative;
 }
 
-.sidebarContainer {
+/* Sidebar: En solda sabit genişlik */
+.sidebarWrapper {
   width: 240px;
-  flex-shrink: 0;
-  background: #1e1f22;
-  overflow: hidden;
   display: flex;
+  flex-shrink: 0;
+  overflow: hidden;
 }
 
-.chatContainer {
+/* Chat alanı: Sağdan 320px boşluk bırakarak ortalanmış gibi görünür */
+.chatWrapper {
   flex: 1;
-  min-width: 0;
   display: flex;
   overflow: hidden;
+  min-width: 0;
+}
+
+/* Sağda boşluk görünmesi için bu div eklenebilir (isteğe bağlı) */
+.rightPaddingArea {
+  width: 320px;
+  flex-shrink: 0;
+}
+
+/* Karşılama ekranı */
+.welcomeScreen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.welcomeContent {
+  text-align: center;
+  color: #b9bbbe;
 }

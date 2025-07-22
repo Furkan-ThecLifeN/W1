@@ -113,7 +113,6 @@
   background-color: var(--color-white);
 }
 
-/* Aktif kullanıcı sayısı */
 .userCount {
   position: absolute;
   top: -12px;

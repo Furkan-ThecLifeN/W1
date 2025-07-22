@@ -1,10 +1,4 @@
-.Vocentra {
 
-}
-
-.Vocentra_main {
-
-}
 
 :root {
   --light-purple: #ede9fe;
@@ -17,17 +11,11 @@
 
 .Vocentra {
   display: flex;
-  height: 100%;
+  height: 100vh;
   width: 100%;
   overflow: hidden;
   color: var(--color-white);
   background-color: var(--color-black);
-}
-
-.Vocentra_main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
 }
 
 .VoicentraleftBar {
@@ -36,7 +24,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow-y: hidden;
+  overflow-y: auto;
+}
+
+.Vocentra_main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .VocentraRightBar {
@@ -47,7 +41,7 @@
   align-items: center;
   justify-content: start;
   gap: 16px;
-  overflow-y: auto; /* Yalnızca dikey scroll */
+  overflow-y: auto;
   overflow-x: hidden;
-  padding: 16px 0; /* Alt ve üst kenarlarda boşluk */
+  padding: 16px 0;
 }
