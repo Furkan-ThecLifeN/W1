@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "./VoCentraServerList.module.css";
+import styles from "./VocentraServerList.module.css";
 import { MdVolumeOff } from "react-icons/md";
 import { FaWaveSquare } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -128,7 +128,7 @@ const dummyServers = [
 ];
 
 
-const VoCentraServerList = () => {
+const VocentraServerList = () => {
   const navigate = useNavigate();
 
   const handleSelectServer = (server) => {
@@ -174,5 +174,5 @@ const VoCentraServerList = () => {
   );
 };
 
-export default VoCentraServerList;
+export default VocentraServerList;
 

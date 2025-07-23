@@ -1,5 +1,5 @@
 import React from 'react'
-import VoCentraChannels from '../../components/VoCentra/VoCentraChannels/VoCentraChannels';
+import VocentraChannels from '../../components/Vocentra/VocentraChannels/ChannelsComponent';
 import Sidebar from '../../components/LeftSideBar/Sidebar';
 import styles from "./VocentraServerPage.module.css";
 
@@ -10,7 +10,7 @@ const VocentraServerPage = () => {
      <div className={styles.vocentraServer}>
       <Sidebar />
       <main className={styles.mainServerContent}>
-      <VoCentraChannels />
+      <VocentraChannels />
       </main>
     </div>
   )

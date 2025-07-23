@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import styles from "./VoCentraChannels.module.css";
-import ChannelSidebar from "./ChannelSidebar/VoCentraSidebar";
+import styles from "./VocentraChannels.module.css";
+import ChannelSidebar from "./ChannelSidebar/VocentraSidebar";
 import ChatArea from "./ChannelsChatArea/ChatArea";
-import VoiceChannelWidget from "../VoiceChannelWidget/VoiceChannelWidget";
-import VoCentraUserCard from "../VoCentraUserCard/VoCentraUserCard";
+import VoiceChannelWidget from "../VoiceChannelWidget/VoiceChannelWidgets";
+import VoCentraUserCard from "../VocentraUserCard/VocentraUserCards";
 
-const VoCentraChannels = () => {
+const VocentraChannels = () => {
   const [activeTextChannel, setActiveTextChannel] = useState(null);
 
   const channels = {
@@ -144,4 +144,4 @@ const VoCentraChannels = () => {
   );
 };
 
-export default VoCentraChannels;
+export default VocentraChannels;

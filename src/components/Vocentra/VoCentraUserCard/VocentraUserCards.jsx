@@ -1,7 +1,7 @@
 import React from 'react';
-import styles from './VoCentraUserCard.module.css';
+import styles from './VocentraUserCard.module.css';
 
-const VoCentraUserCard = ({ users, roles }) => {
+const VocentraUserCard = ({ users, roles }) => {
   const getRoleColor = (roleName) => {
     const role = roles.find(r => r.name === roleName);
     return role ? role.color : '#7289da';
@@ -61,4 +61,4 @@ const VoCentraUserCard = ({ users, roles }) => {
   );
 };
 
-export default VoCentraUserCard;
+export default VocentraUserCard;

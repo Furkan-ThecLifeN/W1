@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import styles from "./VoCentra.module.css";
-import ServerList from "./VoCentraServerList/VoCentraServerList";
-import VoCentraRoster from "./VoCentraRoster/VoCentraRoster";
-import VoiceChannelWidget from "./VoiceChannelWidget/VoiceChannelWidget";
-import VoCentraUserCard from "./VoCentraUserCard/VoCentraUserCard";
+import styles from "./Vocentra.module.css";
+import ServerList from "./VocentraServerList/VocentraServerList";
+import VoCentraRoster from "./VocentraRoster/VocentraRoster";
+import VoiceChannelWidget from "./VoiceChannelWidget/VoiceChannelWidgets";
+import VoCentraUserCard from "./VocentraUserCard/VocentraUserCards";
 
-const VoCentra = () => {
+const Vocentra = () => {
   const [selectedUser, setSelectedUser] = useState(null);
 
    const roles = [
@@ -138,4 +138,4 @@ const VoCentra = () => {
   );
 };
 
-export default VoCentra;
+export default Vocentra;

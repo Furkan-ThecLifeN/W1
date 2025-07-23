@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FaCircle, FaSearch, FaUserPlus } from "react-icons/fa";
-import styles from "./VoCentraRoster.module.css";
+import styles from "./VocentraRoster.module.css";
 
 const dummyUsers = [
   {
@@ -33,7 +33,7 @@ const pendingRequests = [
   { id: 7, name: "Zeynep Demir" },
 ];
 
-const VoCentraRoster = () => {
+const VocentraRoster = () => {
   const [activeTab, setActiveTab] = useState("online");
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -186,4 +186,4 @@ const VoCentraRoster = () => {
   );
 };
 
-export default VoCentraRoster;
+export default VocentraRoster;
