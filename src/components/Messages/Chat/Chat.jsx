@@ -112,6 +112,13 @@ const Chat = ({ user, onBack }) => {
           <div className={styles.iconGroupRight}>
             <FaHeart className={styles.rightIconHeart} />
             <FaSmile className={styles.rightIcon} />
+            <button
+            type="button"
+            className={styles.iconButtonMic}
+            aria-label="Ses gönder"
+          >
+            <FaMicrophone />
+          </button>
             <button className={styles.sendButton} disabled={!canSend}>
               <FaPaperPlane />
             </button>

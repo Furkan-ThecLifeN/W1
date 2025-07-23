@@ -3,28 +3,27 @@
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
   padding: 20px;
-  max-width: 320px;
+  max-width: 100%; /* ya da 1200px */
   margin: 0 auto;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
 
   width: 100%;
-  flex: 1; 
+  height: 100vh;
   overflow-y: auto;
 
-  max-height: 100vh; 
-  overflow-y: scroll; 
-  scrollbar-width: none; 
+  scrollbar-width: none; /* Firefox */
 }
 
 .userCardsContainer::-webkit-scrollbar {
-  display: none
+  display: none; /* Chrome */
 }
+
+
+
 
 .userCard {
   display: flex;
   align-items: center;
+  max-height: 70px;
   padding: 16px;
   border-radius: 8px;
   background: rgba(54, 57, 63, 0.6);

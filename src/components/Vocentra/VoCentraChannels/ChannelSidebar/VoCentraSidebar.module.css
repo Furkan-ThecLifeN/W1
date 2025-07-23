@@ -1,0 +1,312 @@
+.sidebar {
+  width: 100%;
+  max-width: 280px;
+  height: 95vh;
+/*   background-color: var(--bg-main);
+ */  display: flex;
+  flex-direction: column;
+  color: var(--color-white);
+  border-radius: 12px;
+  padding: 5px;
+  user-select: none;
+  position: fixed;
+  z-index: 100;
+}
+
+/* Profiles Section */
+.profilesSection {
+  padding: 12px 0;
+}
+
+.profilesHeaderSticky {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 12px 12px;
+  margin-bottom: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.profileServerInfo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.serverAvatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 30%;
+}
+
+.serverName {
+  font-size: 15px;
+  width: 100%;
+  max-width: 200px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-white);
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.scrollButtons {
+  display: flex;
+  gap: 4px;
+  background-color: var(--color-white);
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.5s ease-in-out;
+}
+
+.scrollButton {
+  background: none;
+  border: none;
+  color: #b9bbbe;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scrollButton:hover {
+  background-color: #3d4045;
+  color: white;
+}
+
+.profilesContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  padding: 0 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.profilesContainer::-webkit-scrollbar {
+  display: none;
+}
+
+.profileWrapper {
+  position: relative;
+}
+
+.profile {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  position: relative;
+  cursor: pointer;
+  transition: border-radius 0.2s ease;
+}
+
+.profile:hover {
+  border-radius: 35%;
+}
+
+.profileImage {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  overflow: hidden;
+  position: relative;
+}
+
+.profileImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.activeIndicator {
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 8px;
+  background-color: #3ba55c;
+  border-radius: 4px;
+}
+
+.activeProfile {
+  border-radius: 35%;
+}
+
+.profileTooltip {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 60px;
+  background-color: #18191c;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.1s ease;
+  z-index: 1000;
+}
+
+.profileWrapper:hover .profileTooltip {
+  opacity: 1;
+}
+
+/* Channels Section */
+.channelsSection {
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.channelsHeader {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.headerText {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  flex-grow: 1;
+}
+
+.addIcon {
+  font-size: 16px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.channelsHeader:hover .addIcon {
+  opacity: 1;
+}
+
+.channelsList {
+   display: flex;
+  flex-direction: column;
+  padding: 6px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  max-height: 250px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+.channelsList::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+.channelItem {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  margin: 1px 0;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.5s ease-in-out;
+}
+
+.channelItem:hover {
+  background-color: rgba(79, 84, 92, 0.4);
+  color: #dcddde;
+}
+
+.activeChannel {
+  background-color: var(--color-white);
+  color: var(--color-black);
+}
+
+.channelIcon {
+  margin-right: 6px;
+  font-size: 18px;
+  color: var(--color-blue);
+}
+
+/* Voice Channels */
+.voiceChannel {
+  margin-bottom: 16px;
+}
+
+.voiceChannelHeader {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  color: #8e9297;
+  font-size: 16px;
+}
+
+.voiceChannelIcon {
+  margin-right: 6px;
+  color: var(--color-blue);
+  font-size: 18px;
+}
+
+.voiceUsers {
+  padding-left: 24px;
+}
+
+.voiceUser {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.voiceUser:hover {
+  background-color: rgba(79, 84, 92, 0.4);
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+}
+
+.userAvatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 8px;
+}
+
+.userAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.userStatus {
+  display: flex;
+  gap: 4px;
+}
+
+.statusIconMuted {
+  color: #ff0000;
+  font-size: 16px;
+}
+
+.statusIconDeafened {
+  color: #ff0000;
+  font-size: 16px;
+}

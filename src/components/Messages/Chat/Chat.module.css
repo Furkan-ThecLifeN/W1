@@ -354,6 +354,23 @@
   color: var(--color-black);
 }
 
+.iconButtonMic {
+  background: transparent;
+  border: none;
+  color: var(--color-black);
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconButtonMic:hover {
+  transform: scale(1.1);
+}
+
 .sendButton {
   background-color: var(--color-blue);
   border: none;

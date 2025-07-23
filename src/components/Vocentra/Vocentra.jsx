@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styles from "./VoCentra.module.css";
-import VoCentraServerList from "./VoCentraServerList/VoCentraServerList";
+import ServerList from "./VoCentraServerList/VoCentraServerList";
 import VoCentraRoster from "./VoCentraRoster/VoCentraRoster";
 import VoiceChannelWidget from "./VoiceChannelWidget/VoiceChannelWidget";
 import VoCentraUserCard from "./VoCentraUserCard/VoCentraUserCard";
@@ -119,7 +119,7 @@ const VoCentra = () => {
       <div className={styles.VoicentraleftBar}>
         
 
-        <VoCentraServerList onSelectUser={setSelectedUser} />
+        <ServerList onSelectUser={setSelectedUser} />
       </div>
 
       <div className={styles.Vocentra_main}>
@@ -132,8 +132,8 @@ const VoCentra = () => {
         channelName="Ses Kanalı"
         serverName="W1 Communication"
       />
-      <VoCentraUserCard users={users} roles={roles} />
-      </div>
+{/*       <VoCentraUserCard users={users} roles={roles} />
+ */}      </div>
     </div>
   );
 };

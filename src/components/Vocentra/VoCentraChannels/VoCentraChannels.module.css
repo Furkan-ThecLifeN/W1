@@ -9,7 +9,7 @@
 
 /* Sidebar: En solda sabit genişlik */
 .sidebarWrapper {
-  width: 240px;
+  width: 280px;
   display: flex;
   flex-shrink: 0;
   overflow: hidden;
