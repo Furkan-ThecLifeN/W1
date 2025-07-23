@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "./VoCentraPage.module.css";
+import styles from "./VocentraPage.module.css";
 import Sidebar from "../../components/LeftSideBar/Sidebar";
 import VoCentra from "../../components/VoCentra/VoCentra";
 
