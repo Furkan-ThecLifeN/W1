@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styles from "./VocentraChannels.module.css";
-import ChannelSidebar from "./ChannelSidebar/VocentraSidebar";
+import ChannelSidebar from "./ChannelSidebar/ChannelSidebar";
 import ChatArea from "./ChannelsChatArea/ChatArea";
 import VoiceChannelWidget from "../VoiceChannelWidget/VoiceChannelWidgets";
 import VoCentraUserCard from "../VocentraUserCard/VocentraUserCards";

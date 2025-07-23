@@ -3,7 +3,7 @@ import { FiChevronLeft, FiChevronRight, FiPlus } from 'react-icons/fi';
 import { BsHash, BsHeadphones } from 'react-icons/bs';
 import { IoMdMicOff } from 'react-icons/io';
 import { MdHeadsetOff } from 'react-icons/md';
-import styles from './VocentraSidebar.module.css';
+import styles from './ChannelSidebar.module.css';
 
 const ChannelSidebar = ({ setActiveTextChannel }) => {
   const [activeChannelId, setActiveChannelId] = useState(null);
