@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import styles from "./ChannelsComponent.module.css";
+import styles from "./Channels.module.css";
 import ChannelSidebar from "./ChannelSidebar/ChannelSidebar";
 import ChatArea from "./ChannelsChatArea/ChatArea";
 import VoiceChannelWidget from "../VoiceChannelWidget/VoiceChannelWidgets";
