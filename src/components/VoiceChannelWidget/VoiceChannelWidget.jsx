@@ -22,7 +22,7 @@ const VoiceChannelWidget = ({
   const [micMuted, setMicMuted] = useState(false);
   const [headphonesMuted, setHeadphonesMuted] = useState(false);
   const [connected, setConnected] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   return (
     <div

@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import styles from "./ChannelsComponent.module.css";
 import ChannelSidebar from "./ChannelSidebar/ChannelSidebar";
 import ChatArea from "./ChannelsChatArea/ChatArea";
-import VoiceChannelWidget from "../Vocentra/VoiceChannelWidget/VoiceChannelWidget";
-import VoCentraUserCard from "../Vocentra/VocentraUserCard/VocentraUserCards";
+import VoiceChannelWidget from "../VoiceChannelWidget/VoiceChannelWidget";
+import VoCentraUserCard from "./VocentraUserCard/VocentraUserCard";
 
 const ChannelsComponent = () => {
   const [activeTextChannel, setActiveTextChannel] = useState(null);
@@ -21,93 +21,6 @@ const ChannelsComponent = () => {
       { id: 7, name: "Oyun Odası", users: 8, maxUsers: 12 },
     ],
   };
-
-  const roles = [
-    { name: "Admin", color: "#ed4245" },
-    { name: "Moderator", color: "#5865f2" },
-    { name: "VIP", color: "#eb459e" },
-    { name: "Member", color: "#57f287" },
-  ];
-
-  const users = [
-    {
-      id: 1,
-      name: "Jane Doe",
-      avatar: "https://i.pravatar.cc/150?img=1",
-      role: "Admin",
-      status: "active",
-      activity: {
-        type: "music",
-        title: "Bohemian Rhapsody - Queen",
-      },
-    },
-    {
-      id: 2,
-      name: "John Smith",
-      avatar: "https://i.pravatar.cc/150?img=5",
-      role: "Moderator",
-      status: "busy",
-      activity: {
-        type: "game",
-        game: "Valorant",
-        duration: "2h 45m",
-      },
-    },
-    {
-      id: 3,
-      name: "Alex Johnson",
-      avatar: "https://i.pravatar.cc/150?img=9",
-      role: "VIP",
-      status: "inactive",
-      badge: "PRO",
-      activity: {
-        type: "music",
-        title: "Blinding Lights - The Weeknd",
-      },
-    },
-    {
-      id: 4,
-      name: "Sarah Williams",
-      avatar: "https://i.pravatar.cc/150?img=12",
-      role: "Member",
-      status: "active",
-      activity: {
-        type: "game",
-        game: "Minecraft",
-        duration: "1h 30m",
-      },
-    },
-  ];
-
-  const messages = [
-    {
-      id: 1,
-      text: "Merhaba arkadaşlar, nasılsınız?",
-      timestamp: new Date(),
-      author: {
-        name: "Ahmet",
-        avatar: "https://i.pravatar.cc/150?img=5",
-      },
-    },
-    {
-      id: 2,
-      text: "İyiyim teşekkürler, sen nasılsın?",
-      timestamp: new Date(),
-      author: {
-        name: "Ayşe",
-        avatar: "https://i.pravatar.cc/150?img=6",
-      },
-    },
-    {
-      id: 3,
-      text: "Bu yeni tasarım harika görünüyor!",
-      timestamp: new Date(),
-      author: {
-        name: "Mehmet",
-        avatar: "https://i.pravatar.cc/150?img=11",
-      },
-    },
-  ];
 
   return (
     <div className={styles.appContainer}>
@@ -138,7 +51,7 @@ const ChannelsComponent = () => {
           channelName="Ses Kanalı"
           serverName="W1 Communication"
         />
-        {/* <VoCentraUserCard users={users} roles={roles} /> */}
+        <VoCentraUserCard />
       </div>
     </div>
   );
