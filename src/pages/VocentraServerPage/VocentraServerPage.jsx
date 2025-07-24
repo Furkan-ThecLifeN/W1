@@ -1,5 +1,5 @@
 import React from 'react'
-import ChannelsComponent from "../../components/Vocentra/VocentraChannels/ChannelsComponent"
+import ChannelsComponent from "../../components/VocentraChannels/ChannelsComponent"
 import Sidebar from '../../components/LeftSideBar/Sidebar';
 import styles from "./VocentraServerPage.module.css";
 
