@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styles from "./ChannelsComponent.module.css";
 import ChannelSidebar from "./ChannelSidebar/ChannelSidebar";
 import ChatArea from "./ChannelsChatArea/ChatArea";
-import VoiceChannelWidget from "../Vocentra/VoiceChannelWidget/VoiceChannelWidgets";
+import VoiceChannelWidget from "../Vocentra/VoiceChannelWidget/VoiceChannelWidget";
 import VoCentraUserCard from "../Vocentra/VocentraUserCard/VocentraUserCards";
 
 const ChannelsComponent = () => {

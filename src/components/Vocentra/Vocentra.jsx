@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styles from "./Vocentra.module.css";
 import ServerList from "./VocentraServerList/VocentraServerList";
 import VoCentraRoster from "./VocentraRoster/VocentraRoster";
-import VoiceChannelWidget from "./VoiceChannelWidget/VoiceChannelWidgets";
+import VoiceChannelWidget from "./VoiceChannelWidget/VoiceChannelWidget";
 import VoCentraUserCard from "./VocentraUserCard/VocentraUserCards";
 
 const Vocentra = () => {
