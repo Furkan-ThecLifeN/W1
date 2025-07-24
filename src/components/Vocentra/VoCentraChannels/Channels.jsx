@@ -5,10 +5,10 @@ import ChatArea from "./ChannelsChatArea/ChatArea";
 import VoiceChannelWidget from "../VoiceChannelWidget/VoiceChannelWidgets";
 import VoCentraUserCard from "../VocentraUserCard/VocentraUserCards";
 
-const ChannelsComponent = () => {
+const Channels = () => {
   const [activeTextChannel, setActiveTextChannel] = useState(null);
 
-  const channels = {
+  const channelsexample = {
     text: [
       { id: 1, name: "genel-sohbet", unread: true },
       { id: 2, name: "duyurular", unread: false },
@@ -113,7 +113,7 @@ const ChannelsComponent = () => {
     <div className={styles.appContainer}>
       <div className={styles.sidebarWrapper}>
         <ChannelSidebar
-          channels={channels}
+          channelsexample={channelsexample}
           setActiveTextChannel={setActiveTextChannel}
           activeTextChannel={activeTextChannel}
         />
@@ -144,4 +144,4 @@ const ChannelsComponent = () => {
   );
 };
 
-export default ChannelsComponent;
+export default Channels;
