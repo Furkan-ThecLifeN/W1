@@ -5,14 +5,14 @@ import {
   FiHome,
   FiBell,
   FiMessageSquare,
-  FiVideo,
-  FiBookmark,
   FiUser,
 } from "react-icons/fi";
 import { MdOutlineAddBox } from "react-icons/md";
 import { SiApostrophe } from "react-icons/si";
 
 import { RiChatVoiceAiFill } from "react-icons/ri";
+import { SiHearthisdotat } from "react-icons/si";
+
 
 
 const Sidebar = () => {
@@ -83,8 +83,8 @@ const Sidebar = () => {
             isActive ? LeftSideBarStyles.active : LeftSideBarStyles.link
           }
         >
-          <RiChatVoiceAiFill  className={LeftSideBarStyles.icon} />
-          <span className={LeftSideBarStyles.tooltip}>Voice</span>
+          <SiHearthisdotat  className={LeftSideBarStyles.icon} />
+          <span className={LeftSideBarStyles.tooltip}>VoCentra</span>
         </NavLink>
 
         <NavLink

@@ -381,3 +381,93 @@
   color: var(--color-text-secondary);
   font-size: 14px;
 }
+
+@media (max-width: 1024px) {
+  .panel {
+    padding: 20px;
+  }
+
+  .header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .addFriendButton {
+    font-size: 16px;
+    padding: 10px 20px;
+  }
+
+  .userCard {
+    padding: 16px;
+    flex-direction: row;
+    gap: 16px;
+  }
+
+  .requestActions {
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .panel {
+    padding: 16px;
+  }
+
+  .header {
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: start;
+    gap: 12px;
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .addFriendButton {
+    font-size: 14px;
+    padding: 8px 16px;
+    width: 100%;
+  }
+
+  .userCard {
+    flex-direction: row;
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .userCard img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+  }
+
+  .userInfo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .requestActions {
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .requestActions button {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+}
+
+

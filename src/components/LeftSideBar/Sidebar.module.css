@@ -47,7 +47,7 @@
 }
 
 .active {
-  background-color: rgb(30 73 94);
+  background-color: rgb(28, 169, 250);
   color: var(--color-blue);
   padding: 10px;
   border-radius: 10px;
@@ -59,7 +59,7 @@
 
 .icon {
   pointer-events: none;
-  color: var(--color-blue);
+  color: var(--color-white);
 }
 
 .SiApostrophe {

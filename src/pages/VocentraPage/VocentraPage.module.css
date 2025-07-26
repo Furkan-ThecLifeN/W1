@@ -1,4 +1,3 @@
-
 .vocentraLayout {
   display: flex;
   flex-direction: column;
@@ -16,4 +15,16 @@
   padding-top: 20px;
   padding-bottom: 10px;
   overflow: hidden;
+}
+
+/* Mobile-specific styles */
+@media (max-width: 1024px) {
+  .vocentraLayout {
+    flex-direction: column;
+    margin-left: 0;
+  }
+
+  .mainContent {
+    width: 100%;
+  }
 }
