@@ -2,33 +2,29 @@ import React, { useState, useEffect } from "react";
 import styles from "./VocentraPage.module.css";
 import Sidebar from "../../components/LeftSideBar/Sidebar";
 import Vocentra from "../../components/Vocentra/Vocentra";
-import VocentraMobile from "../../components/VoCentraMobile/VoCentraMobile"; // Import the mobile component
+import VocentraMobile from "../../components/VoCentraMobile/VoCentraMobile";
+import BottomNav from "../../components/BottomNav/BottomNav"; // BottomNav eklendi
 
 const VoCentraPage = () => {
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
   useEffect(() => {
     const checkScreenSize = () => {
       setIsMobile(window.innerWidth < 1024);
     };
 
-    // Initial check
     checkScreenSize();
-
-    // Add event listener for window resize
     window.addEventListener("resize", checkScreenSize);
-
-    // Clean up the event listener
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
   return (
     <div className={styles.vocentraLayout}>
       {!isMobile && <Sidebar />}
-      
       <main className={styles.mainContent}>
         {isMobile ? <VocentraMobile /> : <Vocentra />}
       </main>
+      {isMobile && <BottomNav />} 
     </div>
   );
 };

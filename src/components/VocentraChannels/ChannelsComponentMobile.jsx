@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import styles from "./ChannelsComponent.module.css";
+import styles from "./ChannelsComponentMobile.module.css";
 import ChannelSidebar from "./ChannelSidebar/ChannelSidebar";
 import ChatArea from "./ChannelsChatArea/ChatArea";
 import VoiceChannelWidget from "../VoiceChannelWidget/VoiceChannelWidget";
 import VoCentraUserCard from "./VocentraUserCard/VocentraUserCard";
+import MobileChatArea from "./ChannelsChatArea/MobileChatArea";
 
-const ChannelsComponent = () => {
+const ChannelsComponentMobile = () => {
   const [activeTextChannel, setActiveTextChannel] = useState(null);
 
   const channelsexample = {
@@ -23,37 +24,25 @@ const ChannelsComponent = () => {
   };
 
   useEffect(() => {
-    const defaultChannel = channelsexample.text.find(c => c.name === "genel-sohbet");
+    const defaultChannel = channelsexample.text.find(
+      (c) => c.name === "genel-sohbet"
+    );
     setActiveTextChannel(defaultChannel);
   }, []);
 
-  return (
-    <div className={styles.appContainer}>
-      <div className={styles.sidebarWrapper}>
-        <ChannelSidebar
-          channelsexample={channelsexample}
-          setActiveTextChannel={setActiveTextChannel}
-          activeTextChannel={activeTextChannel}
-        />
-      </div>
+  const [activeChannel, setActiveChannel] = useState(null);
 
+  return (
+    <div className={styles.mobileContainer}>
       <div className={styles.chatWrapper}>
-        <ChatArea
+        <MobileChatArea
           channel={activeTextChannel}
           channelName={activeTextChannel?.name}
+          setActiveTextChannel={setActiveTextChannel}
         />
-      </div>
-
-      <div className={styles.rightPaddingArea}>
-        <VoiceChannelWidget
-          userName="Furkan ThecLifeN"
-          channelName="Ses Kanalı"
-          serverName="W1 Communication"
-        />
-        <VoCentraUserCard />
       </div>
     </div>
   );
 };
 
-export default ChannelsComponent;
+export default ChannelsComponentMobile;

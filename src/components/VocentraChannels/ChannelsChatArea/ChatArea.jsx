@@ -10,12 +10,17 @@ import {
   FaPlus,
   FaFileImage,
   FaPaperclip,
+  FaBars,
+  FaUserFriends,
+  FaTimes
 } from "react-icons/fa";
-
 import styles from "./ChatArea.module.css";
 import { MdAddBox } from "react-icons/md";
+import ChannelSidebar from "../ChannelSidebar/ChannelSidebar";
+import VoiceChannelWidget from "../../VoiceChannelWidget/VoiceChannelWidget";
+import VocentraUserCard from "../VocentraUserCard/VocentraUserCard";
 
-const ChatArea = ({ channelName = "general", channel }) => {
+const ChatArea = ({ channelName = "general", channel, setActiveTextChannel }) => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([
     {
@@ -52,8 +57,24 @@ const ChatArea = ({ channelName = "general", channel }) => {
       timestamp: "12:35 PM",
     },
   ]);
+  const [showMobilePanel, setShowMobilePanel] = useState(false);
+  const [activeMobileView, setActiveMobileView] = useState("sidebar"); // 'sidebar' or 'rightPanel'
 
   const messagesEndRef = useRef(null);
+
+  const channelsexample = {
+    text: [
+      { id: 1, name: "genel-sohbet", unread: true },
+      { id: 2, name: "duyurular", unread: false },
+      { id: 3, name: "tasarım-fikirleri", unread: false },
+      { id: 4, name: "yardım-merkezi", unread: true },
+    ],
+    voice: [
+      { id: 5, name: "Genel Ses", users: 5, maxUsers: 10 },
+      { id: 6, name: "Müzik Odası", users: 2, maxUsers: 5 },
+      { id: 7, name: "Oyun Odası", users: 8, maxUsers: 12 },
+    ],
+  };
 
   const handleSendMessage = (e) => {
     e.preventDefault();
@@ -82,14 +103,70 @@ const ChatArea = ({ channelName = "general", channel }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Kanal adı için güvenli erişim
   const displayChannelName = channel?.name || channelName;
 
   return (
     <div className={styles.chatArea}>
+      {/* Mobile Overlay Panel */}
+      {showMobilePanel && (
+        <div className={styles.mobileOverlay}>
+          <div className={styles.mobilePanelHeader}>
+            <button 
+              className={`${styles.mobilePanelButton} ${activeMobileView === 'sidebar' ? styles.active : ''}`}
+              onClick={() => setActiveMobileView('sidebar')}
+            >
+              <FaBars /> Channels
+            </button>
+            <button 
+              className={`${styles.mobilePanelButton} ${activeMobileView === 'rightPanel' ? styles.active : ''}`}
+              onClick={() => setActiveMobileView('rightPanel')}
+            >
+              <FaUserFriends /> Members
+            </button>
+            <button 
+              className={styles.closePanelButton}
+              onClick={() => setShowMobilePanel(false)}
+            >
+              <FaTimes />
+            </button>
+          </div>
+          
+          <div className={styles.mobilePanelContent}>
+            {activeMobileView === 'sidebar' && (
+              <div className={styles.sidebarWrapper}>
+                <ChannelSidebar
+                  channels={channelsexample}
+                  setActiveTextChannel={setActiveTextChannel}
+                  activeTextChannel={channel}
+                  onClose={() => setShowMobilePanel(false)}
+                />
+              </div>
+            )}
+            
+            {activeMobileView === 'rightPanel' && (
+              <div className={styles.rightPanelWrapper}>
+                <VoiceChannelWidget
+                  userName="Furkan ThecLifeN"
+                  channelName="Ses Kanalı"
+                  serverName="W1 Communication"
+                />
+                <VocentraUserCard />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className={styles.chatHeader}>
         <div className={styles.channelInfo}>
+          <button 
+            className={styles.mobileMenuButton}
+            onClick={() => setShowMobilePanel(true)}
+            aria-label="Open menu"
+          >
+            <FaBars />
+          </button>
           <h2>{displayChannelName}</h2>
         </div>
 
@@ -137,7 +214,7 @@ const ChatArea = ({ channelName = "general", channel }) => {
         </div>
       </div>
 
-      {/* Updated Message Input */}
+      {/* Message Input */}
       <form onSubmit={handleSendMessage} className={styles.messageInputWrapper}>
         <div className={styles.messageInputContainer}>
           <button

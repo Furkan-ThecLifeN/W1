@@ -9,7 +9,7 @@ import {
   FiUser,
 } from "react-icons/fi";
 import { MdOutlineAddBox } from "react-icons/md";
-import { SiApostrophe } from "react-icons/si";
+import { SiApostrophe, SiHearthisdotat } from "react-icons/si";
 import { BiSolidMessageSquareDots } from "react-icons/bi";
 
 const BottomNav = () => {
@@ -57,12 +57,12 @@ const BottomNav = () => {
         </NavLink>
 
         <NavLink
-          to="/saved"
+          to="/vocentra"
           className={({ isActive }) =>
             isActive ? styles.activeLink : styles.navLink
           }
         >
-          <FiBookmark className={styles.icon} />
+          <SiHearthisdotat className={styles.icon} />
         </NavLink>
 
         <NavLink
