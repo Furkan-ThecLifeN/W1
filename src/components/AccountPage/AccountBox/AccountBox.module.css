@@ -225,6 +225,62 @@
   transform: translateY(-4px);
 }
 
+/* Stat Page */
+/* statsSection ve statBox aynı kalabilir */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.45);
+  color: var(--color-black);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal {
+  background-color: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  max-height: 90vh;
+  max-width: 600px;
+  width: 90%;
+  overflow-y: auto;
+  position: relative;
+  animation: fadeIn 0.3s ease;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 24px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #555;
+}
+
+.closeBtn:hover {
+  color: #000;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Stat Page END */
+
 .statLabel {
   font-size: 12px;
   color: #e5e7eb;

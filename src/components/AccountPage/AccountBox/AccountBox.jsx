@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import styles from "./AccountBox.module.css";
 import { IoIosSettings } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
+import FollowersFollowingPage from "../../FollowersFollowingPage/FollowersFollowingPage";
 
 const AccountBox = () => {
   const [activeTab, setActiveTab] = useState("posts");
   const navigate = useNavigate();
-
+  const [activePage, setActivePage] = useState(null);
+  const closePage = () => setActivePage(null);
   return (
     <div className={styles.pageWrapper}>
       <div className={styles.account_top}>
@@ -51,15 +53,38 @@ const AccountBox = () => {
             <strong>340</strong>
             <span className={styles.statLabel}>RTA</span>
           </div>
-          <div className={styles.statBox}>
+          <div
+            className={styles.statBox}
+            onClick={() => setActivePage("followers")}
+          >
             <strong>875</strong>
             <span className={styles.statLabel}>Followers</span>
           </div>
-          <div className={styles.statBox}>
+          <div
+            className={styles.statBox}
+            onClick={() => setActivePage("following")}
+          >
             <strong>52</strong>
             <span className={styles.statLabel}>Following</span>
           </div>
         </div>
+
+       {activePage && (
+  <div className={styles.overlay}>
+    <div className={styles.modal}>
+      <div className={styles.modalHeader}>
+        <span>{activePage === "followers" ? "Takipçiler" : "Takip Edilenler"}</span>
+        <button className={styles.closeBtn} onClick={() => setActivePage(null)}>
+          &times;
+        </button>
+      </div>
+      <div className={styles.modalContent}>
+        <FollowersFollowingPage type={activePage} />
+      </div>
+    </div>
+  </div>
+)}
+
       </div>
 
       <div className={styles.tabBar}>
