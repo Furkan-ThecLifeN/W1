@@ -3,6 +3,7 @@
   justify-content: space-between;
   align-items: center;
   background: rgba(255, 255, 255, 0.7);
+  color: var(--color-black);
   backdrop-filter: blur(6px);
   padding: 18px 20px;
   border-radius: 16px;
@@ -43,7 +44,6 @@
 .username {
   font-weight: 600;
   font-size: 17px;
-  color: #1f2937;
   margin: 0;
 }
 
@@ -70,35 +70,34 @@
 }
 
 .follow {
-  background: #6366f1;
-  color: #ffffff;
+  background: var(--color-blue);
+  color: var(--color-white);
 }
 
 .follow:hover {
-  background: #4f46e5;
+  background-color: #0087cc;
 }
 
 .following {
-  background: #f1f5f9;
-  color: #111827;
-  border: 1px solid #d1d5db;
+  border: 1px solid #e6e6e6;
 }
 
 .following:hover {
-  background: #e2e8f0;
+  background: var(--color-black);
+  color: var(--color-white);
 }
 
 .removeBtn {
-  background: none;
-  border: none;
-  color: #ef4444;
-  font-size: 13px;
+  border: 1px solid #e6e6e6;
+  padding: 7px 16px;
+  border-radius: 15px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  padding: 4px 8px;
-  transition: color 0.2s;
+  transition: all 0.5s ease;
 }
 
 .removeBtn:hover {
-  color: #b91c1c;
+  background-color: var(--color-black);
+  color: var(--color-white);
 }

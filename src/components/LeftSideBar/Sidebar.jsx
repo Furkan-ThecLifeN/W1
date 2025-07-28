@@ -10,7 +10,6 @@ import {
 import { MdOutlineAddBox } from "react-icons/md";
 import { SiApostrophe } from "react-icons/si";
 
-import { RiChatVoiceAiFill } from "react-icons/ri";
 import { SiHearthisdotat } from "react-icons/si";
 
 
@@ -66,16 +65,6 @@ const Sidebar = () => {
           />
           <span className={LeftSideBarStyles.tooltip}>Keşfet</span>
         </NavLink>
-
-     {/*    <NavLink
-          to="/saved"
-          className={({ isActive }) =>
-            isActive ? LeftSideBarStyles.active : LeftSideBarStyles.link
-          }
-        >
-          <FiBookmark className={LeftSideBarStyles.icon} />
-          <span className={LeftSideBarStyles.tooltip}>Kayıtlar</span>
-        </NavLink> */}
 
         <NavLink
           to="/vocentra"

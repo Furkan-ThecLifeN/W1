@@ -1,0 +1,63 @@
+.settingsContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--color-pagecolor);
+  color: var(--text-white);
+  font-family: var(--font-main);
+}
+
+.settingsHeader {
+  position: absolute;
+  top: 1rem;
+  right: 2rem;
+  z-index: 10;
+  background: transparent;
+  padding: 0;
+  border: none;
+}
+
+.settingsTitle {
+  font-size: 1.25rem;
+  margin: 0;
+  background: var(--color-white);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  white-space: nowrap;
+}
+
+
+
+.settingsContent {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.settingsMain {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .settingsContent {
+    flex-direction: column;
+  }
+
+  .settingsMain {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .settingsHeader {
+    padding: 1rem;
+  }
+
+  .settingsTitle {
+    font-size: 1.5rem;
+  }
+}

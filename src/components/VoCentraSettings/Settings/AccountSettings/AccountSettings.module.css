@@ -1,0 +1,463 @@
+/* components/AccountSettings.module.css */
+.accountContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--color-pagecolor);
+  color: var(--text-white);
+}
+
+.accountHeader {
+  padding: 24px;
+  border-bottom: 1px solid var(--secondary-bg);
+}
+
+.accountTitle {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  background: var(--text-title-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.accountSubtitle {
+  margin: 8px 0 0;
+  color: var(--color-grey);
+  font-size: 14px;
+}
+
+.accountContent {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.accountSidebar {
+  width: 240px;
+  padding: 16px 0;
+  border-right: 1px solid var(--secondary-bg);
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebarButton {
+  display: flex;
+  align-items: center;
+  padding: 12px 24px;
+  background: transparent;
+  border: none;
+  color: var(--color-grey);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.sidebarButton:hover {
+  background: var(--hover-bg);
+  color: var(--text-white);
+}
+
+.sidebarButton.active {
+  background: var(--hover-bg);
+  color: var(--color-blue);
+  border-left: 3px solid var(--color-blue);
+}
+
+.sidebarIcon {
+  width: 20px;
+  margin-right: 12px;
+  font-size: 14px;
+}
+
+.accountMain {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.sectionContent {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.sectionTitle {
+  font-size: 20px;
+  margin-bottom: 24px;
+  color: var(--text-white);
+}
+
+.avatarSection {
+  margin-bottom: 24px;
+}
+
+.avatarContainer {
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+}
+
+.avatarPreview {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background-color: var(--secondary-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  color: var(--color-grey);
+  background-size: cover;
+  background-position: center;
+  border: 3px solid var(--color-blue);
+}
+
+.avatarControls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.avatarUpload {
+  padding: 8px 16px;
+  background: var(--secondary-bg);
+  border: 1px solid var(--color-blue);
+  color: var(--color-blue);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.avatarUpload:hover {
+  background: rgba(0, 170, 255, 0.1);
+}
+
+.avatarUpload input {
+  display: none;
+}
+
+.avatarRemove {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--color-gray888);
+  color: var(--color-gray888);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.avatarRemove:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formLabel {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--text-white);
+}
+
+.formInput {
+  width: 100%;
+  padding: 12px;
+  background: var(--secondary-bg);
+  border: 1px solid var(--color-offgrey);
+  border-radius: 4px;
+  color: var(--text-white);
+  font-family: var(--font-main);
+  transition: border-color 0.2s;
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: var(--color-blue);
+  box-shadow: 0 0 0 2px rgba(0, 170, 255, 0.2);
+}
+
+.formHint {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--color-gray888);
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--secondary-bg);
+}
+
+.cancelButton {
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid var(--color-grey);
+  color: var(--text-white);
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.cancelButton:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.saveButton {
+  padding: 10px 20px;
+  background: var(--color-blue);
+  border: none;
+  color: var(--text-white);
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.saveButton:hover {
+  background: #0095e6;
+}
+
+.securityCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: var(--secondary-bg);
+  border-radius: 8px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.securityInfo {
+  flex: 1;
+}
+
+.securityTitle {
+  margin: 0 0 4px;
+  font-size: 16px;
+  color: var(--text-white);
+}
+
+.securityDescription {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-grey);
+}
+
+.securityToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--secondary-bg);
+  transition: 0.4s;
+  border: 1px solid var(--color-offgrey);
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 3px;
+  background-color: var(--color-grey);
+  transition: 0.4s;
+}
+
+input:checked + .slider {
+  background-color: var(--color-blue);
+  border-color: var(--color-blue);
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+  background-color: var(--text-white);
+}
+
+.slider.round {
+  border-radius: 24px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+.toggleStatus {
+  font-size: 14px;
+  color: var(--color-grey);
+  min-width: 50px;
+}
+
+.twoFactorSection {
+  margin-bottom: 32px;
+}
+
+.backupCodes {
+  padding: 16px;
+  background: var(--secondary-bg);
+  border-radius: 8px;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.backupTitle {
+  margin: 0 0 8px;
+  font-size: 16px;
+  color: var(--text-white);
+}
+
+.backupDescription {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: var(--color-grey);
+}
+
+.codeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.codeItem {
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  text-align: center;
+  font-family: monospace;
+  font-size: 16px;
+  color: var(--text-white);
+}
+
+.generateButton {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid var(--color-blue);
+  color: var(--color-blue);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.generateButton:hover {
+  background: rgba(0, 170, 255, 0.1);
+}
+
+.passwordSection {
+  margin-top: 32px;
+}
+
+.passwordTitle {
+  margin: 0 0 16px;
+  font-size: 18px;
+  color: var(--text-white);
+}
+
+.passwordStrength {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.strengthBar {
+  flex: 1;
+  height: 4px;
+  background: var(--secondary-bg);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.strengthBar::after {
+  content: '';
+  display: block;
+  width: 20%;
+  height: 100%;
+  background: #ff4d4d;
+}
+
+.strengthText {
+  font-size: 12px;
+  color: #ff4d4d;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .accountContent {
+    flex-direction: column;
+  }
+  
+  .accountSidebar {
+    width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 0;
+    border-right: none;
+    border-bottom: 1px solid var(--secondary-bg);
+  }
+  
+  .sidebarButton {
+    padding: 12px 16px;
+    white-space: nowrap;
+    border-left: none;
+  }
+  
+  .sidebarButton.active {
+    border-left: none;
+    border-bottom: 3px solid var(--color-blue);
+  }
+}
+
+@media (max-width: 768px) {
+  .avatarContainer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .formActions {
+    flex-direction: column;
+  }
+  
+  .cancelButton,
+  .saveButton {
+    width: 100%;
+  }
+  
+  .codeGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

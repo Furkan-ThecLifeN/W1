@@ -159,17 +159,17 @@
 }
 
 .follow_btn {
-  background: white;
-  color: black;
+  background: var(--color-blue);
+  color: var(--color-white);
   padding: 4px 12px;
   font-size: 0.85rem;
-  border-radius: 20px;
+  border-radius: 5px;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.5s ease;
 }
 
 .follow_btn:hover {
-  background: #e0e0e0;
+  background-color: #0087cc;
 }
 
 .description {

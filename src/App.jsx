@@ -14,6 +14,7 @@ import SettingsPage from "./pages/Settings/SettingsPage";
 import StoryAddPage from "./pages/AddPage/AddPage";
 import VoCentra from "./pages/VocentraPage/VocentraPage";
 import VocentraServerPage from "./pages/VocentraServerPage/VocentraServerPage";
+import VoCentraSettingsPage from "./pages/VoCentraSettingsPage/VoCentraSettingsPage";
 
 const App = () => {
   return (
@@ -28,6 +29,7 @@ const App = () => {
       <Route path="/saved" element={<SavedPage />} />
       <Route path="/vocentra" element={<VoCentra />} />
       <Route path="/server/:serverName" element={<VocentraServerPage />} />
+      <Route path="/vosettings" element={<VoCentraSettingsPage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/create" element={<StoryAddPage />} />
       <Route path="/settings" element={<SettingsPage />} />
