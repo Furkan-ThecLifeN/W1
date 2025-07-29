@@ -1,281 +1,332 @@
-// components/Settings/ThemeSettings/ThemeSettings.jsx
-import React, { useState } from 'react';
-import styles from './ThemeSettings.module.css';
+// components/Settings/ThemeSelector/ThemeSelector.jsx
+import React, { useState } from "react";
+import styles from "./ThemeSettings.module.css";
 
 const ThemeSettings = () => {
-  // Temel tema ayarları
-  const [darkMode, setDarkMode] = useState(true);
-  const [themeColor, setThemeColor] = useState('#00aaff');
-  const [uiScale, setUiScale] = useState(100);
-  const [animationsEnabled, setAnimationsEnabled] = useState(true);
-  const [fontFamily, setFontFamily] = useState('var(--font-main)');
-  const [messageDensity, setMessageDensity] = useState('comfortable');
-  const [transparencyEffects, setTransparencyEffects] = useState(true);
+  const [selectedTheme, setSelectedTheme] = useState("default");
 
-  // Özel tema seçenekleri
-  const [selectedTheme, setSelectedTheme] = useState('default');
-  const [customCSS, setCustomCSS] = useState('');
-
-  // Önceden tanımlanmış temalar
-  const presetThemes = [
-    { id: 'default', name: 'Varsayılan', colors: ['#00aaff', '#131621'] },
-    { id: 'midnight', name: 'Gece Yarısı', colors: ['#7b2cbf', '#0a0a12'] },
-    { id: 'sunset', name: 'Gün Batımı', colors: ['#ff7b25', '#1a1a2e'] },
-    { id: 'ocean', name: 'Okyanus', colors: ['#00b4d8', '#001d3d'] },
-    { id: 'forest', name: 'Orman', colors: ['#2a9d8f', '#1e2a32'] },
+  // Tema özellikleri
+  const themes = [
+    {
+      id: "default",
+      name: "Varsayılan",
+      colors: {
+        primary: "#00aaff",
+        background: "#131621",
+        userCard: "#1a1a2e",
+        messageCard: "#1e1e2d",
+        voiceActive: "#00aaff",
+        text: "#ffffff",
+      },
+      preview: {
+        userStatus: "online",
+        messageCount: 3,
+        voiceActive: true,
+      },
+    },
+    {
+      id: "midnight",
+      name: "Gece Yarısı",
+      colors: {
+        primary: "#7b2cbf",
+        background: "#0a0a12",
+        userCard: "#16162a",
+        messageCard: "#1a1a2e",
+        voiceActive: "#9d4edd",
+        text: "#f8f9fa",
+      },
+      preview: {
+        userStatus: "idle",
+        messageCount: 3,
+        voiceActive: false,
+      },
+    },
+    {
+      id: "sunset",
+      name: "Gün Batımı",
+      colors: {
+        primary: "#ff7b25",
+        background: "#1a1a2e",
+        userCard: "#242442",
+        messageCard: "#2a2a4a",
+        voiceActive: "#ff9e5e",
+        text: "#ffffff",
+      },
+      preview: {
+        userStatus: "busy",
+        messageCount: 3,
+        voiceActive: true,
+      },
+    },
+    {
+      id: "ocean",
+      name: "Okyanus",
+      colors: {
+        primary: "#00b4d8",
+        background: "#001d3d",
+        userCard: "#003566",
+        messageCard: "#003f7d",
+        voiceActive: "#48cae4",
+        text: "#ffffff",
+      },
+      preview: {
+        userStatus: "online",
+        messageCount: 3,
+        voiceActive: true,
+      },
+    },
+    {
+      id: "forest",
+      name: "Orman",
+      colors: {
+        primary: "#2a9d8f",
+        background: "#1e2a32",
+        userCard: "#2a3a45",
+        messageCard: "#344955",
+        voiceActive: "#4cc9b8",
+        text: "#ffffff",
+      },
+      preview: {
+        userStatus: "invisible",
+        messageCount: 3,
+        voiceActive: false,
+      },
+    },
+    // 🆕 Yeni temalar:
+    {
+      id: "rose",
+      name: "Gül Rüyası",
+      colors: {
+        primary: "#ff4d6d",
+        background: "#2b2024",
+        userCard: "#3e2c33",
+        messageCard: "#4b303c",
+        voiceActive: "#ff85a1",
+        text: "#ffeef1",
+      },
+      preview: {
+        userStatus: "busy",
+        messageCount: 3,
+        voiceActive: true,
+      },
+    },
+    {
+      id: "aurora",
+      name: "Aurora",
+      colors: {
+        primary: "#8efeff",
+        background: "#1b1f3a",
+        userCard: "#2c2e4a",
+        messageCard: "#3b3e5a",
+        voiceActive: "#00fff5",
+        text: "#e0f7fa",
+      },
+      preview: {
+        userStatus: "idle",
+        messageCount: 3,
+        voiceActive: false,
+      },
+    },
+    {
+      id: "sandstorm",
+      name: "Kum Fırtınası",
+      colors: {
+        primary: "#e0a96d",
+        background: "#3a2c27",
+        userCard: "#4a3932",
+        messageCard: "#5c4334",
+        voiceActive: "#f4c58e",
+        text: "#fffaf0",
+      },
+      preview: {
+        userStatus: "online",
+        messageCount: 3,
+        voiceActive: true,
+      },
+    },
+    {
+      id: "neon",
+      name: "Neon Işıklar",
+      colors: {
+        primary: "#39ff14",
+        background: "#0f0f0f",
+        userCard: "#1c1c1c",
+        messageCard: "#2a2a2a",
+        voiceActive: "#76ff03",
+        text: "#e0ffe0",
+      },
+      preview: {
+        userStatus: "online",
+        messageCount: 3,
+        voiceActive: true,
+      },
+    },
   ];
 
-  const fontOptions = [
-    { value: 'var(--font-main)', label: 'Varsayılan (Open Sans)' },
-    { value: "'Inter', sans-serif", label: 'Inter' },
-    { value: "'Roboto', sans-serif", label: 'Roboto' },
-    { value: "'Poppins', sans-serif", label: 'Poppins' },
-    { value: "'Fira Code', monospace", label: 'Fira Code (Monospace)' },
-  ];
-
-  const densityOptions = [
-    { value: 'compact', label: 'Sıkışık' },
-    { value: 'comfortable', label: 'Rahat' },
-    { value: 'spacious', label: 'Geniş' },
-  ];
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Tema ayarları kaydedildi');
-    // API çağrısı veya state güncelleme işlemleri
+  const statusColors = {
+    online: "var(--color-green)",
+    idle: "var(--idle)",
+    busy: "var(--busy)",
+    invisible: "#6b7280",
   };
 
-  const handleThemePresetSelect = (theme) => {
-    setSelectedTheme(theme.id);
-    setThemeColor(theme.colors[0]);
-    // Diğer tema özelliklerini de güncelleyebilirsiniz
+  const userProfiles = [
+    {
+      username: "Merve Yılmaz",
+      avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+    },
+    {
+      username: "Ahmet Demir",
+      avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+    },
+    {
+      username: "Zeynep Aydın",
+      avatar: "https://randomuser.me/api/portraits/women/68.jpg",
+    },
+    {
+      username: "Emir Kaya",
+      avatar: "https://randomuser.me/api/portraits/men/17.jpg",
+    },
+    {
+      username: "Hande Kurt",
+      avatar: "https://randomuser.me/api/portraits/women/23.jpg",
+    },
+  ];
+
+  const handleThemeSelect = (themeId) => {
+    setSelectedTheme(themeId);
+    // Burada tema değişikliğini uygulayabilirsiniz
+    console.log("Selected theme:", themeId);
   };
 
   return (
-    <form onSubmit={handleSubmit} className={styles.themeSettingsForm}>
-      {/* Tema Seçimi Bölümü */}
-      <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>
-          <i className={`fas fa-palette ${styles.sectionIcon}`}></i>
-          Tema Seçimi
-        </h3>
-        
-        <div className={styles.themePresets}>
-          {presetThemes.map((theme) => (
+    <div className={styles.themeSelector}>
+      <div className={styles.header}>
+        <h2 className={styles.title}>Tema Seçimi</h2>
+      </div>
+
+      <div className={styles.themesGrid}>
+        {themes.map((theme, index) => {
+          const profile = userProfiles[index % userProfiles.length]; // Profilleri sırayla eşleştir
+          return (
             <div
               key={theme.id}
-              className={`${styles.themePreset} ${selectedTheme === theme.id ? styles.selected : ''}`}
-              onClick={() => handleThemePresetSelect(theme)}
+              className={`${styles.themeCard} ${
+                selectedTheme === theme.id ? styles.selected : ""
+              }`}
+              onClick={() => handleThemeSelect(theme.id)}
             >
-              <div 
+              <div
                 className={styles.themePreview}
-                style={{
-                  background: `linear-gradient(135deg, ${theme.colors[0]}, ${theme.colors[1]})`
-                }}
+                style={{ backgroundColor: theme.colors.background }}
               >
-                <div className={styles.themePreviewContent}>
-                  <div className={styles.themePreviewText}>Aa</div>
-                  <div className={styles.themePreviewIcons}>
-                    <i className="fas fa-comment"></i>
-                    <i className="fas fa-user"></i>
+                {/* Kullanıcı kartı önizlemesi */}
+                <div
+                  className={styles.userCardPreview}
+                  style={{ backgroundColor: theme.colors.userCard }}
+                >
+                  <div
+                    className={styles.userAvatar}
+                    style={{
+                      backgroundImage: `url(${profile.avatar})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                    }}
+                  ></div>
+                  <div className={styles.userInfo}>
+                    <span
+                      className={styles.username}
+                      style={{ color: theme.colors.text }}
+                    >
+                      {profile.username}
+                    </span>
+                    <div className={styles.userStatusWrapper}>
+                      <div
+                        className={styles.userStatus}
+                        style={{
+                          backgroundColor:
+                            statusColors[theme.preview.userStatus],
+                          borderColor: theme.colors.background,
+                        }}
+                      ></div>
+                      <span
+                        className={styles.statusText}
+                        style={{ color: theme.colors.text }}
+                      >
+                        {theme.preview.userStatus === "online" && "Çevrimiçi"}
+                        {theme.preview.userStatus === "idle" && "Boşta"}
+                        {theme.preview.userStatus === "busy" && "Meşgul"}
+                        {theme.preview.userStatus === "invisible" && "Görünmez"}
+                      </span>
+                    </div>
                   </div>
+                  {theme.preview.voiceActive && (
+                    <div
+                      className={styles.voiceIndicator}
+                      style={{ backgroundColor: theme.colors.voiceActive }}
+                    >
+                      <i className="fas fa-microphone"></i>
+                    </div>
+                  )}
+                </div>
+
+                {/* Mesaj kartı önizlemesi */}
+                <div className={styles.messagesPreview}>
+                  {[...Array(theme.preview.messageCount)].map((_, i) => (
+                    <div
+                      key={i}
+                      className={styles.messageCard}
+                      style={{
+                        backgroundColor: theme.colors.messageCard,
+                        borderLeftColor: theme.colors.primary,
+                      }}
+                    >
+                      <div className={styles.messageContent}>
+                        <div
+                          className={styles.messageText}
+                          style={{ color: theme.colors.text }}
+                        >
+                          Örnek mesaj içeriği...
+                        </div>
+                        <div
+                          className={styles.messageTime}
+                          style={{ color: theme.colors.text, opacity: 0.7 }}
+                        >
+                          12:34
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Tema renk paleti */}
+                <div className={styles.colorPalette}>
+                  {Object.values(theme.colors).map((color, i) => (
+                    <div
+                      key={i}
+                      className={styles.colorSwatch}
+                      style={{ backgroundColor: color }}
+                      title={color}
+                    ></div>
+                  ))}
                 </div>
               </div>
-              <span className={styles.themeName}>{theme.name}</span>
-            </div>
-          ))}
-        </div>
-      </div>
 
-      {/* Renk Özelleştirme Bölümü */}
-      <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>
-          <i className={`fas fa-sliders-h ${styles.sectionIcon}`}></i>
-          Renk Özelleştirme
-        </h3>
-        
-        <div className={styles.colorCustomization}>
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Ana Tema Rengi</label>
-            <div className={styles.colorPickerWrapper}>
-              <input
-                type="color"
-                value={themeColor}
-                onChange={(e) => setThemeColor(e.target.value)}
-                className={styles.colorPicker}
-              />
-              <span className={styles.colorValue}>{themeColor}</span>
-              <div 
-                className={styles.colorPreview} 
-                style={{ backgroundColor: themeColor }}
-              ></div>
-            </div>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Arkaplan Yoğunluğu</label>
-            <div className={styles.rangeSlider}>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value="85"
-                className={styles.slider}
-              />
-              <div className={styles.rangeLabels}>
-                <span>Saydam</span>
-                <span>Opak</span>
+              <div className={styles.themeInfo}>
+                <h3 className={styles.themeName}>{theme.name}</h3>
+                <div className={styles.themeColors}>
+                  <span>{theme.colors.primary}</span>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          );
+        })}
       </div>
 
-      {/* Görünüm Ayarları Bölümü */}
-      <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>
-          <i className={`fas fa-desktop ${styles.sectionIcon}`}></i>
-          Görünüm Ayarları
-        </h3>
-        
-        <div className={styles.appearanceSettings}>
-          <div className={styles.toggleGroup}>
-            <div className={styles.toggleItem}>
-              <div className={styles.toggleInfo}>
-                <span className={styles.toggleLabel}>Koyu Tema</span>
-                <span className={styles.toggleDescription}>
-                  Arayüzü koyu renk temasına geçirir
-                </span>
-              </div>
-              <label className={styles.switch}>
-                <input
-                  type="checkbox"
-                  checked={darkMode}
-                  onChange={() => setDarkMode(!darkMode)}
-                />
-                <span className={`${styles.slider} ${styles.round}`}></span>
-              </label>
-            </div>
-
-            <div className={styles.toggleItem}>
-              <div className={styles.toggleInfo}>
-                <span className={styles.toggleLabel}>Şeffaf Efektler</span>
-                <span className={styles.toggleDescription}>
-                  Pencere ve menülerde şeffaflık efektlerini etkinleştirir
-                </span>
-              </div>
-              <label className={styles.switch}>
-                <input
-                  type="checkbox"
-                  checked={transparencyEffects}
-                  onChange={() => setTransparencyEffects(!transparencyEffects)}
-                />
-                <span className={`${styles.slider} ${styles.round}`}></span>
-              </label>
-            </div>
-
-            <div className={styles.toggleItem}>
-              <div className={styles.toggleInfo}>
-                <span className={styles.toggleLabel}>Animasyonlar</span>
-                <span className={styles.toggleDescription}>
-                  Arayüz animasyonlarını etkinleştirir
-                </span>
-              </div>
-              <label className={styles.switch}>
-                <input
-                  type="checkbox"
-                  checked={animationsEnabled}
-                  onChange={() => setAnimationsEnabled(!animationsEnabled)}
-                />
-                <span className={`${styles.slider} ${styles.round}`}></span>
-              </label>
-            </div>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Yazı Tipi</label>
-            <select
-              value={fontFamily}
-              onChange={(e) => setFontFamily(e.target.value)}
-              className={styles.selectInput}
-              style={{ fontFamily: fontFamily }}
-            >
-              {fontOptions.map((font) => (
-                <option key={font.value} value={font.value}>
-                  {font.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Arayüz Ölçeklendirme: {uiScale}%</label>
-            <div className={styles.rangeSlider}>
-              <input
-                type="range"
-                min="80"
-                max="150"
-                value={uiScale}
-                onChange={(e) => setUiScale(e.target.value)}
-                className={styles.slider}
-              />
-              <div className={styles.rangeLabels}>
-                <span>Küçük</span>
-                <span>Büyük</span>
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Mesaj Yoğunluğu</label>
-            <div className={styles.radioGroup}>
-              {densityOptions.map((option) => (
-                <label key={option.value} className={styles.radioLabel}>
-                  <input
-                    type="radio"
-                    name="messageDensity"
-                    checked={messageDensity === option.value}
-                    onChange={() => setMessageDensity(option.value)}
-                  />
-                  <span className={styles.radioCustom}></span>
-                  <span>{option.label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-        </div>
+      <div className={styles.actions}>
+        <button className={styles.applyButton}>Temayı Uygula</button>
       </div>
-
-      {/* Özel CSS Bölümü */}
-      <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>
-          <i className={`fas fa-code ${styles.sectionIcon}`}></i>
-          Özel CSS
-        </h3>
-        
-        <div className={styles.customCSS}>
-          <p className={styles.sectionDescription}>
-            Kendi CSS kurallarınızı ekleyerek arayüzü tamamen özelleştirin.
-          </p>
-          <textarea
-            value={customCSS}
-            onChange={(e) => setCustomCSS(e.target.value)}
-            className={styles.cssEditor}
-            placeholder="/* Özel CSS kurallarınızı buraya yazın */"
-          ></textarea>
-        </div>
-      </div>
-
-      {/* Kaydetme Butonları */}
-      <div className={styles.formActions}>
-        <button type="button" className={styles.resetButton}>
-          Varsayılana Sıfırla
-        </button>
-        <button type="submit" className={styles.saveButton}>
-          Ayarları Kaydet
-        </button>
-      </div>
-    </form>
+    </div>
   );
 };
 

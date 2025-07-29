@@ -2,11 +2,9 @@
 import React, { useState } from "react";
 import styles from "./VoCentraSettings.module.css";
 import SettingsSidebar from "./Settings/SettingsSidebar/SettingsSidebar";
-import AccountSettings from "./Settings/AccountSettings/AccountSettings";
 import ThemeSettings from "./Settings/ThemeSettings/ThemeSettings";
-/* import AudioSettings from '../components/Settings/AudioSettings/AudioSettings';
-import AppearanceSettings from '../components/Settings/AppearanceSettings/AppearanceSettings';
-import NotificationSettings from '../components/Settings/NotificationSettings/NotificationSettings'; */
+import NotificationSettings from "./Settings/NotificationSettings/NotificationSettings";
+import KeyboardShortcuts from './Settings/KeyboardShortcuts/KeyboardShortcuts';
 
 const VoCentraSettings = () => {
   const [activeTab, setActiveTab] = useState("account");
@@ -22,9 +20,8 @@ const VoCentraSettings = () => {
 
         <div className={styles.settingsMain}>
           {activeTab === "theme" && <ThemeSettings />}
-          {/*       {activeTab === 'audio' && <AudioSettings />}
-          {activeTab === 'appearance' && <AppearanceSettings />}
-          {activeTab === 'notifications' && <NotificationSettings />} */}
+          {activeTab === "notifications" && <NotificationSettings />}
+          {activeTab === "keybinds" && <KeyboardShortcuts />}
         </div>
       </div>
     </div>
