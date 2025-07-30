@@ -1,0 +1,350 @@
+/* Ana kapsayıcı */
+.audioActivityView {
+  padding: 20px;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  color: var(--text-white);
+  font-family: var(--font-main);
+
+  height: 100%;
+  max-height: 100vh;             
+  overflow-y: auto;         
+  scrollbar-width: none;       
+}
+
+.audioActivityView::-webkit-scrollbar {
+  display: none;
+}
+
+/* Başlık alanı */
+.header {
+  margin-bottom: 30px;
+  text-align: center;
+  padding-bottom: 20px;
+}
+
+.header svg {
+  width: 32px;
+  height: 32px;
+  color: var(--color-blue);
+  margin-bottom: 10px;
+}
+
+.title {
+  font-size: 28px;
+  margin: 0 0 10px;
+  background: var(--text-title-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.description {
+  font-size: 15px;
+  color: var(--color-grey);
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Tema Seçimi Bölümü */
+.themeSelectionSection {
+  background-color: var(--bg-main);
+  padding: 25px;
+  border-radius: 10px;
+  margin-bottom: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sectionTitle {
+  font-size: 20px;
+  color: var(--text-white);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sectionTitle svg {
+  color: var(--color-blue);
+  width: 22px;
+  height: 22px;
+}
+
+.themeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.themeOption {
+  background-color: var(--color-offgrey);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+}
+
+.themeOption:hover {
+  border-color: var(--color-blue);
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.themeOption.selectedTheme {
+  border-color: var(--color-blue);
+  box-shadow: 0 0 0 3px rgba(0, 170, 255, 0.3);
+}
+
+.themePreviewBox {
+  width: 100%;
+  height: 70px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.themeOption span {
+  color: var(--text-white);
+  font-size: 13px;
+  text-align: center;
+}
+
+/* Kullanıcı Kartı Önizleme Bölümü */
+.userCardPreviewSection {
+  background-color: var(--bg-main);
+  padding: 25px;
+  border-radius: 10px;
+  margin-bottom: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.userCardContainer {
+  width: 100%;
+  max-width: 350px; /* Kartın maksimum genişliği */
+  height: 80px; /* Kartın yüksekliği */
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  position: relative;
+  overflow: hidden; /* Border gradient için */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  margin-top: 20px; /* Başlıktan sonra boşluk */
+  background: var(
+    --user-card-theme,
+    linear-gradient(90deg, #00dbde 0%, #fc00ff 100%)
+  ); /* Varsayılan veya seçilen tema */
+  color: var(--text-white);
+  font-weight: 600;
+  transition: all 0.3s ease-out;
+}
+
+/* Border gradient efekti (isteğe bağlı, kartı daha şık yapar) */
+.userCardContainer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 12px;
+  padding: 2px; /* Border kalınlığı */
+  background: linear-gradient(
+    135deg,
+    var(--color-blue),
+    var(--color-blue-light)
+  ); /* Border gradient */
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.userAvatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: var(--color-grey-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--text-white);
+  margin-right: 15px;
+  flex-shrink: 0;
+  border: 2px solid var(--color-blue); /* Avatar çevresi */
+}
+
+.userInfo {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0; /* İçerik taşmasını engellemek için */
+}
+
+.userName {
+  font-size: 18px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+  color: var(--text-white);
+}
+
+.userStatus {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statusIcon {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 5px;
+}
+
+.statusOnline {
+  background-color: var(--online);
+}
+
+.statusIdle {
+  background-color: var(--idle);
+}
+
+.statusBusy {
+  background-color: var(--busy);
+}
+
+/* Mikrofon/Kulaklık İkonları */
+.audioIcons {
+  display: flex;
+  gap: 10px;
+  margin-left: 20px; /* Kullanıcı bilgisinden ayırma */
+  flex-shrink: 0;
+}
+
+.audioIcon svg {
+  width: 24px;
+  height: 24px;
+  color: var(--color-white); /* Varsayılan olarak beyaz */
+  transition: color 0.2s ease;
+}
+
+.audioIcon.micMuted svg,
+.audioIcon.headsetMuted svg {
+  color: var(--color-red); /* Kırmızı tonu */
+}
+
+/* Uygulama Butonu */
+.actions {
+  display: flex;
+  justify-content: center;
+  padding-top: 30px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 40px;
+}
+
+.applyButton {
+  padding: 14px 35px;
+  background: var(--color-blue);
+  border: none;
+  border-radius: 8px;
+  color: var(--color-white);
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.5px;
+}
+
+.applyButton:hover {
+  background: #0095e6;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 170, 255, 0.35);
+}
+
+/* Responsive Tasarım */
+@media (max-width: 768px) {
+  .header {
+    margin-bottom: 25px;
+  }
+  .title {
+    font-size: 24px;
+  }
+  .description {
+    font-size: 14px;
+  }
+  .themeSelectionSection,
+  .userCardPreviewSection {
+    padding: 20px;
+    margin-bottom: 30px;
+  }
+  .sectionTitle {
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
+  .sectionTitle svg {
+    width: 20px;
+    height: 20px;
+  }
+  .themeGrid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+  }
+  .themePreviewBox {
+    height: 60px;
+  }
+  .themeOption span {
+    font-size: 12px;
+  }
+  .userCardContainer {
+    height: 70px;
+    padding: 10px 15px;
+  }
+  .userAvatar {
+    width: 45px;
+    height: 45px;
+    font-size: 20px;
+    margin-right: 10px;
+  }
+  .userName {
+    font-size: 16px;
+  }
+  .userStatus {
+    font-size: 12px;
+  }
+  .audioIcons {
+    margin-left: 15px;
+    gap: 8px;
+  }
+  .audioIcon svg {
+    width: 20px;
+    height: 20px;
+  }
+  .applyButton {
+    padding: 12px 25px;
+    font-size: 15px;
+  }
+}

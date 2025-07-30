@@ -1,270 +1,414 @@
-// components/Settings/NotificationSettings/NotificationSettings.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './NotificationSettings.module.css';
+import {
+  BellRing, Bell, MessageSquare, AtSign, Phone, Server, User, Zap, MonitorDot, Mail, MessageCircleMore, Clock
+} from 'lucide-react';
+
+const initialNotificationSettings = {
+  // Genel Bildirim Ayarları
+  general: {
+    enableAllNotifications: true,
+    playSoundsForNotifications: true,
+    showNotificationPreviews: true,
+  },
+  // Cihaz Bildirimleri / Push Ayarları
+  device: {
+    enableDesktopNotifications: true,
+    enableMobilePushNotifications: true,
+    pushNotificationTimeLimit: false,
+    pushStartTime: '23:00',
+    pushEndTime: '08:00',
+  },
+  // Tür Bazlı İzin Ayarları
+  permissions: {
+    messages: true,
+    mentions: true,
+    calls: true,
+    serverAnnouncements: true,
+    friendRequests: true,
+    goLiveAlerts: true,
+  },
+  // E-Posta ve SMS Bildirimleri
+  emailSms: {
+    enableEmailNotifications: true,
+    emailUpdates: true,
+    emailFriendRequests: true,
+    emailSecurityAlerts: true,
+    enableSmsNotifications: false, // Varsayılan olarak kapalı
+    smsLoginVerification: true,
+    smsSecurityAlerts: true,
+  },
+};
 
 const NotificationSettings = () => {
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [notificationTypes, setNotificationTypes] = useState({
-    messages: { enabled: true, sound: 'chime', preview: 'partial' },
-    mentions: { enabled: true, sound: 'ping', preview: 'full' },
-    calls: { enabled: true, sound: 'ring', preview: 'full' },
-    server: { enabled: false, sound: 'default', preview: 'none' }
-  });
+  const [settings, setSettings] = useState(initialNotificationSettings);
+  const [hasChanges, setHasChanges] = useState(false);
 
-  const [dndMode, setDndMode] = useState({
-    enabled: false,
-    schedule: { start: '23:00', end: '08:00', days: [1,2,3,4,5] },
-    exceptions: { urgent: true, closeFriends: false }
-  });
+  useEffect(() => {
+    const isChanged = JSON.stringify(settings) !== JSON.stringify(initialNotificationSettings);
+    setHasChanges(isChanged);
+  }, [settings]);
 
-  const sounds = [
-    { id: 'chime', name: 'Nazik Çan', icon: 'bell' },
-    { id: 'ping', name: 'Dijital Ping', icon: 'wave-square' },
-    { id: 'ring', name: 'Telefon Zili', icon: 'phone' },
-    { id: 'default', name: 'Varsayılan', icon: 'volume-up' }
-  ];
-
-  const previewOptions = [
-    { id: 'full', name: 'Tam Mesaj', icon: 'align-left' },
-    { id: 'partial', name: 'Kısmi', icon: 'ellipsis-h' },
-    { id: 'none', name: 'Gizli', icon: 'eye-slash' }
-  ];
-
-  const days = [
-    { id: 0, name: 'Pazar', short: 'Pz' },
-    { id: 1, name: 'Pazartesi', short: 'Pt' },
-    { id: 2, name: 'Salı', short: 'Sa' },
-    { id: 3, name: 'Çarşamba', short: 'Ça' },
-    { id: 4, name: 'Perşembe', short: 'Pe' },
-    { id: 5, name: 'Cuma', short: 'Cu' },
-    { id: 6, name: 'Cumartesi', short: 'Ct' }
-  ];
-
-  const toggleNotificationType = (type) => {
-    setNotificationTypes(prev => ({
-      ...prev,
-      [type]: { ...prev[type], enabled: !prev[type].enabled }
-    }));
+  const handleToggleChange = (settingPath, value) => {
+    setSettings(prevSettings => {
+      const update = (obj, path, val) => {
+        const parts = path.split('.');
+        let current = { ...obj };
+        let temp = current;
+        for (let i = 0; i < parts.length - 1; i++) {
+          temp[parts[i]] = { ...temp[parts[i]] };
+          temp = temp[parts[i]];
+        }
+        temp[parts[parts.length - 1]] = val;
+        return current;
+      };
+      return update(prevSettings, settingPath, value);
+    });
   };
 
-  const updateNotificationSetting = (type, field, value) => {
-    setNotificationTypes(prev => ({
-      ...prev,
-      [type]: { ...prev[type], [field]: value }
-    }));
+  const handleTimeChange = (settingPath, e) => {
+    handleToggleChange(settingPath, e.target.value);
   };
 
-  const toggleDndDay = (dayId) => {
-    setDndMode(prev => ({
-      ...prev,
-      schedule: { 
-        ...prev.schedule, 
-        days: prev.schedule.days.includes(dayId)
-          ? prev.schedule.days.filter(d => d !== dayId)
-          : [...prev.schedule.days, dayId]
-      }
-    }));
+  const handleSaveChanges = () => {
+    console.log('Bildirim ayarları kaydedildi:', settings);
+    alert('Bildirim ayarlarınız başarıyla kaydedildi!');
+    setHasChanges(false);
+  };
+
+  const handleResetChanges = () => {
+    if (window.confirm('Tüm değişiklikleri varsayılan ayarlara sıfırlamak istediğinizden emin misiniz?')) {
+      setSettings(initialNotificationSettings);
+      setHasChanges(false);
+      alert('Ayarlar varsayılan değerlere sıfırlandı!');
+    }
   };
 
   return (
-    <div className={styles.settingsContainer}>
-      <div className={styles.settingsCard}>
-        {/* Header */}
-        <div className={styles.header}>
-          <div className={styles.headerIcon}>
-            <h2 className={styles.bellIcon}>W1</h2>
+    <div className={styles.notificationSettingsContainer}>
+      <header className={styles.pageHeader}>
+        <h1>Bildirim Ayarları</h1>
+        <p>Bildirimleri sana en uygun şekilde alman için buradan kontrol edebilirsin.</p>
+      </header>
+
+      {/* Genel Bildirim Ayarları */}
+      <section className={styles.settingsSection}>
+        <h2 className={styles.sectionTitle}>
+          <Bell /> Genel Bildirim Ayarları
+        </h2>
+        <div className={styles.settingRow}>
+          <div className={styles.settingLabel}>
+            <h4>Tüm Bildirimleri Aç/Kapat</h4>
+            <p>Uygulama genelinde tüm bildirimleri etkinleştirir veya devre dışı bırakır.</p>
           </div>
-          <div className={styles.headerText}>
-            <h1 className={styles.title}>Bildirim Ayarları</h1>
-            <p className={styles.subtitle}>Bildirim tercihlerinizi kişiselleştirin</p>
-          </div>
+          <label className={styles.toggleSwitch}>
+            <input
+              type="checkbox"
+              checked={settings.general.enableAllNotifications}
+              onChange={() => handleToggleChange('general.enableAllNotifications', !settings.general.enableAllNotifications)}
+            />
+            <span className={styles.toggleSlider}></span>
+          </label>
         </div>
-
-        {/* Main Content */}
-        <div className={styles.content}>
-          {/* Global Settings */}
-          <div className={styles.section}>
-            <div className={styles.sectionHeader}>
-              <h2 className={styles.sectionTitle}>Genel Ayarlar</h2>
-              <label className={styles.toggleSwitch}>
-                <input 
-                  type="checkbox" 
-                  checked={notificationsEnabled}
-                  onChange={() => setNotificationsEnabled(!notificationsEnabled)}
-                />
-                <span className={styles.slider}></span>
-              </label>
-            </div>
-            <p className={styles.sectionDescription}>
-              Tüm bildirimleri etkinleştir veya devre dışı bırak
-            </p>
+        <div className={styles.settingRow}>
+          <div className={styles.settingLabel}>
+            <h4>Sesli Bildirimler</h4>
+            <p>Bildirim geldiğinde sesli uyarı verir.</p>
           </div>
-
-          {/* Notification Types */}
-          <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>Bildirim Türleri</h2>
-            
-            {Object.entries(notificationTypes).map(([key, value]) => {
-              const labels = {
-                messages: { title: 'Özel Mesajlar', desc: 'Size gönderilen direkt mesajlar' },
-                mentions: { title: 'Bahsetmeler', desc: 'İsminizin geçtiği mesajlar' },
-                calls: { title: 'Sesli Aramalar', desc: 'Gelen çağrı ve katılma istekleri' },
-                server: { title: 'Sunucu Bildirimleri', desc: 'Sunucu etkinlikleri ve duyurular' }
-              };
-              
-              return (
-                <div key={key} className={styles.notificationType}>
-                  <div className={styles.typeHeader}>
-                    <div className={styles.typeToggle}>
-                      <label className={styles.toggleSmall}>
-                        <input
-                          type="checkbox"
-                          checked={value.enabled && notificationsEnabled}
-                          onChange={() => toggleNotificationType(key)}
-                          disabled={!notificationsEnabled}
-                        />
-                        <span className={styles.sliderSmall}></span>
-                      </label>
-                      <h3 className={styles.typeTitle}>{labels[key].title}</h3>
-                    </div>
-                    <p className={styles.typeDesc}>{labels[key].desc}</p>
-                  </div>
-                  
-                  {value.enabled && notificationsEnabled && (
-                    <div className={styles.typeSettings}>
-                      <div className={styles.settingGroup}>
-                        <label className={styles.settingLabel}>
-                          <i className={`fas fa-${sounds.find(s => s.id === value.sound)?.icon}`}></i> Ses
-                        </label>
-                        <div className={styles.optionsGrid}>
-                          {sounds.map(sound => (
-                            <button
-                              key={sound.id}
-                              type="button"
-                              className={`${styles.optionButton} ${value.sound === sound.id ? styles.selected : ''}`}
-                              onClick={() => updateNotificationSetting(key, 'sound', sound.id)}
-                            >
-                              <i className={`fas fa-${sound.icon}`}></i>
-                              {sound.name}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      
-                      <div className={styles.settingGroup}>
-                        <label className={styles.settingLabel}>
-                          <i className={`fas fa-${previewOptions.find(p => p.id === value.preview)?.icon}`}></i> Önizleme
-                        </label>
-                        <div className={styles.optionsGrid}>
-                          {previewOptions.map(option => (
-                            <button
-                              key={option.id}
-                              type="button"
-                              className={`${styles.optionButton} ${value.preview === option.id ? styles.selected : ''}`}
-                              onClick={() => updateNotificationSetting(key, 'preview', option.id)}
-                            >
-                              <i className={`fas fa-${option.icon}`}></i>
-                              {option.name}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+          <label className={styles.toggleSwitch}>
+            <input
+              type="checkbox"
+              checked={settings.general.playSoundsForNotifications}
+              onChange={() => handleToggleChange('general.playSoundsForNotifications', !settings.general.playSoundsForNotifications)}
+              disabled={!settings.general.enableAllNotifications}
+            />
+            <span className={styles.toggleSlider}></span>
+          </label>
+        </div>
+        <div className={styles.settingRow}>
+          <div className={styles.settingLabel}>
+            <h4>Bildirim Önizlemeleri</h4>
+            <p>Bildirim içeriğinin kısa bir önizlemesini gösterir (hassas bilgiler için kapatabilirsiniz).</p>
           </div>
+          <label className={styles.toggleSwitch}>
+            <input
+              type="checkbox"
+              checked={settings.general.showNotificationPreviews}
+              onChange={() => handleToggleChange('general.showNotificationPreviews', !settings.general.showNotificationPreviews)}
+              disabled={!settings.general.enableAllNotifications}
+            />
+            <span className={styles.toggleSlider}></span>
+          </label>
+        </div>
+      </section>
 
-          {/* Do Not Disturb */}
-          <div className={styles.section}>
-            <div className={styles.sectionHeader}>
-              <h2 className={styles.sectionTitle}>Rahatsız Etmeyen Modu</h2>
-              <label className={styles.toggleSwitch}>
-                <input 
-                  type="checkbox" 
-                  checked={dndMode.enabled}
-                  onChange={() => setDndMode(prev => ({ ...prev, enabled: !prev.enabled }))}
-                />
-                <span className={styles.slider}></span>
-              </label>
+      {/* Sunucu Bazlı Bildirim Ayarları (Basit bir örnek, genişletilebilir) */}
+      <section className={styles.settingsSection}>
+        <h2 className={styles.sectionTitle}>
+          <Server /> Sunucu Bazlı Bildirim Ayarları
+        </h2>
+        <div className={styles.settingRow}>
+          <div className={styles.settingLabel}>
+            <h4>Sunucu Seçimi</h4>
+            <p>Belirli bir sunucu için bildirim ayarlarını özelleştirin.</p>
+          </div>
+          <select className={styles.selectInput} disabled={!settings.general.enableAllNotifications}>
+            <option value="">Sunucu Seç...</option>
+            <option value="server1">Proje Alpha</option>
+            <option value="server2">Oyun Klanı</option>
+            <option value="server3">Topluluk Merkezi</option>
+          </select>
+        </div>
+        <div className={styles.infoBox}>
+          <h4>Not:</h4>
+          <p>Sunucuya özel bildirim ayarları seçildikten sonra burada görünecektir. Örneğin, "Tüm Mesajlar", "Sadece @mention'lar" veya "Sessize Al" seçenekleri.</p>
+        </div>
+      </section>
+
+      {/* Sessize Alma & Özel Bildirimler */}
+      <section className={styles.settingsSection}>
+        <h2 className={styles.sectionTitle}>
+          <MessageCircleMore /> Sessize Alma & Özel Bildirimler
+        </h2>
+        <div className={styles.settingRow}>
+          <div className={styles.settingLabel}>
+            <h4>Belirli Kişileri Sessize Al</h4>
+            <p>Seçilen kişilerden gelen bildirimleri tamamen engeller.</p>
+          </div>
+          <button className={styles.selectInput} disabled={!settings.general.enableAllNotifications}>Kişi Seç / Yönet</button>
+        </div>
+        <div className={styles.settingRow}>
+          <div className={styles.settingLabel}>
+            <h4>Belirli Kanalları Sessize Al</h4>
+            <p>Seçilen kanallardan gelen bildirimleri engeller.</p>
+          </div>
+          <button className={styles.selectInput} disabled={!settings.general.enableAllNotifications}>Kanal Seç / Yönet</button>
+        </div>
+        <div className={styles.settingRow}>
+          <div className={styles.settingLabel}>
+            <h4>Anahtar Kelime Bildirimleri</h4>
+            <p>Belirli kelimeler geçtiğinde bildirim al.</p>
+          </div>
+          <button className={styles.selectInput} disabled={!settings.general.enableAllNotifications}>Anahtar Kelimeleri Yönet</button>
+        </div>
+      </section>
+
+      {/* Cihaz Bildirimleri / Push Ayarları */}
+      <section className={styles.settingsSection}>
+        <h2 className={styles.sectionTitle}>
+          <MonitorDot /> Cihaz Bildirimleri / Push Ayarları
+        </h2>
+        <div className={styles.settingRow}>
+          <div className={styles.settingLabel}>
+            <h4>Masaüstü Bildirimleri</h4>
+            <p>Uygulama kapalıyken veya arka plandayken masaüstünde bildirim gösterir.</p>
+          </div>
+          <label className={styles.toggleSwitch}>
+            <input
+              type="checkbox"
+              checked={settings.device.enableDesktopNotifications}
+              onChange={() => handleToggleChange('device.enableDesktopNotifications', !settings.device.enableDesktopNotifications)}
+              disabled={!settings.general.enableAllNotifications}
+            />
+            <span className={styles.toggleSlider}></span>
+          </label>
+        </div>
+        <div className={styles.settingRow}>
+          <div className={styles.settingLabel}>
+            <h4>Mobil Cihazlara Bildirim Gönder</h4>
+            <p>Uygulama dışındayken mobil cihazınıza bildirim gönderir.</p>
+          </div>
+          <label className={styles.toggleSwitch}>
+            <input
+              type="checkbox"
+              checked={settings.device.enableMobilePushNotifications}
+              onChange={() => handleToggleChange('device.enableMobilePushNotifications', !settings.device.enableMobilePushNotifications)}
+              disabled={!settings.general.enableAllNotifications}
+            />
+            <span className={styles.toggleSlider}></span>
+          </label>
+        </div>
+        <div className={styles.settingRow}>
+          <div className={styles.settingLabel}>
+            <h4><Clock size={20} /> Bildirim Gönderme Zaman Sınırı</h4>
+            <p>Belirli saatler arasında bildirim gönderilmesini engeller (örn: 23:00 - 08:00).</p>
+          </div>
+          <label className={styles.toggleSwitch}>
+            <input
+              type="checkbox"
+              checked={settings.device.pushNotificationTimeLimit}
+              onChange={() => handleToggleChange('device.pushNotificationTimeLimit', !settings.device.pushNotificationTimeLimit)}
+              disabled={!settings.general.enableAllNotifications || (!settings.device.enableDesktopNotifications && !settings.device.enableMobilePushNotifications)}
+            />
+            <span className={styles.toggleSlider}></span>
+          </label>
+        </div>
+        {settings.device.pushNotificationTimeLimit && (
+          <div className={styles.settingRow}>
+            <div className={styles.settingLabel}>
+              <h4>Zaman Aralığı</h4>
+              <p>Bildirimlerin gönderilmeyeceği başlangıç ve bitiş saatleri.</p>
             </div>
-            
-            {dndMode.enabled && (
-              <div className={styles.dndSettings}>
-                <div className={styles.timeRow}>
-                  <div className={styles.timeInput}>
-                    <label>Başlangıç</label>
-                    <input
-                      type="time"
-                      value={dndMode.schedule.start}
-                      onChange={(e) => setDndMode(prev => ({
-                        ...prev,
-                        schedule: { ...prev.schedule, start: e.target.value }
-                      }))}
-                    />
-                  </div>
-                  <div className={styles.timeInput}>
-                    <label>Bitiş</label>
-                    <input
-                      type="time"
-                      value={dndMode.schedule.end}
-                      onChange={(e) => setDndMode(prev => ({
-                        ...prev,
-                        schedule: { ...prev.schedule, end: e.target.value }
-                      }))}
-                    />
-                  </div>
-                </div>
-                
-                <div className={styles.daysContainer}>
-                  <label>Günler</label>
-                  <div className={styles.daysGrid}>
-                    {days.map(day => (
-                      <button
-                        key={day.id}
-                        type="button"
-                        className={`${styles.dayButton} ${dndMode.schedule.days.includes(day.id) ? styles.selected : ''}`}
-                        onClick={() => toggleDndDay(day.id)}
-                      >
-                        {day.short}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                
-                <div className={styles.exceptions}>
-                  <h3 className={styles.exceptionsTitle}>İstisnalar</h3>
-                  <div className={styles.checkboxItem}>
-                    <input
-                      type="checkbox"
-                      id="urgentNotifications"
-                      checked={dndMode.exceptions.urgent}
-                      onChange={() => setDndMode(prev => ({
-                        ...prev,
-                        exceptions: { ...prev.exceptions, urgent: !prev.exceptions.urgent }
-                      }))}
-                    />
-                    <label htmlFor="urgentNotifications">Acil Bildirimler</label>
-                  </div>
-                  <div className={styles.checkboxItem}>
-                    <input
-                      type="checkbox"
-                      id="closeFriends"
-                      checked={dndMode.exceptions.closeFriends}
-                      onChange={() => setDndMode(prev => ({
-                        ...prev,
-                        exceptions: { ...prev.exceptions, closeFriends: !prev.exceptions.closeFriends }
-                      }))}
-                    />
-                    <label htmlFor="closeFriends">Yakın Arkadaşlar</label>
-                  </div>
-                </div>
+            <div className={styles.timeInputGroup}>
+              <input
+                type="time"
+                className={styles.timeInput}
+                value={settings.device.pushStartTime}
+                onChange={(e) => handleTimeChange('device.pushStartTime', e)}
+              />
+              <span>-</span>
+              <input
+                type="time"
+                className={styles.timeInput}
+                value={settings.device.pushEndTime}
+                onChange={(e) => handleTimeChange('device.pushEndTime', e)}
+              />
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* E-Posta ve SMS Bildirimleri */}
+      <section className={styles.settingsSection}>
+        <h2 className={styles.sectionTitle}>
+          <Mail /> E-Posta ve SMS Bildirimleri
+        </h2>
+        <div className={styles.settingRow}>
+          <div className={styles.settingLabel}>
+            <h4>E-Posta Bildirimlerini Aç</h4>
+            <p>Hesabınızla ilgili güncellemeleri ve bildirimleri e-posta ile alın.</p>
+          </div>
+          <label className={styles.toggleSwitch}>
+            <input
+              type="checkbox"
+              checked={settings.emailSms.enableEmailNotifications}
+              onChange={() => handleToggleChange('emailSms.enableEmailNotifications', !settings.emailSms.enableEmailNotifications)}
+              disabled={!settings.general.enableAllNotifications}
+            />
+            <span className={styles.toggleSlider}></span>
+          </label>
+        </div>
+        {settings.emailSms.enableEmailNotifications && (
+          <>
+            <div className={styles.settingRow}>
+              <div className={styles.settingLabel}>
+                <h4>Hesap Güncellemeleri</h4>
+                <p>Hesap etkinlikleri ve önemli bilgiler.</p>
               </div>
-            )}
+              <label className={styles.toggleSwitch}>
+                <input
+                  type="checkbox"
+                  checked={settings.emailSms.emailUpdates}
+                  onChange={() => handleToggleChange('emailSms.emailUpdates', !settings.emailSms.emailUpdates)}
+                />
+                <span className={styles.toggleSlider}></span>
+              </label>
+            </div>
+            <div className={styles.settingRow}>
+              <div className={styles.settingLabel}>
+                <h4>Arkadaşlık İstekleri</h4>
+                <p>Yeni arkadaşlık istekleri hakkında e-posta bildirimi al.</p>
+              </div>
+              <label className={styles.toggleSwitch}>
+                <input
+                  type="checkbox"
+                  checked={settings.emailSms.emailFriendRequests}
+                  onChange={() => handleToggleChange('emailSms.emailFriendRequests', !settings.emailSms.emailFriendRequests)}
+                />
+                <span className={styles.toggleSlider}></span>
+              </label>
+            </div>
+            <div className={styles.settingRow}>
+              <div className={styles.settingLabel}>
+                <h4>Güvenlik Olayları</h4>
+                <p>Şüpheli girişler veya hesap değişiklikleri gibi güvenlik uyarıları.</p>
+              </div>
+              <label className={styles.toggleSwitch}>
+                <input
+                  type="checkbox"
+                  checked={settings.emailSms.emailSecurityAlerts}
+                  onChange={() => handleToggleChange('emailSms.emailSecurityAlerts', !settings.emailSms.emailSecurityAlerts)}
+                />
+                <span className={styles.toggleSlider}></span>
+              </label>
+            </div>
+          </>
+        )}
+
+        <div className={styles.settingRow}>
+          <div className={styles.settingLabel}>
+            <h4>SMS Bildirimlerini Aç</h4>
+            <p>Mobil numaranıza SMS bildirimleri gönderir (opsiyonel).</p>
+          </div>
+          <label className={styles.toggleSwitch}>
+            <input
+              type="checkbox"
+              checked={settings.emailSms.enableSmsNotifications}
+              onChange={() => handleToggleChange('emailSms.enableSmsNotifications', !settings.emailSms.enableSmsNotifications)}
+              disabled={!settings.general.enableAllNotifications}
+            />
+            <span className={styles.toggleSlider}></span>
+          </label>
+        </div>
+        {settings.emailSms.enableSmsNotifications && (
+          <>
+            <div className={styles.settingRow}>
+              <div className={styles.settingLabel}>
+                <h4>SMS Giriş Doğrulama</h4>
+                <p>Giriş denemeleri için SMS ile doğrulama kodu al.</p>
+              </div>
+              <label className={styles.toggleSwitch}>
+                <input
+                  type="checkbox"
+                  checked={settings.emailSms.smsLoginVerification}
+                  onChange={() => handleToggleChange('emailSms.smsLoginVerification', !settings.emailSms.smsLoginVerification)}
+                />
+                <span className={styles.toggleSlider}></span>
+              </label>
+            </div>
+            <div className={styles.settingRow}>
+              <div className={styles.settingLabel}>
+                <h4>SMS Güvenlik Uyarıları</h4>
+                <p>Hesap güvenliğiyle ilgili kritik uyarıları SMS ile al.</p>
+              </div>
+              <label className={styles.toggleSwitch}>
+                <input
+                  type="checkbox"
+                  checked={settings.emailSms.smsSecurityAlerts}
+                  onChange={() => handleToggleChange('emailSms.smsSecurityAlerts', !settings.emailSms.smsSecurityAlerts)}
+                />
+                <span className={styles.toggleSlider}></span>
+              </label>
+            </div>
+          </>
+        )}
+      </section>
+
+      {/* İpuçları ve Hatırlatmalar */}
+      <section className={styles.settingsSection}>
+        <h2 className={styles.sectionTitle}>
+          <BellRing /> İpuçları ve Hatırlatmalar
+        </h2>
+        <div className={styles.infoBox}>
+          <h4>Önemli Bilgi:</h4>
+          <p>Rahatsız Etmeyin modu etkinleştirildiğinde, sadece acil ve öncelikli olarak işaretlenmiş bildirimler size ulaşacaktır.</p>
+          <p>Bildirim ayarlarınız, oturum açtığınız tüm cihazlarınıza otomatik olarak senkronize edilir ve uygulanır.</p>
+        </div>
+      </section>
+
+      {hasChanges && (
+        <div className={styles.floatingSaveIndicator}>
+          <span>**Kaydedilmemiş Değişiklikler Var!**</span>
+          <div>
+            <button className={styles.resetChangesButton} onClick={handleResetChanges}>
+              Sıfırla
+            </button>
+            <button className={styles.saveButton} onClick={handleSaveChanges}>
+              Ayarları Kaydet
+            </button>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

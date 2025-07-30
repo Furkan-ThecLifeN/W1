@@ -1,11 +1,10 @@
-.notificationSettingsContainer {
+.gameActivityContainer {
   padding: 40px 20px;
-  max-width: 1000px;
-
+  max-width: 1200px;
+  height: 100%;
   margin: 0 auto;
   color: var(--text-white);
   font-family: var(--font-main);
-  height: 100%;
   max-height: 100vh;
   box-sizing: border-box;
   overflow-y: auto;
@@ -13,7 +12,7 @@
   -ms-overflow-style: none;
 }
 
-.notificationSettingsContainer::-webkit-scrollbar {
+.gameActivityContainer::-webkit-scrollbar {
   display: none;
 }
 
@@ -21,15 +20,12 @@
   text-align: center;
   margin-bottom: 40px;
   padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .pageHeader h1 {
   font-size: 32px;
-   color: var(--text-white);
-  background: var(--text-title-gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--text-white);
   margin-bottom: 10px;
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -140,6 +136,7 @@
 
 input:checked + .toggleSlider {
   background-color: var(--color-blue);
+    box-shadow: 0 0 2px 4px rgba(0, 170, 255, 0.2);
 }
 
 input:focus + .toggleSlider {
@@ -151,42 +148,13 @@ input:checked + .toggleSlider:before {
   background-color: var(--text-white);
 }
 
-.selectInput {
-  width: 100%;
-  padding: 10px 15px;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background-color: var(--bg-main);
-  color: var(--text-white);
-  font-size: 15px;
-  outline: none;
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23e0e0e0%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13%205.7L146.2%20204%2018.3%2075.1a17.6%2017.6%200%200%200-25.7%2023.1l132.4%20132.3c3.5%203.5%208%205.7%2012.9%205.7s9.4-2.2%2012.9-5.7L287%2092.2c1.4-1.4%202.7-2.8%203.9-4.3a17.6%2017.6%200%200%200%200-24.5c-.1-.1-.3-.2-.5-.3z%22%2F%3E%3C%2Fsvg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 10px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.selectInput:hover {
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-.selectInput:focus {
-  border-color: var(--color-blue);
-  box-shadow: 0 0 0 2px rgba(0, 170, 255, 0.2);
-}
-
-.timeInputGroup {
+.customStatusInputGroup {
   display: flex;
-  align-items: center;
   gap: 10px;
+  margin-top: 15px;
 }
 
-.timeInput {
+.customStatusInputGroup .textInput {
   flex-grow: 1;
   padding: 10px 15px;
   border-radius: 6px;
@@ -198,9 +166,138 @@ input:checked + .toggleSlider:before {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.timeInput:focus {
+.customStatusInputGroup .emojiInput {
+  width: 50px;
+  text-align: center;
+  padding: 10px 5px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: var(--bg-main);
+  color: var(--text-white);
+  font-size: 18px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.customStatusInputGroup input:focus {
   border-color: var(--color-blue);
   box-shadow: 0 0 0 2px rgba(0, 170, 255, 0.2);
+}
+
+.gameList {
+  margin-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 15px;
+}
+
+.noGamesMessage {
+  text-align: center;
+  color: var(--color-grey);
+  font-size: 14px;
+  padding: 20px 0;
+}
+
+.gameItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.02);
+}
+
+.gameItem:last-child {
+  border-bottom: none;
+}
+
+.gameName {
+  font-size: 16px;
+  color: var(--text-white);
+  font-weight: 500;
+}
+
+.gameActions {
+  display: flex;
+  gap: 8px;
+}
+
+.gameActionButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-grey);
+  transition: color 0.2s ease, transform 0.1s ease;
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.gameActionButton:hover {
+  color: var(--color-blue);
+  transform: translateY(-1px);
+}
+
+.gameActionButton.hidden {
+  color: var(--color-gray888);
+}
+
+.gameActionButton.visible {
+  color: var(--busy);
+}
+
+.gameActionButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: var(--color-gray888);
+}
+
+.addGameInputGroup {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.addGameInputGroup .textInput {
+  flex-grow: 1;
+  padding: 10px 15px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: var(--bg-main);
+  color: var(--text-white);
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.addGameInputGroup .textInput:focus {
+  border-color: var(--color-blue);
+  box-shadow: 0 0 0 2px rgba(0, 170, 255, 0.2);
+}
+
+.addButton {
+  padding: 10px 15px;
+  background-color: var(--color-blue);
+  border: none;
+  border-radius: 6px;
+  color: var(--text-white);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.addButton:hover {
+  background-color: #0095e6;
+  transform: translateY(-1px);
+}
+
+.addButton:disabled {
+  background-color: rgba(0, 170, 255, 0.5);
+  cursor: not-allowed;
+  opacity: 0.7;
+  transform: translateY(0);
 }
 
 .infoBox {
@@ -267,7 +364,7 @@ input:checked + .toggleSlider:before {
 }
 
 .saveButton:hover {
-  background-color: #0a84d0;
+  background-color: #0095e6;
 }
 
 .resetChangesButton {
@@ -281,7 +378,7 @@ input:checked + .toggleSlider:before {
 }
 
 @media (max-width: 768px) {
-  .notificationSettingsContainer {
+  .gameActivityContainer {
     padding: 25px 15px;
   }
 
@@ -336,19 +433,23 @@ input:checked + .toggleSlider:before {
     align-self: flex-end;
   }
 
-  .timeInputGroup {
-    width: 100%;
+  .customStatusInputGroup {
     flex-direction: column;
-    align-items: stretch;
     gap: 8px;
   }
 
-  .timeInput {
+  .customStatusInputGroup .emojiInput {
     width: 100%;
   }
 
-  .selectInput {
+  .addGameInputGroup {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .addButton {
     width: 100%;
+    justify-content: center;
   }
 
   .floatingSaveIndicator {

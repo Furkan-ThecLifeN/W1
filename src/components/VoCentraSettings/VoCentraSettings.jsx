@@ -4,7 +4,12 @@ import styles from "./VoCentraSettings.module.css";
 import SettingsSidebar from "./Settings/SettingsSidebar/SettingsSidebar";
 import ThemeSettings from "./Settings/ThemeSettings/ThemeSettings";
 import NotificationSettings from "./Settings/NotificationSettings/NotificationSettings";
-import KeyboardShortcuts from './Settings/KeyboardShortcuts/KeyboardShortcuts';
+import StatusActivity from "./Settings/StatusActivity/StatusActivity";
+import SoundSettings from "./Settings/SoundSettings/SoundSettings";
+import CameraSettings from "./Settings/CameraSettings/CameraSettings";
+import AudioActivityView from "./Settings/AudioActivityView/AudioActivityView";
+import GameActivityStatus from "./Settings/GameActivityStatus/GameActivityStatus";
+import IntegrationSettings from "./Settings/IntegrationSettings/IntegrationSettings";
 
 const VoCentraSettings = () => {
   const [activeTab, setActiveTab] = useState("account");
@@ -21,7 +26,12 @@ const VoCentraSettings = () => {
         <div className={styles.settingsMain}>
           {activeTab === "theme" && <ThemeSettings />}
           {activeTab === "notifications" && <NotificationSettings />}
-          {activeTab === "keybinds" && <KeyboardShortcuts />}
+          {activeTab === "statusSettings" && <StatusActivity />}
+          {activeTab === "audio" && <SoundSettings />}
+          {activeTab === "video" && <CameraSettings />}
+          {activeTab === "voiceActivity" && <AudioActivityView />}
+          {activeTab === "richPresence" && <GameActivityStatus />}
+          {activeTab === "nowPlaying" && <IntegrationSettings />}
         </div>
       </div>
     </div>

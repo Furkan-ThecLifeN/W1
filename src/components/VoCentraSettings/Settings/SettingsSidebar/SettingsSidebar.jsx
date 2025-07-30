@@ -18,12 +18,6 @@ const SettingsSidebar = ({ activeTab, setActiveTab }) => {
       category: "Genel",
     },
     {
-      id: "keybinds",
-      icon: "fa-keyboard",
-      label: "Klavye Kısayolları",
-      category: "Genel",
-    },
-    {
       id: "statusSettings",
       icon: "fa-user-circle",
       label: "Durum ve Etkinlik",
@@ -49,13 +43,6 @@ const SettingsSidebar = ({ activeTab, setActiveTab }) => {
       label: "Ses Aktivite Görünümü",
       category: "Ses & Görüntü",
     },
-    {
-      id: "voiceIO",
-      icon: "fa-headphones-alt",
-      label: "Ses Giriş/Çıkış",
-      category: "Ses & Görüntü",
-    },
-
     // ETKİNLİKLER & AKTİVİTELER
     {
       id: "richPresence",
@@ -64,24 +51,11 @@ const SettingsSidebar = ({ activeTab, setActiveTab }) => {
       category: "Etkinlikler",
     },
     {
-      id: "savedGames",
-      icon: "fa-save",
-      label: "Kayıtlı Oyunlar",
-      category: "Etkinlikler",
-    },
-    {
       id: "nowPlaying",
       icon: "fa-play-circle",
       label: "YouTube / Spotify / Netflix",
       category: "Etkinlikler",
     },
-    {
-      id: "lyricsOverlay",
-      icon: "fa-file-audio",
-      label: "Şarkı Sözleri (Overlay)",
-      category: "Etkinlikler",
-    },
-
     // YAYINCI MODU
     {
       id: "streamer",
