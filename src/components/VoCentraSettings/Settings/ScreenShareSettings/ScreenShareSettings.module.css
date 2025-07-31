@@ -1,0 +1,306 @@
+
+/* Ana Konteyner */
+.container {
+    width: 100%;
+  max-width: 1200px;
+  height: 100%;
+  max-height: 100vh;
+  margin: 0 auto;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  backdrop-filter: var(--backdrop-filter);
+  color: var(--text-white);
+  font-family: var(--font-main);
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Başlık Alanı */
+.header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.title {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+  background: var(--text-title-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  color: var(--color-grey);
+  font-size: 0.9rem;
+}
+
+/* Ayarlar Grupları */
+.settingGroup {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: rgba(26, 26, 26, 0.6);
+  border-radius: 10px;
+  border: 1px solid var(--color-offgrey);
+}
+
+.settingTitle {
+  font-size: 1.3rem;
+  margin-bottom: 1.5rem;
+  color: var(--color-blue);
+}
+
+/* Tekil Ayar Öğeleri */
+.settingItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--color-offgrey);
+}
+
+.settingItem:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.settingInfo {
+  flex: 1;
+  margin-right: 1rem;
+}
+
+.settingInfo h3 {
+  font-size: 1rem;
+  margin-bottom: 0.3rem;
+  color: var(--text-white);
+}
+
+.settingInfo p {
+  font-size: 0.85rem;
+  color: var(--color-grey);
+  margin: 0;
+}
+
+/* Kısayol Girişi */
+.shortcutInput {
+  padding: 0.8rem 1.2rem;
+  background: var(--secondary-bg);
+  border: 1px solid var(--color-offgrey);
+  border-radius: 6px;
+  min-width: 180px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  font-family: monospace;
+}
+
+.shortcutInput:hover {
+  border-color: var(--color-blue);
+}
+
+.shortcutInput:focus {
+  outline: none;
+  border-color: var(--color-blue);
+  box-shadow: 0 0 0 2px rgba(0, 170, 255, 0.3);
+}
+
+.editHint {
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  width: 100%;
+  font-size: 0.7rem;
+  color: var(--color-grey);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.shortcutInput:hover .editHint {
+  opacity: 1;
+}
+
+/* Radyo Buton Grupları */
+.radioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  min-width: 200px;
+}
+
+.radioOption {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  cursor: pointer;
+  padding: 0.5rem 0.8rem;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.radioOption:hover {
+  background: var(--hover-bg);
+}
+
+.radioOption input {
+  accent-color: var(--color-blue);
+}
+
+/* Kaydırıcı Stilleri */
+.sliderContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 200px;
+}
+
+.qualitySlider {
+  flex: 1;
+  height: 6px;
+  -webkit-appearance: none;
+  background: var(--secondary-bg);
+  border-radius: 3px;
+  outline: none;
+}
+
+.qualitySlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-blue);
+  cursor: pointer;
+}
+
+.sliderValue {
+  min-width: 60px;
+  text-align: center;
+  font-family: monospace;
+}
+
+/* Toggle Anahtarları */
+.toggleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.toggleItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.toggleItem:hover {
+  background: var(--hover-bg);
+}
+
+.toggleInfo h3 {
+  font-size: 1rem;
+  margin-bottom: 0.3rem;
+  color: var(--text-white);
+}
+
+.toggleInfo p {
+  font-size: 0.85rem;
+  color: var(--color-grey);
+  margin: 0;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+  margin-left: 1rem;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--secondary-bg);
+  border: 1px solid var(--color-offgrey);
+  transition: .4s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 3px;
+  background-color: var(--color-grey);
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--color-blue);
+  border-color: var(--color-blue);
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+  background-color: white;
+}
+
+/* Aksiyon Butonları */
+.actionButtons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.saveButton, .cancelButton {
+  padding: 0.8rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.saveButton {
+  background: var(--color-blue);
+  color: white;
+}
+
+.saveButton:hover {
+  background: #0099e6;
+  transform: translateY(-1px);
+}
+
+.cancelButton {
+  background: transparent;
+  color: var(--color-grey);
+  border: 1px solid var(--color-offgrey);
+}
+
+.cancelButton:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-white);
+}

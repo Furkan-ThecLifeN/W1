@@ -11,15 +11,15 @@ import AudioActivityView from "./Settings/AudioActivityView/AudioActivityView";
 import GameActivityStatus from "./Settings/GameActivityStatus/GameActivityStatus";
 import IntegrationSettings from "./Settings/IntegrationSettings/IntegrationSettings";
 import LiveStreamSettings from "./Settings/LiveStreamSettings/LiveStreamSettings";
+import ScreenShareSettings from "./Settings/ScreenShareSettings/ScreenShareSettings";
+import ServersSettings from "./Settings/ServersSettings/ServersSettings";
+import ModerationSettings from "./Settings/ModerationSettings/ModerationSettings";
 
 const VoCentraSettings = () => {
   const [activeTab, setActiveTab] = useState("account");
 
   return (
     <div className={styles.settingsContainer}>
-      <div className={styles.settingsHeader}>
-        <h1 className={styles.settingsTitle}>VoCentra</h1>
-      </div>
 
       <div className={styles.settingsContent}>
         <SettingsSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -34,6 +34,10 @@ const VoCentraSettings = () => {
           {activeTab === "richPresence" && <GameActivityStatus />}
           {activeTab === "nowPlaying" && <IntegrationSettings />}
           {activeTab === "liveStream" && <LiveStreamSettings />}
+          {activeTab === "screenShare" && <ScreenShareSettings />}
+          {activeTab === "serverManagement" && <ServersSettings />}
+          {activeTab === "moderation" && <ModerationSettings />}
+          {activeTab === "serverManagement" && <ServersSettings />}
         </div>
       </div>
     </div>

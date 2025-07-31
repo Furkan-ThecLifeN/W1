@@ -57,7 +57,7 @@
 }
 
 .settingGroup {
-  background-color: var(--secondary-bg);
+  background-color: var(--bg-main);
   padding: 20px;
   border-radius: 10px;
   display: flex;
@@ -159,7 +159,7 @@
 
 /* --- Video Önizleme Alanı --- */
 .previewSection {
-  background-color: var(--secondary-bg);
+  background-color: var(--bg-main);
   padding: 25px;
   border-radius: 10px;
   margin-bottom: 40px;
