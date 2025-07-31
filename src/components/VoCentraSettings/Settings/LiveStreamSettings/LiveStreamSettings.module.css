@@ -4,8 +4,9 @@
   height: 100%;
   max-height: 100vh;
   width: 100%;
-/*   max-width: 1200px;
- */  background: var(--bg-main);
+  /*   max-width: 1200px;
+ */
+  background: var(--bg-main);
   color: var(--text-white);
   font-family: var(--font-main);
   overflow: hidden;
@@ -33,11 +34,7 @@
   margin: 0;
   font-size: 1.8rem;
   font-weight: 600;
-  background: var(--text-title-gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
+  color: var(--text-white);}
 
 .header p {
   margin: 0.5rem 0 0 0;
@@ -48,7 +45,7 @@
 .headerIcon {
   font-size: 2rem;
   margin-right: 1rem;
-  color: var(--color-blue);
+  color: var(--color-white);
 }
 
 .headerDecoration {
@@ -57,7 +54,7 @@
   left: 0;
   width: 100%;
   height: 2px;
-  background: var(--color-blue)
+  background: var(--color-blue);
 }
 
 .contentWrapper {
@@ -105,8 +102,18 @@
 
 .mainContent {
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden;
   padding: 1.5rem 2rem;
+  width: 100%;
+  height: 100%;
+  max-height: 100vh;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.mainContent::-webkit-scrollbar {
+  display: none;
 }
 
 .settingsSection {
