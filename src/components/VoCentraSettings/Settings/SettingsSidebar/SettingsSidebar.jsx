@@ -53,12 +53,12 @@ const SettingsSidebar = ({ activeTab, setActiveTab }) => {
     {
       id: "nowPlaying",
       icon: "fa-play-circle",
-      label: "YouTube / Spotify / Netflix",
+      label: "Bağlantılar",
       category: "Etkinlikler",
     },
     // YAYINCI MODU
     {
-      id: "streamer",
+      id: "liveStream",
       icon: "fa-broadcast-tower",
       label: "Yayıncı Modu",
       category: "Yayın",

@@ -1,0 +1,480 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100vh;
+  width: 100%;
+/*   max-width: 1200px;
+ */  background: var(--bg-main);
+  color: var(--text-white);
+  font-family: var(--font-main);
+  overflow: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.container::-webkit-scrollbar {
+  display: none;
+}
+
+.header {
+  background: var(--bg-main);
+  padding: 1.5rem 2rem;
+  position: relative;
+  z-index: 2;
+}
+
+.headerContent {
+  max-width: 1200px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 600;
+  background: var(--text-title-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.header p {
+  margin: 0.5rem 0 0 0;
+  color: var(--color-grey);
+  font-size: 1rem;
+}
+
+.headerIcon {
+  font-size: 2rem;
+  margin-right: 1rem;
+  color: var(--color-blue);
+}
+
+.headerDecoration {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--color-blue)
+}
+
+.contentWrapper {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 250px;
+  background: var(--bg-main);
+  padding: 1rem 0;
+  overflow-y: auto;
+}
+
+.sidebarButton {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.8rem 1.5rem;
+  background: transparent;
+  border: none;
+  color: var(--color-grey);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sidebarButton:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-white);
+}
+
+.sidebarButton.active {
+  background: rgba(0, 170, 255, 0.1);
+  color: var(--color-blue);
+  border-left: 3px solid var(--color-blue);
+}
+
+.sidebarIcon {
+  margin-right: 0.8rem;
+  font-size: 1.1rem;
+}
+
+.mainContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem 2rem;
+}
+
+.settingsSection {
+  margin-bottom: 2rem;
+  background: var(--bg-main);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sectionHeader:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.sectionHeader h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.sectionIcon {
+  margin-right: 0.8rem;
+  font-size: 1.2rem;
+  color: var(--color-blue);
+}
+
+.sectionContent {
+  padding: 1rem 1.5rem;
+}
+
+.settingRow {
+  display: flex;
+  margin-bottom: 1.5rem;
+}
+
+.settingLabel {
+  flex: 1;
+  min-width: 0;
+}
+
+.settingLabel label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.3rem;
+  color: var(--text-white);
+}
+
+.settingLabel p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-grey);
+  line-height: 1.5;
+}
+
+.settingControl {
+  width: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: 0.4s;
+  border-radius: 24px;
+}
+
+.switch .slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+.switch input:checked + .slider {
+  background-color: var(--color-blue);
+}
+
+.switch input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.textInput,
+.numberInput,
+.selectInput {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: var(--text-white);
+  font-family: var(--font-main);
+  transition: all 0.2s;
+}
+
+.textInput:focus,
+.numberInput:focus,
+.selectInput:focus {
+  outline: none;
+  border-color: var(--color-blue);
+  box-shadow: 0 0 0 2px rgba(0, 170, 255, 0.2);
+}
+
+.numberInput {
+  width: 80px;
+}
+
+.selectInput {
+  cursor: pointer;
+}
+
+.sliderContainer {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.slider {
+  flex: 1;
+  height: 4px;
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.1);
+  outline: none;
+  margin-right: 0.8rem;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-blue);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 2px rgba(0, 170, 255, 0.3);
+}
+
+.sliderValue {
+  width: 40px;
+  text-align: right;
+  font-size: 0.9rem;
+  color: var(--color-grey);
+}
+
+.shortcutInput {
+  padding: 0.6rem 0.8rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: var(--text-white);
+  font-family: monospace;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.shortcutInput:hover {
+  background: rgba(0, 170, 255, 0.1);
+  border-color: var(--color-blue);
+}
+
+.colorInput {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+  padding: 0;
+}
+
+.colorInput::-webkit-color-swatch {
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.colorInput::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.roleSection {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.roleSection:last-child {
+  margin-bottom: 0;
+}
+
+.roleHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.roleHeader h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.roleIcon {
+  font-size: 1.3rem;
+  margin-right: 0.8rem;
+}
+
+.bannedWordsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.bannedWord {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 0, 0, 0.1);
+  border-radius: 4px;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+.removeWordButton {
+  background: none;
+  border: none;
+  color: var(--color-grey);
+  margin-left: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.removeWordButton:hover {
+  background: rgba(255, 0, 0, 0.3);
+  color: white;
+}
+
+.addWordContainer {
+  display: flex;
+  width: 100%;
+}
+
+.addWordInput {
+  flex: 1;
+  padding: 0.5rem 0.8rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px 0 0 6px;
+  color: var(--text-white);
+  font-family: var(--font-main);
+}
+
+.addWordButton {
+  background: rgba(0, 170, 255, 0.2);
+  border: 1px solid rgba(0, 170, 255, 0.3);
+  border-left: none;
+  border-radius: 0 6px 6px 0;
+  color: var(--color-blue);
+  cursor: pointer;
+  padding: 0 0.8rem;
+  transition: all 0.2s;
+}
+
+.addWordButton:hover {
+  background: rgba(0, 170, 255, 0.3);
+}
+
+/* Responsive Tasarım */
+@media (max-width: 1024px) {
+  .contentWrapper {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    display: flex;
+    overflow-x: auto;
+    padding: 0;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .sidebarButton {
+    padding: 1rem;
+    border-bottom: 3px solid transparent;
+    border-left: none;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  .sidebarButton.active {
+    border-left: none;
+    border-bottom: 3px solid var(--color-blue);
+  }
+
+  .settingRow {
+    flex-direction: column;
+  }
+
+  .settingControl {
+    width: 100%;
+    justify-content: flex-start;
+    margin-top: 0.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .header h1 {
+    font-size: 1.5rem;
+  }
+
+  .header p {
+    font-size: 0.9rem;
+  }
+
+  .mainContent {
+    padding: 1rem;
+  }
+
+  .sectionHeader h2 {
+    font-size: 1.1rem;
+  }
+}

@@ -10,6 +10,7 @@ import CameraSettings from "./Settings/CameraSettings/CameraSettings";
 import AudioActivityView from "./Settings/AudioActivityView/AudioActivityView";
 import GameActivityStatus from "./Settings/GameActivityStatus/GameActivityStatus";
 import IntegrationSettings from "./Settings/IntegrationSettings/IntegrationSettings";
+import LiveStreamSettings from "./Settings/LiveStreamSettings/LiveStreamSettings";
 
 const VoCentraSettings = () => {
   const [activeTab, setActiveTab] = useState("account");
@@ -32,6 +33,7 @@ const VoCentraSettings = () => {
           {activeTab === "voiceActivity" && <AudioActivityView />}
           {activeTab === "richPresence" && <GameActivityStatus />}
           {activeTab === "nowPlaying" && <IntegrationSettings />}
+          {activeTab === "liveStream" && <LiveStreamSettings />}
         </div>
       </div>
     </div>
