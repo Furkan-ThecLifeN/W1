@@ -433,7 +433,6 @@ input:checked + .slider:before {
   .container {
     padding: 1rem;
     max-height: initial;
-    height: auto;
   }
 
   /* Başlık ve Alt Başlık */
