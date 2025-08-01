@@ -109,22 +109,6 @@ const SettingsSidebar = ({ activeTab, setActiveTab }) => {
       category: "Gelişmiş",
       new: false
     },
-    {
-      id: "developer",
-      icon: "fa-code",
-      label: "Geliştirici Seçenekleri",
-      category: "Gelişmiş",
-      role: "developer",
-      new: false
-    },
-    {
-      id: "advanced",
-      icon: "fa-cogs",
-      label: "Gelişmiş Ayarlar",
-      category: "Gelişmiş",
-      role: "admin",
-      new: false
-    },
   ];
 
   const categories = [...new Set(tabs.map((tab) => tab.category))];

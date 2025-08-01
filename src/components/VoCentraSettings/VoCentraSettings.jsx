@@ -9,11 +9,12 @@ import SoundSettings from "./Settings/SoundSettings/SoundSettings";
 import CameraSettings from "./Settings/CameraSettings/CameraSettings";
 import AudioActivityView from "./Settings/AudioActivityView/AudioActivityView";
 import GameActivityStatus from "./Settings/GameActivityStatus/GameActivityStatus";
-import IntegrationSettings from "./Settings/IntegrationSettings/IntegrationSettings";
+import ConnectionsSettings from "./Settings/ConnectionsSettings/ConnectionsSettings";
 import LiveStreamSettings from "./Settings/LiveStreamSettings/LiveStreamSettings";
 import ScreenShareSettings from "./Settings/ScreenShareSettings/ScreenShareSettings";
 import ServersSettings from "./Settings/ServersSettings/ServersSettings";
 import ModerationSettings from "./Settings/ModerationSettings/ModerationSettings";
+import IntegrationsSettings from "./Settings/IntegrationsSettings/IntegrationsSettings";
 
 const VoCentraSettings = () => {
   const [activeTab, setActiveTab] = useState("account");
@@ -32,12 +33,12 @@ const VoCentraSettings = () => {
           {activeTab === "video" && <CameraSettings />}
           {activeTab === "voiceActivity" && <AudioActivityView />}
           {activeTab === "richPresence" && <GameActivityStatus />}
-          {activeTab === "nowPlaying" && <IntegrationSettings />}
+          {activeTab === "nowPlaying" && <ConnectionsSettings />}
           {activeTab === "liveStream" && <LiveStreamSettings />}
           {activeTab === "screenShare" && <ScreenShareSettings />}
           {activeTab === "serverManagement" && <ServersSettings />}
           {activeTab === "moderation" && <ModerationSettings />}
-          {activeTab === "serverManagement" && <ServersSettings />}
+          {activeTab === "integrations" && <IntegrationsSettings />}
         </div>
       </div>
     </div>

@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { FiLink, FiX, FiChevronRight, FiCheck, FiExternalLink, FiTrash2 } from 'react-icons/fi';
 import { FaYoutube, FaSpotify } from 'react-icons/fa6';
 import { IoMdClose } from 'react-icons/io';
-import styles from './IntegrationSettings.module.css';
+import styles from './ConnectionsSettings.module.css';
 
-const IntegrationSettings = () => {
+const ConnectionsSettings = () => {
   const [activeModal, setActiveModal] = useState(null);
   const [connectedAccounts, setConnectedAccounts] = useState([
     { id: 1, service: 'youtube', username: 'kullanici123', connected: true },
@@ -186,4 +186,4 @@ const IntegrationSettings = () => {
   );
 };
 
-export default IntegrationSettings;
+export default ConnectionsSettings;
