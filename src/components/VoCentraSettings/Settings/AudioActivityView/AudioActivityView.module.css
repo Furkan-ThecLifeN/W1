@@ -10,7 +10,7 @@
   height: 100%;
   max-height: 100vh;             
   overflow-y: auto;         
-  scrollbar-width: none;       
+  scrollbar-width: none; 
 }
 
 .audioActivityView::-webkit-scrollbar {
@@ -267,6 +267,7 @@
 }
 
 .applyButton {
+  margin-bottom: 40px;
   padding: 14px 35px;
   background: var(--color-blue);
   border: none;

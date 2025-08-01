@@ -16,7 +16,7 @@
 /* Sol Sidebar */
 .settingsPage > :first-child {
   width: var(--sidebar-left-width);
-  height: 100vh; /* tam ekran yüksekliği */
+  height: 100vh; 
   position: fixed;
   left: 0;
   top: 0;
@@ -46,8 +46,5 @@
 
   .mainContent {
     margin-left: 0;
-    padding: 12px;
-    padding-bottom: 60px; /* BottomNav için boşluk */
-    padding-bottom: 60px; /* BottomNav için alt boşluk */
   }
 }

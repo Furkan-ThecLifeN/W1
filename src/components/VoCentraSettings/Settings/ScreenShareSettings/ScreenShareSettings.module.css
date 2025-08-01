@@ -1,7 +1,6 @@
-
 /* Ana Konteyner */
 .container {
-    width: 100%;
+  width: 100%;
   max-width: 1200px;
   height: 100%;
   max-height: 100vh;
@@ -28,6 +27,7 @@
 }
 
 .title {
+  margin-top: 40px;
   font-size: 1.8rem;
   margin-bottom: 0.5rem;
   background: var(--text-title-gradient);
@@ -241,7 +241,7 @@
   bottom: 0;
   background-color: var(--secondary-bg);
   border: 1px solid var(--color-offgrey);
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 24px;
 }
 
@@ -253,7 +253,7 @@
   left: 4px;
   bottom: 3px;
   background-color: var(--color-grey);
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 50%;
 }
 
@@ -273,9 +273,11 @@ input:checked + .slider:before {
   justify-content: flex-end;
   gap: 1rem;
   margin-top: 2rem;
+  margin-bottom: 40px;
 }
 
-.saveButton, .cancelButton {
+.saveButton,
+.cancelButton {
   padding: 0.8rem 1.5rem;
   border-radius: 6px;
   font-weight: 600;

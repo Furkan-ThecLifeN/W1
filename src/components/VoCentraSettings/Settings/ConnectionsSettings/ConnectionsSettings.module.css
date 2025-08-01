@@ -25,6 +25,10 @@
 .headerContent {
   position: relative;
   z-index: 2;
+   display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
 
 .title {
@@ -37,7 +41,7 @@
 .subtitle {
   font-size: 1.1rem;
   color: var(--color-grey);
-  margin: 0;
+  margin: 0 auto;
   max-width: 600px;
 }
 
@@ -46,6 +50,7 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 3rem;
+  margin-bottom: 40px;
 }
 
 .sectionTitle {
