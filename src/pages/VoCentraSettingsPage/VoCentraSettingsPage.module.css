@@ -1,4 +1,52 @@
-.vocentraSettings {
+:root {
+  --sidebar-left-width: 80px;
+}
+
+.settingsPage {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  background-color: var(--color-black);
+  color: var(--color-white);
+  overflow: hidden;
+  flex-direction: column; /* Altta BottomNav olduğu için dikey */
+}
+
+/* Sol Sidebar */
+.settingsPage > :first-child {
+  width: var(--sidebar-left-width);
+  height: 100vh; /* tam ekran yüksekliği */
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 99;
+}
+
+/* Main içerik alanı */
+.mainContent {
+  margin-left: var(--sidebar-left-width);
+  flex: 1;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding-bottom: 60px; /* BottomNav için alt boşluk */
+  height: 100vh;
+}
+
+/* Mobil uyum */
+@media (max-width: 1024px) {
+  .settingsPage {
+    flex-direction: column;
+  }
+
+  .settingsPage > :first-child {
     width: 100%;
-    height: 100vh;
+    height: auto;
+    position: static;
+  }
+
+  .mainContent {
+    margin-left: 0;
+    padding: 12px;
+    padding-bottom: 60px; /* BottomNav için boşluk */
+  }
 }

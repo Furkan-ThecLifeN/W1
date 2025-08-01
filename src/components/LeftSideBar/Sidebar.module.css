@@ -28,8 +28,8 @@
 }
 
 .link {
-  background-color: rgb(10 26 33);
-  color: var(--color-black);
+  background: #1ebef4; /* Açık neon mavi tonu */
+  color: black;
   font-size: 22px;
   display: flex;
   position: relative;
@@ -38,8 +38,18 @@
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  transition: background-color 0.3s ease;
+  border: none;
+
+  /* Daha dengeli glow efekti */
+  box-shadow:
+    0 0 4px #33eaff,
+    0 0 8px rgba(51, 234, 255, 0.6),
+    0 0 12px rgba(51, 234, 255, 0.4);
+  
+  transition: background 0.3s ease, box-shadow 0.3s ease;
 }
+
+
 
 .link:hover {
   background-color: var(--hover-bg);
