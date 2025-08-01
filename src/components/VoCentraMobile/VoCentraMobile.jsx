@@ -2,14 +2,16 @@ import React, { useState, useEffect } from "react";
 import styles from "./VoCentraMobile.module.css";
 import ServerList from "../Vocentra/VocentraServerList/VocentraServerList";
 import VoCentraRoster from "../Vocentra/VocentraRoster/VocentraRoster";
-import { FaTimes } from "react-icons/fa"; 
+import { FaTimes } from "react-icons/fa";
 import { SiHearthisdotat } from "react-icons/si";
-
+import { FiSettings } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 const VoCentraMobile = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [showServerList, setShowServerList] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleResize = () => {
@@ -24,16 +26,23 @@ const VoCentraMobile = () => {
     setShowServerList(!showServerList);
   };
 
+  const handleSettingsClick = () => {
+    navigate("/vosettings"); 
+  };
+
   if (!isMobile) {
-    return null; // Or you could return the regular Vocentra component here
+    return null; 
   }
 
   return (
-    <div className={styles.VoCentraMobile}>
-      {/* Mobile Header with Server Toggle */}
+    <div className={styles.VocentraMobile}>
       <div className={styles.mobileHeader}>
-        <button className={styles.serverToggle} onClick={toggleServerList}>
-          <SiHearthisdotat  size={24} />
+        <button className={styles.serverToggle} onClick={toggleServerList} aria-label="Sunucu Listesi">
+          <SiHearthisdotat size={24} />
+        </button>
+
+        <button className={styles.settingsButton} onClick={handleSettingsClick} aria-label="Ayarlar">
+          <FiSettings size={24} />
         </button>
       </div>
 
@@ -41,7 +50,7 @@ const VoCentraMobile = () => {
       {showServerList && (
         <div className={styles.serverListOverlay}>
           <div className={styles.serverListContainer}>
-            <button className={styles.closeButton} onClick={toggleServerList}>
+            <button className={styles.closeButton} onClick={toggleServerList} aria-label="Kapat">
               <FaTimes size={18} />
             </button>
             <ServerList onSelectUser={setSelectedUser} />
