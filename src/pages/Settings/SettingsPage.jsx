@@ -5,6 +5,30 @@ import Sidebar from "../../components/LeftSideBar/Sidebar";
 import MobileSettings from "../../components/Settings/MobileSettings/MobileSettings";
 import BottomNav from "../../components/BottomNav/BottomNav";
 
+// ChartSetup.js veya App.js gibi bir yerde
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
 
 const SettingsPage = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);

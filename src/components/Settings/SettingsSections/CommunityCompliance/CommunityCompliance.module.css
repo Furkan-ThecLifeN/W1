@@ -1,0 +1,495 @@
+/* CommunityCompliance.module.css */
+
+.container {
+  padding: 20px;
+  background: var(--color-black);
+  border-radius: 12px;
+  color: var(--text-white);
+  font-family: var(--font-main);
+  min-height: 100vh;
+}
+
+/* Başlık Stilleri */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.headerLeft {
+  flex: 1;
+  min-width: 250px;
+}
+
+.pageTitle {
+  margin: 0;
+  font-size: 1.8rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-white);
+}
+
+.titleIcon {
+  font-size: 1.8rem;
+  color: var(--color-white);
+}
+
+.pageSubtitle {
+  margin: 8px 0 0;
+  font-size: 0.95rem;
+  color: var(--color-gray888);
+}
+
+.headerControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.refreshButton, .settingsButton {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg-main);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.refreshButton:hover, .settingsButton:hover {
+  background: var(--color-blue);
+  transform: scale(1.05);
+}
+
+/* İstatistik Kartları */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.statCard {
+  background: var(--bg-main);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.statIcon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: var(--color-blue);
+}
+
+.statInfo h3 {
+  margin: 0 0 5px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-gray888);
+}
+
+.statInfo p {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* Tab Navigasyon */
+.tabNav {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 30px;
+  overflow-x: auto;
+  padding-bottom: 5px;
+}
+
+.tabButton {
+  background: var(--bg-main);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-gray888);
+  padding: 12px 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.tabButton:hover {
+  background: var(--color-blue);
+  color: var(--text-white);
+}
+
+.tabButton.active {
+  background: var(--color-blue);
+  color: var(--text-white);
+  border-color: var(--color-blue);
+}
+
+.tabIcon {
+  font-size: 1.1rem;
+}
+
+/* İçerik Alanı */
+.contentArea {
+  background: var(--bg-main);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.sectionHeader h2 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+/* Uyarılar Bölümü */
+.filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filterButton {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-gray888);
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filterButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-white);
+}
+
+.filterButton.active {
+  background: var(--color-blue);
+  color: var(--text-white);
+  border-color: var(--color-blue);
+}
+
+.warningsList {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.warningCard {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.warningHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.warningType {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.warningType h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.severityIcon {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.severityIcon.high {
+  background: #ff4d4d;
+  box-shadow: 0 0 10px #ff4d4d;
+}
+
+.severityIcon.medium {
+  background: #f59e0b;
+  box-shadow: 0 0 10px #f59e0b;
+}
+
+.severityIcon.low {
+  background: #10b981;
+  box-shadow: 0 0 10px #10b981;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.statusBadge.active {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.statusBadge.resolved {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.statusBadge.pending {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.warningDetails {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 20px;
+  margin-bottom: 15px;
+}
+
+.warningMeta p {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+}
+
+.warningMeta strong {
+  color: var(--color-gray888);
+}
+
+.warningRule p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.warningRule p:first-child {
+  margin-bottom: 5px;
+}
+
+.warningActions {
+  display: flex;
+  gap: 10px;
+}
+
+.actionButton {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-white);
+  padding: 8px 15px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.actionButton:hover {
+  background: var(--color-blue);
+  border-color: var(--color-blue);
+}
+
+/* Kurallar Bölümü */
+.searchBox {
+  display: flex;
+  align-items: center;
+  background: var(--bg-main);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.searchBox input {
+  flex: 1;
+  padding: 10px 15px;
+  background: transparent;
+  border: none;
+  color: var(--text-white);
+  font-family: var(--font-main);
+}
+
+.searchBox input::placeholder {
+  color: var(--color-gray888);
+}
+
+.searchButton {
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
+  color: var(--color-gray888);
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.searchButton:hover {
+  color: var(--text-white);
+}
+
+.rulesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.ruleCard {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.ruleHeader {
+  margin-bottom: 15px;
+}
+
+.ruleCategory {
+  display: inline-block;
+  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--color-blue);
+}
+
+.ruleHeader h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.ruleDescription {
+  margin: 0 0 20px;
+  font-size: 0.9rem;
+  color: var(--color-gray888);
+}
+
+.ruleFooter {
+  display: flex;
+  gap: 10px;
+}
+
+.ruleButton {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-white);
+  padding: 8px 15px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.ruleButton:hover {
+  background: var(--color-blue);
+  border-color: var(--color-blue);
+}
+
+/* Yakında Bölümü */
+.comingSoon {
+  text-align: center;
+  padding: 50px 20px;
+}
+
+.comingSoon h2 {
+  margin: 0 0 15px;
+  font-size: 1.5rem;
+  color: var(--color-blue);
+}
+
+.comingSoon p {
+  margin: 0;
+  color: var(--color-gray888);
+}
+
+/* Responsive Tasarım */
+@media (max-width: 1200px) {
+  .warningDetails {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .headerControls {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .statsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .rulesGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 576px) {
+  .container {
+    padding: 15px;
+  }
+  
+  .pageTitle {
+    font-size: 1.5rem;
+  }
+  
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .warningActions {
+    flex-direction: column;
+  }
+  
+  .actionButton, .ruleButton {
+    width: 100%;
+    text-align: center;
+  }
+}

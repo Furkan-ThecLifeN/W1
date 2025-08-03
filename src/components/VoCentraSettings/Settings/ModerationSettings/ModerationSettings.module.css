@@ -488,7 +488,7 @@ input:checked + .slider:before {
   /* İçerik Alanı */
   .content {
     padding: 1rem;
-    background: var(--secondary-bg); /* Arka planı daha belirgin hale getirir */
+    background: var(--secondary-bg); 
   }
   
   .sectionTitle {

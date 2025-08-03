@@ -1,0 +1,653 @@
+/* Custom CSS Variables */
+:root {
+  --color-pagecolor: #1a1a2e; /* Dark blue background */
+  --color-white: #e0e0e0;
+  --color-gray888: #a0a0a0;
+  --color-blue: #00b4d8;
+  --color-green: #10b981;
+  --secondary-bg: #2b3252; /* Slightly lighter than main background */
+  --hover-bg: #3e4468; /* Hover color */
+  --text-white: #e0e0e0;
+  --text-title-gradient: linear-gradient(90deg, #8a2be2, #00b4d8);
+  --font-main: 'Inter', sans-serif;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-pagecolor);
+  font-family: var(--font-main);
+  color: var(--text-white);
+}
+
+.container {
+  padding: 1rem;
+  min-height: 100vh;
+}
+
+/* Header Styles */
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.headerLeft {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pageTitle {
+  margin: 0;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-white);
+  flex-wrap: wrap;
+}
+
+.titleIcon {
+  font-size: 1.3rem;
+}
+
+.dateNavigator {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.datePicker, .ant-picker {
+  flex-grow: 1;
+  background: var(--secondary-bg) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: var(--text-white) !important;
+  border-radius: 6px !important;
+}
+
+.datePicker .ant-picker-input > input,
+.datePicker .ant-picker-suffix,
+.datePicker .ant-picker-clear {
+  color: var(--text-white) !important;
+}
+
+.navButton, .viewButton {
+  background: var(--secondary-bg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-white);
+  min-width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.navButton:hover {
+  background: var(--hover-bg);
+}
+
+.viewToggle {
+  display: flex;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+}
+
+.viewButton {
+  background: transparent;
+  border: none;
+  color: var(--color-gray888);
+  font-size: 1.1rem;
+}
+
+.viewButton.active {
+  background: var(--hover-bg);
+  color: var(--color-blue);
+}
+
+.headerRight {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.filterButton, .addButton {
+  flex: 1;
+  background: var(--secondary-bg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-white);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.addButton {
+  background: var(--color-blue);
+  border: none;
+  font-weight: 500;
+}
+
+.filterButton:hover {
+  background: var(--hover-bg);
+}
+
+.addButton:hover {
+  background: #0095e6;
+}
+
+/* Filter Panel Styles */
+.filterPanel {
+  background: var(--secondary-bg);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filterGroup label {
+  font-size: 0.85rem;
+  color: var(--color-gray888);
+}
+
+.filterSelect .ant-select-selector {
+  background: var(--bg-main) !important;
+  color: var(--text-white) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 6px !important;
+}
+
+.ant-select-dropdown {
+  background-color: var(--bg-main) !important;
+}
+
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+  background-color: rgba(0, 180, 216, 0.2) !important;
+  color: var(--color-blue) !important;
+}
+
+.applyFilters {
+  background: var(--color-blue);
+  border: none;
+  color: var(--text-white);
+  padding: 0.5rem 1.25rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.applyFilters:hover {
+  background: #0095e6;
+}
+
+/* Content Area Styles */
+.contentArea {
+  margin-top: 1rem;
+}
+
+/* Grid View Styles */
+.gridView {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.postCard {
+  background: var(--secondary-bg);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.postCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.postThumbnail {
+  position: relative;
+  height: 180px;
+  overflow: hidden;
+}
+
+.postThumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.postCard:hover .postThumbnail img {
+  transform: scale(1.05);
+}
+
+.postOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.postCard:hover .postOverlay {
+  opacity: 1;
+}
+
+.postAction {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.postAction:hover {
+  background: var(--color-blue);
+}
+
+.postDetails {
+  padding: 1rem;
+}
+
+.postHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.postHeader h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  flex: 1;
+}
+
+.platformIcon {
+  font-size: 1.3rem;
+  margin-left: 0.5rem;
+}
+
+.postDescription {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  color: var(--color-gray888);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.postMeta {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  color: var(--color-gray888);
+}
+
+.postDate, .postTime {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.postFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.statusBadge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.statusBadge.scheduled {
+  background: rgba(0, 170, 255, 0.1);
+  color: var(--color-blue);
+}
+
+.statusBadge.published {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--color-green);
+}
+
+.statusBadge.draft {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-gray888);
+}
+
+.postMenu {
+  background: none;
+  border: none;
+  color: var(--color-gray888);
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: color 0.3s ease;
+}
+
+.postMenu:hover {
+  color: var(--text-white);
+}
+
+/* List View Styles */
+.listView {
+  background: var(--secondary-bg);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.listHeader {
+  display: none; /* Hide on mobile by default */
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-gray888);
+}
+
+.listColumn {
+  flex: 1;
+}
+
+.listActionsColumn {
+  flex: 0.5;
+  text-align: right;
+}
+
+.listItem {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.3s ease;
+}
+
+.listItem:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.listCell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.listCell:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.mobileLabel {
+  font-weight: 500;
+  color: var(--color-gray888);
+  min-width: 80px;
+}
+
+.platformInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.listTitle {
+  font-weight: 500;
+}
+
+.listDescription {
+  font-size: 0.85rem;
+  color: var(--color-gray888);
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.platformName {
+  text-transform: capitalize;
+}
+
+.listActionsCell {
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.listAction {
+  background: none;
+  border: none;
+  color: var(--color-gray888);
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.listAction:hover {
+  color: var(--text-white);
+}
+
+/* Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modalContent {
+  background: var(--secondary-bg);
+  border-radius: 10px;
+  width: 100%;
+  max-width: 600px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  max-height: 95vh;
+  overflow-y: auto;
+}
+
+.modalTitle {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  background: var(--text-title-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.formGroup {
+  margin-bottom: 1rem;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--color-gray888);
+}
+
+.formGroup input,
+.formGroup textarea,
+.formGroup .ant-select-selector {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-main) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 6px !important;
+  color: var(--text-white) !important;
+  font-family: var(--font-main);
+}
+
+.formGroup textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.formRow {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.modalActions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.cancelButton,
+.saveButton {
+  width: 100%;
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  border: none;
+}
+
+.cancelButton {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-white);
+}
+
+.cancelButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.saveButton {
+  background: var(--color-blue);
+  color: var(--text-white);
+  font-weight: 500;
+}
+
+.saveButton:hover {
+  background: #0095e6;
+}
+
+/* Responsive Media Queries */
+@media (min-width: 768px) {
+  .header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .headerLeft {
+    flex-direction: row;
+    flex: 1;
+  }
+  
+  .dateNavigator {
+    flex-wrap: nowrap;
+    width: auto;
+  }
+
+  .headerRight {
+    width: auto;
+    gap: 1rem;
+  }
+
+  .filterButton, .addButton {
+    flex: none;
+  }
+
+  .filterPanel {
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 1rem;
+  }
+  
+  .filterGroup {
+    flex: 1;
+  }
+  
+  .listHeader {
+    display: flex;
+  }
+  
+  .listItem {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .listCell {
+    padding: 0;
+    border-bottom: none;
+    justify-content: flex-start;
+  }
+
+  .listTitleCell {
+    flex-direction: column;
+    align-items: flex-start;
+    flex: 1.5;
+  }
+  
+  .listActionsCell {
+    flex: 0.5;
+  }
+  
+  .mobileLabel {
+    display: none;
+  }
+  
+  .formRow {
+    flex-direction: row;
+  }
+
+  .modalActions {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+  
+  .cancelButton, .saveButton {
+    width: auto;
+  }
+}

@@ -1,0 +1,335 @@
+.container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-main);
+  color: var(--color-text);
+  font-family: var(--font-main);
+}
+
+/* Sidebar Styles */
+.sidebar {
+  width: 280px;
+  background-color: var(--secondary-bg);
+  padding: 20px 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  position: fixed;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.sidebarHeader {
+  padding: 0 20px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sidebarHeader h2 {
+  background: var(--text-title-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.logo {
+  font-size: 28px;
+  color: #ff0000;
+}
+
+.menu {
+  padding: 0 15px;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.menuItem:hover {
+  background: var(--hover-bg);
+}
+
+.menuItem.active {
+  background: var(--hover-bg);
+  color: var(--color-blue);
+}
+
+.menuIcon {
+  margin-right: 12px;
+  font-size: 18px;
+}
+
+/* Main Content Styles */
+.mainContent {
+  flex: 1;
+  margin-left: 280px;
+  padding: 30px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.header h1 {
+  font-size: 28px;
+  font-weight: 600;
+  background: var(--text-title-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.headerActions {
+  display: flex;
+  gap: 15px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.btnPrimary {
+  background: var(--special-background05);
+  color: white;
+}
+
+.btnSecondary {
+  background: var(--secondary-bg);
+  color: var(--color-text);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Settings Grid */
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 25px;
+}
+
+.settingsCard {
+  background: var(--secondary-bg);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.settingsCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+  border-color: rgba(0, 170, 255, 0.3);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.cardHeader h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-blue);
+}
+
+/* Form Elements */
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-grey);
+}
+
+.formControl {
+  width: 100%;
+  padding: 12px 15px;
+  background: var(--bg-main);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--color-text);
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.formControl:focus {
+  outline: none;
+  border-color: var(--color-blue);
+  box-shadow: 0 0 0 2px rgba(0, 170, 255, 0.2);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.select {
+  width: 100%;
+  color: var(--color-text) !important;
+  background: var(--bg-main) !important;
+}
+
+.select svg {
+  color: var(--color-text) !important;
+}
+
+.slider {
+  color: var(--color-blue) !important;
+  margin-top: 10px !important;
+}
+
+/* Toggle Group */
+.toggleGroup {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Preview Section */
+.previewSection {
+  grid-column: span 2;
+}
+
+.previewContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.videoPreview {
+  background: var(--bg-main);
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 16/9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.videoPlaceholder {
+  width: 100%;
+  height: 100%;
+  background: var(--special-background03);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.videoDisabled {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--color-gray888);
+}
+
+.previewControls {
+  display: flex;
+  gap: 10px;
+}
+
+.previewBtn {
+  flex: 1;
+  padding: 10px;
+  background: var(--bg-main);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.previewBtn:hover {
+  background: var(--hover-bg);
+  border-color: rgba(0, 170, 255, 0.3);
+}
+
+/* Responsive Styles */
+@media (max-width: 1200px) {
+  .settingsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .previewSection {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    position: static;
+    height: auto;
+    margin-bottom: 20px;
+  }
+  
+  .mainContent {
+    margin-left: 0;
+    padding: 20px;
+  }
+  
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .headerActions {
+    width: 100%;
+    flex-direction: column;
+  }
+  
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

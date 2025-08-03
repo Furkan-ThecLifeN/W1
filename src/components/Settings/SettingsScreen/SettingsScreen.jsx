@@ -34,6 +34,14 @@ import TermsAndConditions from "../SettingsSections/TermsAndConditions/TermsAndC
 import AboutApp from "../SettingsSections/AboutApp/AboutApp";
 import BugFeedback from "../SettingsSections/BugFeedback/BugFeedback";
 
+// ✅ İçerik Üreticisi Ayarları
+import CreatorInsights from "../SettingsSections/CreatorInsights/CreatorInsights";
+import Accounts from "../SettingsSections/Accounts/Accounts";
+import ContentSchedule from "../SettingsSections/ContentSchedule/ContentSchedule";
+import EarningsPayments from "../SettingsSections/EarningsPayments/EarningsPayments";
+import CommunityCompliance from "../SettingsSections/CommunityCompliance/CommunityCompliance";
+import LiveStreamSettings from "../SettingsSections/LiveStreamSettings/LiveStreamSettings";
+
 const sections = {
   "Account Settings": [
     "Profile Settings",
@@ -68,6 +76,14 @@ const sections = {
     "Uygulama Hakkında",
     "Hata Bildirimi ve Geri Bildirim Gönder",
   ],
+  "İçerik Üreticisi Ayarları": [
+    "Account linking",
+    "İstatistikler ve İçgörüler",
+    "Gelir ve Ödemeler",
+    "İçerik Yayın Takvimi",
+    "Topluluk Kuralları Uyumluluğu",
+    "Canlı Yayın Ayarları",
+  ],
 };
 
 const componentMap = {
@@ -84,7 +100,9 @@ const componentMap = {
   Bildirimler: <NotificationsSettings />,
   Engellenenler: <BlockedUsers />,
   "Zaman Yönetimi": <TimeManagement />,
-  "Hareketler (Beğenmeler, Yorumlar, Etiketler, Zaman Geçirme Süresi)": <ActivityLog />,
+  "Hareketler (Beğenmeler, Yorumlar, Etiketler, Zaman Geçirme Süresi)": (
+    <ActivityLog />
+  ),
   "Gizlenenler / Kısıtlananlar": <HiddenRestricted />,
   "Mesajlar ve Hikaye Yanıtları": <MessagesStoryReplies />,
   "Etiketler ve Bahsetmeler": <TagsMentions />,
@@ -93,11 +111,19 @@ const componentMap = {
   "İçerik Hassasiyet Filtresi": <ContentSensitivityFilter />,
   "Yorum Kontrolleri": <CommentControls />,
   "Tema ve Görünüm": <ThemeAppearance />,
-  "Diller": <Languages />,
+  Diller: <Languages />,
   Lisanslar: <Licenses />,
   Sözleşme: <TermsAndConditions />,
   "Uygulama Hakkında": <AboutApp />,
   "Hata Bildirimi ve Geri Bildirim Gönder": <BugFeedback />,
+
+  // İçerik Üreticisi Ayarları
+  "Account linking": <Accounts />,
+  "İstatistikler ve İçgörüler": <CreatorInsights />,
+  "Gelir ve Ödemeler": <EarningsPayments />,
+  "İçerik Yayın Takvimi": <ContentSchedule />,
+  "Topluluk Kuralları Uyumluluğu": <CommunityCompliance />,
+  "Canlı Yayın Ayarları": <LiveStreamSettings />,
 };
 
 export default function SettingsScreen() {

@@ -1,0 +1,78 @@
+.accountsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.accountCard {
+  background: var(--secondary-bg);
+  padding: 20px;
+  border-radius: 10px;
+  transition: transform 0.3s ease;
+}
+
+.accountCard:hover {
+  transform: translateY(-5px);
+}
+
+.accountHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.accountIcon {
+  font-size: 1.8rem;
+  margin-right: 12px;
+}
+
+.accountDescription {
+  font-size: 0.9rem;
+  color: var(--color-grey);
+  margin-bottom: 20px;
+}
+
+.connectButton {
+  width: 100%;
+  padding: 10px;
+  background: var(--color-blue);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.connectButton:hover {
+  background: #0095e6;
+}
+
+.connectedStatus {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.connectedText {
+  color: var(--color-green);
+  font-size: 0.9rem;
+}
+
+.disconnectButton {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 0, 0, 0.1);
+  color: #ff4d4d;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.3s ease;
+}
+
+.disconnectButton:hover {
+  background: rgba(255, 0, 0, 0.2);
+}
