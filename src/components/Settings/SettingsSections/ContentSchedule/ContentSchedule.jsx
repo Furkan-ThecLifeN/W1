@@ -11,7 +11,7 @@ import styles from './ContentSchedule.module.css';
 
 const { Option } = Select;
 
-const PLACEHOLDER_IMAGE_URL = 'https://placehold.co/600x400/2F3142/ffffff?text=Content+Thumbnail';
+const PLACEHOLDER_IMAGE_URL = 'https://i.pinimg.com/1200x/8d/19/9c/8d199c6666c1c7c96b30f6f83fbe026a.jpg';
 
 const ContentSchedule = () => {
   const [viewMode, setViewMode] = useState('grid');

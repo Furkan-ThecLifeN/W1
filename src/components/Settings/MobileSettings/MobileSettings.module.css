@@ -142,7 +142,7 @@
   left: 0;
   right: 0;
   height: 5px;
-  background: linear-gradient(90deg, #6366f1, #10b981, #f59e0b, #ef4444);
+  background: linear-gradient(90deg, #6366f1, #10b981, #f59e0b, #ff0202);
 }
 
 .cardHeader {

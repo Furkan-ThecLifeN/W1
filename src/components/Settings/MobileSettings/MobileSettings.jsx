@@ -6,7 +6,6 @@ import {
   FiLock,
   FiSettings,
   FiLogOut,
-  FiHelpCircle,
   FiArrowLeft,
 } from "react-icons/fi";
 import styles from "./MobileSettings.module.css";
@@ -39,6 +38,12 @@ import Licenses from "../SettingsSections/Licenses/Licenses";
 import TermsAndConditions from "../SettingsSections/TermsAndConditions/TermsAndConditions";
 import AboutApp from "../SettingsSections/AboutApp/AboutApp";
 import BugFeedback from "../SettingsSections/BugFeedback/BugFeedback";
+import Accounts from "../SettingsSections/Accounts/Accounts";
+import CreatorInsights from "../SettingsSections/CreatorInsights/CreatorInsights";
+import EarningsPayments from "../SettingsSections/EarningsPayments/EarningsPayments";
+import ContentSchedule from "../SettingsSections/ContentSchedule/ContentSchedule";
+import CommunityCompliance from "../SettingsSections/CommunityCompliance/CommunityCompliance";
+import LiveStreamSettings from "../SettingsSections/LiveStreamSettings/LiveStreamSettings";
 
 const componentMap = {
   "Profil Ayarları": <ProfileSettings />,
@@ -68,6 +73,14 @@ const componentMap = {
   "Sözleşme": <TermsAndConditions />,
   "Uygulama Hakkında": <AboutApp />,
   "Hata Bildirimi ve Geri Bildirim Gönder": <BugFeedback />,
+
+  // İçerik Üreticisi Ayarları
+  "Account linking": <Accounts />,
+  "İstatistikler ve İçgörüler": <CreatorInsights />,
+  "Gelir ve Ödemeler": <EarningsPayments />,
+  "İçerik Yayın Takvimi": <ContentSchedule />,
+  "Topluluk Kuralları Uyumluluğu": <CommunityCompliance />,
+  "Canlı Yayın Ayarları": <LiveStreamSettings />,
 };
 
 const categories = {
@@ -119,6 +132,35 @@ const categories = {
       "Hata Bildirimi ve Geri Bildirim Gönder",
     ],
   },
+  account: {
+    title: "Hesap Ayarları",
+    icon: <FiUser />,
+    color: "#6366f1",
+    items: [
+      "Profil Ayarları",
+      "Hesap Türü (Bireysel / İşletme)",
+      "Giriş ve Cihaz Geçmişi",
+      "İki Faktörlü Kimlik Doğrulama (2FA)",
+      "Hesap Dondurma / Geçici Olarak Devre Dışı Bırakma",
+      "Hesabı Kalıcı Olarak Sil",
+      "Hesap Güvenlik Uyarıları",
+      "Oturumu Tüm Cihazlardan Kapat",
+    ],
+  },
+  creator: {
+  title: "İçerik Üreticisi Ayarları",
+  icon: <FiSettings />, // Dilersen başka bir ikonla değiştirebilirsin
+  color: "var(--busy)", // İçerik üretici temalı yeşil ton
+  items: [
+    "Hesap Bağlama",
+    "İstatistikler ve İçgörüler",
+    "Gelir ve Ödemeler",
+    "İçerik Yayın Takvimi",
+    "Topluluk Kuralları Uyumluluğu",
+    "Canlı Yayın Ayarları",
+  ],
+}
+
 };
 
 export default function MobileSettings() {
