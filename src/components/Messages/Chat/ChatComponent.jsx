@@ -14,6 +14,12 @@ const ChatComponent = () => {
     storyRef.current.scrollBy({ left: 200, behavior: "smooth" });
   };
 
+  const currentUser = {
+    id: 1,
+    name: "You",
+    img: "https://randomuser.me/api/portraits/men/10.jpg",
+  };
+
   return (
     <div className={styles.chatContainer}>
       <div className={styles.logoArea}>
@@ -21,15 +27,21 @@ const ChatComponent = () => {
       </div>
 
       <div className={styles.storyAreaWrapper}>
-        <button className={styles.scrollButton + " " + styles.left} onClick={scrollLeft}>
+        <button
+          className={styles.scrollButton + " " + styles.left}
+          onClick={scrollLeft}
+        >
           <FaChevronLeft />
         </button>
 
         <div className={styles.storyArea} ref={storyRef}>
-          <StoryBar />
+          <StoryBar currentUser={currentUser} />{" "}
         </div>
 
-        <button className={styles.scrollButton + " " + styles.right} onClick={scrollRight}>
+        <button
+          className={styles.scrollButton + " " + styles.right}
+          onClick={scrollRight}
+        >
           <FaChevronRight />
         </button>
       </div>

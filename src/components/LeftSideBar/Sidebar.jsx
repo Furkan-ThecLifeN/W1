@@ -2,15 +2,11 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import LeftSideBarStyles from "./Sidebar.module.css";
 import {
-  FiHome,
-  FiBell,
-  FiMessageSquare,
   FiUser,
 } from "react-icons/fi";
 import { MdOutlineAddBox } from "react-icons/md";
-import { SiApostrophe } from "react-icons/si";
-
-import { SiHearthisdotat } from "react-icons/si";
+import { SiApostrophe, SiHearthisdotat } from "react-icons/si";
+import { BiSolidHome, BiSolidMessageSquareDots, BiSolidNotification } from 'react-icons/bi';
 
 
 
@@ -28,7 +24,7 @@ const Sidebar = () => {
             isActive ? LeftSideBarStyles.active : LeftSideBarStyles.link
           }
         >
-          <FiHome className={LeftSideBarStyles.icon} />
+          <BiSolidHome className={LeftSideBarStyles.icon} />
           <span className={LeftSideBarStyles.tooltip}>Home</span>
         </NavLink>
 
@@ -38,7 +34,7 @@ const Sidebar = () => {
             isActive ? LeftSideBarStyles.active : LeftSideBarStyles.link
           }
         >
-          <FiBell className={LeftSideBarStyles.icon} />
+          <BiSolidNotification className={LeftSideBarStyles.icon} />
           <span className={LeftSideBarStyles.tooltip}>Bildirimler</span>
         </NavLink>
 
@@ -48,7 +44,7 @@ const Sidebar = () => {
             isActive ? LeftSideBarStyles.active : LeftSideBarStyles.link
           }
         >
-          <FiMessageSquare className={LeftSideBarStyles.icon} />
+          <BiSolidMessageSquareDots className={LeftSideBarStyles.icon} />
           <span className={LeftSideBarStyles.tooltip}>Mesajlar</span>
         </NavLink>
 
