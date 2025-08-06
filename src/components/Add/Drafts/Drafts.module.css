@@ -1,8 +1,15 @@
 .draftsWrapper {
+  width: 100%;
+  height: 100%;
+  max-height: 100vh;
   padding: 30px;
   text-align: center;
   color: white;
-  font-family: 'Orbitron', sans-serif;
+  background: linear-gradient(135deg, #003b6f, #000000, #003b6f);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .title {

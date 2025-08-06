@@ -1,10 +1,10 @@
 import React, { useState, useRef } from "react";
-import styles from "./Feelings.module.css";
+import styles from "./FeelingsAdd.module.css";
 import { FiImage, FiSmile, FiMapPin, FiX, FiSend } from "react-icons/fi";
 import { IoMdClose } from "react-icons/io";
 import { RiQuillPenLine } from "react-icons/ri";
 
-const Feelings = ({ onClose }) => {
+const FeelingsAdd = ({ onClose }) => {
   const [postText, setPostText] = useState("");
   const [images, setImages] = useState([]);
   const fileInputRef = useRef(null);
@@ -68,7 +68,7 @@ const Feelings = ({ onClose }) => {
 
         <div className={styles.tabs}>
           <button className={`${styles.tab} ${styles.active}`}>
-            <RiQuillPenLine /> Feelings
+            <RiQuillPenLine /> FeelingsAdd
           </button>
         </div>
 
@@ -145,4 +145,4 @@ const Feelings = ({ onClose }) => {
   );
 };
 
-export default Feelings;
+export default FeelingsAdd;

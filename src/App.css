@@ -21,7 +21,20 @@
     #fd8bd9 100%
   );
   --special-background07: linear-gradient(to top, #5f72bd 0%, #9b23ea 100%);
-  --special-background08: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  --special-background08: linear-gradient(135deg, #fafaf5 0%, #c3cfe2 100%);
+  --special-background09: linear-gradient(135deg, #d10d14, #cc08ab);
+  --special-background10: linear-gradient(135deg, #ff0101, #7a0000);
+  --special-background11: linear-gradient(135deg, #56ab2f, #a8e063);
+  --special-background12: linear-gradient(135deg, #f12711, #f5af19);
+  --special-background13: linear-gradient(135deg, #2193b0, #6dd5ed);
+
+ --bg-post: linear-gradient(135deg, #cfd8dc, #eceff1);         /* ✏️ Post - mat açık gri-mavi */
+  --bg-feeds: linear-gradient(135deg, #dce775, #f0f4c3);        /* 📰 Feeds - mat limon yeşili */
+  --bg-feeling: linear-gradient(135deg, #f8bbd0, #fce4ec);      /* 😊 Feeling - soluk pudra pembesi */
+  --bg-story: linear-gradient(135deg, #b3e5fc, #e1f5fe);        /* 📸 Story - açık mat mavi */
+  --bg-live: linear-gradient(135deg, #ffccbc, #ffe0b2);         /* 🔴 Live Stream - mat turuncumsu bej */
+  --bg-draft: linear-gradient(135deg, #d1c4e9, #ede7f6);        /* 📂 Taslaklar - mat mor-lavanta */
+
   --special-color: #e0e7ff;
   --bg-main: #0b0b0b;
   --text-title-gradient: linear-gradient(90deg, #00dbde 0%, #fc00ff 100%);
