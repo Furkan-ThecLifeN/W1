@@ -1,9 +1,12 @@
 .AddPage {
   height: 100vh;
+  width: 100%;
+  padding: 1rem;
+
+  overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow-x: hidden;
-  overflow-y: auto;
-  background-color: var(--color-black); /* Arka plan rengi isteğe bağlı */
+  background: var(--special-background14);
+  position: relative;
 }

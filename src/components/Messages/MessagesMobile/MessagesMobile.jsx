@@ -37,6 +37,12 @@ const MessagesMobile = () => {
     return <Chat user={selectedUser} onBack={() => setSelectedUser(null)} />;
   }
 
+  const currentUser = {
+    id: 1,
+    name: "You",
+    img: "https://randomuser.me/api/portraits/men/10.jpg",
+  };
+
   // Kullanıcı seçilmemişse mesaj listesi ve story bar göster
   return (
     <div className={styles.MessagesLeftMobile}>
@@ -47,7 +53,7 @@ const MessagesMobile = () => {
       </div>
 
       <div className={styles.storyWrapper}>
-        <StoryBar />
+        <StoryBar currentUser={currentUser} />{" "}
       </div>
 
       <ul className={styles.usersMessagesBox}>
@@ -55,7 +61,7 @@ const MessagesMobile = () => {
           <li
             key={`${user.id}-${index}`}
             className={styles.userCard}
-            onClick={() => setSelectedUser(user)} 
+            onClick={() => setSelectedUser(user)}
           >
             <div className={styles.userProfileBox}>
               <div className={styles.userProfileBackground}>
