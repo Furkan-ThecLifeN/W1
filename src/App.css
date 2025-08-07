@@ -1,4 +1,49 @@
 :root {
+  /* === Fontlar === */
+  --font-main: "Open Sans", sans-serif;
+
+  /* === Ana Renkler ve Temel Renkler === */
+  --text-white: #ffffff;
+  --text-stroke: #ffffff;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-grey: #ccc;
+  --color-gray888: #888;
+  --color-green: #1aff00;
+  --color-blue: #00aaff;
+  --color-secondary-accent: #00bfff;
+  --color-text: #e0e0e0;
+  --color-offgrey: #1f1f1f;
+
+  /* === Durum Renkleri === */
+  --online: #10b981;
+  --idle: #f59e0b;
+  --busy: #ff0000;
+
+  /* === Arka Plan Renkleri === */
+  --bg-main: #0b0b0b;
+  --color-dark: #131621;
+  --color-dark-bg: #0d1117;
+  --background-special: #131621;
+  --color-light-bg: #1a202c;
+  --secondary-bg: #1a1a1a;
+  --color-pagecolor: #000000;
+
+  /* === Efektler ve Blurlar === */
+  --blur-circle: rgba(255, 255, 255, 0.15);
+  --blur-bg: rgba(255, 255, 255, 0.1);
+  --backdrop-filter: blur(16px);
+  --blur-size: 45px;
+  --hover-bg: rgba(0, 170, 255, 0.08);
+
+  /* === Düğme Renkleri === */
+  --gradient-button: linear-gradient(90deg, #13cce9 0%, #00bfff 100%);
+  --gradient-button-hover: linear-gradient(90deg, #00aaff 0%, #0088ff 100%);
+
+  /* === Yazı Başlık Efekti === */
+  --text-title-gradient: linear-gradient(90deg, #00dbde 0%, #fc00ff 100%);
+
+  /* === Özel Arka Planlar (Linear Gradientler) === */
   --special-background: linear-gradient(
     135deg,
     rgba(113, 201, 248, 0.85),
@@ -8,18 +53,8 @@
   --special-background02: linear-gradient(to top, #09203f 0%, #537895 100%);
   --special-background03: linear-gradient(60deg, #29323c 0%, #485563 100%);
   --special-background04: linear-gradient(to top, #e8198b 0%, #c7eafd 100%);
-  --special-background05: linear-gradient(
-    -225deg,
-    #22e1ff 0%,
-    #1d8fe1 48%,
-    #625eb1 100%
-  );
-  --special-background06: linear-gradient(
-    -225deg,
-    #7742b2 0%,
-    #f180ff 52%,
-    #fd8bd9 100%
-  );
+  --special-background05: linear-gradient(-225deg, #22e1ff 0%, #1d8fe1 48%, #625eb1 100%);
+  --special-background06: linear-gradient(-225deg, #7742b2 0%, #f180ff 52%, #fd8bd9 100%);
   --special-background07: linear-gradient(to top, #5f72bd 0%, #9b23ea 100%);
   --special-background08: linear-gradient(135deg, #fafaf5 0%, #c3cfe2 100%);
   --special-background09: linear-gradient(135deg, #d10d14, #cc08ab);
@@ -27,40 +62,6 @@
   --special-background11: linear-gradient(135deg, #56ab2f, #a8e063);
   --special-background12: linear-gradient(135deg, #f12711, #f5af19);
   --special-background13: linear-gradient(135deg, #2193b0, #6dd5ed);
-
- --bg-post: linear-gradient(135deg, #cfd8dc, #eceff1);         /* ✏️ Post - mat açık gri-mavi */
-  --bg-feeds: linear-gradient(135deg, #dce775, #f0f4c3);        /* 📰 Feeds - mat limon yeşili */
-  --bg-feeling: linear-gradient(135deg, #f8bbd0, #fce4ec);      /* 😊 Feeling - soluk pudra pembesi */
-  --bg-story: linear-gradient(135deg, #b3e5fc, #e1f5fe);        /* 📸 Story - açık mat mavi */
-  --bg-live: linear-gradient(135deg, #ffccbc, #ffe0b2);         /* 🔴 Live Stream - mat turuncumsu bej */
-  --bg-draft: linear-gradient(135deg, #d1c4e9, #ede7f6);        /* 📂 Taslaklar - mat mor-lavanta */
-
-  --special-color: #e0e7ff;
-  --bg-main: #0b0b0b;
-  --text-title-gradient: linear-gradient(90deg, #00dbde 0%, #fc00ff 100%);
-  --backdrop-filter: blur(16px);
-  --background-special: #131621;
-  --secondary-bg: #1a1a1a;
-  --color-dark: #131621;
-  --color-pagecolor: #000000;
-  --text-white: #ffffff;
-  --color-text: #e0e0e0;
-  --text-stroke: #ffffff;
-  --color-grey: #ccc;
-  --color-gray888: #888;
-  --color-blue: #00aaff;
-  --color-white: #ffffff;
-  --color-black: #000000;
-  --blur-circle: rgba(255, 255, 255, 0.15);
-  --font-main: "Open Sans", sans-serif;
-  --blur-size: 45px;
-  --hover-bg: rgba(0, 170, 255, 0.08);
-  --blur-bg: rgba(255, 255, 255, 0.1);
-  --color-green: #1aff00;
-  --color-offgrey: #1f1f1f;
-  --online: #10b981;
-  --idle: #f59e0b;
-  --busy: #ff0000;
 }
 
 .App {
