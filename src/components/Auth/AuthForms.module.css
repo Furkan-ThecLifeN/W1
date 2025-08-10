@@ -1,0 +1,163 @@
+/* frontend/src/components/Auth/AuthForms.module.css */
+
+/* Genel Form Container */
+.auth_form_container {
+  background: rgba(255, 255, 255, 0.1); /* Hafif şeffaf beyaz */
+  backdrop-filter: blur(10px); /* Cam efekti */
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  width: 100%;
+  max-width: 450px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.auth_form_container h2 {
+  text-align: center;
+  color: #e0e0e0; /* Açık gri başlık */
+  margin-bottom: 30px;
+  font-size: 2em;
+  font-weight: 700;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+}
+
+/* Input Alanları */
+.auth_form_container label {
+  color: #bbbbbb; /* Hafif gri etiket */
+  font-size: 0.95em;
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.auth_form_container input[type="email"],
+.auth_form_container input[type="password"],
+.auth_form_container input[type="text"] {
+  width: calc(100% - 20px);
+  padding: 14px 10px;
+  background: rgba(255, 255, 255, 0.05); /* Çok hafif şeffaf arka plan */
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  font-size: 1em;
+  color: #ffffff; /* Beyaz metin */
+  box-sizing: border-box;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.auth_form_container input::placeholder {
+  color: #999999; /* PlaceHolder rengi */
+}
+
+.auth_form_container input[type="email"]:focus,
+.auth_form_container input[type="password"]:focus,
+.auth_form_container input[type="text"]:focus {
+  border-color: #00eaff; /* Parlak mavi odak rengi */
+  background-color: rgba(255, 255, 255, 0.1);
+  outline: none;
+  box-shadow: 0 0 10px rgba(0, 234, 255, 0.5);
+}
+
+/* Checkbox */
+.auth_form_container label input[type="checkbox"] {
+  margin-right: 10px;
+  accent-color: #00eaff; /* Checkbox rengi */
+  transform: scale(1.1);
+}
+
+/* Butonlar */
+.auth_form_container button {
+  width: 100%;
+  padding: 14px;
+  background-image: linear-gradient(45deg, #00eaff, #00aaff); /* Mavi gradient */
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1em;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-image 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  margin-top: 15px;
+}
+
+.auth_form_container button:hover {
+  background-image: linear-gradient(45deg, #00aaff, #00eaff);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 170, 255, 0.4);
+}
+
+/* Alt Metin (toggle) */
+.auth_form_container .toggle_text {
+  text-align: center;
+  margin-top: 25px;
+  font-size: 0.9em;
+  color: #bbbbbb;
+}
+
+.auth_form_container .toggle_link {
+  color: #00eaff;
+  cursor: pointer;
+  font-weight: bold;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.auth_form_container .toggle_link:hover {
+  color: #00aaff;
+  text-decoration: underline;
+}
+
+/* Input Altındaki Hata Mesajları */
+.error_text {
+  color: #ff6b6b; /* Parlak kırmızı hata rengi */
+  font-size: 0.75em;
+  margin-top: -10px; /* Input ile arasındaki boşluğu ayarla */
+  margin-bottom: 5px; /* Sonraki elemanla boşluk */
+  height: 15px; /* Mesaj yokken boşluk bırakmak için */
+  display: block;
+}
+
+/* Toast Mesajları (App.jsx içinde render edildiği için burada sadece varsayılan stilini düzenleyelim) */
+/* Toast.js bileşeni kendi stillerini yönettiği için buraya eklemeye gerek yok. */
+/* Ancak AuthForms.module.css içinde genel toast görünümünü sağlamak istiyorsanız: */
+.toast_message_container {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  padding: 15px 25px;
+  border-radius: 10px;
+  color: white;
+  z-index: 9999;
+  font-size: 1.1em;
+  font-weight: 500;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transform: translateY(-20px);
+  animation: toastFadeInUp 0.5s forwards, toastFadeOut 0.5s 3.5s forwards;
+}
+
+.toast_message_container.success {
+  background-color: #4CAF50; /* Yeşil */
+}
+
+.toast_message_container.error {
+  background-color: #F44336; /* Kırmızı */
+}
+
+@keyframes toastFadeInUp {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toastFadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-20px); }
+}

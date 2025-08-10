@@ -1,44 +1,87 @@
-import React, { useState } from "react";
-import styles from "./VerificationPage.module.css";
-
+import React, { useEffect, useState } from 'react';
+import { useAuth } from '../../AuthProvider';
+import { useNavigate } from 'react-router-dom';
+import { sendEmailVerification, reload } from 'firebase/auth'; // Firebase Auth fonksiyonları
+import AuthPageStyle from './AuthPage.module.css'; // Ortak sayfa stili
+import AuthFormsStyle from '../../components/Auth/AuthForms.module.css'; // Ortak form stili
 
 const VerificationPage = () => {
-  const [code, setCode] = useState("");
+  const { currentUser, showMessage } = useAuth();
+  const navigate = useNavigate();
+  const [checkingStatus, setCheckingStatus] = useState(false);
 
-  const handleChange = (e) => {
-    setCode(e.target.value);
+  useEffect(() => {
+    // Kullanıcı doğrulanmışsa veya kullanıcı yoksa yönlendirme yap
+    if (!currentUser) {
+      navigate('/auth'); // Kullanıcı yoksa login sayfasına
+      return;
+    }
+    if (currentUser.emailVerified) {
+      showMessage('success', 'E-posta adresiniz zaten doğrulanmış. Ana sayfaya yönlendiriliyorsunuz.');
+      navigate('/home'); // Doğrulanmışsa ana sayfaya
+    }
+  }, [currentUser, navigate, showMessage]);
+
+  const handleResendVerification = async () => {
+    if (currentUser) {
+      try {
+        await sendEmailVerification(currentUser);
+        showMessage('success', 'Doğrulama e-postası tekrar gönderildi. Lütfen gelen kutunuzu kontrol edin.');
+      } catch (error) {
+        showMessage('error', `Doğrulama e-postası gönderilirken hata oluştu: ${error.message}`);
+      }
+    }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Verification code submitted:", code);
+  const handleCheckVerificationStatus = async () => {
+    if (currentUser) {
+      setCheckingStatus(true);
+      try {
+        await reload(currentUser); // Firebase Auth kullanıcısını manuel olarak yeniden yükle
+        // currentUser state'i AuthProvider içinde onAuthStateChanged ile güncellenecek
+        // useEffect yeniden çalışacak ve yönlendirme yapacak
+        showMessage('success', 'Doğrulama durumu güncellendi. Eğer doğrulandıysa yönlendirileceksiniz.');
+      } catch (error) {
+        showMessage('error', `Doğrulama durumu kontrol edilirken hata oluştu: ${error.message}`);
+      } finally {
+        setCheckingStatus(false);
+      }
+    }
   };
+
+  if (!currentUser) {
+    return null; // Yönlendirme zaten useEffect içinde yapılıyor
+  }
 
   return (
-    <div className={styles.verificationWrapper}>
-      <form className={styles.verificationForm} onSubmit={handleSubmit}>
-        <h2 className={styles.title}>Verify Your Email</h2>
-        <p className={styles.subtitle}>
-          We sent a 6-digit code to your email. Please enter it below.
-        </p>
-        <input
-          type="text"
-          maxLength={6}
-          value={code}
-          onChange={handleChange}
-          placeholder="Enter 6-digit code"
-          className={styles.codeInput}
-          required
-        />
-        <button type="submit" className={styles.submitButton}>
-          Verify
-        </button>
-        <p className={styles.resendText}>
-          Didn’t receive the code?{" "}
-          <span className={styles.resendLink}>Resend</span>
-        </p>
-      </form>
-    </div>
+    <section className={AuthPageStyle.authpage_section}>
+      <div className={AuthPageStyle.auth_container}>
+        <div className={AuthPageStyle.authBox_logo}>
+          <h2 className={AuthPageStyle.welcome_title}>E-posta Doğrulama</h2>
+          <h1 className={AuthPageStyle.AuthTitleLogo}>W1</h1>
+        </div>
+
+        <div className={AuthFormsStyle.auth_form_container}>
+          <h3>E-posta Doğrulamanız Gerekiyor</h3>
+          <p className={AuthFormsStyle.toggle_text}>
+            Hesabınızı kullanmaya başlamadan önce lütfen <strong>{currentUser.email}</strong> adresine gönderdiğimiz doğrulama bağlantısına tıklayın.
+          </p>
+          <button className={AuthFormsStyle.auth_form_container.button} onClick={handleResendVerification}>
+            Doğrulama E-postasını Tekrar Gönder
+          </button>
+          <button 
+            className={AuthFormsStyle.auth_form_container.button} 
+            onClick={handleCheckVerificationStatus} 
+            disabled={checkingStatus}
+          >
+            {checkingStatus ? 'Kontrol Ediliyor...' : 'Doğrulama Durumunu Kontrol Et'}
+          </button>
+          <p className={AuthFormsStyle.toggle_text} style={{marginTop: '20px'}}>
+             Yardım mı gerekiyor? Destek ile iletişime geçin.
+          </p>
+        </div>
+      </div>
+    </section>
   );
 };
 

@@ -1,124 +1,136 @@
 import React, { useState } from 'react';
-import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
-import { auth } from '../../firebase';
-import AuthStyle from './Auth.module.css';
+import { useAuth } from '../../AuthProvider';
+import styles from './AuthForms.module.css';
 
-const RegisterForm = () => {
-  const [formData, setFormData] = useState({
-    firstname: '',
-    lastname: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    unicode: '',
-    termsAccepted: false,
-    communityAccepted: false,
-    ageConfirmed: false,
-    newsletterOptIn: false,
-  });
+// Client-side validasyon regex'leri
+const isValidEmailFormat = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+const isValidUsernameFormat = (username) => /^[a-z0-9_.]{3,15}$/.test(username);
+const isValidPasswordFormat = (password) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\-]).{8,}$/.test(password);
 
-  const [message, setMessage] = useState('');
+const RegisterForm = ({ onRegisterSuccess }) => {
+  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+  const [emailError, setEmailError] = useState('');
+  const [usernameError, setUsernameError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
+
+  const { showMessage } = useAuth();
+
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+    setEmailError(e.target.value && !isValidEmailFormat(e.target.value) ? 'Lütfen geçerli bir e-posta adresi girin.' : '');
+  };
+
+  const handleUsernameChange = (e) => {
+    setUsername(e.target.value);
+    setUsernameError(e.target.value && !isValidUsernameFormat(e.target.value) ? 'Kullanıcı adı sadece küçük harf, rakam, alt çizgi (_) ve nokta (.) içermeli, 3-15 karakter olmalıdır.' : '');
+  };
+
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value);
+    setPasswordError(e.target.value && !isValidPasswordFormat(e.target.value) ? 'Şifre en az 8 karakter, 1 büyük harf, 1 küçük harf, 1 rakam ve 1 özel karakter içermelidir.' : '');
+    if (confirmPassword && e.target.value !== confirmPassword) {
+      setConfirmPasswordError('Şifreler eşleşmiyor.');
+    } else if (confirmPassword && e.target.value === confirmPassword) {
+      setConfirmPasswordError('');
+    }
+  };
+
+  const handleConfirmPasswordChange = (e) => {
+    setConfirmPassword(e.target.value);
+    setConfirmPasswordError(e.target.value && e.target.value !== password ? 'Şifreler eşleşmiyor.' : '');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage('');
 
-    if (formData.password !== formData.confirmPassword) {
-      setMessage('Şifreler uyuşmuyor.');
-      return;
+    // Validasyonları tekrar kontrol et
+    let hasError = false;
+    if (!email || !isValidEmailFormat(email)) {
+      setEmailError('Geçerli bir e-posta adresi gerekli.');
+      hasError = true;
     }
-    if (!formData.termsAccepted || !formData.communityAccepted || !formData.ageConfirmed) {
-      setMessage('Lütfen gerekli kutucukları işaretleyin.');
+    if (!username || !isValidUsernameFormat(username)) {
+      setUsernameError('Geçerli bir kullanıcı adı gerekli.');
+      hasError = true;
+    }
+    if (!password || !isValidPasswordFormat(password)) {
+      setPasswordError('Geçerli bir şifre gerekli.');
+      hasError = true;
+    }
+    if (password !== confirmPassword) {
+      setConfirmPasswordError('Şifreler eşleşmiyor.');
+      hasError = true;
+    }
+
+    if (hasError) {
+      showMessage('error', 'Lütfen tüm alanları doğru ve eksiksiz doldurun.');
       return;
     }
 
     try {
-      // Firebase ile kullanıcı oluşturma
-      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-      await sendEmailVerification(userCredential.user);
-      const idToken = await userCredential.user.getIdToken();
-
-      // Backend'e profil bilgilerini gönderme
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/profile`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/register`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${idToken}`
-        },
-        body: JSON.stringify({
-          firstname: formData.firstname,
-          lastname: formData.lastname,
-          unicode: formData.unicode,
-          newsletterOptIn: formData.newsletterOptIn,
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, username, displayName, password, confirmPassword }),
       });
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Backend hatası');
-      }
+      const data = await res.json();
 
-      setMessage('Kayıt başarılı. Lütfen e-posta adresinizi doğrulayın.');
+      if (!res.ok) {
+        showMessage('error', data.error || 'Kayıt sırasında bir hata oluştu.');
+      } else {
+        // Doğrudan login sayfasına yönlendir, e-posta doğrulaması yok
+        showMessage('success', 'Kayıt başarılı! Şimdi giriş yapabilirsiniz.');
+        if (onRegisterSuccess) {
+          onRegisterSuccess();
+        }
+        // Formu ve hata mesajlarını temizle
+        setEmail('');
+        setEmailError('');
+        setUsername('');
+        setUsernameError('');
+        setDisplayName('');
+        setPassword('');
+        setPasswordError('');
+        setConfirmPassword('');
+        setConfirmPasswordError('');
+      }
     } catch (error) {
-      setMessage(`Hata: ${error.message}`);
+      showMessage('error', `İstek gönderilirken hata oluştu: ${error.message}`);
     }
   };
 
   return (
-    <form className={AuthStyle.auth_form} onSubmit={handleSubmit}>
-      <h2>Sign Up</h2>
-
-      <label>First Name</label>
-      <input type="text" name="firstname" required value={formData.firstname} onChange={handleChange} />
-
-      <label>Last Name</label>
-      <input type="text" name="lastname" required value={formData.lastname} onChange={handleChange} />
+    <form onSubmit={handleSubmit} className={styles.auth_form_container}>
+      <h2>Kayıt Ol</h2>
 
       <label>Email</label>
-      <input type="email" name="email" required value={formData.email} onChange={handleChange} />
+      <input type="email" value={email} onChange={handleEmailChange} placeholder="email@example.com" required />
+      {emailError && <span className={styles.error_text}>{emailError}</span>}
 
-      <label>Password</label>
-      <input type="password" name="password" required value={formData.password} onChange={handleChange} />
+      <label>Kullanıcı Adı</label>
+      <input type="text" value={username} onChange={handleUsernameChange} placeholder="benzersiz_kullanici" required />
+      {usernameError && <span className={styles.error_text}>{usernameError}</span>}
 
-      <label>Confirm Password</label>
-      <input type="password" name="confirmPassword" required value={formData.confirmPassword} onChange={handleChange} />
+      <label>Görünen İsim (Opsiyonel)</label>
+      <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Furkan Yılmaz" />
+      <span className={styles.error_text}></span>
 
-      <label>Unicode</label>
-      <input type="text" name="unicode" required value={formData.unicode} onChange={handleChange} />
+      <label>Şifre</label>
+      <input type="password" value={password} onChange={handlePasswordChange} placeholder="********" required />
+      {passwordError && <span className={styles.error_text}>{passwordError}</span>}
 
-      <label className={AuthStyle.checkbox_label}>
-        <input type="checkbox" name="termsAccepted" checked={formData.termsAccepted} onChange={handleChange} />
-        <span>
-          I accept the <a href="/terms" target="_blank" rel="noreferrer">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noreferrer" className={AuthStyle.checkBoxLabel_a}>Privacy Policy</a>.
-        </span>
-      </label>
+      <label>Şifreyi Onayla</label>
+      <input type="password" value={confirmPassword} onChange={handleConfirmPasswordChange} placeholder="********" required />
+      {confirmPasswordError && <span className={styles.error_text}>{confirmPasswordError}</span>}
 
-      <label className={AuthStyle.checkbox_label}>
-        <input type="checkbox" name="communityAccepted" checked={formData.communityAccepted} onChange={handleChange} />
-        I have read and accept the <a href="/community-guidelines" target="_blank" rel="noreferrer" className={AuthStyle.checkBoxLabel_a}>Community Guidelines</a>.
-      </label>
-
-      <label className={AuthStyle.checkbox_label}>
-        <input type="checkbox" name="ageConfirmed" checked={formData.ageConfirmed} onChange={handleChange} />
-        I confirm that I am at least 13 years old.
-      </label>
-
-      <label className={AuthStyle.checkbox_label}>
-        <input type="checkbox" name="newsletterOptIn" checked={formData.newsletterOptIn} onChange={handleChange} />
-        I want to receive emails about special offers and updates (optional).
-      </label>
-
-      <button type="submit">Sign Up</button>
-
-      {message && <p className={AuthStyle.message}>{message}</p>}
+      <button type="submit">Kayıt Ol</button>
     </form>
   );
 };

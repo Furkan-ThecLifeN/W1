@@ -2,12 +2,18 @@ import React, { useState } from "react";
 import LoginForm from "../../components/Auth/LoginForm";
 import RegisterForm from "../../components/Auth/RegisterForm";
 import AuthPageStyle from "./AuthPage.module.css";
+import AuthFormsStyle from "../../components/Auth/AuthForms.module.css"; // Ortak form stilleri için
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
 
   const handleToggle = () => {
     setIsLogin((prev) => !prev);
+  };
+
+  // RegisterForm'dan gelen başarı durumunda login formuna geçiş yapmak için
+  const handleRegisterSuccess = () => {
+    setIsLogin(true); // Kayıt başarılıysa giriş formuna geç
   };
 
   return (
@@ -18,42 +24,34 @@ const AuthPage = () => {
           <h1 className={AuthPageStyle.AuthTitleLogo}>W1</h1>
         </div>
 
-        <div className={AuthPageStyle.auth_toggleBox}>
-          {isLogin ? <LoginForm /> : <RegisterForm />}
+        <div className={AuthFormsStyle.auth_form_container}> 
+          <div className={AuthPageStyle.auth_toggleBox}>
+            {isLogin ? <LoginForm /> : <RegisterForm onRegisterSuccess={handleRegisterSuccess} />}
 
-          <p style={{ marginTop: "20px", color: "#333" }}>
-            {isLogin ? (
-              <div className={AuthPageStyle.handleToggle}>
-                Don't have an account?{" "}
-                <span
-                  className={AuthPageStyle.handletoggle_Btn}
-                  onClick={handleToggle}
-                  style={{
-                    color: "#00aaff",
-                    cursor: "pointer",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Sign up
-                </span>
-              </div>
-            ) : (
-              <div className={AuthPageStyle.handleToggle}>
-                Do you have an account?{" "}
-                <span
-                  className={AuthPageStyle.handletoggle_Btn}
-                  onClick={handleToggle}
-                  style={{
-                    color: "#00aaff",
-                    cursor: "pointer",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Sign in
-                </span>
-              </div>
-            )}
-          </p>
+            <p className={AuthFormsStyle.toggle_text}>
+              {isLogin ? (
+                <>
+                  Hesabın yok mu?{" "}
+                  <span
+                    className={AuthFormsStyle.toggle_link}
+                    onClick={handleToggle}
+                  >
+                    Kaydol
+                  </span>
+                </>
+              ) : (
+                <>
+                  Zaten hesabın var mı?{" "}
+                  <span
+                    className={AuthFormsStyle.toggle_link}
+                    onClick={handleToggle}
+                  >
+                    Giriş Yap
+                  </span>
+                </>
+              )}
+            </p>
+          </div>
         </div>
       </div>
     </section>

@@ -1,82 +1,131 @@
+// LoginForm.js
 import React, { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../firebase';
-import AuthStyle from "./Auth.module.css";
+import { useAuth } from '../../AuthProvider';
+import styles from './AuthForms.module.css';
+import { useNavigate } from 'react-router-dom';
+
+// Client-side validasyon regex'i (email formatı için)
+const isValidEmailFormat = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const LoginForm = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [unicode, setUnicode] = useState('');
-  const [message, setMessage] = useState('');
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
+  const [identifierError, setIdentifierError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setMessage('');
-    try {
-      // Firebase ile giriş yap
-      const userCred = await signInWithEmailAndPassword(auth, email, password);
+  const { showMessage } = useAuth();
+  const navigate = useNavigate();
 
-      // Email doğrulama kontrolü
-      if (!userCred.user.emailVerified) {
-        setMessage('Lütfen önce e-posta doğrulamasını yapın.');
-        return;
-      }
+  const handleIdentifierChange = (e) => {
+    setIdentifier(e.target.value);
+    setIdentifierError('');
+  };
 
-      // Token al
-      const idToken = await userCred.user.getIdToken();
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value);
+    setPasswordError('');
+  };
 
-      // Backend profil isteği (örnek, backend'de /api/auth/profile endpoint'in olmalı)
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/profile`, {
-        method: 'GET',
-        headers: { 'Authorization': `Bearer ${idToken}` }
-      });
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Profil alınamadı');
-      }
+    let hasError = false;
+    if (!identifier) { setIdentifierError('Lütfen email veya kullanıcı adınızı girin.'); hasError = true; }
+    if (!password) { setPasswordError('Lütfen şifrenizi girin.'); hasError = true; }
 
-      const data = await res.json();
-      setMessage('Giriş başarılı. Hoş geldin ' + (data.profile.firstname || userCred.user.email));
-      // Burada global state veya yönlendirme yapılabilir
+    if (hasError) {
+      showMessage('error', 'Lütfen tüm alanları doldurun.');
+      return;
+    }
 
-    } catch (err) {
-      setMessage('Giriş hatası: ' + err.message);
-    }
-  };
+    try {
+      let resolvedEmail = identifier;
 
-  return (
-    <form className={AuthStyle.auth_form} onSubmit={handleLogin}>
-      <h2>Sign in</h2>
+      if (!isValidEmailFormat(identifier)) {
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/resolve-identifier`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifier })
+        });
 
-      <label>User name</label>
-      <input
-        type="email"
-        required
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
+        const data = await res.json();
 
-      <label>Password</label>
-      <input
-        type="password"
-        required
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
+        if (!res.ok) {
+          showMessage('error', data.error || 'Kullanıcı bulunamadı.');
+          return;
+        }
+        resolvedEmail = data.email;
+      }
 
-      <label>Unicode</label>
-      <input
-        type="password"
-        value={unicode}
-        onChange={(e) => setUnicode(e.target.value)}
-      />
+      // Firebase Auth ile giriş yap
+      const userCred = await signInWithEmailAndPassword(auth, resolvedEmail, password);
 
-      <button type="submit">Giriş Yap</button>
+      // E-posta doğrulama kontrolü ve yönlendirme satırlarını bu kısımdan tamamen kaldırıyoruz.
+      // if (!userCred.user.emailVerified) { ... }
 
-      {message && <p>{message}</p>}
-    </form>
-  );
+      // Giriş başarılı, şimdi kullanıcı profilini al
+      const idToken = await userCred.user.getIdToken();
+      const profileRes = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/profile`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${idToken}` }
+      });
+
+      if (!profileRes.ok) {
+        const err = await profileRes.json();
+        throw new Error(err.error || 'Profil alınamadı');
+      }
+
+      const profileData = await profileRes.json();
+      showMessage('success', `Giriş başarılı. Hoş geldin ${profileData.profile.displayName || userCred.user.email}`);
+
+      // Giriş sonrası formları temizle ve hata mesajlarını sıfırla
+      setIdentifier('');
+      setPassword('');
+      setIdentifierError('');
+      setPasswordError('');
+
+      // Başarılı girişte doğrudan /home sayfasına yönlendirme
+      navigate('/home');
+
+    } catch (err) {
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        showMessage('error', 'Geçersiz email/kullanıcı adı veya şifre.');
+      } else if (err.message) {
+        showMessage('error', `Giriş hatası: ${err.message}`);
+      } else {
+        showMessage('error', 'Beklenmeyen bir giriş hatası oluştu.');
+      }
+    }
+  };
+
+  return (
+    <form onSubmit={handleLogin} className={styles.auth_form_container}>
+      <h2>Giriş Yap</h2>
+      <label>Email veya Kullanıcı Adı</label>
+      <input
+        type="text"
+        required
+        value={identifier}
+        onChange={handleIdentifierChange}
+        placeholder="Email veya Kullanıcı Adı"
+      />
+      {identifierError && <span className={styles.error_text}>{identifierError}</span>}
+
+      <label>Şifre</label>
+      <input
+        type="password"
+        required
+        value={password}
+        onChange={handlePasswordChange}
+        placeholder="********"
+      />
+      {passwordError && <span className={styles.error_text}>{passwordError}</span>}
+
+      <button type="submit">Giriş Yap</button>
+    </form>
+  );
 };
 
 export default LoginForm;
