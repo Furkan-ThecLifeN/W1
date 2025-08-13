@@ -1,6 +1,8 @@
+// src/components/Auth/RegisterForm.js
 import React, { useState } from 'react';
 import { useAuth } from '../../AuthProvider';
 import styles from './AuthForms.module.css';
+import LoadingOverlay from '../LoadingOverlay/LoadingOverlay'; // Yükleyiciyi import ediyoruz
 
 // Client-side validasyon regex'leri
 const isValidEmailFormat = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -18,6 +20,7 @@ const RegisterForm = ({ onRegisterSuccess }) => {
   const [usernameError, setUsernameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [loading, setLoading] = useState(false); // Yeni loading state'i
 
   const { showMessage } = useAuth();
 
@@ -49,29 +52,18 @@ const RegisterForm = ({ onRegisterSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validasyonları tekrar kontrol et
     let hasError = false;
-    if (!email || !isValidEmailFormat(email)) {
-      setEmailError('Geçerli bir e-posta adresi gerekli.');
-      hasError = true;
-    }
-    if (!username || !isValidUsernameFormat(username)) {
-      setUsernameError('Geçerli bir kullanıcı adı gerekli.');
-      hasError = true;
-    }
-    if (!password || !isValidPasswordFormat(password)) {
-      setPasswordError('Geçerli bir şifre gerekli.');
-      hasError = true;
-    }
-    if (password !== confirmPassword) {
-      setConfirmPasswordError('Şifreler eşleşmiyor.');
-      hasError = true;
-    }
+    if (!email || !isValidEmailFormat(email)) { setEmailError('Geçerli bir e-posta adresi gerekli.'); hasError = true; }
+    if (!username || !isValidUsernameFormat(username)) { setUsernameError('Geçerli bir kullanıcı adı gerekli.'); hasError = true; }
+    if (!password || !isValidPasswordFormat(password)) { setPasswordError('Geçerli bir şifre gerekli.'); hasError = true; }
+    if (password !== confirmPassword) { setConfirmPasswordError('Şifreler eşleşmiyor.'); hasError = true; }
 
     if (hasError) {
       showMessage('error', 'Lütfen tüm alanları doğru ve eksiksiz doldurun.');
       return;
     }
+
+    setLoading(true); // İşlem başlarken yükleyiciyi göster
 
     try {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/register`, {
@@ -81,57 +73,47 @@ const RegisterForm = ({ onRegisterSuccess }) => {
       });
 
       const data = await res.json();
-
       if (!res.ok) {
         showMessage('error', data.error || 'Kayıt sırasında bir hata oluştu.');
       } else {
-        // Doğrudan login sayfasına yönlendir, e-posta doğrulaması yok
         showMessage('success', 'Kayıt başarılı! Şimdi giriş yapabilirsiniz.');
-        if (onRegisterSuccess) {
-          onRegisterSuccess();
-        }
-        // Formu ve hata mesajlarını temizle
-        setEmail('');
-        setEmailError('');
-        setUsername('');
-        setUsernameError('');
+        if (onRegisterSuccess) { onRegisterSuccess(); }
+        setEmail(''); setEmailError('');
+        setUsername(''); setUsernameError('');
         setDisplayName('');
-        setPassword('');
-        setPasswordError('');
-        setConfirmPassword('');
-        setConfirmPasswordError('');
+        setPassword(''); setPasswordError('');
+        setConfirmPassword(''); setConfirmPasswordError('');
       }
     } catch (error) {
       showMessage('error', `İstek gönderilirken hata oluştu: ${error.message}`);
+    } finally {
+      setLoading(false); // İşlem bitince yükleyiciyi gizle
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className={styles.auth_form_container}>
-      <h2>Kayıt Ol</h2>
-
-      <label>Email</label>
-      <input type="email" value={email} onChange={handleEmailChange} placeholder="email@example.com" required />
-      {emailError && <span className={styles.error_text}>{emailError}</span>}
-
-      <label>Kullanıcı Adı</label>
-      <input type="text" value={username} onChange={handleUsernameChange} placeholder="benzersiz_kullanici" required />
-      {usernameError && <span className={styles.error_text}>{usernameError}</span>}
-
-      <label>Görünen İsim (Opsiyonel)</label>
-      <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Furkan Yılmaz" />
-      <span className={styles.error_text}></span>
-
-      <label>Şifre</label>
-      <input type="password" value={password} onChange={handlePasswordChange} placeholder="********" required />
-      {passwordError && <span className={styles.error_text}>{passwordError}</span>}
-
-      <label>Şifreyi Onayla</label>
-      <input type="password" value={confirmPassword} onChange={handleConfirmPasswordChange} placeholder="********" required />
-      {confirmPasswordError && <span className={styles.error_text}>{confirmPasswordError}</span>}
-
-      <button type="submit">Kayıt Ol</button>
-    </form>
+    <>
+      {loading && <LoadingOverlay />} {/* LoadingOverlay'i koşullu olarak render et */}
+      <form onSubmit={handleSubmit} className={styles.auth_form_container}>
+        <h2>Kayıt Ol</h2>
+        <label>Email</label>
+        <input type="email" value={email} onChange={handleEmailChange} placeholder="email@example.com" required />
+        {emailError && <span className={styles.error_text}>{emailError}</span>}
+        <label>Kullanıcı Adı</label>
+        <input type="text" value={username} onChange={handleUsernameChange} placeholder="benzersiz_kullanici" required />
+        {usernameError && <span className={styles.error_text}>{usernameError}</span>}
+        <label>Görünen İsim (Opsiyonel)</label>
+        <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Furkan Yılmaz" />
+        <span className={styles.error_text}></span>
+        <label>Şifre</label>
+        <input type="password" value={password} onChange={handlePasswordChange} placeholder="********" required />
+        {passwordError && <span className={styles.error_text}>{passwordError}</span>}
+        <label>Şifreyi Onayla</label>
+        <input type="password" value={confirmPassword} onChange={handleConfirmPasswordChange} placeholder="********" required />
+        {confirmPasswordError && <span className={styles.error_text}>{confirmPasswordError}</span>}
+        <button type="submit">Kayıt Ol</button>
+      </form>
+    </>
   );
 };
 

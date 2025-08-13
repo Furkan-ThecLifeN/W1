@@ -1,3 +1,5 @@
+// App.js
+
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './AuthProvider';
@@ -8,7 +10,6 @@ import SplashScreen from "./components/SplashScreen/SplashScreen";
 import Home from "./pages/home/HomePage";
 import "./App.css";
 import AuthPage from "./pages/AuthPage/AuthPage";
-// import VerificationPage from "./pages/AuthPage/VerificationPage"; // Bu satırı kaldırıyoruz!
 import Notifications from "./pages/Notification/NotificationPage";
 import Messages from "./pages/MessagePage/MessagesPage";
 import Discover from "./pages/Discover/Discover";
@@ -31,19 +32,14 @@ const ProtectedRoute = ({ children }) => {
   const { currentUser, loading } = useAuth();
 
   if (loading) {
-    return <div>Yükleniyor...</div>; // Veya daha gelişmiş bir yükleme göstergesi/splash screen
+    return <div>Yükleniyor...</div>;
   }
 
   if (!currentUser) {
-    return <Navigate to="/auth" replace />; // Kullanıcı yoksa /auth'a yönlendir
+    return <Navigate to="/auth" replace />;
   }
 
-  // Artık burada emailVerified kontrolü yok
-  // if (!currentUser.emailVerified) {
-  //   return <Navigate to="/verification" replace />;
-  // }
-
-  return children; // Her şey yolundaysa istenen bileşeni render et
+  return children;
 };
 
 // Kimlik doğrulama sayfalarına (login/register) erişimi yönetmek için bileşen
@@ -51,18 +47,14 @@ const AuthRedirect = ({ children }) => {
   const { currentUser, loading } = useAuth();
 
   if (loading) {
-    return <div>Yükleniyor...</div>; // Veya daha gelişmiş bir yükleme göstergesi
+    return <div>Yükleniyor...</div>;
   }
 
   if (currentUser) {
-    // Artık burada emailVerified kontrolü yok
-    // if (!currentUser.emailVerified) {
-    //   return <Navigate to="/verification" replace />;
-    // }
-    return <Navigate to="/home" replace />; // Giriş yapmışsa home'a yönlendir
+    return <Navigate to="/home" replace />;
   }
 
-  return children; // Kullanıcı giriş yapmamışsa asıl bileşeni render et
+  return children;
 };
 
 // Uygulama rotalarını içeren ana bileşen
@@ -72,12 +64,10 @@ const AppContent = () => {
       {/* Halka Açık Rotalar */}
       <Route path="/" element={<SplashScreen />} />
 
-      {/* Kimlik Doğrulama Rotaları - Giriş yapmışsa yönlendir */}
+      {/* Kimlik Doğrulama Rotaları */}
       <Route path="/auth" element={<AuthRedirect><AuthPage /></AuthRedirect>} />
-      {/* <Route path="/verification" element={<AuthRedirect><VerificationPage /></AuthRedirect>} /> */}
-      {/* Yukarıdaki satırı kaldırdık */}
 
-      {/* Korumalı Rotalar - Kimlik Doğrulama Gerektirir (Email Doğrulaması Yok) */}
+      {/* Korumalı Rotalar - Giriş Yapma Gerektirir */}
       <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
       <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
       <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
@@ -102,7 +92,6 @@ const AppContent = () => {
   );
 };
 
-// AuthProvider ve Toast'ı içeren ana uygulama bileşeni
 const App = () => (
   <AuthProvider>
     <Toast />
