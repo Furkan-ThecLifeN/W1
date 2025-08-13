@@ -42,9 +42,9 @@
 
   /* Daha dengeli glow efekti */
   box-shadow:
-    0 0 4px #33eaff,
-    0 0 8px rgba(51, 234, 255, 0.6),
-    0 0 12px rgba(51, 234, 255, 0.4);
+    0 0 2px #33eaff,
+    0 0 4px rgba(51, 234, 255, 0.6),
+    0 0 6px rgba(51, 234, 255, 0.4);
   
   transition: background 0.3s ease, box-shadow 0.3s ease;
 }

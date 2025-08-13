@@ -1,186 +1,361 @@
- import { useState, useRef } from "react";
+// src/components/SettingsSections/ProfileSettings/ProfileSettings.jsx
+
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   FiEdit,
   FiCamera,
   FiUser,
-  FiMail,
-  FiPhone,
   FiLock,
   FiUsers,
   FiChevronRight,
-  FiPlus,
   FiCheck,
   FiX,
-  FiSend,
   FiShield,
-  FiChevronDown
+  FiPlus,
 } from "react-icons/fi";
 import Modal from "react-modal";
 import styles from "./ProfileSettings.module.css";
+import Resizer from "react-image-file-resizer";
+import { addDays } from "date-fns";
+
+// Firebase servislerini firebase-client.js'den import edin
+import { auth } from "../../../../config/firebase-client";
+import {
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+} from "firebase/auth";
+
+import { useUser } from "../../../../context/UserContext";
 
 Modal.setAppElement("#root");
 
+const DURATION_LIMIT_DAYS = 15;
+
 const ProfileSettings = () => {
-  // State for active section
+  const { currentUser, setCurrentUser, loading, defaultUser } = useUser();
+  const [profileData, setProfileData] = useState({});
+  const [changes, setChanges] = useState({});
+  const [lastChangeDates, setLastChangeDates] = useState({});
+
   const [activeSection, setActiveSection] = useState("general");
-  
-  // User data state
-  const [profileData, setProfileData] = useState({
-    profileImage: "https://i.pinimg.com/1200x/a0/e9/f8/a0e9f8f125872966759bb388697f238e.jpg",
-    displayName: "Furkan ThecLifeN",
-    username: "furkan_theclifen",
-    email: "furkan@example.com",
-    phone: "+90 555 123 45 67",
-    bio: "Yazılım, tasarım ve sistemin kesişim noktasındayım.",
-    familyGroup: "aile_sistemi",
-    password: "••••••••"
-  });
-  
-  // Form state
   const [editField, setEditField] = useState(null);
   const [tempValue, setTempValue] = useState("");
-  const [verificationStep, setVerificationStep] = useState(null);
-  const [verificationCode, setVerificationCode] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [statusMessage, setStatusMessage] = useState(null);
   
-  // Modal states
-  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
+  const [isPasswordCorrect, setIsPasswordCorrect] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+
   const [isFamilyModalOpen, setIsFamilyModalOpen] = useState(false);
-  
-  // Family members data
   const [familyMembers, setFamilyMembers] = useState([
     { id: 1, name: "Ahmet Yılmaz", username: "ahmet_yilmaz", isMember: true },
     { id: 2, name: "Mehmet Kaya", username: "mehmet.kaya", isMember: false },
-    { id: 3, name: "Ayşe Demir", username: "ayse.demir", isMember: false },
   ]);
-  
+
   const fileInputRef = useRef(null);
 
-  // Handle input changes
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setProfileData(prev => ({ ...prev, [name]: value }));
-  };
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
-  // Handle image upload
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileData(prev => ({ ...prev, profileImage: reader.result }));
-      };
-      reader.readAsDataURL(file);
+  // Firestore'dan değil, UserContext'ten verileri al
+  useEffect(() => {
+    if (currentUser) {
+      const fullProfile = { ...defaultUser, ...currentUser };
+      setProfileData({
+        profileImage: fullProfile.photoURL,
+        displayName: fullProfile.displayName,
+        username: fullProfile.username,
+        email: fullProfile.email,
+        phone: fullProfile.phone || "",
+        bio: fullProfile.bio || "",
+        familyGroup: fullProfile.familySystem || null,
+        password: "••••••••",
+      });
+      // lastChangeDates verisini de UserContext'ten al
+      setLastChangeDates(fullProfile.lastChangeDates || {});
     }
-  };
+  }, [currentUser, defaultUser]);
 
-  // Trigger file input
+  // Bir alanın değiştirilip değiştirilemeyeceğini kontrol eder
+  const canChange = useCallback((field) => {
+    const lastChange = lastChangeDates[field];
+    if (!lastChange) return true;
+
+    // Firebase'den gelen Timestamp objesi veya string olarak gelen tarihi işler
+    const lastChangeDate = (lastChange.toDate && typeof lastChange.toDate === 'function')
+      ? lastChange.toDate()
+      : new Date(lastChange);
+    
+    const today = new Date();
+    const expiryDate = addDays(lastChangeDate, DURATION_LIMIT_DAYS);
+    return today > expiryDate;
+  }, [lastChangeDates]);
+
+  const getRemainingTime = useCallback((field) => {
+    const lastChange = lastChangeDates[field];
+    if (!lastChange) return null;
+
+    const lastChangeDate = (lastChange.toDate && typeof lastChange.toDate === 'function')
+      ? lastChange.toDate()
+      : new Date(lastChange);
+    
+    const today = new Date();
+    const expiryDate = addDays(lastChangeDate, DURATION_LIMIT_DAYS);
+    const diffTime = expiryDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : null;
+  }, [lastChangeDates]);
+
   const triggerImageUpload = () => fileInputRef.current.click();
 
-  // Start editing a field
-  const startEdit = (field) => {
-    setEditField(field);
-    setTempValue(profileData[field]);
-    
-    if (["email", "phone", "password"].includes(field)) {
-      setVerificationStep("request");
+  const handleImageUpload = (e) => {
+    if (!canChange("photoURL")) {
+      setStatusMessage({
+        type: "error",
+        text: `Profil fotoğrafı, ${getRemainingTime("photoURL")} gün sonra değiştirilebilir.`,
+      });
+      return;
+    }
+    const file = e.target.files[0];
+    if (file) {
+      Resizer.imageFileResizer(
+        file,
+        300,
+        300,
+        "JPEG",
+        80,
+        0,
+        (uri) => {
+          setProfileData((prev) => ({ ...prev, profileImage: uri }));
+          setChanges((prev) => ({ ...prev, photoURL: uri }));
+        },
+        "base64"
+      );
     }
   };
 
-  // Cancel editing
+  const startEdit = (field) => {
+    if (!canChange(field)) {
+      setStatusMessage({
+        type: "error",
+        text: `${field.charAt(0).toUpperCase() + field.slice(1)} alanı, ${getRemainingTime(field)} gün sonra değiştirilebilir.`,
+      });
+      return;
+    }
+    setEditField(field);
+    setTempValue(profileData[field]);
+    setStatusMessage(null);
+    setIsPasswordCorrect(false); // Yeni bir düzenleme başlatıldığında şifre doğrulama durumunu sıfırla
+  };
+
   const cancelEdit = () => {
     setEditField(null);
     setTempValue("");
-    setVerificationStep(null);
-    setVerificationCode("");
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmNewPassword("");
+    setIsPasswordCorrect(false);
+    setStatusMessage(null);
   };
 
-  // Save edited field
-  const saveEdit = () => {
-    if (editField) {
-      setProfileData(prev => ({ ...prev, [editField]: tempValue }));
-      
-      if (editField === "phone") {
-        setIsPhoneModalOpen(true);
-      }
-      
-      setEditField(null);
-      setTempValue("");
-    }
-  };
+  const handleSave = () => {
+    if (!editField) return;
 
-  // Request verification code
-  const requestVerification = () => {
-    // In a real app, this would send a code to the user's email/phone
-    setVerificationStep("verify");
-  };
+    const currentValue = profileData[editField];
+    let finalValue = tempValue;
 
-  // Verify and complete sensitive changes
-  const verifyAndComplete = () => {
-    // In a real app, this would verify the code first
-    if (editField === "email") {
-      setProfileData(prev => ({ ...prev, email: tempValue }));
+    if (currentValue === tempValue) {
+      const newChanges = { ...changes };
+      delete newChanges[editField];
+      setChanges(newChanges);
+      cancelEdit();
+      return;
     }
     
-    setEditField(null);
-    setVerificationStep(null);
-    setVerificationCode("");
-    setTempValue("");
-    setIsPhoneModalOpen(false);
+    if (editField === "username") {
+      finalValue = finalValue.toLowerCase().replace(/[^a-z0-9._]/g, "");
+    }
+    
+    setChanges((prev) => ({ ...prev, [editField]: finalValue }));
+    setProfileData((prev) => ({ ...prev, [editField]: finalValue }));
+    cancelEdit();
+  };
+  
+  const handlePasswordVerification = async () => {
+    if (!currentUser || !currentPassword) {
+      setStatusMessage({ type: "error", text: "Lütfen mevcut şifrenizi girin." });
+      return;
+    }
+    try {
+      const credential = EmailAuthProvider.credential(
+        currentUser.email,
+        currentPassword
+      );
+      await reauthenticateWithCredential(auth.currentUser, credential);
+      setIsPasswordCorrect(true);
+      setStatusMessage(null);
+    } catch (error) {
+      console.error("Şifre doğrulama hatası:", error);
+      setStatusMessage({
+        type: "error",
+        text: "Mevcut şifre hatalı. Lütfen tekrar deneyin.",
+      });
+    }
+  };
+  
+  const handlePasswordChange = () => {
+    if (newPassword !== confirmNewPassword) {
+      setStatusMessage({ type: "error", text: "Yeni şifreler eşleşmiyor." });
+      return;
+    }
+    if (newPassword.length < 6) {
+      setStatusMessage({
+        type: "error",
+        text: "Yeni şifre en az 6 karakter olmalıdır."
+      });
+      return;
+    }
+    // Şifre değişikliğini `changes` state'ine ekle
+    setChanges((prev) => ({ ...prev, password: newPassword }));
+    setStatusMessage({
+      type: "success",
+      text: "Şifre değişikliği sıraya alındı. 'Tüm Değişiklikleri Kaydet'e tıklayın.",
+    });
+    cancelEdit();
   };
 
-  // Toggle family member status
+  // Tüm bekleyen değişiklikleri backend'e tek bir istek ile gönderir
+  const handleFinalSave = async () => {
+    if (Object.keys(changes).length === 0) {
+      setStatusMessage({ type: "info", text: "Kaydedilecek bir değişiklik yok." });
+      return;
+    }
+
+    setIsSaving(true);
+    setStatusMessage({ type: "info", text: "Tüm değişiklikler kaydediliyor..." });
+
+    try {
+      const idToken = await auth.currentUser.getIdToken();
+
+      // Değişiklikleri backend'e gönderme
+      const res = await fetch(`${API_URL}/api/auth/profile/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`,
+        },
+        body: JSON.stringify(changes),
+      });
+
+      // API yanıtının başarılı olup olmadığını kontrol et
+      if (!res.ok) {
+        // Hata durumunda, sunucunun JSON dönüp dönmediğini kontrol etmeden hata mesajı al
+        const errorData = await res.json().catch(() => ({ error: 'Bilinmeyen bir hata oluştu.' }));
+        throw new Error(errorData.error || `HTTP Hata Kodu: ${res.status}`);
+      }
+
+      // Başarılı yanıtta JSON'ı al
+      const data = await res.json();
+      
+      // Backend'den gelen güncel kullanıcı verileriyle UserContext'i güncelle
+      const updatedUser = {
+        ...auth.currentUser,
+        ...data.profile, // Backend'den gelen güncel Firestore verileri
+      };
+      
+      setCurrentUser(updatedUser);
+
+      // Başarılı bir kayıttan sonra geçici state'leri sıfırla
+      setChanges({});
+      setLastChangeDates(data.profile.lastChangeDates || {}); // Backend'den gelen yeni tarihleri kaydet
+      setStatusMessage({ type: "success", text: data.message });
+
+    } catch (error) {
+      console.error("Profil kaydetme hatası:", error);
+      setStatusMessage({ type: "error", text: `Profil güncellenirken bir hata oluştu: ${error.message}` });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+  
   const toggleFamilyMember = (id) => {
-    setFamilyMembers(prev => 
-      prev.map(member => 
+    setFamilyMembers((prev) =>
+      prev.map((member) =>
         member.id === id ? { ...member, isMember: !member.isMember } : member
       )
     );
   };
-
-  // Sections for navigation
+  
   const sections = [
     { id: "general", label: "General", icon: <FiUser /> },
     { id: "security", label: "Security", icon: <FiLock /> },
-    { id: "family", label: "Family", icon: <FiUsers /> },
+    {
+      id: "family",
+      label: "Family",
+      icon: <FiUsers />,
+      disabled: false, // Değiştirildi: Family modalının çalışması için
+      tag: "Yakında",
+    },
   ];
+
+  if (loading || !currentUser) {
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.spinner}></div>
+        <p>Loading profile data...</p>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
-      {/* Navigation Sidebar */}
       <nav className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
           <h3 className={styles.sidebarTitle}>Account Settings</h3>
         </div>
-        
         <ul className={styles.sidebarNav}>
-          {sections.map(section => (
+          {sections.map((section) => (
             <li key={section.id}>
               <button
-                className={`${styles.sidebarButton} ${activeSection === section.id ? styles.active : ""}`}
-                onClick={() => setActiveSection(section.id)}
+                className={`${styles.sidebarButton} ${activeSection === section.id ? styles.active : ""} ${section.disabled ? styles.disabled : ""}`}
+                onClick={() => !section.disabled && setActiveSection(section.id)}
               >
                 <span className={styles.sidebarIcon}>{section.icon}</span>
                 <span className={styles.sidebarLabel}>{section.label}</span>
+                {section.tag && (
+                  <span className={styles.comingSoonTag}>{section.tag}</span>
+                )}
                 <FiChevronRight className={styles.sidebarArrow} />
               </button>
             </li>
           ))}
         </ul>
+        <button
+          className={styles.saveAllButton}
+          onClick={handleFinalSave}
+          disabled={Object.keys(changes).length === 0 || isSaving}
+        >
+          {isSaving ? "Saving..." : "Save All Changes"}
+        </button>
+        {statusMessage && (
+          <p className={`${styles.statusMessage} ${styles[statusMessage.type]}`}>
+            {statusMessage.text}
+          </p>
+        )}
       </nav>
-
-      {/* Main Content */}
       <main className={styles.content}>
-        {/* Profile Header */}
         <header className={styles.profileHeader}>
           <div className={styles.avatarContainer}>
-            <img 
-              src={profileData.profileImage} 
-              alt="Profile" 
+            <img
+              src={profileData.profileImage}
+              alt="Profile"
               className={styles.avatar}
             />
-            <button 
+            <button
               className={styles.avatarEdit}
               onClick={triggerImageUpload}
+              aria-label="Edit profile picture"
             >
               <FiCamera />
             </button>
@@ -192,435 +367,260 @@ const ProfileSettings = () => {
               className={styles.fileInput}
             />
           </div>
-          
           <div className={styles.profileInfo}>
             <h1 className={styles.displayName}>{profileData.displayName}</h1>
             <p className={styles.username}>@{profileData.username}</p>
-            <p className={styles.bio}>{profileData.bio}</p>
+            <p className={styles.bio}>{profileData.bio || "No bio yet"}</p>
           </div>
         </header>
 
-        {/* Form Sections */}
         <section className={styles.formSection}>
-          {/* General Section */}
           {activeSection === "general" && (
             <>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Display Name</label>
-                {editField === "displayName" ? (
-                  <div className={styles.editContainer}>
-                    <input
-                      type="text"
-                      name="displayName"
-                      value={tempValue}
-                      onChange={(e) => setTempValue(e.target.value)}
-                      className={styles.formInput}
-                      autoFocus
-                    />
-                    <div className={styles.editActions}>
-                      <button 
-                        type="button"
-                        className={styles.cancelButton}
-                        onClick={cancelEdit}
-                      >
-                        <FiX />
-                      </button>
-                      <button 
-                        type="button"
-                        className={styles.saveButton}
-                        onClick={saveEdit}
-                      >
-                        <FiCheck />
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className={styles.viewContainer}>
-                    <p className={styles.fieldValue}>{profileData.displayName}</p>
-                    <button 
-                      className={styles.editButton}
-                      onClick={() => startEdit("displayName")}
-                    >
-                      <FiEdit />
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Username</label>
-                {editField === "username" ? (
-                  <div className={styles.editContainer}>
-                    <div className={styles.inputPrefix}>@</div>
-                    <input
-                      type="text"
-                      name="username"
-                      value={tempValue}
-                      onChange={(e) => setTempValue(e.target.value.toLowerCase().replace(/[^a-z0-9._]/g, ""))}
-                      className={`${styles.formInput} ${styles.withPrefix}`}
-                      autoFocus
-                    />
-                    <div className={styles.editActions}>
-                      <button 
-                        type="button"
-                        className={styles.cancelButton}
-                        onClick={cancelEdit}
-                      >
-                        <FiX />
-                      </button>
-                      <button 
-                        type="button"
-                        className={styles.saveButton}
-                        onClick={saveEdit}
-                      >
-                        <FiCheck />
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className={styles.viewContainer}>
-                    <p className={styles.fieldValue}>@{profileData.username}</p>
-                    <button 
-                      className={styles.editButton}
-                      onClick={() => {
-                        if (window.confirm("Changing your username may affect how others can find you. Continue?")) {
-                          startEdit("username");
-                        }
-                      }}
-                    >
-                      <FiEdit />
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Bio</label>
-                {editField === "bio" ? (
-                  <div className={styles.editContainer}>
-                    <textarea
-                      name="bio"
-                      value={tempValue}
-                      onChange={(e) => setTempValue(e.target.value)}
-                      className={styles.formTextarea}
-                      rows="4"
-                      autoFocus
-                    />
-                    <div className={styles.editActions}>
-                      <button 
-                        type="button"
-                        className={styles.cancelButton}
-                        onClick={cancelEdit}
-                      >
-                        <FiX />
-                      </button>
-                      <button 
-                        type="button"
-                        className={styles.saveButton}
-                        onClick={saveEdit}
-                      >
-                        <FiCheck />
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className={styles.viewContainer}>
-                    <p className={styles.fieldValue}>{profileData.bio || "No bio yet"}</p>
-                    <button 
-                      className={styles.editButton}
-                      onClick={() => startEdit("bio")}
-                    >
-                      <FiEdit />
-                    </button>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-
-          {/* Security Section */}
-          {activeSection === "security" && (
-            <>
-              {editField === "email" ? (
-                <div className={styles.securityFlow}>
-                  <div className={styles.securityHeader}>
-                    <FiShield className={styles.securityIcon} />
-                    <h3>Email Change Verification</h3>
-                  </div>
-                  
-                  {verificationStep === "request" ? (
-                    <>
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>Current Email</label>
-                        <p className={styles.fieldValue}>{profileData.email}</p>
-                      </div>
-                      
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>New Email</label>
-                        <input
-                          type="email"
+              {["displayName", "username", "bio"].map((field) => (
+                <div className={styles.formGroup} key={field}>
+                  <label className={styles.formLabel}>
+                    {field === "displayName" && "Display Name"}
+                    {field === "username" && "Username"}
+                    {field === "bio" && "Bio"}
+                  </label>
+                  {editField === field ? (
+                    <div className={styles.editContainer}>
+                      {field === "username" && (
+                        <div className={styles.inputPrefix}>@</div>
+                      )}
+                      {field === "bio" ? (
+                        <textarea
                           value={tempValue}
                           onChange={(e) => setTempValue(e.target.value)}
-                          className={styles.formInput}
-                          placeholder="Enter new email address"
+                          className={styles.formTextarea}
+                          rows="4"
+                          autoFocus
                         />
-                      </div>
-                      
-                      <button 
-                        className={styles.primaryButton}
-                        onClick={requestVerification}
-                      >
-                        <FiSend /> Send Verification Code
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <p className={styles.verificationText}>
-                        We sent a 6-digit verification code to {profileData.email}
-                      </p>
-                      
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>Verification Code</label>
+                      ) : (
                         <input
                           type="text"
-                          value={verificationCode}
-                          onChange={(e) => setVerificationCode(e.target.value)}
-                          className={styles.formInput}
-                          placeholder="Enter 6-digit code"
-                          maxLength="6"
+                          value={tempValue}
+                          onChange={(e) => setTempValue(e.target.value)}
+                          className={`${styles.formInput} ${field === "username" ? styles.withPrefix : ""}`}
+                          autoFocus
                         />
-                      </div>
-                      
-                      <div className={styles.buttonGroup}>
-                        <button 
-                          className={styles.secondaryButton}
-                          onClick={() => setVerificationStep("request")}
+                      )}
+                      <div className={styles.editActions}>
+                        <button
+                          type="button"
+                          className={styles.cancelButton}
+                          onClick={cancelEdit}
+                          aria-label="Cancel edit"
                         >
-                          Back
+                          <FiX />
                         </button>
-                        <button 
-                          className={styles.primaryButton}
-                          onClick={verifyAndComplete}
-                          disabled={verificationCode.length !== 6}
+                        <button
+                          type="button"
+                          className={styles.saveButton}
+                          onClick={handleSave}
+                          aria-label="Save field"
                         >
-                          Confirm Email Change
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Email</label>
-                  <div className={styles.viewContainer}>
-                    <p className={styles.fieldValue}>{profileData.email}</p>
-                    <button 
-                      className={styles.editButton}
-                      onClick={() => startEdit("email")}
-                    >
-                      <FiEdit />
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {editField === "password" ? (
-                <div className={styles.securityFlow}>
-                  <div className={styles.securityHeader}>
-                    <FiShield className={styles.securityIcon} />
-                    <h3>Change Password</h3>
-                  </div>
-                  
-                  <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>Current Password</label>
-                    <input
-                      type="password"
-                      className={styles.formInput}
-                      placeholder="Enter your current password"
-                    />
-                  </div>
-                  
-                  <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>New Password</label>
-                    <input
-                      type="password"
-                      className={styles.formInput}
-                      placeholder="Enter your new password"
-                    />
-                  </div>
-                  
-                  <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>Confirm New Password</label>
-                    <input
-                      type="password"
-                      className={styles.formInput}
-                      placeholder="Confirm your new password"
-                    />
-                  </div>
-                  
-                  <button 
-                    className={styles.primaryButton}
-                    onClick={requestVerification}
-                  >
-                    <FiSend /> Send Verification Code
-                  </button>
-                  
-                  {verificationStep === "verify" && (
-                    <>
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>Verification Code</label>
-                        <input
-                          type="text"
-                          value={verificationCode}
-                          onChange={(e) => setVerificationCode(e.target.value)}
-                          className={styles.formInput}
-                          placeholder="Enter 6-digit code"
-                          maxLength="6"
-                        />
-                      </div>
-                      
-                      <div className={styles.buttonGroup}>
-                        <button 
-                          className={styles.secondaryButton}
-                          onClick={() => setVerificationStep(null)}
-                        >
-                          Cancel
-                        </button>
-                        <button 
-                          className={styles.primaryButton}
-                          onClick={() => {
-                            verifyAndComplete();
-                            setEditField(null);
-                          }}
-                          disabled={verificationCode.length !== 6}
-                        >
-                          Confirm Password Change
+                          <FiCheck />
                         </button>
                       </div>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Password</label>
-                  <div className={styles.viewContainer}>
-                    <p className={styles.fieldValue}>••••••••</p>
-                    <button 
-                      className={styles.editButton}
-                      onClick={() => startEdit("password")}
-                    >
-                      <FiEdit />
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Phone Number</label>
-                {editField === "phone" ? (
-                  <div className={styles.editContainer}>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={tempValue}
-                      onChange={(e) => setTempValue(e.target.value)}
-                      className={styles.formInput}
-                      autoFocus
-                    />
-                    <div className={styles.editActions}>
-                      <button 
-                        type="button"
-                        className={styles.cancelButton}
-                        onClick={cancelEdit}
-                      >
-                        <FiX />
-                      </button>
-                      <button 
-                        type="button"
-                        className={styles.saveButton}
-                        onClick={() => {
-                          saveEdit();
-                          setIsPhoneModalOpen(true);
-                        }}
-                      >
-                        <FiCheck />
-                      </button>
                     </div>
-                  </div>
-                ) : (
-                  <div className={styles.viewContainer}>
-                    <p className={styles.fieldValue}>{profileData.phone}</p>
-                    <button 
-                      className={styles.editButton}
-                      onClick={() => startEdit("phone")}
-                    >
-                      <FiEdit />
-                    </button>
-                  </div>
-                )}
-              </div>
+                  ) : (
+                    <div className={styles.viewContainer}>
+                      <p className={styles.fieldValue}>
+                        {field === "username"
+                          ? `@${profileData[field]}`
+                          : profileData[field] ||
+                            (field === "bio" && "No bio yet") ||
+                            ""}
+                      </p>
+                      <div className={styles.statusContainer}>
+                        {getRemainingTime(field) && (
+                          <span className={styles.cooldownTag}>
+                            {getRemainingTime(field)} days left
+                          </span>
+                        )}
+                        <button
+                          className={styles.editButton}
+                          onClick={() => startEdit(field)}
+                          disabled={!canChange(field)}
+                          aria-label={`Edit ${field}`}
+                        >
+                          <FiEdit />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
             </>
           )}
 
-          {/* Family Section */}
-          {activeSection === "family" && (
+          {activeSection === "security" && (
             <>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Family Group</label>
-                {editField === "familyGroup" ? (
-                  <div className={styles.editContainer}>
-                    <select
-                      name="familyGroup"
-                      value={tempValue}
-                      onChange={(e) => setTempValue(e.target.value)}
-                      className={styles.formSelect}
-                      autoFocus
-                    >
-                      <option value="aile_sistemi">Aile Sistemi</option>
-                      <option value="arkadas_grubu">Arkadaş Grubu</option>
-                      <option value="is_ekibi">İş Ekibi</option>
-                    </select>
-                    <div className={styles.editActions}>
-                      <button 
-                        type="button"
-                        className={styles.cancelButton}
-                        onClick={cancelEdit}
-                      >
-                        <FiX />
-                      </button>
-                      <button 
-                        type="button"
-                        className={styles.saveButton}
-                        onClick={saveEdit}
-                      >
-                        <FiCheck />
-                      </button>
+              {["email", "phone", "password"].map((field) => (
+                <div className={styles.formGroup} key={field}>
+                  <label className={styles.formLabel}>
+                    {field === "email" && "Email"}
+                    {field === "phone" && "Phone Number"}
+                    {field === "password" && "Password"}
+                  </label>
+                  {editField === field ? (
+                    <div className={styles.securityFlow}>
+                      <div className={styles.securityHeader}>
+                        <FiShield className={styles.securityIcon} />
+                        <h3>
+                          {field === "email" && "Change Email"}
+                          {field === "phone" && "Change Phone Number"}
+                          {field === "password" && "Change Password"}
+                        </h3>
+                      </div>
+                      
+                      {!isPasswordCorrect && (
+                        <>
+                          <div className={styles.formGroup}>
+                            <label className={styles.formLabel}>Current Password</label>
+                            <input
+                              type="password"
+                              value={currentPassword}
+                              onChange={(e) => setCurrentPassword(e.target.value)}
+                              className={styles.formInput}
+                              placeholder="Enter your current password"
+                              autoFocus
+                            />
+                          </div>
+                          <div className={styles.buttonGroup}>
+                            <button
+                              className={styles.secondaryButton}
+                              onClick={cancelEdit}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              className={styles.primaryButton}
+                              onClick={handlePasswordVerification}
+                              disabled={!currentPassword}
+                            >
+                              <FiCheck /> Confirm Current Password
+                            </button>
+                          </div>
+                        </>
+                      )}
+                      
+                      {isPasswordCorrect && (
+                        <>
+                          {field !== "password" && (
+                            <div className={styles.formGroup}>
+                              <label className={styles.formLabel}>{field === "email" ? "New Email" : "New Phone Number"}</label>
+                              <input
+                                type={field === "email" ? "email" : "tel"}
+                                value={tempValue}
+                                onChange={(e) => setTempValue(e.target.value)}
+                                className={styles.formInput}
+                                placeholder={`Enter your new ${field === "email" ? "email address" : "phone number"}`}
+                                autoFocus
+                              />
+                            </div>
+                          )}
+                          {field === "password" && (
+                            <>
+                              <div className={styles.formGroup}>
+                                <label className={styles.formLabel}>New Password</label>
+                                <input
+                                  type="password"
+                                  value={newPassword}
+                                  onChange={(e) => setNewPassword(e.target.value)}
+                                  className={styles.formInput}
+                                  placeholder="Enter your new password"
+                                  autoFocus
+                                />
+                              </div>
+                              <div className={styles.formGroup}>
+                                <label className={styles.formLabel}>Confirm New Password</label>
+                                <input
+                                  type="password"
+                                  value={confirmNewPassword}
+                                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                                  className={styles.formInput}
+                                  placeholder="Confirm your new password"
+                                />
+                              </div>
+                            </>
+                          )}
+                          <div className={styles.buttonGroup}>
+                            <button
+                              className={styles.secondaryButton}
+                              onClick={cancelEdit}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              className={styles.primaryButton}
+                              onClick={
+                                field === "password" ? handlePasswordChange : handleSave
+                              }
+                              disabled={
+                                field === "password"
+                                  ? !newPassword || newPassword !== confirmNewPassword || newPassword.length < 6
+                                  : !tempValue
+                              }
+                            >
+                              {field === "password" ? "Change Password" : "Save Change"}
+                            </button>
+                          </div>
+                        </>
+                      )}
+                      {statusMessage && (
+                        <p
+                          className={`${styles.statusMessage} ${styles[statusMessage.type]}`}
+                        >
+                          {statusMessage.text}
+                        </p>
+                      )}
                     </div>
-                  </div>
-                ) : (
-                  <div className={styles.viewContainer}>
-                    <p className={styles.fieldValue}>{profileData.familyGroup}</p>
-                    <button 
-                      className={styles.editButton}
-                      onClick={() => startEdit("familyGroup")}
-                    >
-                      <FiEdit />
-                    </button>
-                  </div>
-                )}
-              </div>
+                  ) : (
+                    <div className={styles.viewContainer}>
+                      <p className={styles.fieldValue}>
+                        {field === "email"
+                          ? profileData.email
+                          : field === "phone"
+                          ? profileData.phone
+                          : "••••••••"}
+                      </p>
+                      <div className={styles.statusContainer}>
+                        {getRemainingTime(field) && (
+                          <span className={styles.cooldownTag}>
+                            {getRemainingTime(field)} days left
+                          </span>
+                        )}
+                        <button
+                          className={styles.editButton}
+                          onClick={() => startEdit(field)}
+                          disabled={!canChange(field)}
+                          aria-label={`Edit ${field}`}
+                        >
+                          <FiEdit />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </>
+          )}
 
+          {activeSection === "family" && (
+            <div className={styles.formGroup}>
               <div className={styles.membersSection}>
                 <div className={styles.sectionHeader}>
                   <h3 className={styles.sectionTitle}>Family Members</h3>
-                  <button 
+                  <button
                     className={styles.addButton}
                     onClick={() => setIsFamilyModalOpen(true)}
                   >
                     <FiPlus /> Add Member
                   </button>
                 </div>
-                
                 <div className={styles.membersList}>
                   <div className={styles.memberCard}>
                     <div className={styles.memberAvatar}>
@@ -631,8 +631,7 @@ const ProfileSettings = () => {
                       <p className={styles.memberRole}>Owner</p>
                     </div>
                   </div>
-                  
-                  {familyMembers.filter(m => m.isMember).map(member => (
+                  {familyMembers.filter((m) => m.isMember).map((member) => (
                     <div key={member.id} className={styles.memberCard}>
                       <div className={styles.memberAvatar}>
                         {member.name.charAt(0)}
@@ -645,59 +644,10 @@ const ProfileSettings = () => {
                   ))}
                 </div>
               </div>
-            </>
+            </div>
           )}
         </section>
       </main>
-
-      {/* Phone Verification Modal */}
-      <Modal
-        isOpen={isPhoneModalOpen}
-        onRequestClose={() => setIsPhoneModalOpen(false)}
-        className={styles.modal}
-        overlayClassName={styles.overlay}
-      >
-        <div className={styles.modalContent}>
-          <div className={styles.modalHeader}>
-            <FiShield className={styles.modalIcon} />
-            <h3>Phone Verification</h3>
-          </div>
-          
-          <p className={styles.modalText}>
-            We've sent a 6-digit verification code to {profileData.phone}
-          </p>
-          
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Verification Code</label>
-            <input
-              type="text"
-              value={verificationCode}
-              onChange={(e) => setVerificationCode(e.target.value)}
-              className={styles.formInput}
-              placeholder="Enter 6-digit code"
-              maxLength="6"
-            />
-          </div>
-          
-          <div className={styles.modalActions}>
-            <button 
-              className={styles.secondaryButton}
-              onClick={() => setIsPhoneModalOpen(false)}
-            >
-              Cancel
-            </button>
-            <button 
-              className={styles.primaryButton}
-              onClick={verifyAndComplete}
-              disabled={verificationCode.length !== 6}
-            >
-              Verify Phone Number
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Family Members Modal */}
       <Modal
         isOpen={isFamilyModalOpen}
         onRequestClose={() => setIsFamilyModalOpen(false)}
@@ -709,39 +659,36 @@ const ProfileSettings = () => {
             <FiUsers className={styles.modalIcon} />
             <h3>Add Family Members</h3>
           </div>
-          
           <p className={styles.modalText}>
             Select from people you follow to add to your family group
           </p>
-          
           <div className={styles.followedUsers}>
-            {familyMembers.map(user => (
+            {familyMembers.map((user) => (
               <div key={user.id} className={styles.userCard}>
-                <div className={styles.userAvatar}>
-                  {user.name.charAt(0)}
-                </div>
+                <div className={styles.userAvatar}>{user.name.charAt(0)}</div>
                 <div className={styles.userInfo}>
                   <h4 className={styles.userName}>{user.name}</h4>
                   <p className={styles.userHandle}>@{user.username}</p>
                 </div>
                 <button
-                  className={`${styles.userToggle} ${user.isMember ? styles.isMember : ''}`}
+                  className={`${styles.userToggle} ${
+                    user.isMember ? styles.isMember : ""
+                  }`}
                   onClick={() => toggleFamilyMember(user.id)}
                 >
-                  {user.isMember ? 'Remove' : 'Add'}
+                  {user.isMember ? "Remove" : "Add"}
                 </button>
               </div>
             ))}
           </div>
-          
           <div className={styles.modalActions}>
-            <button 
+            <button
               className={styles.secondaryButton}
               onClick={() => setIsFamilyModalOpen(false)}
             >
               Cancel
             </button>
-            <button 
+            <button
               className={styles.primaryButton}
               onClick={() => setIsFamilyModalOpen(false)}
             >

@@ -1,5 +1,9 @@
+// src/components/SettingsScreen/SettingsScreen.js
 import React, { useState } from "react";
 import styles from "./SettingsScreen.module.css";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "../../../context/UserContext";
+import { auth } from "../../../config/firebase-client"; 
 
 // ✅ Account Settings
 import ProfileSettings from "../SettingsSections/ProfileSettings/ProfileSettings";
@@ -116,7 +120,6 @@ const componentMap = {
   Sözleşme: <TermsAndConditions />,
   "Uygulama Hakkında": <AboutApp />,
   "Hata Bildirimi ve Geri Bildirim Gönder": <BugFeedback />,
-
   // İçerik Üreticisi Ayarları
   "Account linking": <Accounts />,
   "İstatistikler ve İçgörüler": <CreatorInsights />,
@@ -129,6 +132,19 @@ const componentMap = {
 export default function SettingsScreen() {
   const [selected, setSelected] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
+  const { setCurrentUser } = useUser();
+
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+      setCurrentUser(null); // Global state'i temizle
+      navigate("/auth"); // Giriş sayfasına yönlendir
+      console.log("Çıkış işlemi başarılı.");
+    } catch (error) {
+      console.error("Çıkış sırasında hata oluştu:", error);
+    }
+  };
 
   const filteredSections = Object.entries(sections)
     .map(([section, items]) => {
@@ -183,7 +199,7 @@ export default function SettingsScreen() {
           ))}
         </div>
 
-        <button className={styles.logoutButton}>
+        <button className={styles.logoutButton} onClick={handleLogout}>
           <svg className={styles.logoutIcon} viewBox="0 0 24 24">
             <path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" />
           </svg>
