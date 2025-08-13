@@ -1,8 +1,8 @@
 // src/components/Auth/LoginForm.js
 import React, { useState } from 'react';
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { auth } from '../../firebase';
-import { useAuth } from '../../AuthProvider';
+import { auth } from '../../config/firebase';
+import { useAuth } from '../../context/AuthProvider';
 import styles from './AuthForms.module.css';
 import { useNavigate } from 'react-router-dom';
 import LoadingOverlay from '../LoadingOverlay/LoadingOverlay'; // Yükleyiciyi import ediyoruz

@@ -1,6 +1,6 @@
 // src/components/Auth/RegisterForm.js
 import React, { useState } from 'react';
-import { useAuth } from '../../AuthProvider';
+import { useAuth } from '../../context/AuthProvider';
 import styles from './AuthForms.module.css';
 import LoadingOverlay from '../LoadingOverlay/LoadingOverlay'; // Yükleyiciyi import ediyoruz
 

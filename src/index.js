@@ -5,7 +5,7 @@ import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import { AuthProvider } from "./AuthProvider"; // varsa böyle import et
+import { AuthProvider } from "./context/AuthProvider"; // varsa böyle import et
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(

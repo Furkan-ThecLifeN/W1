@@ -1,9 +1,9 @@
 // App.js
-
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './AuthProvider';
+import { AuthProvider, useAuth } from './context/AuthProvider';
 import Toast from './Toast';
+import { UserProvider } from './context/UserContext';
 
 // Sayfa bileşenleriniz
 import SplashScreen from "./components/SplashScreen/SplashScreen";
@@ -27,7 +27,7 @@ import FeelingAdd from "./components/Add/Feelings/FeelingsAdd";
 import LiveStreamAdd from "./components/Add/LiveStream/LiveStream";
 import DraftsAdd from "./components/Add/Drafts/Drafts";
 
-// Kimlik doğrulama gerektiren rotaları korumak için bir bileşen
+// 🔒 Korumalı rota
 const ProtectedRoute = ({ children }) => {
   const { currentUser, loading } = useAuth();
 
@@ -42,7 +42,7 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// Kimlik doğrulama sayfalarına (login/register) erişimi yönetmek için bileşen
+// 🔄 Auth sayfalarına giriş yapılmışken erişimi engelleme
 const AuthRedirect = ({ children }) => {
   const { currentUser, loading } = useAuth();
 
@@ -57,17 +57,12 @@ const AuthRedirect = ({ children }) => {
   return children;
 };
 
-// Uygulama rotalarını içeren ana bileşen
+// 📌 Tüm route’lar
 const AppContent = () => {
   return (
     <Routes>
-      {/* Halka Açık Rotalar */}
       <Route path="/" element={<SplashScreen />} />
-
-      {/* Kimlik Doğrulama Rotaları */}
       <Route path="/auth" element={<AuthRedirect><AuthPage /></AuthRedirect>} />
-
-      {/* Korumalı Rotalar - Giriş Yapma Gerektirir */}
       <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
       <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
       <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
@@ -85,18 +80,19 @@ const AppContent = () => {
       <Route path="/create/livestream" element={<ProtectedRoute><LiveStreamAdd /></ProtectedRoute>} />
       <Route path="/create/drafts" element={<ProtectedRoute><DraftsAdd /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-
-      {/* Eşleşmeyen tüm yollar için varsayılan yönlendirme */}
       <Route path="*" element={<Navigate to="/auth" replace />} />
     </Routes>
   );
 };
 
+// 🛠 Provider’ları en dışta sarmaladık
 const App = () => (
-  <AuthProvider>
-    <Toast />
-    <AppContent />
-  </AuthProvider>
+  <UserProvider>
+    <AuthProvider>
+      <Toast />
+      <AppContent />
+    </AuthProvider>
+  </UserProvider>
 );
 
 export default App;

@@ -1,18 +1,33 @@
+// src/components/AccountBox/AccountBox.js
 import React, { useState } from "react";
-import styles from "./AccountBox.module.css";
 import { IoIosSettings } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
+import styles from "./AccountBox.module.css";
+import { useUser } from "../../../context/UserContext";
+import LoadingOverlay from "../../LoadingOverlay/LoadingOverlay";
 import FollowersFollowingPage from "../../FollowersFollowingPage/FollowersFollowingPage";
 
 const AccountBox = () => {
+  const { currentUser, loading } = useUser();
   const [activeTab, setActiveTab] = useState("posts");
   const navigate = useNavigate();
   const [activePage, setActivePage] = useState(null);
-  const closePage = () => setActivePage(null);
+
+  if (loading) {
+    return <LoadingOverlay />;
+  }
+
+  if (!currentUser) {
+    // Kullanıcı giriş yapmamışsa veya verisi yoksa
+    return <div>Lütfen giriş yapın.</div>;
+  }
+
+  const { username, displayName, photoURL, bio, familySystem, stats } = currentUser;
+
   return (
     <div className={styles.pageWrapper}>
       <div className={styles.account_top}>
-        <div className={styles.fixedTopBox}>furkan_theclifen</div>
+        <div className={styles.fixedTopBox}>{username}</div>
         <div className={styles.fixedSettingsBtn}>
           <button
             className={styles.actionBtn}
@@ -27,7 +42,7 @@ const AccountBox = () => {
         <div className={styles.profileImageSection}>
           <div className={styles.profileImageWrapper}>
             <img
-              src="https://i.pinimg.com/1200x/a0/e9/f8/a0e9f8f125872966759bb388697f238e.jpg"
+              src={photoURL}
               alt="Profile"
               className={styles.profileImage}
             />
@@ -36,55 +51,55 @@ const AccountBox = () => {
         </div>
 
         <div className={styles.profileInfoSection}>
-          <h2 className={styles.profileName}>Furkan ThecLifeN</h2>
-          <div className={styles.tagBox}>aile_sistemi</div>
+          <h2 className={styles.profileName}>{displayName}</h2>
+          {familySystem && (
+            <div className={styles.tagBox}>{familySystem}</div>
+          )}
           <div className={styles.bio}>
-            Yazılımın, tasarımın ve sistemin birleştiği noktadayım. Her satırda
-            bir hayat, her renkte bir anlam var.
+            {bio || "Henüz bir biyografi eklemediniz."}
           </div>
         </div>
 
         <div className={styles.statsSection}>
           <div className={styles.statBox}>
-            <strong>120</strong>
+            <strong>{stats.posts}</strong>
             <span className={styles.statLabel}>Posts</span>
           </div>
           <div className={styles.statBox}>
-            <strong>340</strong>
+            <strong>{stats.rta}</strong>
             <span className={styles.statLabel}>RTA</span>
           </div>
           <div
             className={styles.statBox}
             onClick={() => setActivePage("followers")}
           >
-            <strong>875</strong>
+            <strong>{stats.followers}</strong>
             <span className={styles.statLabel}>Followers</span>
           </div>
           <div
             className={styles.statBox}
             onClick={() => setActivePage("following")}
           >
-            <strong>52</strong>
+            <strong>{stats.following}</strong>
             <span className={styles.statLabel}>Following</span>
           </div>
         </div>
 
-       {activePage && (
-  <div className={styles.overlay}>
-    <div className={styles.modal}>
-      <div className={styles.modalHeader}>
-        <span>{activePage === "followers" ? "Takipçiler" : "Takip Edilenler"}</span>
-        <button className={styles.closeBtn} onClick={() => setActivePage(null)}>
-          &times;
-        </button>
-      </div>
-      <div className={styles.modalContent}>
-        <FollowersFollowingPage type={activePage} />
-      </div>
-    </div>
-  </div>
-)}
-
+        {activePage && (
+          <div className={styles.overlay}>
+            <div className={styles.modal}>
+              <div className={styles.modalHeader}>
+                <span>{activePage === "followers" ? "Takipçiler" : "Takip Edilenler"}</span>
+                <button className={styles.closeBtn} onClick={() => setActivePage(null)}>
+                  &times;
+                </button>
+              </div>
+              <div className={styles.modalContent}>
+                <FollowersFollowingPage type={activePage} />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className={styles.tabBar}>
@@ -116,16 +131,16 @@ const AccountBox = () => {
 
       <div className={styles.tabContent}>
         {activeTab === "posts" && (
-          <div className={styles.section}>Postlar burada gösterilecek</div>
+          <div className={styles.section}>{displayName || username}, henüz bir gönderi paylaşmadınız.</div>
         )}
         {activeTab === "feeds" && (
-          <div className={styles.section}>Feedler burada gösterilecek</div>
+          <div className={styles.section}>{displayName || username}, henüz feedleriniz bulunmamaktadır.</div>
         )}
         {activeTab === "likes" && (
-          <div className={styles.section}>Beğenilen içerikler burada</div>
+          <div className={styles.section}>{displayName || username}, henüz bir gönderiyi beğenmediniz.</div>
         )}
         {activeTab === "tags" && (
-          <div className={styles.section}>Etiketlenmiş gönderiler burada</div>
+          <div className={styles.section}>{displayName || username}, henüz etiketlendiğiniz bir gönderi bulunmamaktadır.</div>
         )}
       </div>
     </div>
