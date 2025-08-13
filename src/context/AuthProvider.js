@@ -1,7 +1,7 @@
 // AuthProvider.js
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { auth } from '../config/firebase.js';
+import { auth } from '../config/firebase-client';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 

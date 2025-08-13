@@ -1,7 +1,7 @@
 // src/components/Auth/LoginForm.js
 import React, { useState } from 'react';
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { auth } from '../../config/firebase';
+import { auth } from '../../config/firebase-client';
 import { useAuth } from '../../context/AuthProvider';
 import styles from './AuthForms.module.css';
 import { useNavigate } from 'react-router-dom';

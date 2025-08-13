@@ -1,10 +1,13 @@
+// src/components/MobileProfile/MobileProfile.js
 import React, { useState } from "react";
 import { IoIosSettings } from "react-icons/io";
 import styles from "./MobileProfile.module.css";
-import SettingsPage from "../../../pages/Settings/SettingsPage";
 import { Link } from "react-router-dom";
+import { useUser } from "../../../context/UserContext";
+import LoadingOverlay from "../../LoadingOverlay/LoadingOverlay";
 
 const MobileProfile = () => {
+  const { currentUser, loading } = useUser();
   const [activeTab, setActiveTab] = useState("posts");
 
   const tabs = [
@@ -14,16 +17,33 @@ const MobileProfile = () => {
     { key: "tags", label: "Tagged" },
   ];
 
+  if (loading) {
+    return <LoadingOverlay />;
+  }
+
+  if (!currentUser) {
+    // Kullanıcı giriş yapmamışsa veya verisi yoksa
+    return <div>Lütfen giriş yapın.</div>;
+  }
+
+  const { username, displayName, photoURL, bio, familySystem, stats } = currentUser;
+
+  // Tab içeriği için dinamik mesajlar
+  const tabMessages = {
+    posts: `${displayName || username}, henüz bir gönderi paylaşmadınız.`,
+    feeds: `${displayName || username}, henüz feedleriniz bulunmamaktadır.`,
+    likes: `${displayName || username}, henüz bir gönderiyi beğenmediniz.`,
+    tags: `${displayName || username}, henüz etiketlendiğiniz bir gönderi bulunmamaktadır.`,
+  };
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <div className={styles.username}>furkan_theclifen</div>
+        <div className={styles.username}>{username}</div>
         <div className={styles.actions}>
-          <button className={styles.actionBtn}>
-            <Link to="/settings">
-              <IoIosSettings className={styles.icon} />
-            </Link>
-          </button>
+          <Link to="/settings" className={styles.actionBtn}>
+            <IoIosSettings className={styles.icon} />
+          </Link>
         </div>
       </header>
 
@@ -33,7 +53,7 @@ const MobileProfile = () => {
         <div className={styles.avatarContainer}>
           <div className={styles.avatarWrapper}>
             <img
-              src="https://i.pinimg.com/1200x/a0/e9/f8/a0e9f8f125872966759bb388697f238e.jpg"
+              src={photoURL}
               alt="Profile"
               className={styles.avatar}
             />
@@ -43,21 +63,21 @@ const MobileProfile = () => {
         <div className={styles.stats}>
           <div className={styles.stat_content}>
             <div className={styles.stat}>
-              <span className={styles.statNumber}>120</span>
+              <span className={styles.statNumber}>{stats.posts}</span>
               <span className={styles.statLabel}>Posts</span>
             </div>
             <div className={styles.stat}>
-              <span className={styles.statNumber}>340</span>
+              <span className={styles.statNumber}>{stats.rta}</span>
               <span className={styles.statLabel}>RTA</span>
             </div>
           </div>
           <div className={styles.stat_content}>
             <div className={styles.stat}>
-              <span className={styles.statNumber}>875</span>
+              <span className={styles.statNumber}>{stats.followers}</span>
               <span className={styles.statLabel}>Followers</span>
             </div>
             <div className={styles.stat}>
-              <span className={styles.statNumber}>52</span>
+              <span className={styles.statNumber}>{stats.following}</span>
               <span className={styles.statLabel}>Following</span>
             </div>
           </div>
@@ -65,11 +85,12 @@ const MobileProfile = () => {
       </div>
 
       <div className={styles.bioSection}>
-        <h1 className={styles.name}>Furkan ThecLifeN</h1>
-        <div className={styles.tag}>#aile_sistemi</div>
+        <h1 className={styles.name}>{displayName}</h1>
+        {familySystem && (
+          <div className={styles.tag}>{familySystem}</div>
+        )}
         <p className={styles.bioText}>
-          Yazılımın, tasarımın ve sistemin birleştiği noktadayım. Her satırda
-          bir hayat, her renkte bir anlam var.
+          {bio || "Henüz bir biyografi eklemediniz."}
         </p>
       </div>
 
@@ -78,6 +99,7 @@ const MobileProfile = () => {
         <button className={styles.shareButton}>Share Profile</button>
       </div>
 
+      {/* Highlights kısmı default olarak kaldı, dinamik veri eklemek için ayrıca düzenleme gerekir. */}
       <div className={styles.highlights}>
         {["Story 1", "Story 2", "Story 3"].map((label, index) => (
           <div key={index} className={styles.highlightItem}>
@@ -102,34 +124,13 @@ const MobileProfile = () => {
       </div>
 
       <div className={styles.tabContent}>
-        {activeTab === "posts" && (
-          <div className={styles.postsGrid}>
-            {[1, 2, 3, 4, 5, 6].map((post) => (
-              <div key={post} className={styles.postItem}>
-                <img
-                  src={`https://picsum.photos/300/300?random=${post}`}
-                  alt={`Post ${post}`}
-                  className={styles.postImage}
-                />
-              </div>
-            ))}
-          </div>
-        )}
-        {activeTab === "feeds" && (
-          <div className={styles.feedsContent}>
-            <p>Your feeds will appear here</p>
-          </div>
-        )}
-        {activeTab === "likes" && (
-          <div className={styles.likesContent}>
-            <p>Liked posts will appear here</p>
-          </div>
-        )}
-        {activeTab === "tags" && (
-          <div className={styles.tagsContent}>
-            <p>Tagged photos will appear here</p>
-          </div>
-        )}
+        {/* Tab içeriği dinamik mesajlarla güncellendi */}
+        <div className={styles.postsGrid}>
+          {activeTab === "posts" && <p>{tabMessages.posts}</p>}
+          {activeTab === "feeds" && <p>{tabMessages.feeds}</p>}
+          {activeTab === "likes" && <p>{tabMessages.likes}</p>}
+          {activeTab === "tags" && <p>{tabMessages.tags}</p>}
+        </div>
       </div>
     </div>
   );

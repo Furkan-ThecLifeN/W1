@@ -1,6 +1,6 @@
 // src/context/UserContext.js
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { auth } from '../config/firebase';
+import { auth } from '../config/firebase-client';
 
 const UserContext = createContext();
 
