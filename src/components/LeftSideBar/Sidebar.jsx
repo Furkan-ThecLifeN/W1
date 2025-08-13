@@ -1,12 +1,11 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import LeftSideBarStyles from "./Sidebar.module.css";
-import {
-  FiUser,
-} from "react-icons/fi";
 import { MdOutlineAddBox } from "react-icons/md";
 import { SiApostrophe, SiHearthisdotat } from "react-icons/si";
 import { BiSolidHome, BiSolidMessageSquareDots, BiSolidNotification } from 'react-icons/bi';
+import { FaUserAlt } from "react-icons/fa";
+
 
 
 
@@ -78,7 +77,7 @@ const Sidebar = () => {
             isActive ? LeftSideBarStyles.active : LeftSideBarStyles.link
           }
         >
-          <FiUser className={LeftSideBarStyles.icon} />
+          <FaUserAlt  className={LeftSideBarStyles.icon} />
           <span className={LeftSideBarStyles.tooltip}>Hesabım</span>
         </NavLink>
       </nav>

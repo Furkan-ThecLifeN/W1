@@ -41,29 +41,28 @@
   border: none;
 
   /* Daha dengeli glow efekti */
-  box-shadow:
-    0 0 2px #33eaff,
-    0 0 4px rgba(51, 234, 255, 0.6),
+  box-shadow: 0 0 2px #33eaff, 0 0 4px rgba(51, 234, 255, 0.6),
     0 0 6px rgba(51, 234, 255, 0.4);
-  
+
   transition: background 0.3s ease, box-shadow 0.3s ease;
 }
-
-
 
 .link:hover {
   background-color: var(--hover-bg);
 }
 
 .active {
-  background-color: rgb(28, 169, 250);
+  background-color: var(--hover-bg);
   color: var(--color-blue);
+  width: 48px;
+  height: 48px;
   padding: 10px;
   border-radius: 10px;
   font-size: 22px;
   display: flex;
   justify-content: center;
   align-items: center;
+  border: 2px solid #33eaff;
 }
 
 .icon {
@@ -72,7 +71,7 @@
 }
 
 .SiApostrophe {
-  color: white
+  color: white;
 }
 
 .tooltip {
@@ -122,9 +121,7 @@
 }
 
 @media (max-width: 1024px) {
-
   .sidebar {
     display: none;
   }
-
 }
