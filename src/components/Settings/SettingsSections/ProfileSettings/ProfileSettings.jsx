@@ -20,10 +20,7 @@ import { addDays } from "date-fns";
 
 // Firebase servislerini firebase-client.js'den import edin
 import { auth } from "../../../../config/firebase-client";
-import {
-  reauthenticateWithCredential,
-  EmailAuthProvider,
-} from "firebase/auth";
+import { reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
 
 import { useUser } from "../../../../context/UserContext";
 
@@ -42,7 +39,7 @@ const ProfileSettings = () => {
   const [tempValue, setTempValue] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState(null);
-  
+
   const [isPasswordCorrect, setIsPasswordCorrect] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -56,7 +53,7 @@ const ProfileSettings = () => {
 
   const fileInputRef = useRef(null);
 
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
 
   // Firestore'dan değil, UserContext'ten verileri al
   useEffect(() => {
@@ -78,34 +75,42 @@ const ProfileSettings = () => {
   }, [currentUser, defaultUser]);
 
   // Bir alanın değiştirilip değiştirilemeyeceğini kontrol eder
-  const canChange = useCallback((field) => {
-    const lastChange = lastChangeDates[field];
-    if (!lastChange) return true;
+  const canChange = useCallback(
+    (field) => {
+      const lastChange = lastChangeDates[field];
+      if (!lastChange) return true;
 
-    // Firebase'den gelen Timestamp objesi veya string olarak gelen tarihi işler
-    const lastChangeDate = (lastChange.toDate && typeof lastChange.toDate === 'function')
-      ? lastChange.toDate()
-      : new Date(lastChange);
-    
-    const today = new Date();
-    const expiryDate = addDays(lastChangeDate, DURATION_LIMIT_DAYS);
-    return today > expiryDate;
-  }, [lastChangeDates]);
+      // Firebase'den gelen Timestamp objesi veya string olarak gelen tarihi işler
+      const lastChangeDate =
+        lastChange.toDate && typeof lastChange.toDate === "function"
+          ? lastChange.toDate()
+          : new Date(lastChange);
 
-  const getRemainingTime = useCallback((field) => {
-    const lastChange = lastChangeDates[field];
-    if (!lastChange) return null;
+      const today = new Date();
+      const expiryDate = addDays(lastChangeDate, DURATION_LIMIT_DAYS);
+      return today > expiryDate;
+    },
+    [lastChangeDates]
+  );
 
-    const lastChangeDate = (lastChange.toDate && typeof lastChange.toDate === 'function')
-      ? lastChange.toDate()
-      : new Date(lastChange);
-    
-    const today = new Date();
-    const expiryDate = addDays(lastChangeDate, DURATION_LIMIT_DAYS);
-    const diffTime = expiryDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays > 0 ? diffDays : null;
-  }, [lastChangeDates]);
+  const getRemainingTime = useCallback(
+    (field) => {
+      const lastChange = lastChangeDates[field];
+      if (!lastChange) return null;
+
+      const lastChangeDate =
+        lastChange.toDate && typeof lastChange.toDate === "function"
+          ? lastChange.toDate()
+          : new Date(lastChange);
+
+      const today = new Date();
+      const expiryDate = addDays(lastChangeDate, DURATION_LIMIT_DAYS);
+      const diffTime = expiryDate.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays > 0 ? diffDays : null;
+    },
+    [lastChangeDates]
+  );
 
   const triggerImageUpload = () => fileInputRef.current.click();
 
@@ -113,7 +118,9 @@ const ProfileSettings = () => {
     if (!canChange("photoURL")) {
       setStatusMessage({
         type: "error",
-        text: `Profil fotoğrafı, ${getRemainingTime("photoURL")} gün sonra değiştirilebilir.`,
+        text: `Profil fotoğrafı, ${getRemainingTime(
+          "photoURL"
+        )} gün sonra değiştirilebilir.`,
       });
       return;
     }
@@ -139,7 +146,9 @@ const ProfileSettings = () => {
     if (!canChange(field)) {
       setStatusMessage({
         type: "error",
-        text: `${field.charAt(0).toUpperCase() + field.slice(1)} alanı, ${getRemainingTime(field)} gün sonra değiştirilebilir.`,
+        text: `${
+          field.charAt(0).toUpperCase() + field.slice(1)
+        } alanı, ${getRemainingTime(field)} gün sonra değiştirilebilir.`,
       });
       return;
     }
@@ -172,19 +181,22 @@ const ProfileSettings = () => {
       cancelEdit();
       return;
     }
-    
+
     if (editField === "username") {
       finalValue = finalValue.toLowerCase().replace(/[^a-z0-9._]/g, "");
     }
-    
+
     setChanges((prev) => ({ ...prev, [editField]: finalValue }));
     setProfileData((prev) => ({ ...prev, [editField]: finalValue }));
     cancelEdit();
   };
-  
+
   const handlePasswordVerification = async () => {
     if (!currentUser || !currentPassword) {
-      setStatusMessage({ type: "error", text: "Lütfen mevcut şifrenizi girin." });
+      setStatusMessage({
+        type: "error",
+        text: "Lütfen mevcut şifrenizi girin.",
+      });
       return;
     }
     try {
@@ -203,7 +215,7 @@ const ProfileSettings = () => {
       });
     }
   };
-  
+
   const handlePasswordChange = () => {
     if (newPassword !== confirmNewPassword) {
       setStatusMessage({ type: "error", text: "Yeni şifreler eşleşmiyor." });
@@ -212,7 +224,7 @@ const ProfileSettings = () => {
     if (newPassword.length < 6) {
       setStatusMessage({
         type: "error",
-        text: "Yeni şifre en az 6 karakter olmalıdır."
+        text: "Yeni şifre en az 6 karakter olmalıdır.",
       });
       return;
     }
@@ -228,22 +240,28 @@ const ProfileSettings = () => {
   // Tüm bekleyen değişiklikleri backend'e tek bir istek ile gönderir
   const handleFinalSave = async () => {
     if (Object.keys(changes).length === 0) {
-      setStatusMessage({ type: "info", text: "Kaydedilecek bir değişiklik yok." });
+      setStatusMessage({
+        type: "info",
+        text: "Kaydedilecek bir değişiklik yok.",
+      });
       return;
     }
 
     setIsSaving(true);
-    setStatusMessage({ type: "info", text: "Tüm değişiklikler kaydediliyor..." });
+    setStatusMessage({
+      type: "info",
+      text: "Tüm değişiklikler kaydediliyor...",
+    });
 
     try {
       const idToken = await auth.currentUser.getIdToken();
 
       // Değişiklikleri backend'e gönderme
       const res = await fetch(`${API_URL}/api/auth/profile/update`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${idToken}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
         },
         body: JSON.stringify(changes),
       });
@@ -251,34 +269,38 @@ const ProfileSettings = () => {
       // API yanıtının başarılı olup olmadığını kontrol et
       if (!res.ok) {
         // Hata durumunda, sunucunun JSON dönüp dönmediğini kontrol etmeden hata mesajı al
-        const errorData = await res.json().catch(() => ({ error: 'Bilinmeyen bir hata oluştu.' }));
+        const errorData = await res
+          .json()
+          .catch(() => ({ error: "Bilinmeyen bir hata oluştu." }));
         throw new Error(errorData.error || `HTTP Hata Kodu: ${res.status}`);
       }
 
       // Başarılı yanıtta JSON'ı al
       const data = await res.json();
-      
+
       // Backend'den gelen güncel kullanıcı verileriyle UserContext'i güncelle
       const updatedUser = {
-        ...auth.currentUser,
-        ...data.profile, // Backend'den gelen güncel Firestore verileri
+        ...currentUser,
+        ...data.profile,
       };
-      
+
       setCurrentUser(updatedUser);
 
       // Başarılı bir kayıttan sonra geçici state'leri sıfırla
       setChanges({});
       setLastChangeDates(data.profile.lastChangeDates || {}); // Backend'den gelen yeni tarihleri kaydet
       setStatusMessage({ type: "success", text: data.message });
-
     } catch (error) {
       console.error("Profil kaydetme hatası:", error);
-      setStatusMessage({ type: "error", text: `Profil güncellenirken bir hata oluştu: ${error.message}` });
+      setStatusMessage({
+        type: "error",
+        text: `Profil güncellenirken bir hata oluştu: ${error.message}`,
+      });
     } finally {
       setIsSaving(false);
     }
   };
-  
+
   const toggleFamilyMember = (id) => {
     setFamilyMembers((prev) =>
       prev.map((member) =>
@@ -286,7 +308,7 @@ const ProfileSettings = () => {
       )
     );
   };
-  
+
   const sections = [
     { id: "general", label: "General", icon: <FiUser /> },
     { id: "security", label: "Security", icon: <FiLock /> },
@@ -318,8 +340,12 @@ const ProfileSettings = () => {
           {sections.map((section) => (
             <li key={section.id}>
               <button
-                className={`${styles.sidebarButton} ${activeSection === section.id ? styles.active : ""} ${section.disabled ? styles.disabled : ""}`}
-                onClick={() => !section.disabled && setActiveSection(section.id)}
+                className={`${styles.sidebarButton} ${
+                  activeSection === section.id ? styles.active : ""
+                } ${section.disabled ? styles.disabled : ""}`}
+                onClick={() =>
+                  !section.disabled && setActiveSection(section.id)
+                }
               >
                 <span className={styles.sidebarIcon}>{section.icon}</span>
                 <span className={styles.sidebarLabel}>{section.label}</span>
@@ -339,7 +365,9 @@ const ProfileSettings = () => {
           {isSaving ? "Saving..." : "Save All Changes"}
         </button>
         {statusMessage && (
-          <p className={`${styles.statusMessage} ${styles[statusMessage.type]}`}>
+          <p
+            className={`${styles.statusMessage} ${styles[statusMessage.type]}`}
+          >
             {statusMessage.text}
           </p>
         )}
@@ -402,7 +430,9 @@ const ProfileSettings = () => {
                           type="text"
                           value={tempValue}
                           onChange={(e) => setTempValue(e.target.value)}
-                          className={`${styles.formInput} ${field === "username" ? styles.withPrefix : ""}`}
+                          className={`${styles.formInput} ${
+                            field === "username" ? styles.withPrefix : ""
+                          }`}
                           autoFocus
                         />
                       )}
@@ -475,15 +505,19 @@ const ProfileSettings = () => {
                           {field === "password" && "Change Password"}
                         </h3>
                       </div>
-                      
+
                       {!isPasswordCorrect && (
                         <>
                           <div className={styles.formGroup}>
-                            <label className={styles.formLabel}>Current Password</label>
+                            <label className={styles.formLabel}>
+                              Current Password
+                            </label>
                             <input
                               type="password"
                               value={currentPassword}
-                              onChange={(e) => setCurrentPassword(e.target.value)}
+                              onChange={(e) =>
+                                setCurrentPassword(e.target.value)
+                              }
                               className={styles.formInput}
                               placeholder="Enter your current password"
                               autoFocus
@@ -506,18 +540,26 @@ const ProfileSettings = () => {
                           </div>
                         </>
                       )}
-                      
+
                       {isPasswordCorrect && (
                         <>
                           {field !== "password" && (
                             <div className={styles.formGroup}>
-                              <label className={styles.formLabel}>{field === "email" ? "New Email" : "New Phone Number"}</label>
+                              <label className={styles.formLabel}>
+                                {field === "email"
+                                  ? "New Email"
+                                  : "New Phone Number"}
+                              </label>
                               <input
                                 type={field === "email" ? "email" : "tel"}
                                 value={tempValue}
                                 onChange={(e) => setTempValue(e.target.value)}
                                 className={styles.formInput}
-                                placeholder={`Enter your new ${field === "email" ? "email address" : "phone number"}`}
+                                placeholder={`Enter your new ${
+                                  field === "email"
+                                    ? "email address"
+                                    : "phone number"
+                                }`}
                                 autoFocus
                               />
                             </div>
@@ -525,22 +567,30 @@ const ProfileSettings = () => {
                           {field === "password" && (
                             <>
                               <div className={styles.formGroup}>
-                                <label className={styles.formLabel}>New Password</label>
+                                <label className={styles.formLabel}>
+                                  New Password
+                                </label>
                                 <input
                                   type="password"
                                   value={newPassword}
-                                  onChange={(e) => setNewPassword(e.target.value)}
+                                  onChange={(e) =>
+                                    setNewPassword(e.target.value)
+                                  }
                                   className={styles.formInput}
                                   placeholder="Enter your new password"
                                   autoFocus
                                 />
                               </div>
                               <div className={styles.formGroup}>
-                                <label className={styles.formLabel}>Confirm New Password</label>
+                                <label className={styles.formLabel}>
+                                  Confirm New Password
+                                </label>
                                 <input
                                   type="password"
                                   value={confirmNewPassword}
-                                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                                  onChange={(e) =>
+                                    setConfirmNewPassword(e.target.value)
+                                  }
                                   className={styles.formInput}
                                   placeholder="Confirm your new password"
                                 />
@@ -557,22 +607,30 @@ const ProfileSettings = () => {
                             <button
                               className={styles.primaryButton}
                               onClick={
-                                field === "password" ? handlePasswordChange : handleSave
+                                field === "password"
+                                  ? handlePasswordChange
+                                  : handleSave
                               }
                               disabled={
                                 field === "password"
-                                  ? !newPassword || newPassword !== confirmNewPassword || newPassword.length < 6
+                                  ? !newPassword ||
+                                    newPassword !== confirmNewPassword ||
+                                    newPassword.length < 6
                                   : !tempValue
                               }
                             >
-                              {field === "password" ? "Change Password" : "Save Change"}
+                              {field === "password"
+                                ? "Change Password"
+                                : "Save Change"}
                             </button>
                           </div>
                         </>
                       )}
                       {statusMessage && (
                         <p
-                          className={`${styles.statusMessage} ${styles[statusMessage.type]}`}
+                          className={`${styles.statusMessage} ${
+                            styles[statusMessage.type]
+                          }`}
                         >
                           {statusMessage.text}
                         </p>
@@ -627,21 +685,25 @@ const ProfileSettings = () => {
                       {profileData.displayName.charAt(0)}
                     </div>
                     <div className={styles.memberInfo}>
-                      <h4 className={styles.memberName}>{profileData.displayName}</h4>
+                      <h4 className={styles.memberName}>
+                        {profileData.displayName}
+                      </h4>
                       <p className={styles.memberRole}>Owner</p>
                     </div>
                   </div>
-                  {familyMembers.filter((m) => m.isMember).map((member) => (
-                    <div key={member.id} className={styles.memberCard}>
-                      <div className={styles.memberAvatar}>
-                        {member.name.charAt(0)}
+                  {familyMembers
+                    .filter((m) => m.isMember)
+                    .map((member) => (
+                      <div key={member.id} className={styles.memberCard}>
+                        <div className={styles.memberAvatar}>
+                          {member.name.charAt(0)}
+                        </div>
+                        <div className={styles.memberInfo}>
+                          <h4 className={styles.memberName}>{member.name}</h4>
+                          <p className={styles.memberRole}>Member</p>
+                        </div>
                       </div>
-                      <div className={styles.memberInfo}>
-                        <h4 className={styles.memberName}>{member.name}</h4>
-                        <p className={styles.memberRole}>Member</p>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               </div>
             </div>
