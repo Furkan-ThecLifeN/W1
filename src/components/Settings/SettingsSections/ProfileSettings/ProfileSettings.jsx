@@ -257,14 +257,17 @@ const ProfileSettings = () => {
       const idToken = await auth.currentUser.getIdToken();
 
       // Değişiklikleri backend'e gönderme
-      const res = await fetch(`${API_URL}/api/auth/profile/update`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${idToken}`,
-        },
-        body: JSON.stringify(changes),
-      });
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/users/profile/update`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${idToken}`,
+          },
+          body: JSON.stringify(changes),
+        }
+      );
 
       // API yanıtının başarılı olup olmadığını kontrol et
       if (!res.ok) {

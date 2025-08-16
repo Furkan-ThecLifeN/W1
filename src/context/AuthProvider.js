@@ -12,25 +12,19 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // ✅ Toast mesajı için state
   const [message, setMessage] = useState({ type: '', text: '' });
-
   const navigate = useNavigate();
 
-  // 🔐 Kullanıcı state'ini dinle ve yönlendirmeleri yap
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       setLoading(false);
 
       if (user) {
-        // Kullanıcı giriş yapmışsa ve auth sayfasındaysa home'a yönlendir
         if (window.location.pathname === '/auth') {
           navigate('/home', { replace: true });
         }
       } else {
-        // Kullanıcı çıkış yaptıysa, /auth dışında bir yerdeyse /auth'a yönlendir
         if (
           window.location.pathname !== '/auth' &&
           window.location.pathname !== '/'
@@ -43,19 +37,19 @@ export const AuthProvider = ({ children }) => {
     return unsubscribe;
   }, [navigate]);
 
-  // ✅ Toast mesajı gösterme fonksiyonu
+  // ✅ Toast mesajı gösterme fonksiyonu - Adı "showToast"
   const showToast = (text, type) => {
     setMessage({ text, type });
     setTimeout(() => {
       setMessage({ text: '', type: '' });
-    }, 4000); // 4 saniye sonra temizle
+    }, 4000);
   };
 
   const value = {
     currentUser,
     loading,
     message,
-    showToast,
+    showToast, // ✅ Burada doğru isimle ekleniyor
   };
 
   return (
