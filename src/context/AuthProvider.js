@@ -1,5 +1,3 @@
-// AuthProvider.js
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { auth } from '../config/firebase-client';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -14,11 +12,15 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // ✅ Toast mesajı için state
   const [message, setMessage] = useState({ type: '', text: '' });
+
   const navigate = useNavigate();
 
+  // 🔐 Kullanıcı state'ini dinle ve yönlendirmeleri yap
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, user => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       setLoading(false);
 
@@ -28,27 +30,32 @@ export const AuthProvider = ({ children }) => {
           navigate('/home', { replace: true });
         }
       } else {
-        // Kullanıcı oturumu kapalıysa ve home'da değilse auth sayfasına yönlendir
-        if (window.location.pathname !== '/auth' && window.location.pathname !== '/') {
+        // Kullanıcı çıkış yaptıysa, /auth dışında bir yerdeyse /auth'a yönlendir
+        if (
+          window.location.pathname !== '/auth' &&
+          window.location.pathname !== '/'
+        ) {
           navigate('/auth', { replace: true });
         }
       }
     });
+
     return unsubscribe;
   }, [navigate]);
 
-  const showMessage = (type, text) => {
-    setMessage({ type, text });
+  // ✅ Toast mesajı gösterme fonksiyonu
+  const showToast = (text, type) => {
+    setMessage({ text, type });
     setTimeout(() => {
-      setMessage({ type: '', text: '' });
-    }, 4000);
+      setMessage({ text: '', type: '' });
+    }, 4000); // 4 saniye sonra temizle
   };
 
   const value = {
     currentUser,
     loading,
     message,
-    showMessage
+    showToast,
   };
 
   return (

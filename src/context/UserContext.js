@@ -12,6 +12,7 @@ const defaultUser = {
   bio: '',
   photoURL: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png', // Varsayılan profil fotoğrafı
   familySystem: null, // Aile sistemi
+  accountType: 'personal', // ✅ YENİ: Hesap türü
   stats: {
     posts: 0,
     rta: 0,

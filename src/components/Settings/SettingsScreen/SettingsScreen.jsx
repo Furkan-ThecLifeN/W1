@@ -9,8 +9,8 @@ import { auth } from "../../../config/firebase-client";
 import ProfileSettings from "../SettingsSections/ProfileSettings/ProfileSettings";
 import AccountTypeSettings from "../SettingsSections/AccountTypeSettings/AccountTypeSettings";
 import LoginDeviceHistory from "../SettingsSections/LoginDeviceHistory/LoginDeviceHistory";
-import TwoFactorAuth from "../SettingsSections/TwoFactorAuth/TwoFactorAuth";
-import FreezeAccount from "../SettingsSections/FreezeAccount/FreezeAccount";
+/* import TwoFactorAuth from "../SettingsSections/TwoFactorAuth/TwoFactorAuth";
+*/import FreezeAccount from "../SettingsSections/FreezeAccount/FreezeAccount";
 import DeleteAccount from "../SettingsSections/DeleteAccount/DeleteAccount";
 import SecurityAlerts from "../SettingsSections/SecurityAlerts/SecurityAlerts";
 import LogoutAllDevices from "../SettingsSections/LogoutAllDevices/LogoutAllDevices";
@@ -46,56 +46,12 @@ import EarningsPayments from "../SettingsSections/EarningsPayments/EarningsPayme
 import CommunityCompliance from "../SettingsSections/CommunityCompliance/CommunityCompliance";
 import LiveStreamSettings from "../SettingsSections/LiveStreamSettings/LiveStreamSettings";
 
-const sections = {
-  "Account Settings": [
-    "Profile Settings",
-    "Hesap Türü (Bireysel / İşletme)",
-    "Giriş ve Cihaz Geçmişi",
-    "İki Faktörlü Kimlik Doğrulama (2FA)",
-    "Hesap Dondurma / Geçici Olarak Devre Dışı Bırakma",
-    "Hesabı Kalıcı Olarak Sil",
-    "Hesap Güvenlik Uyarıları",
-    "Oturumu Tüm Cihazlardan Kapat",
-  ],
-  "Kullanıcı Bazlı Ayarlar": [
-    "Hesap Gizliliği",
-    "Yakın Arkadaşlıklar",
-    "Bildirimler",
-    "Engellenenler",
-    "Zaman Yönetimi",
-    "Hareketler (Beğenmeler, Yorumlar, Etiketler, Zaman Geçirme Süresi)",
-    "Gizlenenler / Kısıtlananlar",
-    "Mesajlar ve Hikaye Yanıtları",
-    "Etiketler ve Bahsetmeler",
-    "Gizlenen Sözcükler",
-    "Beğenmeleri Gizle",
-    "İçerik Hassasiyet Filtresi",
-    "Yorum Kontrolleri",
-  ],
-  "Uygulama Bazlı Ayarlar": [
-    "Tema ve Görünüm",
-    "Diller",
-    "Lisanslar",
-    "Sözleşme",
-    "Uygulama Hakkında",
-    "Hata Bildirimi ve Geri Bildirim Gönder",
-  ],
-  "İçerik Üreticisi Ayarları": [
-    "Account linking",
-    "İstatistikler ve İçgörüler",
-    "Gelir ve Ödemeler",
-    "İçerik Yayın Takvimi",
-    "Topluluk Kuralları Uyumluluğu",
-    "Canlı Yayın Ayarları",
-  ],
-};
-
 const componentMap = {
   "Profile Settings": <ProfileSettings />,
   "Hesap Türü (Bireysel / İşletme)": <AccountTypeSettings />,
   "Giriş ve Cihaz Geçmişi": <LoginDeviceHistory />,
-  "İki Faktörlü Kimlik Doğrulama (2FA)": <TwoFactorAuth />,
-  "Hesap Dondurma / Geçici Olarak Devre Dışı Bırakma": <FreezeAccount />,
+/* "İki Faktörlü Kimlik Doğrulama (2FA)": <TwoFactorAuth />,
+*/  "Hesap Dondurma / Geçici Olarak Devre Dışı Bırakma": <FreezeAccount />,
   "Hesabı Kalıcı Olarak Sil": <DeleteAccount />,
   "Hesap Güvenlik Uyarıları": <SecurityAlerts />,
   "Oturumu Tüm Cihazlardan Kapat": <LogoutAllDevices />,
@@ -129,11 +85,65 @@ const componentMap = {
   "Canlı Yayın Ayarları": <LiveStreamSettings />,
 };
 
+
 export default function SettingsScreen() {
   const [selected, setSelected] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
-  const { setCurrentUser } = useUser();
+  const { currentUser, setCurrentUser } = useUser();
+
+  // Dinamik olarak sections'ı oluştur
+  const baseSections = {
+    "Account Settings": [
+      "Profile Settings",
+      "Hesap Türü (Bireysel / İşletme)",
+      "Giriş ve Cihaz Geçmişi",
+  /* "İki Faktörlü Kimlik Doğrulama (2FA)",
+   */    "Hesap Dondurma / Geçici Olarak Devre Dışı Bırakma",
+      "Hesabı Kalıcı Olarak Sil",
+      "Hesap Güvenlik Uyarıları",
+      "Oturumu Tüm Cihazlardan Kapat",
+    ],
+    "Kullanıcı Bazlı Ayarlar": [
+      "Hesap Gizliliği",
+      "Yakın Arkadaşlıklar",
+      "Bildirimler",
+      "Engellenenler",
+      "Zaman Yönetimi",
+      "Hareketler (Beğenmeler, Yorumlar, Etiketler, Zaman Geçirme Süresi)",
+      "Gizlenenler / Kısıtlananlar",
+      "Mesajlar ve Hikaye Yanıtları",
+      "Etiketler ve Bahsetmeler",
+      "Gizlenen Sözcükler",
+      "Beğenmeleri Gizle",
+      "İçerik Hassasiyet Filtresi",
+      "Yorum Kontrolleri",
+    ],
+    "Uygulama Bazlı Ayarlar": [
+      "Tema ve Görünüm",
+      "Diller",
+      "Lisanslar",
+      "Sözleşme",
+      "Uygulama Hakkında",
+      "Hata Bildirimi ve Geri Bildirim Gönder",
+    ],
+  };
+
+  const creatorSections = {
+    "İçerik Üreticisi Ayarları": [
+      "Account linking",
+      "İstatistikler ve İçgörüler",
+      "Gelir ve Ödemeler",
+      "İçerik Yayın Takvimi",
+      "Topluluk Kuralları Uyumluluğu",
+      "Canlı Yayın Ayarları",
+    ],
+  };
+
+  // Eğer kullanıcı iş hesabıysa İçerik Üreticisi Ayarlarını ekle
+  const sections = currentUser?.accountType === 'business'
+    ? { ...baseSections, ...creatorSections }
+    : baseSections;
 
   const handleLogout = async () => {
     try {

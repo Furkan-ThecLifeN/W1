@@ -1,22 +1,59 @@
-import React, { useState } from "react";
+// src/components/Settings/SettingsSections/AccountTypeSettings/AccountTypeSettings.jsx
+
+import React, { useState, useEffect } from "react";
 import styles from "./AccountTypeSettings.module.css";
-import { FiUser, FiBriefcase, FiCheckCircle, FiInfo } from "react-icons/fi";
+import { FiUser, FiBriefcase, FiCheckCircle, FiInfo, FiAlertCircle } from "react-icons/fi";
+import { useUser } from "../../../../context/UserContext";
+import LoadingOverlay from "../../../LoadingOverlay/LoadingOverlay";
+import { auth } from "../../../../config/firebase-client";
+import { useAuth } from "../../../../context/AuthProvider"; // ✅ YENİ: useAuth hook'unu import edin
 
 const AccountTypeSettings = () => {
-  const [accountType, setAccountType] = useState("personal");
-  const [selectedType, setSelectedType] = useState(accountType);
-  const [saved, setSaved] = useState(false);
+  const { currentUser, setCurrentUser } = useUser();
+  const { showToast } = useAuth(); // ✅ YENİ: showToast fonksiyonunu alın
+  const [selectedType, setSelectedType] = useState(currentUser?.accountType || "personal");
+  const [loading, setLoading] = useState(false);
 
-  const handleSave = () => {
-    setAccountType(selectedType);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  useEffect(() => {
+    if (currentUser) {
+      setSelectedType(currentUser.accountType);
+    }
+  }, [currentUser]);
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      const idToken = await auth.currentUser.getIdToken();
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/profile/update`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ accountType: selectedType }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setCurrentUser(prevUser => ({ ...prevUser, accountType: selectedType }));
+        showToast("Hesap türü başarıyla güncellendi.", "success"); // ✅ showToast ile başarılı mesaj gönder
+      } else {
+        showToast(data.error || "Hesap türü güncellenirken bir hata oluştu.", "error"); // ✅ showToast ile hata mesajı gönder
+      }
+    } catch (err) {
+      showToast("Bağlantı hatası. Lütfen daha sonra tekrar deneyin.", "error"); // ✅ showToast ile bağlantı hatası gönder
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className={styles.wrapper}>
-      <h2 className={styles.heading}>Choose Your Account Type</h2>
-      <p className={styles.subtext}><FiInfo /> Select the type of account that best describes your usage. You can switch anytime.</p>
+      {loading && <LoadingOverlay />}
+      <h2 className={styles.heading}>Hesap Türünüzü Seçin</h2>
+      <p className={styles.subtext}>
+        <FiBriefcase /> Hesabınızı en iyi tanımlayan türü seçin. İçerik üreticisi paneline erişmek için hesabınızı işletmeye dönüştürebilirsiniz.
+      </p>
 
       <div className={styles.options}>
         <div
@@ -24,8 +61,8 @@ const AccountTypeSettings = () => {
           onClick={() => setSelectedType("personal")}
         >
           <FiUser className={styles.icon} />
-          <h3>Personal</h3>
-          <p>Ideal for individuals using the platform for personal reasons, portfolios, or non-commercial purposes.</p>
+          <h3>Bireysel Hesap</h3>
+          <p>Kişisel kullanımlar, portföyler veya ticari olmayan amaçlar için idealdir.</p>
         </div>
 
         <div
@@ -33,8 +70,8 @@ const AccountTypeSettings = () => {
           onClick={() => setSelectedType("business")}
         >
           <FiBriefcase className={styles.icon} />
-          <h3>Business</h3>
-          <p>Recommended for companies, brands, or freelancers offering services or managing teams.</p>
+          <h3>İşletme Hesabı</h3>
+          <p>Şirketler, markalar veya hizmet sunan freelance çalışanlar için önerilir.</p>
         </div>
       </div>
 
@@ -42,15 +79,10 @@ const AccountTypeSettings = () => {
         <button
           className={styles.saveBtn}
           onClick={handleSave}
-          disabled={selectedType === accountType}
+          disabled={selectedType === currentUser?.accountType || loading}
         >
-          Save Changes
+          Değişiklikleri Kaydet
         </button>
-        {saved && (
-          <div className={styles.savedNotice}>
-            <FiCheckCircle /> Account type updated successfully.
-          </div>
-        )}
       </div>
     </div>
   );
