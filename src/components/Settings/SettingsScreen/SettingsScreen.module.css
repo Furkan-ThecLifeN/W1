@@ -1,13 +1,13 @@
 /* SettingsScreen.module.css */
 
 :root {
-  --color-primary: #0d1117;
   --color-secondary: #161b22;
   --color-blue-light: rgba(88, 166, 255, 0.1);
   --color-text: #ffffff;
   --color-text-secondary: #8b949e;
   --color-border: #30363d;
   --color-danger: #f85149;
+  --color-blue: #00aaff;
   --spacing-unit: 8px;
   --border-radius: 6px;
   --transition-speed: 0.2s;
@@ -41,7 +41,7 @@
 .searchInput {
   width: 100%;
   padding: 10px 12px 10px 36px;
-  background-color: var(--color-primary);
+  background-color: var(--color-secondary);
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
   color: var(--color-text);
@@ -105,11 +105,12 @@
   background: transparent;
   border: none;
   border-radius: var(--border-radius);
-  color: var(--color-text-secondary);
+  color: var(--color-text);
   font-size: 14px;
   text-align: left;
   cursor: pointer;
   transition: all var(--transition-speed) ease;
+  justify-content: space-between; /* İçerikleri birbirinden uzaklaştırır */
 }
 
 .settingsButton:hover {
@@ -127,12 +128,23 @@
   margin-right: 10px;
   display: flex;
   align-items: center;
+  color: var(--color-text-secondary); /* Normal ikon rengi */
+  transition: color var(--transition-speed) ease;
+}
+
+.settingsButton.active .buttonIcon {
+  color: var(--color-blue); /* Aktif butonda ikon rengi */
 }
 
 .buttonIcon svg {
   width: 16px;
   height: 16px;
   fill: currentColor;
+}
+
+.buttonText {
+  flex-grow: 1; /* Ayar adının kalan boşluğu doldurmasını sağlar */
+  text-align: left;
 }
 
 .logoutButton {
@@ -235,7 +247,7 @@
 .formInput,
 .formSelect {
   padding: 10px 12px;
-  background-color: var(--color-primary);
+  background-color: var(--color-black);
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
   color: var(--color-text);
@@ -316,6 +328,37 @@
   font-size: 14px;
   color: var(--color-text-secondary);
   line-height: 1.6;
+}
+
+/* --- YENİ EKLENEN STİLLER --- */
+
+/* "Yakında" Etiketinin Stili */
+.comingSoonTag {
+  background-color: var(--color-blue); /* Mavi arka plan rengi */
+  color: var(--color-text); /* Beyaz yazı rengi */
+  padding: 4px 8px; /* İç boşluk */
+  border-radius: 4px; /* Hafif yuvarlak köşeler */
+  font-size: 0.75rem; /* Daha küçük yazı boyutu */
+  font-weight: bold;
+  margin-left: 16px; /* Buton adından uzaklaşmasını sağlar */
+  flex-shrink: 0; /* Küçülmesini engeller */
+}
+
+/* Yakında Olan Butonun Stili */
+.settingsButton.comingSoon {
+  opacity: 0.5; /* Butonu soluklaştırır */
+  cursor: not-allowed; /* Fare imlecini yasak işareti yapar */
+  color: var(--color-text-secondary); /* Yazı rengini soluklaştırır */
+}
+
+/* "Yakında" Butonunun Icon rengi */
+.settingsButton.comingSoon .buttonIcon {
+  color: var(--color-text-secondary);
+}
+
+/* "Yakında" butonunun üzerine gelinceki stilin geçersiz kılınması */
+.settingsButton.comingSoon:hover {
+  background-color: transparent; /* Hover rengini kaldırır */
 }
 
 /* Responsive Adjustments */
