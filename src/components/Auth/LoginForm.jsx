@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '../../config/firebase-client';
 import { useAuth } from '../../context/AuthProvider';
+import { useUser } from '../../context/UserContext'; // ✅ YENİ: useUser hook'unu import edin
 import styles from './AuthForms.module.css';
 import { useNavigate } from 'react-router-dom';
 import LoadingOverlay from '../LoadingOverlay/LoadingOverlay';
@@ -17,8 +18,8 @@ const LoginForm = () => {
   const [passwordError, setPasswordError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // ✅ showMessage yerine showToast kullanıyoruz
   const { showToast } = useAuth();
+  const { saveLoginDevice } = useUser(); // ✅ useUser'dan saveLoginDevice fonksiyonunu alın
   const navigate = useNavigate();
 
   const handleIdentifierChange = (e) => {
@@ -39,7 +40,6 @@ const LoginForm = () => {
     if (!password) { setPasswordError('Lütfen şifrenizi girin.'); hasError = true; }
 
     if (hasError) {
-      // ✅ Hata mesajını doğru formatta gönderin
       showToast('Lütfen tüm alanları doldurun.', 'error');
       return;
     }
@@ -62,41 +62,16 @@ const LoginForm = () => {
       }
 
       const userCred = await signInWithEmailAndPassword(auth, resolvedEmail, password);
-      const idToken = await userCred.user.getIdToken();
 
-      // ✅ YENİ: Giriş yapılan cihaz bilgilerini kaydet
-      await fetch(`${process.env.REACT_APP_API_URL}/api/auth/devices/save`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${idToken}`,
-        },
-        body: JSON.stringify({
-          ip: 'IP_ADRESI', // IP adresini backend'den al
-          device: navigator.userAgent,
-          os: navigator.platform,
-          browser: navigator.userAgent
-        }),
-      });
+      // ✅ KESİN ÇÖZÜM: Giriş başarılı olduktan sonra cihaz bilgisini kaydet
+      const deviceInfo = {
+        device: navigator.userAgent,
+        os: navigator.platform,
+        browser: navigator.userAgent
+      };
+      await saveLoginDevice(deviceInfo);
 
-      const profileRes = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/profile`, {
-        method: 'GET',
-        headers: { 'Authorization': `Bearer ${idToken}` }
-      });
-
-      if (!profileRes.ok) {
-        const err = await profileRes.json();
-        throw new Error(err.error || 'Profil alınamadı');
-      }
-
-      const profileData = await profileRes.json();
-      // ✅ Başarılı mesajı doğru formatta gönderin
-      showToast(`Giriş başarılı. Hoş geldin ${profileData.profile.displayName || userCred.user.email}`, 'success');
-
-      setIdentifier('');
-      setPassword('');
-      setIdentifierError('');
-      setPasswordError('');
+      showToast(`Giriş başarılı. Hoş geldin ${userCred.user.displayName || userCred.user.email}`, 'success');
       navigate('/home');
 
     } catch (err) {
@@ -108,7 +83,6 @@ const LoginForm = () => {
       } else {
         errorMessage = `Giriş hatası: ${err.message}`;
       }
-      // ✅ Hata mesajını doğru formatta gönderin
       showToast(errorMessage, 'error');
     } finally {
       setLoading(false);
@@ -120,26 +94,19 @@ const LoginForm = () => {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      const idToken = await result.user.getIdToken();
 
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/google-signin`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken: idToken })
-      });
+      // ✅ KESİN ÇÖZÜM: Google girişi başarılı olduktan sonra cihaz bilgisini kaydet
+      const deviceInfo = {
+        device: navigator.userAgent,
+        os: navigator.platform,
+        browser: navigator.userAgent
+      };
+      await saveLoginDevice(deviceInfo);
 
-      const data = await res.json();
-      if (!res.ok) {
-        // ✅ Hata mesajını doğru formatta gönderin
-        showToast(data.error || 'Google ile giriş başarısız.', 'error');
-        await auth.signOut();
-      } else {
-        // ✅ Başarılı mesajı doğru formatta gönderin
-        showToast(`Google ile giriş başarılı! Hoş geldin ${data.user.displayName || data.user.email}`, 'success');
-        navigate('/home');
-      }
+      showToast(`Google ile giriş başarılı! Hoş geldin ${result.user.displayName || result.user.email}`, 'success');
+      navigate('/home');
+
     } catch (error) {
-      console.error('Google Sign-In Hatası:', error);
       let errorMessage = 'Google ile giriş sırasında bir hata oluştu:';
       if (error.code === 'auth/popup-closed-by-user') {
         errorMessage = 'Google giriş penceresi kapatıldı.';
@@ -150,7 +117,6 @@ const LoginForm = () => {
       } else {
         errorMessage = `Google ile giriş sırasında bir hata oluştu: ${error.message}`;
       }
-      // ✅ Hata mesajını doğru formatta gönderin
       showToast(errorMessage, 'error');
     } finally {
       setLoading(false);
@@ -161,19 +127,19 @@ const LoginForm = () => {
     <>
       {loading && <LoadingOverlay />}
       <form onSubmit={handleLogin} className={styles.auth_form_container}>
-        <h2>Giriş Yap</h2>
-        <label>Email veya Kullanıcı Adı</label>
-        <input type="text" required value={identifier} onChange={handleIdentifierChange} placeholder="Email veya Kullanıcı Adı" />
-        {identifierError && <span className={styles.error_text}>{identifierError}</span>}
-        <label>Şifre</label>
-        <input type="password" required value={password} onChange={handlePasswordChange} placeholder="********" />
-        {passwordError && <span className={styles.error_text}>{passwordError}</span>}
-        <button type="submit">Giriş Yap</button>
-        <div className={styles.or_separator}><hr /><span>VEYA</span><hr /></div>
-        <button type="button" onClick={handleGoogleSignIn} className={styles.google_signin_button}>
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png" alt="Google Logo" className={styles.google_logo} />
-          Google ile Giriş Yap
-        </button>
+      <h2>Giriş Yap</h2>
+      <label>Email veya Kullanıcı Adı</label>
+      <input type="text" required value={identifier} onChange={handleIdentifierChange} placeholder="Email veya Kullanıcı Adı" />
+      {identifierError && <span className={styles.error_text}>{identifierError}</span>}
+      <label>Şifre</label>
+      <input type="password" required value={password} onChange={handlePasswordChange} placeholder="********" />
+      {passwordError && <span className={styles.error_text}>{passwordError}</span>}
+      <button type="submit">Giriş Yap</button>
+      <div className={styles.or_separator}><hr /><span>VEYA</span><hr /></div>
+      <button type="button" onClick={handleGoogleSignIn} className={styles.google_signin_button}>
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png" alt="Google Logo" className={styles.google_logo} />
+        Google ile Giriş Yap
+      </button>
       </form>
     </>
   );
