@@ -1,39 +1,57 @@
-import React, { useState } from 'react';
-import styles from './HideLikes.module.css';
-import { FiEyeOff, FiEye } from 'react-icons/fi';
+// src/components/Settings/SettingsSections/HideLikes/HideLikes.jsx
+import React, { useState, useEffect } from "react";
+import styles from "./HideLikes.module.css";
+import { FiEyeOff, FiEye } from "react-icons/fi";
+import { useUser } from "../../../../context/UserContext";
+import LoadingOverlay from "../../../LoadingOverlay/LoadingOverlay";
 
 const HideLikes = () => {
-  const [hideLikes, setHideLikes] = useState(false);
+  const { currentUser, updateHideLikes } = useUser();
+  const [localHideLikes, setLocalHideLikes] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  const handleToggle = () => {
-    setHideLikes(!hideLikes);
+  useEffect(() => {
+    if (currentUser) {
+      setLocalHideLikes(currentUser.privacySettings.hideLikes);
+    }
+  }, [currentUser]);
+
+  const handleToggle = async () => {
+    setIsUpdating(true);
+    const success = await updateHideLikes(!localHideLikes);
+    if (success) {
+      setLocalHideLikes(!localHideLikes);
+    }
+    setIsUpdating(false);
   };
+
+  if (!currentUser) {
+    return <LoadingOverlay />;
+  }
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>Hide Likes</h2>
+      {isUpdating && <LoadingOverlay />}
+      <h2 className={styles.title}>Beğenmeleri Gizle</h2>
       <p className={styles.description}>
-        Control whether people can see the number of likes on your posts. You can change this setting anytime.
+        Gönderilerinizdeki beğeni sayısını başkalarından gizleyin.
       </p>
-
       <div className={styles.toggleCard}>
         <div className={styles.toggleContent}>
           <div className={styles.icon}>
-            {hideLikes ? <FiEyeOff /> : <FiEye />}
+            {localHideLikes ? <FiEyeOff size={24} /> : <FiEye size={24} />}
           </div>
-          <div>
-            <h4 className={styles.toggleTitle}>
-              {hideLikes ? 'Likes are Hidden' : 'Likes are Visible'}
-            </h4>
-            <p className={styles.toggleSubtitle}>
-              {hideLikes
-                ? 'People will not see like counts on your posts.'
-                : 'People can see the number of likes your posts receive.'}
-            </p>
-          </div>
+          <p className={styles.toggleText}>
+            Gönderilerinizdeki beğeni sayısını gizle
+          </p>
         </div>
         <label className={styles.switch}>
-          <input type="checkbox" checked={hideLikes} onChange={handleToggle} />
+          <input
+            type="checkbox"
+            checked={localHideLikes}
+            onChange={handleToggle}
+            disabled={isUpdating}
+          />
           <span className={styles.slider}></span>
         </label>
       </div>

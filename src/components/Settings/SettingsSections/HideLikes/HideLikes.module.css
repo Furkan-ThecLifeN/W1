@@ -1,64 +1,77 @@
+/* src/components/Settings/SettingsSections/HideLikes/HideLikes.module.css */
+
+/* Temel Kapsayıcı Stil */
 .container {
-  padding: 24px;
+  padding: 30px;
   background: var(--special-background03);
-  border-radius: 20px;
-  box-shadow: 0 0 24px rgba(0, 170, 255, 0.15);
+  border-radius: 24px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
   backdrop-filter: var(--backdrop-filter);
-  max-width: 620px;
-  margin: 0 auto;
+  max-width: 680px;
+  margin: 40px auto;
   color: var(--special-color);
   font-family: var(--font-main);
-  transition: all 0.3s ease;
+  transition: all 0.4s ease;
+  border: 1px solid var(--border-color);
+  position: relative; /* Loading overlay için */
 }
 
+/* Başlık ve Açıklama Metinleri */
 .title {
-  font-size: 2rem;
+  font-size: 2.2rem;
   font-weight: 700;
   margin-bottom: 12px;
   color: var(--color-white);
   user-select: none;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .description {
   color: var(--special-color);
-  font-size: 0.95rem;
-  margin-bottom: 28px;
+  font-size: 1.05rem;
+  margin-bottom: 32px;
   line-height: 1.6;
   user-select: none;
+  opacity: 0.9;
 }
 
+/* Toggle Kartı */
 .toggleCard {
-  background: rgba(168, 225, 255, 0.15);
-  border: 1px solid rgba(0, 170, 255, 0.3);
-  border-radius: 16px;
-  padding: 20px;
+  background: rgba(168, 225, 255, 0.08);
+  border: 1px solid rgba(0, 170, 255, 0.2);
+  border-radius: 18px;
+  padding: 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   backdrop-filter: var(--backdrop-filter);
-  box-shadow: 0 4px 20px rgba(0, 170, 255, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 170, 255, 0.1);
   transition: all 0.3s ease;
 }
 
 .toggleCard:hover {
-  background: rgba(244, 252, 255, 0.3);
-  box-shadow: 0 6px 24px rgba(0, 200, 255, 0.35);
+  background: rgba(168, 225, 255, 0.15);
+  box-shadow: 0 6px 24px rgba(0, 200, 255, 0.2);
 }
 
+/* İçerik ve İkon Kutusu */
 .toggleContent {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
+  flex-grow: 1;
 }
 
 .icon {
-  font-size: 1.8rem;
+  font-size: 2rem;
   color: var(--color-blue);
   user-select: none;
+  flex-shrink: 0;
 }
 
+/* Başlık ve Alt Başlıklar */
 .toggleTitle {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   font-weight: 600;
   margin: 0;
   color: var(--special-color);
@@ -66,19 +79,20 @@
 }
 
 .toggleSubtitle {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: var(--special-color);
   margin: 4px 0 0 0;
-  opacity: 0.85;
+  opacity: 0.8;
   user-select: none;
+  max-width: 400px;
 }
 
 /* Switch */
 .switch {
   position: relative;
   display: inline-block;
-  width: 52px;
-  height: 28px;
+  width: 56px;
+  height: 32px;
   flex-shrink: 0;
   cursor: pointer;
 }
@@ -91,29 +105,28 @@
 
 .slider {
   position: absolute;
-  cursor: pointer;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(168, 225, 255, 0.4);
+  background-color: rgba(168, 225, 255, 0.3);
   transition: 0.4s;
-  border-radius: 50px;
-  box-shadow: 0 0 8px rgba(0, 170, 255, 0.7),
-    inset 0 0 8px rgba(244, 252, 255, 0.3);
+  border-radius: 32px;
+  box-shadow: 0 0 10px rgba(0, 170, 255, 0.4), inset 0 0 8px rgba(244, 252, 255, 0.2);
+  border: 1px solid rgba(0, 170, 255, 0.5);
 }
 
 .slider:before {
   position: absolute;
   content: "";
-  height: 22px;
-  width: 22px;
-  left: 4px;
-  bottom: 3px;
+  height: 26px;
+  width: 26px;
+  left: 3px;
+  bottom: 2px;
   background-color: var(--special-color);
   transition: 0.4s;
   border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(244, 252, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(244, 252, 255, 0.6);
 }
 
 input:checked + .slider {
@@ -123,16 +136,38 @@ input:checked + .slider {
 
 input:checked + .slider:before {
   transform: translateX(24px);
+  background-color: #fff;
 }
 
-/* Responsive */
+/* Devre dışı bırakıldığında stil */
+input:disabled + .slider {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+input:disabled + .slider:before {
+  cursor: not-allowed;
+}
+
+/* Responsive Tasarım */
+@media (max-width: 768px) {
+  .container {
+    margin: 20px auto;
+    padding: 20px;
+  }
+}
+
 @media (max-width: 480px) {
   .container {
     padding: 16px;
   }
 
   .title {
-    font-size: 1.6rem;
+    font-size: 1.8rem;
+  }
+
+  .description {
+    font-size: 0.9rem;
   }
 
   .toggleCard {
@@ -141,7 +176,15 @@ input:checked + .slider:before {
     gap: 16px;
   }
 
+  .toggleContent {
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+  }
+
   .switch {
     align-self: flex-end;
+    margin-top: -10px; /* Switch'i daha yukarı çekerek hizalama */
   }
 }

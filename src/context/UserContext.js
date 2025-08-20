@@ -1,7 +1,13 @@
 // src/context/UserContext.js
-import React, { createContext, useState, useEffect, useContext } from "react";
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useContext,
+  useMemo,
+} from "react";
 import { auth } from "../config/firebase-client";
-import { useAuth } from "./AuthProvider"; // ✅ YENİ: showToast için AuthProvider'ı import edin
+import { useAuth } from "./AuthProvider"; // ✅ showToast için import
 
 const UserContext = createContext();
 
@@ -24,15 +30,25 @@ const defaultUser = {
   privacySettings: {
     messages: "everyone",
     storyReplies: true,
+    hideLikes: false, // ✅ başlangıç değeri
   },
+};
+
+// ✅ YENİ: Context'e erişim için güvenli custom hook
+export const useUser = () => {
+  const context = useContext(UserContext);
+  if (context === undefined) {
+    throw new Error("useUser hook'u UserProvider içerisinde kullanılmalıdır.");
+  }
+  return context;
 };
 
 export const UserProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { showToast } = useAuth(); // ✅ YENİ: showToast'u kullanmak için
+  const { showToast } = useAuth();
 
-  // Auth state değişikliğini dinle ve kullanıcı verilerini backend'den al
+  // 🔹 Kullanıcı giriş yaptığında backend'den profilini çek
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
       if (firebaseUser) {
@@ -49,7 +65,16 @@ export const UserProvider = ({ children }) => {
 
           if (res.ok) {
             const { profile } = await res.json();
-            setCurrentUser({ ...defaultUser, ...profile });
+
+            // ✅ backend'den gelen hideLikes bilgisini de dahil et
+            setCurrentUser({
+              ...defaultUser,
+              ...profile,
+              privacySettings: {
+                ...defaultUser.privacySettings,
+                ...profile.privacySettings,
+              },
+            });
           } else {
             console.error("Kullanıcı profili alınamadı.");
             setCurrentUser(null);
@@ -67,7 +92,7 @@ export const UserProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
-  // ✅ Gizlilik ayarlarını güncelleyen fonksiyon
+  // ✅ Genel gizlilik ayarlarını güncelleyen fonksiyon
   const updatePrivacySettings = async (settings) => {
     try {
       const token = await auth.currentUser.getIdToken();
@@ -88,7 +113,6 @@ export const UserProvider = ({ children }) => {
       }
 
       const updatedSettings = await response.json();
-      console.log("Ayarlar başarıyla güncellendi:", updatedSettings);
 
       // Local state'i güncelle
       setCurrentUser((prevUser) => ({
@@ -102,23 +126,73 @@ export const UserProvider = ({ children }) => {
       return true;
     } catch (error) {
       console.error("Gizlilik ayarlarını güncelleme hatası:", error);
-      showToast("Gizlilik ayarları güncellenirken hata oluştu.", "error"); // ✅ Hata mesajı eklendi
+      showToast("error", "Gizlilik ayarları güncellenirken hata oluştu.");
       return false;
     }
   };
 
-  // ✅ YENİ: Giriş yapılan cihaz bilgilerini kaydetme fonksiyonu
+  // ✅ YENİ: Sadece beğenileri gizleme ayarını güncelleyen fonksiyon
+  const updateHideLikes = async (value) => {
+    try {
+      if (!auth.currentUser) throw new Error("Kullanıcı kimliği doğrulanmadı.");
+
+      const token = await auth.currentUser.getIdToken();
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/users/settings/hide-likes`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ hideLikes: value }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Ayarlar güncellenemedi.");
+      }
+
+      const { profile } = await response.json();
+
+      // ✅ Backend'den gelen profil bilgisi ile güncelle
+      setCurrentUser((prev) => ({
+        ...prev,
+        ...profile,
+        privacySettings: {
+          ...prev.privacySettings,
+          hideLikes: value,
+        },
+      }));
+
+      showToast("success", "Beğenileri gizleme ayarı güncellendi!");
+      return true;
+    } catch (error) {
+      console.error("Beğenileri gizleme ayarı güncelleme hatası:", error);
+      showToast(
+        "error",
+        error.message || "Ayarlar güncellenirken bir hata oluştu."
+      );
+      return false;
+    }
+  };
+
+  // ✅ Giriş yapılan cihaz bilgilerini kaydetme fonksiyonu
   const saveLoginDevice = async (deviceInfo) => {
     try {
       const idToken = await auth.currentUser.getIdToken();
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/users/devices/save`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${idToken}`,
-        },
-        body: JSON.stringify(deviceInfo),
-      });
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/users/devices/save`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${idToken}`,
+          },
+          body: JSON.stringify(deviceInfo),
+        }
+      );
 
       if (!res.ok) {
         throw new Error("Cihaz bilgileri kaydedilemedi.");
@@ -127,26 +201,26 @@ export const UserProvider = ({ children }) => {
       console.log("Cihaz bilgileri kaydedildi:", data);
     } catch (error) {
       console.error("Cihaz bilgisi kaydetme hatası:", error);
-      showToast("Giriş cihazı kaydedilirken hata oluştu.", "error");
+      showToast("error", "Giriş cihazı kaydedilirken hata oluştu.");
     }
   };
 
-  const value = {
-    currentUser,
-    setCurrentUser,
-    loading,
-    defaultUser,
-    updatePrivacySettings,
-    saveLoginDevice, // ✅ Yeni fonksiyon context'e eklendi
-  };
+  const contextValue = useMemo(
+    () => ({
+      currentUser,
+      setCurrentUser,
+      loading,
+      defaultUser,
+      updatePrivacySettings,
+      updateHideLikes,
+      saveLoginDevice,
+    }),
+    [currentUser, loading]
+  );
 
   return (
-    <UserContext.Provider value={value}>
+    <UserContext.Provider value={contextValue}>
       {!loading && children}
     </UserContext.Provider>
   );
-};
-
-export const useUser = () => {
-  return useContext(UserContext);
 };
