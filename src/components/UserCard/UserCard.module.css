@@ -1,0 +1,47 @@
+.user_card_link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.user_card {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: #3a3a3a;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  transition: all 0.5s ease-in-out;
+  cursor: pointer;
+}
+
+.user_card:hover {
+  background-color: #ffffff;
+  color: var(--color-black);
+}
+
+.user_avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
+}
+
+.user_info {
+  display: flex;
+  flex-direction: column;
+}
+
+.username {
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+.bio {
+  font-size: 0.9em;
+  color: #aaa;
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

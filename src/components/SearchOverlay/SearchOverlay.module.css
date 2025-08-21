@@ -1,0 +1,67 @@
+.search_overlay_container {
+  top: 80px; 
+  left: 0;
+  width: 100%; 
+  height: calc(100% - 80px);
+  background-color: #1a1a1a; 
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  z-index: 999; 
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+}
+
+.close_button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: var(--color-white);
+  cursor: pointer;
+  font-size: 24px;
+  z-index: 1000;
+}
+
+.search_results_content {
+  flex-grow: 1; 
+  overflow-y: auto; 
+  padding-top: 20px; 
+  display: flex;
+  justify-content: center;
+}
+
+.user_list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.search_results_content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.search_results_content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.search_results_content::-webkit-scrollbar-thumb {
+  background-color: #4a4a4a; /* Koyu gri */
+  border-radius: 4px;
+}
+
+.search_results_content::-webkit-scrollbar-thumb:hover {
+  background-color: #5a5a5a;
+}
+
+.error_message,
+.no_results,
+.initial_message {
+  color: #f0f0f0; /* Beyaz renk */
+  text-align: center;
+  padding: 20px;
+  font-size: 1.1em;
+}
+
+.initial_message {
+    color: #ffffff; /* Açık mavi */
+}
