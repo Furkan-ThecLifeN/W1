@@ -72,7 +72,7 @@ const Sidebar = () => {
         </NavLink>
 
         <NavLink
-          to="/profile"
+          to="/account"
           className={({ isActive }) =>
             isActive ? LeftSideBarStyles.active : LeftSideBarStyles.link
           }

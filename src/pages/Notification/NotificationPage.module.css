@@ -2,9 +2,20 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  background-color: var(--color-pagecolor);
+  background-color: var(--color-black);
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
   font-family: var(--font-main);
   box-sizing: border-box;
+
+  overflow-y: auto;   /* dikey scroll çalışsın */
+  overflow-x: hidden; /* yatay scroll kapalı */
+
+  /* Scrollbar gizle */
+  scrollbar-width: none; /* Firefox için */
+  -ms-overflow-style: none; /* IE ve Edge için */
+}
+
+.notification_container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari ve Opera için */
 }

@@ -26,6 +26,8 @@ import StoryAdd from "./components/Add/Stories/StoriesAdd";
 import FeelingAdd from "./components/Add/Feelings/FeelingsAdd";
 import LiveStreamAdd from "./components/Add/LiveStream/LiveStream";
 import DraftsAdd from "./components/Add/Drafts/Drafts";
+import UserProfile from './pages/UserProfilePage/UserProfilePage';
+
 
 // 🔒 Korumalı rota
 const ProtectedRoute = ({ children }) => {
@@ -71,7 +73,8 @@ const AppContent = () => {
       <Route path="/vocentra" element={<ProtectedRoute><VoCentra /></ProtectedRoute>} />
       <Route path="/server/:serverName" element={<ProtectedRoute><VocentraServerPage /></ProtectedRoute>} />
       <Route path="/vosettings" element={<ProtectedRoute><VoCentraSettingsPage /></ProtectedRoute>} />
-      <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+      <Route path="/account" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+      <Route path="/profile/:username" element={<UserProfile />} />
       <Route path="/create" element={<ProtectedRoute><StoryAddPage /></ProtectedRoute>} />
       <Route path="/create/post" element={<ProtectedRoute><PostAdd /></ProtectedRoute>} />
       <Route path="/create/feedadd" element={<ProtectedRoute><FeedsAdd /></ProtectedRoute>} />

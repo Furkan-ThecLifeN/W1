@@ -1,0 +1,22 @@
+.userProfilePage {
+  display: flex;
+  min-height: 100vh;
+  background-color: #000;
+  color: #fff;
+  overflow: hidden; /* Taşmaları engelle */
+}
+
+.userProfilePage > :first-child {
+  width: 80px; /* Sidebar sabit genişlik */
+  flex-shrink: 0;
+}
+
+.profileSection {
+  flex: 1;
+  padding: 20px;
+  margin-left: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow-y: auto; /* içerik fazla olursa kaydırma */
+}

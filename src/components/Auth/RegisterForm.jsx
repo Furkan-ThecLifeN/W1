@@ -1,128 +1,170 @@
-import React, { useState } from 'react';
-import { useAuth } from '../../context/AuthProvider';
-import styles from './AuthForms.module.css';
-import LoadingOverlay from '../LoadingOverlay/LoadingOverlay';
+import React, { useState } from "react";
+import axios from "axios";
+import { useAuth } from "../../context/AuthProvider";
+import styles from "./AuthForms.module.css";
+import LoadingOverlay from "../LoadingOverlay/LoadingOverlay";
 
 // Client-side validasyon regex'leri
 const isValidEmailFormat = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const isValidUsernameFormat = (username) => /^[a-z0-9_.]{3,15}$/.test(username);
-const isValidPasswordFormat = (password) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\-]).{8,}$/.test(password);
+const isValidPasswordFormat = (password) =>
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\-]).{8,}$/.test(password);
 
 const RegisterForm = ({ onRegisterSuccess }) => {
-    const [email, setEmail] = useState('');
-    const [username, setUsername] = useState('');
-    const [displayName, setDisplayName] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
+  const { showToast } = useAuth();
 
-    const [emailError, setEmailError] = useState('');
-    const [usernameError, setUsernameError] = useState('');
-    const [passwordError, setPasswordError] = useState('');
-    const [confirmPasswordError, setConfirmPasswordError] = useState('');
-    const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    username: "",
+    displayName: "",
+    password: "",
+    confirmPassword: "",
+  });
 
-    // ✅ showMessage yerine showToast kullanıyoruz
-    const { showToast } = useAuth();
+  const [errors, setErrors] = useState({
+    email: "",
+    username: "",
+    password: "",
+    confirmPassword: "",
+    general: "",
+  });
 
-    const handleEmailChange = (e) => {
-        setEmail(e.target.value);
-        setEmailError(e.target.value && !isValidEmailFormat(e.target.value) ? 'Lütfen geçerli bir e-posta adresi girin.' : '');
-    };
+  const [loading, setLoading] = useState(false);
 
-    const handleUsernameChange = (e) => {
-        setUsername(e.target.value);
-        setUsernameError(e.target.value && !isValidUsernameFormat(e.target.value) ? 'Kullanıcı adı sadece küçük harf, rakam, alt çizgi (_) ve nokta (.) içermeli, 3-15 karakter olmalıdır.' : '');
-    };
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "", general: "" }));
+  };
 
-    const handlePasswordChange = (e) => {
-        setPassword(e.target.value);
-        setPasswordError(e.target.value && !isValidPasswordFormat(e.target.value) ? 'Şifre en az 8 karakter, 1 büyük harf, 1 küçük harf, 1 rakam ve 1 özel karakter içermelidir.' : '');
-        if (confirmPassword && e.target.value !== confirmPassword) {
-            setConfirmPasswordError('Şifreler eşleşmiyor.');
-        } else if (confirmPassword && e.target.value === confirmPassword) {
-            setConfirmPasswordError('');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const { email, username, displayName, password, confirmPassword } = formData;
+
+    // Validation
+    let valid = true;
+    const newErrors = { email: "", username: "", password: "", confirmPassword: "", general: "" };
+
+    if (!isValidEmailFormat(email)) {
+      newErrors.email = "Geçerli bir e-posta adresi gerekli.";
+      valid = false;
+    }
+    if (!isValidUsernameFormat(username)) {
+      newErrors.username = "Kullanıcı adı 3-15 karakter, küçük harf, rakam, alt çizgi (_) veya nokta (.) içermelidir.";
+      valid = false;
+    }
+    if (!isValidPasswordFormat(password)) {
+      newErrors.password =
+        "Şifre en az 8 karakter, 1 büyük harf, 1 küçük harf, 1 rakam ve 1 özel karakter içermelidir.";
+      valid = false;
+    }
+    if (password !== confirmPassword) {
+      newErrors.confirmPassword = "Şifreler eşleşmiyor.";
+      valid = false;
+    }
+
+    if (!valid) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/auth/register`,
+        { email, username, displayName, password, confirmPassword }
+      );
+
+      console.log("Kayıt başarılı:", response.data);
+
+      showToast("Kayıt başarılı! Şimdi giriş yapabilirsiniz.", "success");
+      setFormData({ email: "", username: "", displayName: "", password: "", confirmPassword: "" });
+      setErrors({ email: "", username: "", password: "", confirmPassword: "", general: "" });
+
+      if (onRegisterSuccess) onRegisterSuccess();
+    } catch (error) {
+      console.error("Kayıt hatası:", error);
+      if (error.response?.data?.error) {
+        if (error.response.data.error.includes("already in use")) {
+          setErrors((prev) => ({ ...prev, general: "Bu e-posta adresi zaten kullanılıyor. Lütfen başka bir e-posta adresi deneyin." }));
+        } else {
+          setErrors((prev) => ({ ...prev, general: error.response.data.error }));
         }
-    };
+      } else {
+        setErrors((prev) => ({ ...prev, general: "Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin." }));
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handleConfirmPasswordChange = (e) => {
-        setConfirmPassword(e.target.value);
-        setConfirmPasswordError(e.target.value && e.target.value !== password ? 'Şifreler eşleşmiyor.' : '');
-    };
+  return (
+    <>
+      {loading && <LoadingOverlay />}
+      <form onSubmit={handleSubmit} className={styles.auth_form_container}>
+        <h2>Kayıt Ol</h2>
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+        {errors.general && <span className={styles.error_text}>{errors.general}</span>}
 
-        const isEmailValid = isValidEmailFormat(email);
-        const isUsernameValid = isValidUsernameFormat(username);
-        const isPasswordValid = isValidPasswordFormat(password);
-        const passwordsMatch = password === confirmPassword;
+        <label>Email</label>
+        <input
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          placeholder="email@example.com"
+          required
+        />
+        {errors.email && <span className={styles.error_text}>{errors.email}</span>}
 
-        setEmailError(isEmailValid ? '' : 'Geçerli bir e-posta adresi gerekli.');
-        setUsernameError(isUsernameValid ? '' : 'Geçerli bir kullanıcı adı gerekli.');
-        setPasswordError(isPasswordValid ? '' : 'Geçerli bir şifre gerekli.');
-        setConfirmPasswordError(passwordsMatch ? '' : 'Şifreler eşleşmiyor.');
+        <label>Kullanıcı Adı</label>
+        <input
+          type="text"
+          name="username"
+          value={formData.username}
+          onChange={handleChange}
+          placeholder="benzersiz_kullanici"
+          required
+        />
+        {errors.username && <span className={styles.error_text}>{errors.username}</span>}
 
-        if (!isEmailValid || !isUsernameValid || !isPasswordValid || !passwordsMatch) {
-            // ✅ showMessage yerine showToast kullanıyoruz
-            showToast('Lütfen tüm alanları doğru ve eksiksiz doldurun.', 'error');
-            return;
-        }
+        <label>Görünen İsim (Opsiyonel)</label>
+        <input
+          type="text"
+          name="displayName"
+          value={formData.displayName}
+          onChange={handleChange}
+          placeholder="Furkan Yılmaz"
+        />
 
-        setLoading(true);
+        <label>Şifre</label>
+        <input
+          type="password"
+          name="password"
+          value={formData.password}
+          onChange={handleChange}
+          placeholder="********"
+          required
+        />
+        {errors.password && <span className={styles.error_text}>{errors.password}</span>}
 
-        try {
-            const res = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/register`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, username, displayName, password, confirmPassword }),
-            });
+        <label>Şifreyi Onayla</label>
+        <input
+          type="password"
+          name="confirmPassword"
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          placeholder="********"
+          required
+        />
+        {errors.confirmPassword && <span className={styles.error_text}>{errors.confirmPassword}</span>}
 
-            const data = await res.json();
-            if (!res.ok) {
-                // ✅ showMessage yerine showToast kullanıyoruz
-                showToast(data.error || 'Kayıt sırasında bir hata oluştu.', 'error');
-            } else {
-                // ✅ showMessage yerine showToast kullanıyoruz
-                showToast('Kayıt başarılı! Şimdi giriş yapabilirsiniz.', 'success');
-                if (onRegisterSuccess) { onRegisterSuccess(); }
-                setEmail(''); setEmailError('');
-                setUsername(''); setUsernameError('');
-                setDisplayName('');
-                setPassword(''); setPasswordError('');
-                setConfirmPassword(''); setConfirmPasswordError('');
-            }
-        } catch (error) {
-            // ✅ showMessage yerine showToast kullanıyoruz
-            showToast(`İstek gönderilirken hata oluştu: ${error.message}`, 'error');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <>
-            {loading && <LoadingOverlay />}
-            <form onSubmit={handleSubmit} className={styles.auth_form_container}>
-                <h2>Kayıt Ol</h2>
-                <label>Email</label>
-                <input type="email" value={email} onChange={handleEmailChange} placeholder="email@example.com" required />
-                {emailError && <span className={styles.error_text}>{emailError}</span>}
-                <label>Kullanıcı Adı</label>
-                <input type="text" value={username} onChange={handleUsernameChange} placeholder="benzersiz_kullanici" required />
-                {usernameError && <span className={styles.error_text}>{usernameError}</span>}
-                <label>Görünen İsim (Opsiyonel)</label>
-                <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Furkan Yılmaz" />
-                <span className={styles.error_text}></span>
-                <label>Şifre</label>
-                <input type="password" value={password} onChange={handlePasswordChange} placeholder="********" required />
-                {passwordError && <span className={styles.error_text}>{passwordError}</span>}
-                <label>Şifreyi Onayla</label>
-                <input type="password" value={confirmPassword} onChange={handleConfirmPasswordChange} placeholder="********" required />
-                {confirmPasswordError && <span className={styles.error_text}>{confirmPasswordError}</span>}
-                <button type="submit">Kayıt Ol</button>
-            </form>
-        </>
-    );
+        <button type="submit">Kayıt Ol</button>
+      </form>
+    </>
+  );
 };
 
 export default RegisterForm;
