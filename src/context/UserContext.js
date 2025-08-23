@@ -7,7 +7,7 @@ import React, {
   useMemo,
 } from "react";
 import { auth } from "../config/firebase-client";
-import { useAuth } from "./AuthProvider"; // ✅ showToast için import
+import { useAuth } from "./AuthProvider";
 
 const UserContext = createContext();
 
@@ -30,11 +30,10 @@ const defaultUser = {
   privacySettings: {
     messages: "everyone",
     storyReplies: true,
-    hideLikes: false, // ✅ başlangıç değeri
+    hideLikes: false,
   },
 };
 
-// ✅ YENİ: Context'e erişim için güvenli custom hook
 export const useUser = () => {
   const context = useContext(UserContext);
   if (context === undefined) {
@@ -48,7 +47,6 @@ export const UserProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const { showToast } = useAuth();
 
-  // 🔹 Kullanıcı giriş yaptığında backend'den profilini çek
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
       if (firebaseUser) {
@@ -66,13 +64,17 @@ export const UserProvider = ({ children }) => {
           if (res.ok) {
             const { profile } = await res.json();
 
-            // ✅ backend'den gelen hideLikes bilgisini de dahil et
+            // ✅ GÜNCELLENMİŞ KISIM: defaultUser ve profile verilerini doğru şekilde birleştirir.
             setCurrentUser({
               ...defaultUser,
               ...profile,
+              stats: {
+                ...defaultUser.stats,
+                ...(profile.stats || {}),
+              },
               privacySettings: {
                 ...defaultUser.privacySettings,
-                ...profile.privacySettings,
+                ...(profile.privacySettings || {}),
               },
             });
           } else {
@@ -92,7 +94,6 @@ export const UserProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
-  // ✅ Genel gizlilik ayarlarını güncelleyen fonksiyon
   const updatePrivacySettings = async (settings) => {
     try {
       const token = await auth.currentUser.getIdToken();
@@ -112,9 +113,7 @@ export const UserProvider = ({ children }) => {
         throw new Error("Gizlilik ayarları güncellenirken hata oluştu.");
       }
 
-      const updatedSettings = await response.json();
-
-      // Local state'i güncelle
+      // Backend'den gelen yanıtı kullanmaya gerek yok, local state'i güncelle
       setCurrentUser((prevUser) => ({
         ...prevUser,
         privacySettings: {
@@ -131,7 +130,6 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  // ✅ YENİ: Sadece beğenileri gizleme ayarını güncelleyen fonksiyon
   const updateHideLikes = async (value) => {
     try {
       if (!auth.currentUser) throw new Error("Kullanıcı kimliği doğrulanmadı.");
@@ -156,7 +154,6 @@ export const UserProvider = ({ children }) => {
 
       const { profile } = await response.json();
 
-      // ✅ Backend'den gelen profil bilgisi ile güncelle
       setCurrentUser((prev) => ({
         ...prev,
         ...profile,
@@ -178,7 +175,6 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  // ✅ Giriş yapılan cihaz bilgilerini kaydetme fonksiyonu
   const saveLoginDevice = async (deviceInfo) => {
     try {
       const idToken = await auth.currentUser.getIdToken();
