@@ -4,10 +4,10 @@ import { Link } from "react-router-dom";
 
 const UserCard = ({ user }) => {
   return (
-    <Link to={`/profile/${user.username}`} className={UserCardStyle.user_card_link}>
-      <li className={UserCardStyle.user_card}>
+    <div className={UserCardStyle.user_card}>
+      <Link to={`/profile/${user.username}`} className={UserCardStyle.user_card_link}>
         <img
-          src={user.photoURL}
+          src={user.photoURL || "/default-profile.png"}
           alt={`${user.username} avatar`}
           className={UserCardStyle.user_avatar}
         />
@@ -15,8 +15,8 @@ const UserCard = ({ user }) => {
           <span className={UserCardStyle.username}>{user.username}</span>
           <p className={UserCardStyle.bio}>{user.bio}</p>
         </div>
-      </li>
-    </Link>
+      </Link>
+    </div>
   );
 };
 

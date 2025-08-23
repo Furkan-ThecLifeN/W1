@@ -1,28 +1,33 @@
-// src/components/AccountBox/AccountBox.js
 import React, { useState } from "react";
 import { IoIosSettings } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import styles from "./AccountBox.module.css";
 import { useUser } from "../../../context/UserContext";
 import LoadingOverlay from "../../LoadingOverlay/LoadingOverlay";
-import FollowersFollowingPage from "../../FollowersFollowingPage/FollowersFollowingPage";
+import ConnectionsModal from "../../ConnectionsModal/ConnectionsModal"; // ConnectionsModal import edildi
 
 const AccountBox = () => {
   const { currentUser, loading } = useUser();
   const [activeTab, setActiveTab] = useState("posts");
   const navigate = useNavigate();
-  const [activePage, setActivePage] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState(null);
 
   if (loading) {
     return <LoadingOverlay />;
   }
 
   if (!currentUser) {
-    // Kullanıcı giriş yapmamışsa veya verisi yoksa
     return <div>Lütfen giriş yapın.</div>;
   }
 
-  const { username, displayName, photoURL, bio, familySystem, stats } = currentUser;
+  const { uid, username, displayName, photoURL, bio, familySystem, stats } =
+    currentUser;
+
+  const handleStatClick = (type) => {
+    setModalType(type);
+    setShowModal(true);
+  };
 
   return (
     <div className={styles.pageWrapper}>
@@ -41,20 +46,14 @@ const AccountBox = () => {
       <div className={styles.mainProfileBox}>
         <div className={styles.profileImageSection}>
           <div className={styles.profileImageWrapper}>
-            <img
-              src={photoURL}
-              alt="Profile"
-              className={styles.profileImage}
-            />
+            <img src={photoURL} alt="Profile" className={styles.profileImage} />
           </div>
           <div className={styles.imageBackground}></div>
         </div>
 
         <div className={styles.profileInfoSection}>
           <h2 className={styles.profileName}>{displayName}</h2>
-          {familySystem && (
-            <div className={styles.tagBox}>{familySystem}</div>
-          )}
+          {familySystem && <div className={styles.tagBox}>{familySystem}</div>}
           <div className={styles.bio}>
             {bio || "Henüz bir biyografi eklemediniz."}
           </div>
@@ -71,35 +70,19 @@ const AccountBox = () => {
           </div>
           <div
             className={styles.statBox}
-            onClick={() => setActivePage("followers")}
+            onClick={() => handleStatClick("followers")}
           >
             <strong>{stats.followers}</strong>
             <span className={styles.statLabel}>Followers</span>
           </div>
           <div
             className={styles.statBox}
-            onClick={() => setActivePage("following")}
+            onClick={() => handleStatClick("following")}
           >
             <strong>{stats.following}</strong>
             <span className={styles.statLabel}>Following</span>
           </div>
         </div>
-
-        {activePage && (
-          <div className={styles.overlay}>
-            <div className={styles.modal}>
-              <div className={styles.modalHeader}>
-                <span>{activePage === "followers" ? "Takipçiler" : "Takip Edilenler"}</span>
-                <button className={styles.closeBtn} onClick={() => setActivePage(null)}>
-                  &times;
-                </button>
-              </div>
-              <div className={styles.modalContent}>
-                <FollowersFollowingPage type={activePage} />
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       <div className={styles.tabBar}>
@@ -131,18 +114,36 @@ const AccountBox = () => {
 
       <div className={styles.tabContent}>
         {activeTab === "posts" && (
-          <div className={styles.section}>{displayName || username}, henüz bir gönderi paylaşmadınız.</div>
+          <div className={styles.section}>
+            {displayName || username}, henüz bir gönderi paylaşmadınız.
+          </div>
         )}
         {activeTab === "feeds" && (
-          <div className={styles.section}>{displayName || username}, henüz feedleriniz bulunmamaktadır.</div>
+          <div className={styles.section}>
+            {displayName || username}, henüz feedleriniz bulunmamaktadır.
+          </div>
         )}
         {activeTab === "likes" && (
-          <div className={styles.section}>{displayName || username}, henüz bir gönderiyi beğenmediniz.</div>
+          <div className={styles.section}>
+            {displayName || username}, henüz bir gönderiyi beğenmediniz.
+          </div>
         )}
         {activeTab === "tags" && (
-          <div className={styles.section}>{displayName || username}, henüz etiketlendiğiniz bir gönderi bulunmamaktadır.</div>
+          <div className={styles.section}>
+            {displayName || username}, henüz etiketlendiğiniz bir gönderi
+            bulunmamaktadır.
+          </div>
         )}
       </div>
+
+      {showModal && currentUser && (
+        <ConnectionsModal
+          show={showModal}
+          onClose={() => setShowModal(false)}
+          listType={modalType}
+          currentUserId={currentUser.uid}
+        />
+      )}
     </div>
   );
 };

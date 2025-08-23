@@ -64,7 +64,7 @@ export const UserProvider = ({ children }) => {
           if (res.ok) {
             const { profile } = await res.json();
 
-            // ✅ GÜNCELLENMİŞ KISIM: defaultUser ve profile verilerini doğru şekilde birleştirir.
+            // ✅ defaultUser ve profile merge işlemi
             setCurrentUser({
               ...defaultUser,
               ...profile,
@@ -94,6 +94,7 @@ export const UserProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
+  // 🔹 Gizlilik ayarlarını güncelle
   const updatePrivacySettings = async (settings) => {
     try {
       const token = await auth.currentUser.getIdToken();
@@ -113,7 +114,6 @@ export const UserProvider = ({ children }) => {
         throw new Error("Gizlilik ayarları güncellenirken hata oluştu.");
       }
 
-      // Backend'den gelen yanıtı kullanmaya gerek yok, local state'i güncelle
       setCurrentUser((prevUser) => ({
         ...prevUser,
         privacySettings: {
@@ -130,6 +130,7 @@ export const UserProvider = ({ children }) => {
     }
   };
 
+  // 🔹 Beğenileri gizleme ayarını güncelle
   const updateHideLikes = async (value) => {
     try {
       if (!auth.currentUser) throw new Error("Kullanıcı kimliği doğrulanmadı.");
@@ -175,6 +176,7 @@ export const UserProvider = ({ children }) => {
     }
   };
 
+  // 🔹 Giriş yapılan cihazı kaydet
   const saveLoginDevice = async (deviceInfo) => {
     try {
       const idToken = await auth.currentUser.getIdToken();
