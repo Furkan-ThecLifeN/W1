@@ -110,7 +110,7 @@ const AccountBox = () => {
         >
           Etiketlenen
         </button>
-      </div>
+      </div>  
 
       <div className={styles.tabContent}>
         {activeTab === "posts" && (

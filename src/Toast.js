@@ -17,8 +17,8 @@ const Toast = () => {
       boxShadowColor = 'rgba(255, 255, 255, 1)';
       break;
     case 'error':
-      backgroundColor = 'rgba(255, 17, 0, 0.9)'; // Kırmızı, hafif şeffaf
-      boxShadowColor = 'rgba(244, 67, 54, 0.4)';
+      backgroundColor = 'rgba(255, 255, 255, 1)'; // Kırmızı, hafif şeffaf
+      boxShadowColor = 'rgba(54, 197, 244, 0.9)';
       break;
     default: // Bilgi veya varsayılan mesajlar için
       backgroundColor = 'rgba(33, 150, 243, 0.9)'; // Mavi, hafif şeffaf

@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./UserProfile.module.css";
-// useAuth hook'unu yeni showToast fonksiyonu için import edin
 import { useAuth } from "../../context/AuthProvider";
 import LoadingOverlay from "../LoadingOverlay/LoadingOverlay";
-import FollowersFollowingPage from "../FollowersFollowingPage/FollowersFollowingPage";
+import ConnectionsModal from "../ConnectionsModal/ConnectionsModal"; // ConnectionsModal import edildi
 import {
   FaUserPlus,
   FaUserMinus,
@@ -20,15 +19,16 @@ import axios from "axios";
 const UserProfile = () => {
   const { username } = useParams();
   const navigate = useNavigate();
-  // ✅ GÜNCELLENDİ: useAuth'dan showToast fonksiyonunu alın
   const { currentUser, showToast } = useAuth();
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("posts");
-  const [activePage, setActivePage] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [followStatus, setFollowStatus] = useState("none"); // 'none', 'pending', 'following', 'self'
+  const [followStatus, setFollowStatus] = useState("none");
+  // ✅ GÜNCELLENDİ: Modal durumunu yönetmek için yeni state'ler eklendi
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState(null); // 'followers' veya 'following'
   const apiBaseUrl = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
@@ -64,12 +64,10 @@ const UserProfile = () => {
     fetchUserProfileAndStatus();
   }, [username, currentUser, apiBaseUrl]);
 
-  // ✅ GÜNCELLENDİ: Optimist UI için handleFollowAction
   const handleFollowAction = async () => {
     const previousFollowStatus = followStatus;
     const isPrivate = profileData?.isPrivate;
 
-    // UI'ı anında güncelle
     try {
       if (previousFollowStatus === "none") {
         setFollowStatus(isPrivate ? "pending" : "following");
@@ -107,11 +105,9 @@ const UserProfile = () => {
         data: data,
       });
 
-      // API'den gelen son durumu ayarla ve başarı mesajını göster
       setFollowStatus(response.data.status || "none");
       showToast(response.data.message, "success");
 
-      // İşlem başarılı, profil bilgilerini yeniden çek
       const updatedProfileRes = await axios.get(
         `${apiBaseUrl}/api/users/profile/${username}`,
         {
@@ -121,7 +117,6 @@ const UserProfile = () => {
       setProfileData(updatedProfileRes.data.profile);
     } catch (err) {
       console.error("Takip işlemi hatası:", err.response ? err.response.data : err.message);
-      // Hata durumunda UI'ı eski durumuna geri getir
       setFollowStatus(previousFollowStatus);
       const errorMsg = err.response?.data?.error || "Takip işlemi başarısız.";
       showToast(errorMsg, "error");
@@ -158,25 +153,34 @@ const UserProfile = () => {
   };
 
   const handleBlockUser = async () => {
-    // Engelleme işlemi için backend endpoint'i eklenmeli
     showToast("Kullanıcı engellendi.", "success");
     setShowDropdown(false);
   };
 
   const handleReportUser = async () => {
-    // Şikayet işlemi için backend endpoint'i eklenmeli
     showToast("Kullanıcı şikayet edildi.", "success");
     setShowDropdown(false);
   };
 
   const handleFeedback = () => {
-    // Görüş bildirme işlemi
     showToast("Geri bildirim sayfanız açıldı.", "info");
     setShowDropdown(false);
   };
 
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
+  };
+  
+  // ✅ YENİ: İstatistiklere tıklama olayı
+  const handleStatClick = (type) => {
+    // Profil gizliyse ve mevcut kullanıcı takip etmiyorsa, modal açma
+    if (profileData.isPrivate && followStatus !== "following" && followStatus !== "self") {
+      showToast("Gizli bir hesabın takipçi listesini göremezsiniz.", "error");
+    } else {
+      // Aksi halde modal'ı aç
+      setModalType(type);
+      setShowModal(true);
+    }
   };
 
   if (loading) {
@@ -296,42 +300,21 @@ const UserProfile = () => {
           </div>
           <div
             className={styles.statBox}
-            onClick={() => setActivePage("followers")}
+            onClick={() => handleStatClick("followers")} // ✅ GÜNCELLENDİ
           >
             <strong>{stats?.followers || 0}</strong>
             <span className={styles.statLabel}>Takipçi</span>
           </div>
           <div
             className={styles.statBox}
-            onClick={() => setActivePage("following")}
+            onClick={() => handleStatClick("following")} // ✅ GÜNCELLENDİ
           >
             <strong>{stats?.following || 0}</strong>
             <span className={styles.statLabel}>Takip Edilen</span>
           </div>
         </div>
-
-        {activePage && (
-          <div className={styles.overlay}>
-            <div className={styles.modal}>
-              <div className={styles.modalHeader}>
-                <span>
-                  {activePage === "followers" ? "Takipçiler" : "Takip Edilenler"}
-                </span>
-                <button
-                  className={styles.closeBtn}
-                  onClick={() => setActivePage(null)}
-                >
-                  &times;
-                </button>
-              </div>
-              <div className={styles.modalContent}>
-                <FollowersFollowingPage type={activePage} />
-              </div>
-            </div>
-          </div>
-        )}
       </div>
-
+      
       <div className={styles.tabBar}>
         <button
           className={activeTab === "posts" ? styles.active : ""}
@@ -398,6 +381,16 @@ const UserProfile = () => {
           )
         }
       </div>
+
+      {/* ✅ YENİ: ConnectionsModal bileşeni eklendi */}
+      {showModal && profileData && (
+        <ConnectionsModal
+          show={showModal}
+          onClose={() => setShowModal(false)}
+          listType={modalType}
+          currentUserId={profileData.uid}
+        />
+      )}
     </div>
   );
 };

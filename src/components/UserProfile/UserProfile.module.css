@@ -421,7 +421,7 @@
 .private_message {
   padding: 30px;
   font-size: 1.1em;
-  color: #87ceeb;
+  color: var(--color-white);
   text-align: center;
 }
 
