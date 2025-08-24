@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+// src/components/MessagesLeftBar/MessagesLeftBar.jsx
+import React, { useState, useEffect } from "react";
 import styles from "./MessagesLeftBar.module.css";
 import { IoSearchSharp } from "react-icons/io5";
 import { FaMicrophone } from "react-icons/fa";
-import { Link } from 'react-router-dom';
-import { useUser } from '../../../context/UserContext';
-import { useAuth } from '../../../context/AuthProvider';
-import LoadingOverlay from '../../LoadingOverlay/LoadingOverlay'; // Yolu projenize göre düzenleyin
+import { useUser } from "../../../context/UserContext";
+import { useAuth } from "../../../context/AuthProvider";
+import LoadingOverlay from "../../LoadingOverlay/LoadingOverlay"; // Yolu projene göre düzenle
 
-const MessagesLeftBar = () => {
+const MessagesLeftBar = ({ onSelectUser }) => {
   const { currentUser } = useUser();
   const { currentUser: firebaseUser } = useAuth();
   const [followingUsers, setFollowingUsers] = useState([]);
@@ -28,12 +28,12 @@ const MessagesLeftBar = () => {
           `${process.env.REACT_APP_API_URL}/api/users/${currentUser.uid}/following`,
           {
             headers: {
-              'Authorization': `Bearer ${idToken}`,
+              Authorization: `Bearer ${idToken}`,
             },
           }
         );
         if (!response.ok) {
-          throw new Error('Takip edilenler listesi alınamadı.');
+          throw new Error("Takip edilenler listesi alınamadı.");
         }
         const data = await response.json();
         setFollowingUsers(data.following);
@@ -62,22 +62,33 @@ const MessagesLeftBar = () => {
           <li className={styles.statusMessage}>{error}</li>
         ) : followingUsers.length > 0 ? (
           followingUsers.map((user) => (
-            <Link key={user.uid} to={`/profile/${user.username}`}>
-              <li className={styles.userCard}>
-                <div className={styles.userProfileBox}>
-                  <div className={styles.userProfileBackground}>
-                    <img src={user.photoURL} alt={user.displayName || user.username} />
-                  </div>
+            <li
+              key={user.uid}
+              className={styles.userCard}
+              onClick={() => onSelectUser(user)} // 🔹 kullanıcı seçimi buradan MessagesPage'e gönderiliyor
+            >
+              <div className={styles.userProfileBox}>
+                <div className={styles.userProfileBackground}>
+                  <img
+                    src={user.photoURL}
+                    alt={user.displayName || user.username}
+                  />
                 </div>
-                <div className={styles.userMessageInfo}>
-                  <p className={styles.userName}>{user.displayName || user.username}</p>
-                  <p className={styles.lastMessage}>@{user.username}</p>
-                </div>
-              </li>
-            </Link>
+              </div>
+              <div className={styles.userMessageInfo}>
+                <p className={styles.userName}>
+                  {user.displayName || user.username}
+                </p>
+                <p className={styles.lastMessage}>@{user.username}</p>
+              </div>
+            </li>
           ))
         ) : (
-          !loading && <li className={styles.statusMessage}>Henüz takip ettiğiniz kimse yok.</li>
+          !loading && (
+            <li className={styles.statusMessage}>
+              Henüz takip ettiğiniz kimse yok.
+            </li>
+          )
         )}
       </ul>
     </div>

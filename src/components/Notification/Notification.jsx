@@ -8,6 +8,7 @@ import {
 } from "react-icons/fa";
 import { useAuth } from "../../context/AuthProvider";
 import { Link } from "react-router-dom";
+import LoadingOverlay from "../LoadingOverlay/LoadingOverlay"; // Dosya yolunu doğru şekilde ayarlayın
 
 const Notification = () => {
   const [notifications, setNotifications] = useState([]);
@@ -47,12 +48,15 @@ const Notification = () => {
   }, [currentUser, apiBaseUrl]);
 
   const handleFollowRequest = async (requesterUid, action) => {
+    // İşlem başlarken loading durumunu etkinleştir
+    setLoading(true);
+    
     // UI'ı hemen güncelle: Takip isteği kartını listeden kaldır
     const updatedNotifications = notifications.filter(
       (n) => !(n.fromUid === requesterUid && n.type === "follow_request")
     );
     setNotifications(updatedNotifications);
-
+    
     try {
       const idToken = await currentUser.getIdToken();
       const endpoint = `${apiBaseUrl}/api/users/follow/${action}/${requesterUid}`;
@@ -75,6 +79,8 @@ const Notification = () => {
       alert("Bir hata oluştu.");
       // Hata durumunda eski listeyi geri yükle
       fetchNotifications();
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -110,16 +116,14 @@ const Notification = () => {
     }
   };
 
-  if (loading) {
-    return <div>Yükleniyor...</div>;
-  }
-
   return (
     <div className={styles.notification_page}>
       <h2 className={styles.page_title}>Bildirimler</h2>
-      <ul className={styles.notification_list}>
-        {notifications.length > 0 ? (
-          notifications.map((item) => {
+      {loading ? (
+        <LoadingOverlay />
+      ) : notifications.length > 0 ? (
+        <ul className={styles.notification_list}>
+          {notifications.map((item) => {
             const { message, icon } = getNotificationText(item);
             return (
               <li key={item.id} className={styles.notification_item}>
@@ -152,14 +156,14 @@ const Notification = () => {
                 </div>
               </li>
             );
-          })
-        ) : (
-          <div className={styles.noNotifications}>
-            <FaRegCommentDots size={50} color="#666" />
-            <p>Henüz bildirim yok.</p>
-          </div>
-        )}
-      </ul>
+          })}
+        </ul>
+      ) : (
+        <div className={styles.noNotifications}>
+          <FaRegCommentDots size={50} color="#666" />
+          <p>Henüz bildirim yok.</p>
+        </div>
+      )}
     </div>
   );
 };
