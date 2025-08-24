@@ -66,7 +66,7 @@ const BottomNav = () => {
         </NavLink>
 
         <NavLink
-          to="/profile"
+          to="/account"
           className={({ isActive }) =>
             isActive ? styles.activeLink : styles.navLink
           }

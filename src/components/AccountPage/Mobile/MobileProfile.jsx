@@ -1,14 +1,16 @@
-// src/components/MobileProfile/MobileProfile.js
 import React, { useState } from "react";
 import { IoIosSettings } from "react-icons/io";
 import styles from "./MobileProfile.module.css";
 import { Link } from "react-router-dom";
 import { useUser } from "../../../context/UserContext";
 import LoadingOverlay from "../../LoadingOverlay/LoadingOverlay";
+import ConnectionsModal from "../../ConnectionsModal/ConnectionsModal"; // Modal import edildi
 
 const MobileProfile = () => {
   const { currentUser, loading } = useUser();
   const [activeTab, setActiveTab] = useState("posts");
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState(null);
 
   const tabs = [
     { key: "posts", label: "Posts" },
@@ -17,23 +19,21 @@ const MobileProfile = () => {
     { key: "tags", label: "Tagged" },
   ];
 
-  if (loading) {
-    return <LoadingOverlay />;
-  }
+  if (loading) return <LoadingOverlay />;
+  if (!currentUser) return <div>Lütfen giriş yapın.</div>;
 
-  if (!currentUser) {
-    // Kullanıcı giriş yapmamışsa veya verisi yoksa
-    return <div>Lütfen giriş yapın.</div>;
-  }
+  const { username, displayName, photoURL, bio, familySystem, stats, uid } = currentUser;
 
-  const { username, displayName, photoURL, bio, familySystem, stats } = currentUser;
-
-  // Tab içeriği için dinamik mesajlar
   const tabMessages = {
     posts: `${displayName || username}, henüz bir gönderi paylaşmadınız.`,
     feeds: `${displayName || username}, henüz feedleriniz bulunmamaktadır.`,
     likes: `${displayName || username}, henüz bir gönderiyi beğenmediniz.`,
     tags: `${displayName || username}, henüz etiketlendiğiniz bir gönderi bulunmamaktadır.`,
+  };
+
+  const handleStatClick = (type) => {
+    setModalType(type);
+    setShowModal(true);
   };
 
   return (
@@ -52,11 +52,7 @@ const MobileProfile = () => {
       <div className={styles.profileInfo}>
         <div className={styles.avatarContainer}>
           <div className={styles.avatarWrapper}>
-            <img
-              src={photoURL}
-              alt="Profile"
-              className={styles.avatar}
-            />
+            <img src={photoURL} alt="Profile" className={styles.avatar} />
           </div>
         </div>
 
@@ -72,11 +68,19 @@ const MobileProfile = () => {
             </div>
           </div>
           <div className={styles.stat_content}>
-            <div className={styles.stat}>
+            <div
+              className={styles.stat}
+              onClick={() => handleStatClick("followers")}
+              style={{ cursor: "pointer" }}
+            >
               <span className={styles.statNumber}>{stats.followers}</span>
               <span className={styles.statLabel}>Followers</span>
             </div>
-            <div className={styles.stat}>
+            <div
+              className={styles.stat}
+              onClick={() => handleStatClick("following")}
+              style={{ cursor: "pointer" }}
+            >
               <span className={styles.statNumber}>{stats.following}</span>
               <span className={styles.statLabel}>Following</span>
             </div>
@@ -86,12 +90,8 @@ const MobileProfile = () => {
 
       <div className={styles.bioSection}>
         <h1 className={styles.name}>{displayName}</h1>
-        {familySystem && (
-          <div className={styles.tag}>{familySystem}</div>
-        )}
-        <p className={styles.bioText}>
-          {bio || "Henüz bir biyografi eklemediniz."}
-        </p>
+        {familySystem && <div className={styles.tag}>{familySystem}</div>}
+        <p className={styles.bioText}>{bio || "Henüz bir biyografi eklemediniz."}</p>
       </div>
 
       <div className={styles.actionButtons}>
@@ -99,7 +99,6 @@ const MobileProfile = () => {
         <button className={styles.shareButton}>Share Profile</button>
       </div>
 
-      {/* Highlights kısmı default olarak kaldı, dinamik veri eklemek için ayrıca düzenleme gerekir. */}
       <div className={styles.highlights}>
         {["Story 1", "Story 2", "Story 3"].map((label, index) => (
           <div key={index} className={styles.highlightItem}>
@@ -113,9 +112,7 @@ const MobileProfile = () => {
         {tabs.map(({ key, label }) => (
           <button
             key={key}
-            className={`${styles.tab} ${
-              activeTab === key ? styles.activeTab : ""
-            }`}
+            className={`${styles.tab} ${activeTab === key ? styles.activeTab : ""}`}
             onClick={() => setActiveTab(key)}
           >
             {label}
@@ -124,7 +121,6 @@ const MobileProfile = () => {
       </div>
 
       <div className={styles.tabContent}>
-        {/* Tab içeriği dinamik mesajlarla güncellendi */}
         <div className={styles.postsGrid}>
           {activeTab === "posts" && <p>{tabMessages.posts}</p>}
           {activeTab === "feeds" && <p>{tabMessages.feeds}</p>}
@@ -132,6 +128,15 @@ const MobileProfile = () => {
           {activeTab === "tags" && <p>{tabMessages.tags}</p>}
         </div>
       </div>
+
+      {showModal && (
+        <ConnectionsModal
+          show={showModal}
+          onClose={() => setShowModal(false)}
+          listType={modalType}
+          currentUserId={uid}
+        />
+      )}
     </div>
   );
 };
