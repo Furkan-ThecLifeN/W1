@@ -1,6 +1,6 @@
 // src/components/Chat/Message.jsx
 import React, { useState, useRef } from 'react';
-import styles from "./Chat.module.css";
+import styles from "../Chat.module.css";
 import { AiFillFileAdd } from "react-icons/ai";
 import { FaPlay, FaPause, FaMicrophone } from "react-icons/fa";
 

@@ -333,15 +333,16 @@
   transform: scale(1.05);
 }
 /* ========== Durum Mesajları ========== */
-.loadingMessage, .noMessages {
+.loadingMessage,
+.noMessages {
   color: var(--color-grey);
   text-align: center;
   margin-top: 2rem;
 }
 .statusMessage {
-    color: var(--color-grey);
-    text-align: center;
-    padding: 1rem;
+  color: var(--color-grey);
+  text-align: center;
+  padding: 1rem;
 }
 .expiredMessage {
   font-style: italic;
@@ -353,80 +354,276 @@
 
 /* ========== Yeni Eklenenler ========== */
 
-/* Modal */
+/* FileUploadModal.module.css */
+
+/* === Overlay === */
 .modalOverlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7);
+  inset: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  background: rgba(15, 15, 25, 0.6);
+  backdrop-filter: blur(12px) saturate(180%);
+  z-index: 9999;
+  animation: fadeIn 0.4s ease;
 }
 
+/* === Modal Box === */
 .modalContent {
-  background: var(--color-white);
-  padding: 2rem;
-  border-radius: 12px;
-  text-align: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  max-width: 400px;
-  color: var(--color-black);
+  position: relative;
+  width: 440px;
+  max-width: 90%;
+  padding: 28px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.999);
+  backdrop-filter: blur(25px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #f0f7ff;
+  box-shadow: 0 8px 32px rgba(0, 150, 255, 0.25);
+  animation: scaleUp 0.35s ease;
+  overflow: hidden;
 }
 
-.modalContent h3 {
-  margin-top: 0;
-  color: var(--color-black);
+/* Işık çizgisi efekti */
+.modalContent::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(0, 220, 255, 0.15) 45%,
+    rgba(0, 220, 255, 0.3) 50%,
+    transparent 55%,
+    transparent 100%
+  );
+  transform: rotate(25deg);
+  animation: lightSweep 6s infinite linear;
+  pointer-events: none;
 }
 
-.fileInput {
-  margin-bottom: 1rem;
-  width: 100%;
-}
-
-.expirationOptions {
-  margin-top: 1rem;
+/* === Header === */
+.modalHeader {
   display: flex;
-  flex-wrap: wrap; /* Küçük ekranlarda alta geçmesi için */
-  justify-content: center;
-  gap: 1rem;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 14px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
-.expirationOptions label {
+
+.modalHeader h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #e9faff;
+  letter-spacing: 1px;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  cursor: pointer;
+  color: #d3e8f9;
+  transition: transform 0.25s ease, color 0.25s ease;
+}
+
+.closeButton:hover {
+  color: #00d4ff;
+  transform: rotate(90deg) scale(1.2);
+}
+
+/* === Body === */
+.modalBody {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.fileInputLabel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px;
+  border-radius: 16px;
+  border: 2px dashed rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition: all 0.35s ease;
+}
+
+.fileInputLabel:hover {
+  border-color: #00d4ff;
+  background: rgba(0, 212, 255, 0.08);
+  box-shadow: 0 0 18px rgba(0, 212, 255, 0.25);
+}
+
+.hiddenFileInput {
+  display: none;
+}
+
+.fileInputPlaceholder {
+  margin-top: 8px;
+  font-size: 0.95rem;
+  color: #cfe8ff;
+}
+
+.filePreviewContainer {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 14px;
 }
 
+.imagePreview {
+  max-width: 95px;
+  max-height: 95px;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.4);
+}
+
+.fileIconPreview {
+  font-size: 2.5rem;
+  color: #00d4ff;
+}
+
+.fileDetails {
+  text-align: left;
+  flex: 1;
+}
+
+.fileName {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #fff;
+}
+
+.fileSize {
+  font-size: 0.85rem;
+  color: #bbb;
+}
+
+/* === Expiration === */
+.expirationOptions {
+  margin: 16px 0;
+}
+
+.expirationOptions p {
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: #d8f3ff;
+}
+
+.radioLabel {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 18px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: #eee;
+  transition: color 0.2s ease;
+}
+
+.radioLabel:hover {
+  color: #00d4ff;
+}
+
+.radioInput {
+  display: none;
+}
+
+.radioCustom {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-right: 6px;
+  border: 2px solid #00d4ff;
+  display: inline-block;
+  transition: 0.3s ease;
+}
+
+.radioInput:checked + .radioCustom {
+  background: #00d4ff;
+  box-shadow: 0 0 10px #00d4ff;
+}
+
+/* === Buttons === */
 .modalButtons {
   display: flex;
-  justify-content: space-around;
-  margin-top: 1.5rem;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 18px;
 }
 
-.uploadButton, .cancelButton {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.3s;
-}
-
+.cancelButton,
 .uploadButton {
-  background-color: var(--color-blue);
-  color: var(--color-white);
-}
-.uploadButton:disabled {
-  background-color: #b0c4de;
-  cursor: default;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
 }
 
 .cancelButton {
-  background-color: #e0e0e0;
-  color: #333;
+  background: rgba(255, 255, 255, 0.08);
+  color: #eee;
+}
+
+.cancelButton:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.uploadButton {
+  background: linear-gradient(135deg, #00d4ff, #0099ff);
+  color: #0a0a0a;
+  box-shadow: 0 0 10px rgba(0, 200, 255, 0.4);
+}
+
+.uploadButton:hover {
+  transform: scale(1.05);
+  background: linear-gradient(135deg, #00b8ff, #007bff);
+  box-shadow: 0 0 18px rgba(0, 212, 255, 0.6);
+}
+
+.uploadButton:disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: #777;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* === Animations === */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleUp {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes lightSweep {
+  0% {
+    transform: rotate(25deg) translateX(-100%);
+  }
+  100% {
+    transform: rotate(25deg) translateX(100%);
+  }
 }
 
 /* Kalpli Mesaj Baloncuğu */
@@ -440,8 +637,12 @@
 }
 
 @keyframes heartBeat {
-  0% { transform: scale(1); }
-  100% { transform: scale(1.2); }
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.2);
+  }
 }
 
 /* Emoji Picker */
@@ -483,9 +684,18 @@
   justify-content: center;
 }
 @keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.2); opacity: 0.7; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* ========== Responsive ========== */

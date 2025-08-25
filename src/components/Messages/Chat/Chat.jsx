@@ -24,9 +24,9 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 
-import EmojiPicker from "./EmojiPicker";
-import FileUploadModal from "./FileUploadModal";
-import Message from "./Message";
+import EmojiPicker from "./ChatComponents/EmojiPicker";
+import FileUploadModal from "./ChatComponents/FileUploadModal";
+import Message from "./ChatComponents/Message";
 
 const Chat = ({ user, onBack }) => {
   const { currentUser: firebaseUser } = useAuth();
