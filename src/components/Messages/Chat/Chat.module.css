@@ -8,11 +8,13 @@
   overflow: hidden;
   width: 100%;
   color: var(--color-white);
+  position: relative; /* Modallar için gerekli */
 }
 
 .chatHeader {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start; /* Başlık ve geri butonu yan yana */
+  gap: 1rem;
   background-color: var(--color-black);
   align-items: center;
   padding: 1.5rem;
@@ -85,11 +87,10 @@
 
 .messageRow.right {
   align-self: flex-end;
-  flex-direction: column;
+  flex-direction: row-reverse; /* Mesaj ve avatarları ters çevirir */
   align-items: flex-end;
-  gap: 15px;
+  gap: 15px; /* Avatar ile mesaj balonu arası boşluk */
 }
-
 /* ========== Avatar ========== */
 .userAvatar {
   width: 36px;
@@ -98,7 +99,7 @@
   object-fit: cover;
   margin-right: 0.75rem;
   align-self: flex-end;
-  border: 2px solid white;
+  border: 2px solid var(--color-blue); /* Avatar rengi güncellendi */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -141,6 +142,7 @@
 .file {
   background: linear-gradient(145deg, #1f2630, #2c343e);
   cursor: pointer;
+  color: var(--color-white);
 }
 
 .file:hover {
@@ -165,24 +167,6 @@
   max-width: 350px;
 }
 
-.audioButton {
-  background: #1db954;
-  border: none;
-  color: white;
-  padding: 0.6rem;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.3s;
-}
-
-.audioButton:hover {
-  background: #1ed760;
-}
-
 .audioIconWrapper {
   background-color: #2a2f38;
   border-radius: 50%;
@@ -197,91 +181,43 @@
   color: var(--color-white);
 }
 
-.audioWaveform {
-  display: flex;
-  gap: 3px;
-  align-items: center;
-  flex-grow: 1;
-}
-
-/* Animasyon aktif */
-.playing .wave {
-  animation: wave 1.2s infinite ease-in-out;
-  animation-play-state: running;
-}
-
-/* Animasyon durdurulmuş */
-.paused .wave {
-  animation: wave 1.2s infinite ease-in-out;
-  animation-play-state: paused;
-}
-
-.wave {
-  width: 4px;
-  height: 15px;
-  background: var(--color-white); /* daha doygun mavi */
-  border-radius: 2px;
-}
-
-.wave:nth-child(1) {
-  animation-delay: 0s;
-}
-.wave:nth-child(2) {
-  animation-delay: 0.2s;
-}
-.wave:nth-child(3) {
-  animation-delay: 0.4s;
-}
-.wave:nth-child(4) {
-  animation-delay: 0.6s;
-}
-.wave:nth-child(5) {
-  animation-delay: 0.8s;
-}
-
-@keyframes wave {
-  0%,
-  100% {
-    transform: scaleY(0.5);
-  }
-  50% {
-    transform: scaleY(1.5);
-  }
-}
-
 .audioControls {
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-grow: 1; /* Kontrollerin esnek bir şekilde yayılmasını sağlar */
 }
 
 .playPauseBtn {
-  margin-right: 12px;
+  background: none;
+  border: none;
   color: var(--color-white);
+  font-size: 1.2rem;
+  cursor: pointer;
+  margin-right: 0.8rem;
 }
 
 .audioDuration {
   font-size: 0.8rem;
   color: #aaa;
 }
-
-/* Message Image */
-.messageImage {
+/* Message Image (Kaldırıldı, artık dosya tipi olarak yönetiliyor) */
+/* .messageImage {
   max-width: 150px;
   border-radius: 12px;
   margin-top: 0.5rem;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(0, 0, 0, 0.05);
-}
+} */
 
-/* Search */
-
+/* ========== Message Input ========== */
 .messageInputWrapper {
   display: flex;
   padding: 0.5rem;
   background: var(--color-black);
   margin-bottom: 12px;
   box-sizing: border-box;
+  position: relative; /* Emoji picker için */
 }
 
 .messageInputContainer {
@@ -304,11 +240,12 @@
   font-size: 1rem;
   padding: 0 1rem;
   min-width: 0;
+  color: var(--color-black);
 }
 
 .inputIconLeft {
   font-size: 1.4rem;
-  color: var(--color-primary);
+  color: var(--color-black);
   cursor: pointer;
   transition: transform 0.3s ease;
 }
@@ -325,7 +262,7 @@
 }
 
 .rightIconHeart {
-  background-color: var(--busy);
+  background-color: var(--busy); /* Kırmızı tonu */
   color: var(--color-white);
   width: 30px;
   height: 30px;
@@ -395,31 +332,163 @@
   background-color: #1e90ff;
   transform: scale(1.05);
 }
-
-/* ========== Animations ========== */
-@keyframes waveAnim {
-  0%,
-  100% {
-    height: 4px;
-  }
-  50% {
-    height: 18px;
-  }
+/* ========== Durum Mesajları ========== */
+.loadingMessage, .noMessages {
+  color: var(--color-grey);
+  text-align: center;
+  margin-top: 2rem;
+}
+.statusMessage {
+    color: var(--color-grey);
+    text-align: center;
+    padding: 1rem;
+}
+.expiredMessage {
+  font-style: italic;
+  color: #888;
+  padding: 0.8rem 1.2rem;
+  background-color: #f0f0f0;
+  border-radius: 1rem;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* ========== Yeni Eklenenler ========== */
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: var(--color-white);
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  color: var(--color-black);
+}
+
+.modalContent h3 {
+  margin-top: 0;
+  color: var(--color-black);
+}
+
+.fileInput {
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.expirationOptions {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap; /* Küçük ekranlarda alta geçmesi için */
+  justify-content: center;
+  gap: 1rem;
+}
+.expirationOptions label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.modalButtons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 1.5rem;
+}
+
+.uploadButton, .cancelButton {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+.uploadButton {
+  background-color: var(--color-blue);
+  color: var(--color-white);
+}
+.uploadButton:disabled {
+  background-color: #b0c4de;
+  cursor: default;
+}
+
+.cancelButton {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+/* Kalpli Mesaj Baloncuğu */
+.heartMessage {
+  font-size: 2rem;
+  animation: heartBeat 1s infinite alternate;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  color: red !important;
+  padding: 0.5rem;
+}
+
+@keyframes heartBeat {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.2); }
+}
+
+/* Emoji Picker */
+.emojiPicker {
+  position: absolute;
+  bottom: 60px; /* Input'un üzerinde kalması için */
+  right: 10px;
+  background: var(--color-white);
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  z-index: 500;
+}
+
+.emojiPicker span {
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.emojiPicker span:hover {
+  transform: scale(1.2);
+}
+
+/* Kayıt durumu */
+.iconButtonMicRecording {
+  animation: pulse 1s linear infinite;
+  color: red;
+  background: none; /* Arka planı sıfırlıyoruz */
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 /* ========== Responsive ========== */
-
 @media (max-width: 1024px) {
   .messageInputWrapper {
     margin-bottom: 30px;
@@ -463,17 +532,8 @@
     max-width: 90%;
   }
 
-  .messageImage {
-    max-width: 150px;
-  }
-
   .chatHeader {
     padding: 1rem;
-  }
-
-  .iconGroupLeft {
-    gap: 0.75rem;
-    margin-right: 0.75rem;
   }
 }
 
@@ -491,5 +551,12 @@
 
   .iconGroupRight {
     gap: 0.4rem;
+  }
+  .emojiPicker {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .modalContent {
+    padding: 1.5rem;
+    width: 90%;
   }
 }
