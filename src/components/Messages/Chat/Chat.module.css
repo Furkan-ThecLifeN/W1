@@ -97,10 +97,12 @@
   height: 36px;
   border-radius: 50%;
   object-fit: cover;
-  margin-right: 0.75rem;
+  margin-right: 0.15rem;
   align-self: flex-end;
   border: 2px solid var(--color-blue); /* Avatar rengi güncellendi */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
+  top: -35px;
 }
 
 .messageRow.right .userAvatar {
@@ -130,13 +132,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.messageRow.left .messageBubble.text {
-  border-bottom-left-radius: 4px;
-}
 
-.messageRow.right .messageBubble.text {
-  border-bottom-right-radius: 4px;
-}
 
 /* File */
 .file {
@@ -626,23 +622,85 @@
   }
 }
 
-/* Kalpli Mesaj Baloncuğu */
-.heartMessage {
-  font-size: 2rem;
-  animation: heartBeat 1s infinite alternate;
-  background-color: transparent !important;
-  box-shadow: none !important;
-  color: red !important;
-  padding: 0.5rem;
+/* HeartMessage Stilleri */
+
+/* Kalp İkonu - Normal Hali */
+.rightIconHeart {
+  font-size: 1.5rem;
+  color: #ffffff; 
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  padding: 5px;
+  border-radius: 8px;
 }
 
-@keyframes heartBeat {
+/* Hover Hali */
+.rightIconHeart:hover {
+  color: var(--busy); /* Daha canlı kırmızı */
+  background-color: rgba(255, 255, 255, 0.1); /* Hafif transparan arka plan */
+  transform: scale(1.2);
+}
+
+/* Aktif Hali */
+.rightIconHeart.activeHeart {
+  color: var(--busy); /* Canlı kırmızı aktif hali */
+  background-color: rgba(255, 255, 255, 0.15); /* Hafif arka plan */
+  transform: scale(1.1);
+}
+
+
+.heartMessageContent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #b80b0b, #ff0000);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(255, 0, 0, 0.4);
+  position: relative;
+  height: 49px;
+}
+
+/* Küçük kalp - sadece kalpte animasyon */
+.heartIcon {
+  font-size: 18px;
+  color: #fff;
+  animation: heartbeat 1.6s infinite ease-in-out;
+}
+
+@keyframes heartbeat {
   0% {
     transform: scale(1);
   }
-  100% {
+  25% {
     transform: scale(1.2);
   }
+  50% {
+    transform: scale(1);
+  }
+  75% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Yazı ile aynı boyda */
+.heartMessageText {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Gönderen ve Alan için özel stil */
+.senderHeartMessage {
+  align-self: flex-end;
+}
+
+.receiverHeartMessage {
+  align-self: flex-start;
 }
 
 /* Emoji Picker */
