@@ -1,48 +1,35 @@
 // src/components/Chat/Chat.jsx
+
 import React, { useState, useEffect, useRef } from "react";
-import {
-  FaHeart,
-  FaSmile,
-  FaPaperPlane,
-  FaMicrophone,
-} from "react-icons/fa";
+import { FaHeart, FaSmile, FaPaperPlane, FaMicrophone } from "react-icons/fa";
 import { MdAddBox } from "react-icons/md";
 import styles from "./Chat.module.css";
 import { useAuth } from "../../../context/AuthProvider";
 import { useUser } from "../../../context/UserContext";
-
-// ✅ Firestore bağlantısı
 import { db } from "../../../config/firebase-client";
-
-// ✅ Firestore metodları
-import {
-  collection,
-  query,
-  orderBy,
-  onSnapshot,
-} from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 
 import EmojiPicker from "./ChatComponents/EmojiPicker";
 import FileUploadModal from "./ChatComponents/FileUploadModal";
 import Message from "./ChatComponents/Message";
+import ImageModal from "./ChatComponents/ImageModal";
 
 const Chat = ({ user, onBack }) => {
   const { currentUser: firebaseUser } = useAuth();
   const { currentUser: appUser } = useUser();
+
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // ❤️ Kalp modu
   const [isHeartModeActive, setIsHeartModeActive] = useState(false);
-
-  const messagesEndRef = useRef(null);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [selectedImageSrc, setSelectedImageSrc] = useState(null);
+  const messagesEndRef = useRef(null);
 
   const getConversationId = (user1Id, user2Id) => {
     return [user1Id, user2Id].sort().join("_");
@@ -81,21 +68,16 @@ const Chat = ({ user, onBack }) => {
     return () => unsubscribe();
   }, [conversationId, appUser?.uid, user?.uid]);
 
-  // 📌 Mesaj geldiğinde aşağı kaydır
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
 
-  // 📝 Mesaj gönderme
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (message.trim() === "") {
-      // Eğer kalp modu aktifse ve input boşsa → modu kapat
-      if (isHeartModeActive) {
-        setIsHeartModeActive(false);
-      }
+      if (isHeartModeActive) setIsHeartModeActive(false);
       return;
     }
 
@@ -104,12 +86,7 @@ const Chat = ({ user, onBack }) => {
 
       let messagePayload;
       if (isHeartModeActive) {
-        // ❤️ Kalp modu aktifse
-        messagePayload = {
-          receiverUid: user.uid,
-          text: message,
-          type: "heart",
-        };
+        messagePayload = { receiverUid: user.uid, text: message, type: "heart" };
         await fetch(`${process.env.REACT_APP_API_URL}/api/messages/heart`, {
           method: "POST",
           headers: {
@@ -119,11 +96,7 @@ const Chat = ({ user, onBack }) => {
           body: JSON.stringify(messagePayload),
         });
       } else {
-        // ✉️ Normal mesaj
-        messagePayload = {
-          receiverUid: user.uid,
-          text: message,
-        };
+        messagePayload = { receiverUid: user.uid, text: message };
         await fetch(`${process.env.REACT_APP_API_URL}/api/messages/message`, {
           method: "POST",
           headers: {
@@ -134,34 +107,29 @@ const Chat = ({ user, onBack }) => {
         });
       }
 
-      setMessage(""); // input temizle
-      setIsHeartModeActive(false); // ❤️ modu kapat
+      setMessage("");
+      setIsHeartModeActive(false);
     } catch (error) {
       console.error("Mesaj gönderme hatası:", error);
     }
   };
 
-  // ❤️ Kalp butonu tıklanınca modu aç/kapat
   const handleHeartClick = () => {
     setIsHeartModeActive((prev) => !prev);
   };
 
-  // 😀 Emoji seç
   const handleEmojiSelect = (emoji) => {
     setMessage((prev) => prev + emoji.native);
     setShowEmojiPicker(false);
   };
 
-  // 🎙️ Ses kaydı
   const handleVoiceRecord = async () => {
     if (isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
     } else {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-        });
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         mediaRecorderRef.current = new MediaRecorder(stream);
         audioChunksRef.current = [];
 
@@ -170,14 +138,8 @@ const Chat = ({ user, onBack }) => {
         });
 
         mediaRecorderRef.current.addEventListener("stop", async () => {
-          const audioBlob = new Blob(audioChunksRef.current, {
-            type: "audio/webm",
-          });
-          await handleSendFile(
-            audioBlob,
-            `sesli_mesaj_${Date.now()}.webm`,
-            1
-          );
+          const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+          await handleSendFile(audioBlob);
           stream.getTracks().forEach((track) => track.stop());
         });
 
@@ -185,50 +147,48 @@ const Chat = ({ user, onBack }) => {
         setIsRecording(true);
       } catch (error) {
         console.error("Ses kaydı başlatılamadı:", error);
+        alert("Ses kaydı için mikrofon erişimine izin vermeniz gerekiyor.");
       }
     }
   };
 
-  // 📎 Dosya gönder
-  const handleSendFile = async (file, fileName, expirationHours) => {
+  // 📎 Dosya ve fotoğraf gönderme (tek endpoint: /file)
+  const handleSendFile = async (file) => {
+    setIsModalOpen(false);
     try {
       const idToken = await firebaseUser.getIdToken();
       const formData = new FormData();
-      formData.append("file", file, fileName);
+      formData.append("file", file);
       formData.append("receiverUid", user.uid);
-      formData.append("expirationHours", expirationHours);
 
+      // ✅ Tek endpoint
       await fetch(`${process.env.REACT_APP_API_URL}/api/messages/file`, {
         method: "POST",
         headers: { Authorization: `Bearer ${idToken}` },
         body: formData,
       });
-
-      console.log("Dosya gönderme başarılı.");
-      setIsModalOpen(false);
     } catch (error) {
       console.error("Dosya gönderme hatası:", error);
     }
   };
 
+  const handleImageClick = (src) => {
+    setSelectedImageSrc(src);
+    setIsImageModalOpen(true);
+  };
+
   return (
     <div className={styles.Chat}>
       {isModalOpen && (
-        <FileUploadModal
-          onClose={() => setIsModalOpen(false)}
-          onUpload={handleSendFile}
-        />
+        <FileUploadModal onClose={() => setIsModalOpen(false)} onUpload={handleSendFile} />
       )}
+      {isImageModalOpen && (
+        <ImageModal src={selectedImageSrc} onClose={() => setIsImageModalOpen(false)} />
+      )}
+
       <div className={styles.chatHeader}>
         <button className={styles.backButton} onClick={onBack}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-            className={styles.backIcon}
-          >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className={styles.backIcon}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
           <span className={styles.backBtnSpan}>Geri</span>
@@ -242,18 +202,10 @@ const Chat = ({ user, onBack }) => {
             <p className={styles.loadingMessage}>Mesajlar yükleniyor...</p>
           ) : messages.length > 0 ? (
             messages.map((msg) => (
-              <Message
-                key={msg.id}
-                msg={msg}
-                isSender={msg.senderId === appUser.uid}
-                user={user}
-                appUser={appUser}
-              />
+              <Message key={msg.id} msg={msg} isSender={msg.senderId === appUser.uid} user={user} appUser={appUser} onImageClick={handleImageClick} />
             ))
           ) : (
-            <p className={styles.noMessages}>
-              Henüz bu kullanıcıyla mesajınız yok.
-            </p>
+            <p className={styles.noMessages}>Henüz bu kullanıcıyla mesajınız yok.</p>
           )}
           <div ref={messagesEndRef} />
         </div>
@@ -261,49 +213,21 @@ const Chat = ({ user, onBack }) => {
 
       <form className={styles.messageInputWrapper} onSubmit={handleSendMessage}>
         <div className={styles.messageInputContainer}>
-          <MdAddBox
-            className={styles.inputIconLeft}
-            onClick={() => setIsModalOpen(true)}
-          />
-
+          <MdAddBox className={styles.inputIconLeft} onClick={() => setIsModalOpen(true)} />
           <input
             type="text"
-            placeholder={
-              isHeartModeActive ? "Kalpli mesajınız..." : "Bir mesaj yazın..."
-            }
+            placeholder={isHeartModeActive ? "Kalpli mesajınız..." : "Bir mesaj yazın..."}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             className={styles.textInput}
           />
-
           <div className={styles.iconGroupRight}>
-            <FaHeart
-              className={`${styles.rightIconHeart} ${
-                isHeartModeActive ? styles.activeHeart : ""
-              }`}
-              onClick={handleHeartClick}
-            />
-            <FaSmile
-              className={styles.rightIcon}
-              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            />
-            <button
-              type="button"
-              className={
-                isRecording
-                  ? styles.iconButtonMicRecording
-                  : styles.iconButtonMic
-              }
-              aria-label="Ses gönder"
-              onClick={handleVoiceRecord}
-            >
+            <FaHeart className={`${styles.rightIconHeart} ${isHeartModeActive ? styles.activeHeart : ""}`} onClick={handleHeartClick} />
+            <FaSmile className={styles.rightIcon} onClick={() => setShowEmojiPicker(!showEmojiPicker)} />
+            <button type="button" className={isRecording ? styles.iconButtonMicRecording : styles.iconButtonMic} aria-label="Ses gönder" onClick={handleVoiceRecord}>
               <FaMicrophone />
             </button>
-            <button
-              type="submit"
-              className={styles.sendButton}
-              disabled={message.trim() === ""}
-            >
+            <button type="submit" className={styles.sendButton} disabled={message.trim() === ""}>
               <FaPaperPlane />
             </button>
           </div>

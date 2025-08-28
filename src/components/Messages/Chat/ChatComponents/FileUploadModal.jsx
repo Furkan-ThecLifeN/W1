@@ -7,11 +7,9 @@ import { MdAddBox } from 'react-icons/md';
 
 const FileUploadModal = ({ onClose, onUpload }) => {
   const [file, setFile] = useState(null);
-  const [expiration, setExpiration] = useState(24);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    // Modal açıldığında focusu dosya seçme alanına yönlendir
     if (fileInputRef.current) {
       fileInputRef.current.focus();
     }
@@ -23,7 +21,8 @@ const FileUploadModal = ({ onClose, onUpload }) => {
 
   const handleUpload = () => {
     if (file) {
-      onUpload(file, file.name, expiration);
+      onUpload(file, file.name, 24); // Hardcoded expiration of 24 hours
+      onClose();
     }
   };
 
@@ -36,35 +35,40 @@ const FileUploadModal = ({ onClose, onUpload }) => {
     return <FaFileAlt />;
   };
 
+  const getFilePreview = () => {
+    if (!file) return null;
+    if (file.type.startsWith('image/')) {
+      return URL.createObjectURL(file);
+    }
+    return null;
+  };
+
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
-          <h3>Gönderim Paneli</h3>
+          <h3>Send File</h3>
           <button onClick={onClose} className={styles.closeButton}>&times;</button>
         </div>
-
         <div className={styles.modalBody}>
           {!file ? (
-            <label className={styles.fileInputLabel}>
-              <input 
-                type="file" 
-                onChange={handleFileChange} 
-                className={styles.hiddenFileInput} 
-                ref={fileInputRef} 
+            <div className={styles.fileInputContainer} onClick={() => fileInputRef.current.click()}>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className={styles.fileInputHidden}
               />
-              <span className={styles.fileInputPlaceholder}>
-                <MdAddBox size={48} />
-                <p>Dosya veya Fotoğraf Seç</p>
-              </span>
-            </label>
+              <MdAddBox size={40} color="#666" />
+              <p>Select File</p>
+            </div>
           ) : (
             <div className={styles.filePreviewContainer}>
               {file.type.startsWith('image/') ? (
-                <img 
-                  src={URL.createObjectURL(file)} 
-                  alt="Seçilen dosya ön izleme" 
-                  className={styles.imagePreview} 
+                <img
+                  src={getFilePreview()}
+                  alt="File preview"
+                  className={styles.imagePreview}
                 />
               ) : (
                 <div className={styles.fileIconPreview}>
@@ -79,28 +83,10 @@ const FileUploadModal = ({ onClose, onUpload }) => {
           )}
         </div>
 
-        <div className={styles.expirationOptions}>
-          <p>Dosya Görüntüleme Süresi:</p>
-          {[1, 3, 6, 24].map((hours) => (
-            <label key={hours} className={styles.radioLabel}>
-              <input 
-                type="radio" 
-                name="expiration" 
-                value={hours} 
-                checked={expiration === hours} 
-                onChange={() => setExpiration(hours)} 
-                className={styles.radioInput} 
-              />
-              <span className={styles.radioCustom}></span>
-              {hours} Saat
-            </label>
-          ))}
-        </div>
-
         <div className={styles.modalButtons}>
-          <button type="button" onClick={onClose} className={styles.cancelButton}>İptal</button>
+          <button type="button" onClick={onClose} className={styles.cancelButton}>Cancel</button>
           <button type="button" onClick={handleUpload} disabled={!file} className={styles.uploadButton}>
-            Gönder
+            Send
           </button>
         </div>
       </div>

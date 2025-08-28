@@ -1,17 +1,14 @@
-// src/components/Chat/Message.jsx
+// src/components/Chat/ChatComponents/Message.jsx
 
 import React, { useState, useRef } from "react";
 import styles from "../Chat.module.css";
 import { AiFillFileAdd } from "react-icons/ai";
-import { FaPlay, FaPause, FaMicrophone } from "react-icons/fa";
-import HeartMessage from "./HeartMessage"; // ✅ HeartMessage bileşenini import ediyoruz
+import { FaPlay, FaPause, FaMicrophone, FaDownload } from "react-icons/fa";
+import HeartMessage from "./HeartMessage";
 
-const Message = ({ msg, isSender, user, appUser }) => {
+const Message = ({ msg, isSender, user, appUser, onImageClick }) => {
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
-
-  // Firestore Timestamp nesnesini JavaScript Date nesnesine çeviriyoruz
-  const isExpired = msg.expiresAt && msg.expiresAt.toDate() < new Date();
 
   const messageClass = isSender ? styles.right : styles.left;
   const avatarSrc = isSender
@@ -30,18 +27,8 @@ const Message = ({ msg, isSender, user, appUser }) => {
   };
 
   const renderMessageContent = () => {
-    // ✅ Kalp mesajı için yeni kontrolümüz
-    if (msg.type === "heart") {
-      return <HeartMessage msg={msg} isSender={isSender} />;
-    }
+    if (msg.type === "heart") return <HeartMessage msg={msg} />;
 
-    if (isExpired) {
-      return (
-        <span className={`${styles.messageBubble} ${styles.expiredMessage}`}>
-          Bu mesajın süresi doldu.
-        </span>
-      );
-    }
     switch (msg.type) {
       case "text":
         return (
@@ -49,18 +36,35 @@ const Message = ({ msg, isSender, user, appUser }) => {
             {msg.text}
           </div>
         );
+
+      case "image":
+        return (
+          <div className={`${styles.messageBubble} ${styles.image}`}>
+            <img
+              src={msg.url}
+              alt={msg.fileName || "Resim"}
+              onClick={() => onImageClick(msg.url)}
+              className={styles.chatImage}
+            />
+          </div>
+        );
+
       case "file":
+        // Dosya indirme URL'si için backend adresini ekledik
+        const fileDownloadUrl = `http://localhost:3001${msg.url}`;
         return (
           <a
-            href={msg.url}
+            href={fileDownloadUrl}
             target="_blank"
             rel="noopener noreferrer"
             className={`${styles.messageBubble} ${styles.file}`}
           >
             <AiFillFileAdd />
-            {msg.fileName}
+            <span>{msg.fileName}</span>
+            <FaDownload className={styles.downloadIcon} />
           </a>
         );
+
       case "audio":
         return (
           <div className={`${styles.messageBubble} ${styles.audio}`}>
@@ -78,9 +82,17 @@ const Message = ({ msg, isSender, user, appUser }) => {
                 hidden
               />
               <span className={styles.audioDuration}>Sesli Mesaj</span>
+              <a
+                href={msg.url}
+                download={msg.fileName}
+                className={styles.downloadLink}
+              >
+                <FaDownload />
+              </a>
             </div>
           </div>
         );
+
       default:
         return (
           <div className={`${styles.messageBubble} ${styles.text}`}>
@@ -92,11 +104,10 @@ const Message = ({ msg, isSender, user, appUser }) => {
 
   return (
     <div className={`${styles.messageRow} ${messageClass}`}>
-      {/* Avatar: artık tüm alıcı mesajlarında gösteriliyor */}
       {!isSender && user && (
         <img
           src={avatarSrc}
-          alt={user.username || "Kullanıcı"}
+          alt={user.username || "User"}
           className={styles.userAvatar}
         />
       )}
