@@ -1,0 +1,130 @@
+/* src/components/Chat/ChatComponents/ImageViewerModal.module.css */
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.9); /* Daha koyu, daha az şeffaf arka plan */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+  backdrop-filter: blur(8px); /* Daha belirgin bulanıklık */
+}
+
+.modalContent {
+  position: relative;
+  background-color: #1a1a1a; /* Koyu gri/siyah arka plan */
+  border-radius: 10px; /* Daha yumuşak köşeler */
+  padding: 20px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.8), 0 0 10px rgba(173, 216, 230, 0.3); /* Derin gölge ve hafif açık mavi parlaklık */
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  animation: slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  border: 1px solid rgba(173, 216, 230, 0.2); /* Açık mavi ince kenarlık */
+}
+
+.fullImage {
+  max-width: 100%;
+  max-height: 70vh;
+  border-radius: 8px; /* Resim kenarları için yumuşaklık */
+  object-fit: contain;
+  box-shadow: 0 0 8px rgba(173, 216, 230, 0.4); /* Resim etrafında açık mavi parlaklık */
+}
+
+.closeButton,
+.downloadButton {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.1); /* Hafif şeffaf beyaz */
+  color: #ffffff; /* Açık mavi ikon rengi */
+  border: 1px solid rgba(173, 216, 230, 0.3); /* İnce açık mavi kenarlık */
+  border-radius: 50%;
+  width: 45px; /* Boyutu biraz büyüttük */
+  height: 45px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.3rem; /* İkon boyutu */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Hafif gölge */
+}
+
+.closeButton:hover,
+.downloadButton:hover {
+  background-color: rgba(173, 216, 230, 0.2); /* Hover'da açık maviye döner */
+  color: #00d1fb; /* Hover'da beyaz ikon */
+  transform: scale(1.05);
+  box-shadow: 0 2px 15px rgba(173, 216, 230, 0.4); /* Hover'da daha belirgin parlaklık */
+}
+
+.closeButton {
+  top: 15px;
+  right: 15px;
+}
+
+.downloadButton {
+  bottom: 15px;
+  padding: 10px 20px; /* Daha dolgun buton */
+  border-radius: 25px; /* Oval buton */
+  width: auto;
+  font-size: 1.1rem;
+  display: flex;
+  gap: 10px;
+  position: static;
+  margin-top: 25px;
+  /* Kendi rengini override etsin diye */
+  background-color: #000000; /* Açık mavi arka plan */
+  color: #ffffff; /* Koyu gri/siyah yazı */
+  border: none; /* Kenarlık yok */
+  box-shadow: 0 0 10px rgba(173, 216, 230, 0.4); /* Açık mavi gölge */
+}
+
+.downloadButton:hover {
+  background-color: #00b3ff; /* Hover'da hafif koyu açık mavi */
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(173, 216, 230, 0.6);
+}
+
+/* Animasyonlar aynı kalabilir, gayet iyiler */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-50px) scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.uploadedImageThumbnail {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Hafif beyaz kenarlık */
+}
+
+.uploadedImageThumbnail:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 5px rgba(173, 216, 230, 0.4); /* Hover'da hafif açık mavi parlaklık */
+}

@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import styles from "../Chat.module.css";
+import ImageViewerModal from "./ImageViewerModal"; // ✅ YENİ: Modal bileşenini import ediyoruz
 import { AiFillFileAdd } from "react-icons/ai";
 import { FaPlay, FaPause, FaMicrophone, FaDownload } from "react-icons/fa";
 import HeartMessage from "./HeartMessage";
@@ -10,6 +11,7 @@ const Message = ({ msg, isSender, user, appUser }) => {
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMediaError, setIsMediaError] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false); // ✅ YENİ: Resim modalı durumu
 
   const messageClass = isSender ? styles.right : styles.left;
   const avatarSrc = isSender
@@ -31,10 +33,19 @@ const Message = ({ msg, isSender, user, appUser }) => {
     setIsMediaError(true);
   };
 
+  // ✅ YENİ: Resim modalını açma
+  const openImageModal = () => {
+    setIsImageModalOpen(true);
+  };
+
+  // ✅ YENİ: Resim modalını kapatma
+  const closeImageModal = () => {
+    setIsImageModalOpen(false);
+  };
+
   const renderMessageContent = () => {
     if (msg.type === "heart") return <HeartMessage msg={msg} />;
 
-    // Medya hatalarını (silinmiş dosyalar) burada kontrol et
     if (isMediaError) {
       return (
         <div className={`${styles.messageBubble} ${styles.text}`}>
@@ -54,14 +65,41 @@ const Message = ({ msg, isSender, user, appUser }) => {
       case "image":
         return (
           <div className={`${styles.messageBubble} ${styles.image}`}>
-            <a href={msg.url} target="_blank" rel="noopener noreferrer">
-              <img
+            <img
+              src={msg.url}
+              alt="Gönderilen fotoğraf"
+              className={styles.uploadedImageThumbnail} // ✅ GÜNCELLEME: Yeni thumbnail stili
+              onClick={openImageModal} // ✅ YENİ: Tıklandığında modalı aç
+              onError={handleMediaError}
+            />
+          </div>
+        );
+
+      case "audio":
+        return (
+          <div className={`${styles.messageBubble} ${styles.audio}`}>
+            <div className={styles.audioIconWrapper}>
+              <FaMicrophone className={styles.voiceIcon} />
+            </div>
+            <div className={styles.audioControls}>
+              <button className={styles.playPauseBtn} onClick={togglePlay}>
+                {isPlaying ? <FaPause /> : <FaPlay />}
+              </button>
+              <audio
+                ref={audioRef}
                 src={msg.url}
-                alt="Gönderilen fotoğraf"
-                className={styles.uploadedImage}
-                onError={handleMediaError}
+                onEnded={() => setIsPlaying(false)}
+                hidden
               />
-            </a>
+              <span className={styles.audioDuration}>Sesli Mesaj</span>
+              <a
+                href={msg.url}
+                download={msg.fileName}
+                className={styles.downloadLink}
+              >
+                <FaDownload />
+              </a>
+            </div>
           </div>
         );
 
@@ -91,17 +129,28 @@ const Message = ({ msg, isSender, user, appUser }) => {
   };
 
   return (
-    <div className={`${styles.messageRow} ${messageClass}`}>
-      {!isSender && user && (
-        <img
-          src={avatarSrc}
-          alt={user.username || "User"}
-          className={styles.userAvatar}
+    <>
+      <div className={`${styles.messageRow} ${messageClass}`}>
+        {!isSender && user && (
+          <img
+            src={avatarSrc}
+            alt={user.username || "User"}
+            className={styles.userAvatar}
+          />
+        )}
+        {renderMessageContent()}
+      </div>
+
+      {/* ✅ YENİ: Resim modalını buraya ekliyoruz */}
+      {isImageModalOpen && msg.type === "image" && (
+        <ImageViewerModal
+          imageUrl={msg.url}
+          fileName={msg.fileName}
+          onClose={closeImageModal}
         />
       )}
-      {renderMessageContent()}
-    </div>
+    </>
   );
 };
 
-export default Message;  
+export default Message;
