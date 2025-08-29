@@ -6,9 +6,10 @@ import { AiFillFileAdd } from "react-icons/ai";
 import { FaPlay, FaPause, FaMicrophone, FaDownload } from "react-icons/fa";
 import HeartMessage from "./HeartMessage";
 
-const Message = ({ msg, isSender, user, appUser, onImageClick }) => {
+const Message = ({ msg, isSender, user, appUser }) => {
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isMediaError, setIsMediaError] = useState(false);
 
   const messageClass = isSender ? styles.right : styles.left;
   const avatarSrc = isSender
@@ -26,8 +27,21 @@ const Message = ({ msg, isSender, user, appUser, onImageClick }) => {
     }
   };
 
+  const handleMediaError = () => {
+    setIsMediaError(true);
+  };
+
   const renderMessageContent = () => {
     if (msg.type === "heart") return <HeartMessage msg={msg} />;
+
+    // Medya hatalarını (silinmiş dosyalar) burada kontrol et
+    if (isMediaError) {
+      return (
+        <div className={`${styles.messageBubble} ${styles.text}`}>
+          <p>⚠️ Mesaj içeriğine erişim sonlanmıştır.</p>
+        </div>
+      );
+    }
 
     switch (msg.type) {
       case "text":
@@ -40,56 +54,30 @@ const Message = ({ msg, isSender, user, appUser, onImageClick }) => {
       case "image":
         return (
           <div className={`${styles.messageBubble} ${styles.image}`}>
-            <img
-              src={msg.url}
-              alt={msg.fileName || "Resim"}
-              onClick={() => onImageClick(msg.url)}
-              className={styles.chatImage}
-            />
+            <a href={msg.url} target="_blank" rel="noopener noreferrer">
+              <img
+                src={msg.url}
+                alt="Gönderilen fotoğraf"
+                className={styles.uploadedImage}
+                onError={handleMediaError}
+              />
+            </a>
           </div>
         );
 
       case "file":
-        // Dosya indirme URL'si için backend adresini ekledik
-        const fileDownloadUrl = `http://localhost:3001${msg.url}`;
         return (
-          <a
-            href={fileDownloadUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`${styles.messageBubble} ${styles.file}`}
-          >
-            <AiFillFileAdd />
-            <span>{msg.fileName}</span>
-            <FaDownload className={styles.downloadIcon} />
-          </a>
-        );
-
-      case "audio":
-        return (
-          <div className={`${styles.messageBubble} ${styles.audio}`}>
-            <div className={styles.audioIconWrapper}>
-              <FaMicrophone className={styles.voiceIcon} />
-            </div>
-            <div className={styles.audioControls}>
-              <button className={styles.playPauseBtn} onClick={togglePlay}>
-                {isPlaying ? <FaPause /> : <FaPlay />}
-              </button>
-              <audio
-                ref={audioRef}
-                src={msg.url}
-                onEnded={() => setIsPlaying(false)}
-                hidden
-              />
-              <span className={styles.audioDuration}>Sesli Mesaj</span>
-              <a
-                href={msg.url}
-                download={msg.fileName}
-                className={styles.downloadLink}
-              >
-                <FaDownload />
-              </a>
-            </div>
+          <div className={`${styles.messageBubble} ${styles.file}`}>
+            <AiFillFileAdd className={styles.fileIcon} />
+            <a
+              href={msg.url}
+              download={msg.fileName}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.downloadLink}
+            >
+              <p>{msg.fileName}</p>
+            </a>
           </div>
         );
 
@@ -116,4 +104,4 @@ const Message = ({ msg, isSender, user, appUser, onImageClick }) => {
   );
 };
 
-export default Message;
+export default Message;  

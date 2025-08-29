@@ -86,7 +86,11 @@ const Chat = ({ user, onBack }) => {
 
       let messagePayload;
       if (isHeartModeActive) {
-        messagePayload = { receiverUid: user.uid, text: message, type: "heart" };
+        messagePayload = {
+          receiverUid: user.uid,
+          text: message,
+          type: "heart",
+        };
         await fetch(`${process.env.REACT_APP_API_URL}/api/messages/heart`, {
           method: "POST",
           headers: {
@@ -129,7 +133,9 @@ const Chat = ({ user, onBack }) => {
       setIsRecording(false);
     } else {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
         mediaRecorderRef.current = new MediaRecorder(stream);
         audioChunksRef.current = [];
 
@@ -137,11 +143,29 @@ const Chat = ({ user, onBack }) => {
           audioChunksRef.current.push(event.data);
         });
 
-        mediaRecorderRef.current.addEventListener("stop", async () => {
-          const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-          await handleSendFile(audioBlob);
-          stream.getTracks().forEach((track) => track.stop());
-        });
+       const handleSendFile = async (file, fileName, messageType) => {
+    setIsModalOpen(false);
+    try {
+      const idToken = await firebaseUser.getIdToken();
+      const formData = new FormData();
+      
+      // ✅ GÜNCELLEME: Sunucunun ihtiyaç duyduğu tüm verileri ekliyoruz
+      formData.append("conversationId", conversationId);
+      formData.append("fromId", appUser.uid);
+      formData.append("toId", user.uid);
+      formData.append("messageType", messageType);
+      formData.append("fileName", fileName);
+      formData.append("file", file, fileName);
+
+      await fetch(`${process.env.REACT_APP_API_URL}/api/messages/file`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${idToken}` },
+        body: formData,
+      });
+    } catch (error) {
+      console.error("Dosya gönderme hatası:", error);
+    }
+  };
 
         mediaRecorderRef.current.start();
         setIsRecording(true);
@@ -153,15 +177,20 @@ const Chat = ({ user, onBack }) => {
   };
 
   // 📎 Dosya ve fotoğraf gönderme (tek endpoint: /file)
-  const handleSendFile = async (file) => {
+  const handleSendFile = async (file, fileName, messageType) => {
     setIsModalOpen(false);
     try {
       const idToken = await firebaseUser.getIdToken();
       const formData = new FormData();
-      formData.append("file", file);
-      formData.append("receiverUid", user.uid);
+      
+      // ✅ GÜNCELLEME: Sunucunun ihtiyaç duyduğu tüm verileri ekliyoruz
+      formData.append("conversationId", conversationId);
+      formData.append("fromId", appUser.uid);
+      formData.append("toId", user.uid);
+      formData.append("messageType", messageType);
+      formData.append("fileName", fileName);
+      formData.append("file", file, fileName);
 
-      // ✅ Tek endpoint
       await fetch(`${process.env.REACT_APP_API_URL}/api/messages/file`, {
         method: "POST",
         headers: { Authorization: `Bearer ${idToken}` },
@@ -180,16 +209,33 @@ const Chat = ({ user, onBack }) => {
   return (
     <div className={styles.Chat}>
       {isModalOpen && (
-        <FileUploadModal onClose={() => setIsModalOpen(false)} onUpload={handleSendFile} />
+         <FileUploadModal
+        onClose={() => setIsModalOpen(false)}
+        onUpload={(file, fileName) => handleSendFile(file, fileName, "file")}
+      />
       )}
       {isImageModalOpen && (
-        <ImageModal src={selectedImageSrc} onClose={() => setIsImageModalOpen(false)} />
+        <ImageModal
+          src={selectedImageSrc}
+          onClose={() => setIsImageModalOpen(false)}
+        />
       )}
 
       <div className={styles.chatHeader}>
         <button className={styles.backButton} onClick={onBack}>
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className={styles.backIcon}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+            className={styles.backIcon}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
           <span className={styles.backBtnSpan}>Geri</span>
         </button>
@@ -202,10 +248,19 @@ const Chat = ({ user, onBack }) => {
             <p className={styles.loadingMessage}>Mesajlar yükleniyor...</p>
           ) : messages.length > 0 ? (
             messages.map((msg) => (
-              <Message key={msg.id} msg={msg} isSender={msg.senderId === appUser.uid} user={user} appUser={appUser} onImageClick={handleImageClick} />
+              <Message
+                key={msg.id}
+                msg={msg}
+                isSender={msg.senderId === appUser.uid}
+                user={user}
+                appUser={appUser}
+                onImageClick={handleImageClick}
+              />
             ))
           ) : (
-            <p className={styles.noMessages}>Henüz bu kullanıcıyla mesajınız yok.</p>
+            <p className={styles.noMessages}>
+              Henüz bu kullanıcıyla mesajınız yok.
+            </p>
           )}
           <div ref={messagesEndRef} />
         </div>
@@ -213,21 +268,47 @@ const Chat = ({ user, onBack }) => {
 
       <form className={styles.messageInputWrapper} onSubmit={handleSendMessage}>
         <div className={styles.messageInputContainer}>
-          <MdAddBox className={styles.inputIconLeft} onClick={() => setIsModalOpen(true)} />
+          <MdAddBox
+            className={styles.inputIconLeft}
+            onClick={() => setIsModalOpen(true)}
+          />
           <input
             type="text"
-            placeholder={isHeartModeActive ? "Kalpli mesajınız..." : "Bir mesaj yazın..."}
+            placeholder={
+              isHeartModeActive ? "Kalpli mesajınız..." : "Bir mesaj yazın..."
+            }
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             className={styles.textInput}
           />
           <div className={styles.iconGroupRight}>
-            <FaHeart className={`${styles.rightIconHeart} ${isHeartModeActive ? styles.activeHeart : ""}`} onClick={handleHeartClick} />
-            <FaSmile className={styles.rightIcon} onClick={() => setShowEmojiPicker(!showEmojiPicker)} />
-            <button type="button" className={isRecording ? styles.iconButtonMicRecording : styles.iconButtonMic} aria-label="Ses gönder" onClick={handleVoiceRecord}>
+            <FaHeart
+              className={`${styles.rightIconHeart} ${
+                isHeartModeActive ? styles.activeHeart : ""
+              }`}
+              onClick={handleHeartClick}
+            />
+            <FaSmile
+              className={styles.rightIcon}
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            />
+            <button
+              type="button"
+              className={
+                isRecording
+                  ? styles.iconButtonMicRecording
+                  : styles.iconButtonMic
+              }
+              aria-label="Ses gönder"
+              onClick={handleVoiceRecord}
+            >
               <FaMicrophone />
             </button>
-            <button type="submit" className={styles.sendButton} disabled={message.trim() === ""}>
+            <button
+              type="submit"
+              className={styles.sendButton}
+              disabled={message.trim() === ""}
+            >
               <FaPaperPlane />
             </button>
           </div>

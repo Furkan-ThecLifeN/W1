@@ -1,9 +1,16 @@
 // src/components/Chat/ChatComponents/FileUploadModal.jsx
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from "react";
 import styles from "../Chat.module.css";
-import { FaFileImage, FaFilePdf, FaFileWord, FaFileAlt, FaVideo, FaMusic } from 'react-icons/fa';
-import { MdAddBox } from 'react-icons/md';
+import {
+  FaFileImage,
+  FaFilePdf,
+  FaFileWord,
+  FaFileAlt,
+  FaVideo,
+  FaMusic,
+} from "react-icons/fa";
+import { MdAddBox } from "react-icons/md";
 
 const FileUploadModal = ({ onClose, onUpload }) => {
   const [file, setFile] = useState(null);
@@ -21,23 +28,23 @@ const FileUploadModal = ({ onClose, onUpload }) => {
 
   const handleUpload = () => {
     if (file) {
-      onUpload(file, file.name, 24); // Hardcoded expiration of 24 hours
-      onClose();
+      onUpload(file, file.name);
+        onClose();
     }
   };
 
   const getFileIcon = (mimeType) => {
-    if (mimeType.startsWith('image/')) return <FaFileImage />;
-    if (mimeType.startsWith('audio/')) return <FaMusic />;
-    if (mimeType.startsWith('video/')) return <FaVideo />;
-    if (mimeType === 'application/pdf') return <FaFilePdf />;
-    if (mimeType === 'application/msword' || mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') return <FaFileWord />;
+    if (mimeType.startsWith("image/")) return <FaFileImage />;
+    if (mimeType.startsWith("audio/")) return <FaMusic />;
+    if (mimeType.startsWith("video/")) return <FaVideo />;
+    if (mimeType === "application/pdf") return <FaFilePdf />;
+    if (mimeType.includes("word") || mimeType.includes("document"))
+      return <FaFileWord />;
     return <FaFileAlt />;
   };
 
   const getFilePreview = () => {
-    if (!file) return null;
-    if (file.type.startsWith('image/')) {
+    if (file.type.startsWith("image/")) {
       return URL.createObjectURL(file);
     }
     return null;
@@ -46,13 +53,13 @@ const FileUploadModal = ({ onClose, onUpload }) => {
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.modalHeader}>
-          <h3>Send File</h3>
-          <button onClick={onClose} className={styles.closeButton}>&times;</button>
-        </div>
-        <div className={styles.modalBody}>
+        <h2 className={styles.modalTitle}>Dosya Gönder</h2>
+        <div className={styles.dropzone}>
           {!file ? (
-            <div className={styles.fileInputContainer} onClick={() => fileInputRef.current.click()}>
+            <div
+              className={styles.fileInputContainer}
+              onClick={() => fileInputRef.current.click()}
+            >
               <input
                 type="file"
                 ref={fileInputRef}
@@ -60,14 +67,14 @@ const FileUploadModal = ({ onClose, onUpload }) => {
                 className={styles.fileInputHidden}
               />
               <MdAddBox size={40} color="#666" />
-              <p>Select File</p>
+              <p>Dosya Seç</p>
             </div>
           ) : (
             <div className={styles.filePreviewContainer}>
-              {file.type.startsWith('image/') ? (
+              {file.type.startsWith("image/") ? (
                 <img
                   src={getFilePreview()}
-                  alt="File preview"
+                  alt="Dosya önizlemesi"
                   className={styles.imagePreview}
                 />
               ) : (
@@ -77,16 +84,29 @@ const FileUploadModal = ({ onClose, onUpload }) => {
               )}
               <div className={styles.fileDetails}>
                 <p className={styles.fileName}>{file.name}</p>
-                <p className={styles.fileSize}>({(file.size / 1024 / 1024).toFixed(2)} MB)</p>
+                <p className={styles.fileSize}>
+                  ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                </p>
               </div>
             </div>
           )}
         </div>
 
         <div className={styles.modalButtons}>
-          <button type="button" onClick={onClose} className={styles.cancelButton}>Cancel</button>
-          <button type="button" onClick={handleUpload} disabled={!file} className={styles.uploadButton}>
-            Send
+          <button
+            type="button"
+            onClick={onClose}
+            className={styles.cancelButton}
+          >
+            İptal
+          </button>
+          <button
+            type="button"
+            onClick={handleUpload}
+            disabled={!file}
+            className={styles.uploadButton}
+          >
+            Gönder
           </button>
         </div>
       </div>
