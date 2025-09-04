@@ -2,410 +2,146 @@
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  backdrop-filter: blur(6px);
-  padding: 16px;
-  background: linear-gradient(135deg, #003b6f, #000000, #003b6f);
 }
 
 .modalContainer {
-  width: 100%;
-  max-width: 960px;
-  max-height: 90vh;
-  background: var(--background-special);
-  border-radius: 16px;
-  overflow: hidden;
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+  width: 90%;
+  max-width: 500px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
 }
 
 .modalHeader {
-  padding: 20px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  background: rgba(0, 0, 0, 0.3);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem;
+  border-bottom: 1px solid #333;
   position: relative;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1.5rem;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.backButton:hover {
+  background-color: #333;
 }
 
 .modalTitle {
-  margin: 0;
-  font-size: 1.5rem;
+  flex-grow: 1;
+  text-align: center;
+  font-size: 1.25rem;
   font-weight: 600;
-  color: var(--text-white);
-  background: var(--text-title-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  margin: 0;
+  color: #fff;
 }
 
-.closeButton {
-  background: none;
-  border: none;
-  color: var(--color-grey);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  padding: 8px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.closeButton:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-white);
-}
-
-.infoButton {
-  background: none;
-  border: none;
-  color: var(--color-grey);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  padding: 8px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.infoButton:hover {
-  color: var(--color-blue);
-}
-
-.modalContent {
-  flex: 1;
+.formContent {
+  padding: 1.5rem;
+  flex-grow: 1;
   overflow-y: auto;
-  padding: 20px;
 }
 
-.authContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
-  text-align: center;
+.inputGroup {
+  margin-bottom: 1.5rem;
 }
 
-.youtubeLogo {
-  margin-bottom: 20px;
-}
-
-.authTitle {
-  font-size: 1.5rem;
-  color: var(--text-white);
-  margin-bottom: 10px;
-}
-
-.authDescription {
-  color: var(--color-grey);
-  margin-bottom: 30px;
-  max-width: 400px;
-}
-
-.authButton {
-  background: #ff0000;
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s ease;
-}
-
-.authButton:hover {
-  background: #cc0000;
-  transform: translateY(-2px);
-}
-
-.loadingContainer {
-  width: 100%;
-}
-
-.skeletonGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 16px;
-}
-
-.errorContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
-  text-align: center;
-}
-
-.errorText {
-  color: #ff6b6b;
-  margin-bottom: 20px;
-  font-size: 1.1rem;
-}
-
-.retryButton {
-  background: var(--color-blue);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.retryButton:hover {
-  background: #0088cc;
-}
-
-.emptyContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
-  text-align: center;
-}
-
-.emptyText {
-  color: var(--color-grey);
-  font-size: 1.1rem;
-}
-
-.videoGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 16px;
-}
-
-.videoCard {
-  position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background: var(--secondary-bg);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.videoCard.selected {
-  border: 2px solid var(--color-blue);
-  box-shadow: 0 0 0 2px rgba(0, 170, 255, 0.3);
-}
-
-.videoThumbnail {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 9/16;
-  overflow: hidden;
-}
-
-.videoThumbnail img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.videoCard:hover .videoThumbnail img {
-  transform: scale(1.05);
-}
-
-.videoDuration {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-.youtubeLogoBadge {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 2px 4px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.videoInfo {
-  padding: 12px;
-}
-
-.videoTitle {
+.inputGroup label {
+  display: block;
   font-size: 0.9rem;
-  color: var(--text-white);
-  margin: 0 0 4px 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: #bbb;
+  margin-bottom: 0.5rem;
 }
 
-.videoChannel {
-  font-size: 0.8rem;
-  color: var(--color-grey);
-  margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.inputField, .textareaField {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #2b2b2b;
+  border: 1px solid #444;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
 }
 
-.selectedBadge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: var(--color-blue);
-  color: white;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
+.inputField:focus, .textareaField:focus {
+  outline: none;
+  border-color: #ff0000;
+  box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.2);
+}
+
+.textareaField {
+  resize: vertical;
+}
+
+.errorMessage {
+  color: #ff5555;
+  font-size: 0.9rem;
+  margin-top: -1rem;
+  margin-bottom: 1rem;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 0.5rem;
+}
+
+.successMessage {
+  color: #4CAF50;
+  font-size: 0.9rem;
+  margin-top: -1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .modalFooter {
-  padding: 16px;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #333;
   display: flex;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.3);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  justify-content: flex-end;
 }
 
-.importButton {
-  background: #ff0000;
-  color: white;
+.shareButton {
+  background-color: #ff0000;
+  color: #fff;
   border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
   font-size: 1rem;
   font-weight: 600;
+  border-radius: 50px;
   cursor: pointer;
+  transition: background-color 0.2s;
   display: flex;
   align-items: center;
-  gap: 8px;
-  width: 100%;
-  max-width: 300px;
-  justify-content: center;
-  transition: all 0.2s ease;
+  gap: 0.5rem;
 }
 
-.importButton:hover {
-  background: #cc0000;
-}
-
-.importButton:disabled {
-  background: var(--color-gray888);
+.shareButton:disabled {
+  background-color: #888;
   cursor: not-allowed;
 }
 
-/* Info Modal Styles */
-.infoModalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1001;
-  backdrop-filter: blur(4px);
-}
-
-.infoModal {
-  background: var(--background-special);
-  border-radius: 12px;
-  padding: 20px;
-  max-width: 500px;
-  width: 90%;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.infoModalHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.infoModalHeader h3 {
-  margin: 0;
-  color: var(--text-white);
-  font-size: 1.2rem;
-}
-
-.infoModalHeader button {
-  background: none;
-  border: none;
-  color: var(--color-grey);
-  cursor: pointer;
-}
-
-.infoModalContent {
-  color: var(--color-grey);
-  line-height: 1.6;
-}
-
-.infoModalContent p {
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Responsive Styles */
-@media (max-width: 768px) {
-  .modalContainer {
-    max-height: 95vh;
-  }
-
-  .videoGrid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 12px;
-  }
-
-  .modalTitle {
-    font-size: 1.2rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .videoGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .authTitle {
-    font-size: 1.2rem;
-  }
-
-  .authDescription {
-    font-size: 0.9rem;
-  }
+.shareButton:not(:disabled):hover {
+  background-color: #cc0000;
 }

@@ -6,22 +6,37 @@ import {
   FiSend,
   FiMoreVertical,
 } from "react-icons/fi";
-import {
-  FaHeart,
-  FaCommentDots,
-  FaBookmark,
-  FaShare,
-  FaEllipsisV,
-} from "react-icons/fa";
+import { FaHeart, FaBookmark } from "react-icons/fa";
 import styles from "./PostVideoCard.module.css";
-import { MdMenu } from "react-icons/md";
-import BottomToggleNav from "../../BottomNav/BottomNav";
+import { motion, AnimatePresence } from "framer-motion";
 
-export default function PostVideoCard({ videoSrc }) {
+// YouTube Shorts Video URL'sini gömülü formatına dönüştüren yardımcı fonksiyon
+const getYouTubeEmbedUrl = (url) => {
+  const videoIdMatch = url.match(/(?:\/shorts\/|youtu\.be\/|v=)([^&?/]+)/);
+  if (videoIdMatch && videoIdMatch[1]) {
+    // URLSearchParams ile otomatik oynatma, döngü ve ses ayarlarını yap
+    const params = new URLSearchParams({
+      autoplay: 1,
+      muted: 0,
+      loop: 1,
+      controls: 1, // Kontrol butonlarını göster
+      playlist: videoIdMatch[1],
+      modestbranding: 1
+    });
+    return `https://www.youtube.com/embed/${videoIdMatch[1]}?${params.toString()}`;
+  }
+  return null;
+};
+
+export default function PostVideoCard({
+  videoSrc,
+  description,
+  username,
+  userProfileImage,
+}) {
   const [liked, setLiked] = useState(false);
   const [doubleTap, setDoubleTap] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [activeIcons, setActiveIcons] = useState({});
   const [followed, setFollowed] = useState(false);
 
   const handleDoubleClick = () => {
@@ -30,36 +45,69 @@ export default function PostVideoCard({ videoSrc }) {
     setTimeout(() => setDoubleTap(false), 1000);
   };
 
-  const toggleIcon = (name) =>
-    setActiveIcons((prev) => ({ ...prev, [name]: !prev[name] }));
-
   const handleLikeClick = () => setLiked((prev) => !prev);
-
   const handleSaveClick = () => setSaved((prev) => !prev);
+  
+  const embedUrl = getYouTubeEmbedUrl(videoSrc);
+
+  if (!embedUrl) {
+    console.error("Geçersiz video URL'si:", videoSrc);
+    return null;
+  }
 
   return (
-    <div className={styles.video_card} onDoubleClick={handleDoubleClick}>
-      <div className={styles.video_wrapper}>
-        <video
-          src={videoSrc}
-          className={styles.video}
-          autoPlay
-          muted
-          loop
-          playsInline
-        />
+    <div className={styles.card}>
+      <div className={styles.video_container}>
+        {/* YouTube Iframe */}
+        <iframe
+          className={styles.video_iframe}
+          src={embedUrl}
+          title="YouTube Shorts video player"
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        ></iframe>
+        
+        <AnimatePresence>
+          {doubleTap && (
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              transition={{
+                type: "spring",
+                stiffness: 260,
+                damping: 20,
+              }}
+              className={styles.heart_double_tap}
+            >
+              <FaHeart />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
-        {doubleTap && <FaHeart className={styles.double_tap} />}
-
-        <div className={styles.adBanner}>
-          <div className={styles.adContent}>
-            <span className={styles.adLabel}>Ad</span>
-            <span className={styles.adText}>
-              Upgrade your workflow with ThecLife Pro Tools!
-            </span>
+      <div className={styles.content}>
+        <div className={styles.info_box}>
+          <div className={styles.info_top}>
+            <div className={styles.profile}>
+              <img
+                src={userProfileImage}
+                alt={`${username} profil fotoğrafı`}
+                className={styles.avatar}
+              />
+              <span className={styles.username}>{username}</span>
+            </div>
+            <button
+              onClick={() => setFollowed(!followed)}
+              className={styles.follow_btn}
+            >
+              {followed ? "Takibi Bırak" : "Takip Et"}
+            </button>
           </div>
+          <div className={styles.description}>{description}</div>
         </div>
-
+        
         <div className={styles.actions}>
           <div className={styles.icon_box} onClick={handleLikeClick}>
             {liked ? (
@@ -68,10 +116,7 @@ export default function PostVideoCard({ videoSrc }) {
               <FiHeart className={styles.icon} />
             )}
           </div>
-          <FiMessageCircle
-            className={styles.icon}
-            onClick={() => toggleIcon("comment")}
-          />
+          <FiMessageCircle className={styles.icon} />
           <div className={styles.icon_box} onClick={handleSaveClick}>
             {saved ? (
               <FaBookmark className={`${styles.icon} ${styles.saved}`} />
@@ -79,34 +124,8 @@ export default function PostVideoCard({ videoSrc }) {
               <FiBookmark className={styles.icon} />
             )}
           </div>
-          <FiSend className={styles.icon} onClick={() => toggleIcon("send")} />
-          <FiMoreVertical
-            className={styles.icon}
-            onClick={() => toggleIcon("more")}
-          />
-        </div>
-
-        <div className={styles.info_box}>
-          <div className={styles.info_top}>
-            <div className={styles.profile}>
-              <img
-                src="https://i.pravatar.cc/48"
-                alt="User"
-                className={styles.avatar}
-              />
-              <span className={styles.username}>Furkan ThecLifeN</span>
-            </div>
-            <button
-              onClick={() => setFollowed(!followed)}
-              className={styles.follow_btn}
-            >
-              {followed ? "Unfollow" : "Follow"}
-            </button>
-          </div>
-          <div className={styles.description}>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempore
-            inventore molestias repellendus quas modi fuga voluptas?
-          </div>
+          <FiSend className={styles.icon} />
+          <FiMoreVertical className={styles.icon} />
         </div>
       </div>
     </div>

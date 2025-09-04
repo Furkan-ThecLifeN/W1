@@ -1,34 +1,55 @@
-.video_card {
+/*
+  Ana kapsayıcı (Shorts tarzı card)
+*/
+.card {
+  position: relative;
+  width: 100%;
+  max-width: 350px;
+  height: 100%;    /* Shorts benzeri yükseklik */
+  margin: 1rem auto;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  background-color: #000;
+}
+
+/*
+  Video kapsayıcı
+*/
+.video_container {
+  width: 100%;
+  height: 100%;
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
-  height: calc(100vh - 30px);
-  position: relative;
+  background-color: black;
 }
 
-.video_wrapper {
-  width: 100%;
-  max-width: 420px;
-  height: 100%;
-  position: relative;
-  background: black;
-  overflow: hidden;
-}
-
-.video {
+.video,
+.video_iframe {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
-.double_tap {
+/*
+  Çift tıklama animasyonu
+*/
+.heart_double_tap {
   position: absolute;
   top: 50%;
   left: 50%;
+  font-size: 4rem;
+  color: #fff;
   transform: translate(-50%, -50%);
-  font-size: 6rem;
-  color: var(--color-white);
+  filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
+  pointer-events: none;
   animation: ping 1s cubic-bezier(0, 0, 0.2, 1) forwards;
   z-index: 20;
 }
@@ -45,95 +66,77 @@
   }
 }
 
-/* Icon Kutusu */
-.actions {
+/*
+  İçerik overlay
+*/
+.content {
   position: absolute;
-  bottom: 150px;
-  right: 12px;
+  inset: 0;
+  pointer-events: none; /* Parent tıklanmaz, çocuklar tıklanır */
+}
+
+/* Bilgi kutusunun konumlandırması (sol alt) */
+.info_box {
+  position: fixed;
+  bottom: 1rem;
+  left: 10rem;
+  pointer-events: auto;
   display: flex;
   flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  width: 100%;
+  max-width: 25%;
+  background: linear-gradient(to top, rgba(255, 0, 0, 0.6), transparent);
+  border-radius: 10px;
+}
+
+/* Aksiyon butonlarının konumlandırması (videonun dışına, sağ) */
+.actions {
+  position: fixed;
+  bottom: 5rem;
+  right: 1.5rem;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
   align-items: center;
-  gap: 16px;
-  z-index: 10;
+}
+
+.icon_box {
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 44px;
+  height: 44px;
+  background-color: rgba(0, 0, 0, 0.35);
+  border-radius: 50%;
+}
+
+.icon_box:hover {
+  transform: scale(1.1);
 }
 
 .icon {
   font-size: 1.6rem;
-  color: white;
-  cursor: pointer;
-  transition: transform 0.2s ease;
+  color: #fff;
+  transition: color 0.2s ease-in-out;
 }
 
-.icon_box {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.icon.liked {
+  color: var(--busy);
+  animation: heartbeat 0.5s ease-in-out;
 }
 
-.icon:hover {
-  transform: scale(1.15);
+.icon.saved {
+  color: #ffc107;
 }
 
-/* Save icon özel */
-.saved {
-  color: var(--color-white);
-}
-
-/* Info kutusu */
-.info_box {
-  position: absolute;
-  bottom: 10px;
-  left: 12px;
-  right: 12px;
-  padding: 10px 16px;
-  border-radius: 12px;
-  background: var(--blur-bg);
-  backdrop-filter: blur(10px);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* Header (Reklam Banner) */
-.adBanner {
-  position: absolute;
-  top: 0;
-  width: 100%;
-  max-width: 420px;
-  height: 48px;
-  background: linear-gradient(90deg, #1f2937, #111827);
-  color: #f9fafb;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 15;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.adContent {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 13px;
-  padding: 0 16px;
-}
-
-.adLabel {
-  background-color: #facc15;
-  color: #111;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
-  text-transform: uppercase;
-}
-
-.adText {
-  font-weight: 500;
-  opacity: 0.9;
-}
-
-/* Info içeriği */
+/*
+  Kullanıcı ve açıklama bilgisi
+*/
 .info_top {
   display: flex;
   justify-content: space-between;
@@ -143,41 +146,46 @@
 .profile {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .avatar {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
 }
 
 .username {
   font-weight: 600;
-  font-size: 0.95rem;
-  color: white;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 
 .follow_btn {
-  background: var(--color-blue);
-  color: var(--color-white);
-  padding: 4px 12px;
-  font-size: 0.85rem;
-  border-radius: 5px;
+  background-color: #ff0000;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.5s ease;
+  transition: background-color 0.2s;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 
 .follow_btn:hover {
-  background-color: #0087cc;
+  background-color: #cc0000;
 }
 
 .description {
-  max-height: 64px;
+  font-size: 0.9rem;
+  color: #e0e0e0;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+  max-height: 80px;
   overflow-y: auto;
-  font-size: 0.85rem;
-  line-height: 1.3;
-  color: white;
   padding-right: 4px;
 }
 
@@ -190,22 +198,13 @@
   border-radius: 4px;
 }
 
-@media (max-width: 1024px) {
-  .ad_toggle_btn {
-    display: inline-flex;
-  }
-
-  .info_box {
-    bottom: 45px;
-  }
-
- .actions {
-    bottom: 200px;
-  }
-}
-
-@media (min-width: 1025px) {
-  .ad_toggle_btn {
-    display: none !important; 
-  }
+/*
+  Animasyonlar
+*/
+@keyframes heartbeat {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.2); }
+  50% { transform: scale(1); }
+  75% { transform: scale(1.2); }
+  100% { transform: scale(1); }
 }
