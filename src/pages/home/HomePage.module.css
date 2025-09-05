@@ -8,7 +8,7 @@
 
   /* Tüm sayfa düzeni */
   .home {
-    background-color: var(--black);
+    background-color: var(--color-black);
     color: var(--color-white);
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     height: 100vh;

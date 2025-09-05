@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   FiHeart,
   FiMessageCircle,
@@ -10,27 +10,26 @@ import { FaHeart, FaBookmark } from "react-icons/fa";
 import styles from "./PostVideoCard.module.css";
 import { motion, AnimatePresence } from "framer-motion";
 
-// YouTube Shorts Video URL'sini gömülü formatına dönüştüren yardımcı fonksiyon
 const getYouTubeEmbedUrl = (url) => {
   const videoIdMatch = url.match(/(?:\/shorts\/|youtu\.be\/|v=)([^&?/]+)/);
   if (videoIdMatch && videoIdMatch[1]) {
-    // URLSearchParams ile otomatik oynatma, döngü ve ses ayarlarını yap
     const params = new URLSearchParams({
       autoplay: 1,
       muted: 0,
       loop: 1,
-      controls: 1, // Kontrol butonlarını göster
+      controls: 1,
       playlist: videoIdMatch[1],
-      modestbranding: 1
+      modestbranding: 1,
     });
     return `https://www.youtube.com/embed/${videoIdMatch[1]}?${params.toString()}`;
   }
   return null;
 };
 
+// Prop isimlerini düzeltiyoruz: 'content' yerine 'description' kullanıyoruz.
 export default function PostVideoCard({
   videoSrc,
-  description,
+  description, // <-- Artık 'description' prop'unu alıyoruz
   username,
   userProfileImage,
 }) {
@@ -47,9 +46,8 @@ export default function PostVideoCard({
 
   const handleLikeClick = () => setLiked((prev) => !prev);
   const handleSaveClick = () => setSaved((prev) => !prev);
-  
-  const embedUrl = getYouTubeEmbedUrl(videoSrc);
 
+  const embedUrl = getYouTubeEmbedUrl(videoSrc);
   if (!embedUrl) {
     console.error("Geçersiz video URL'si:", videoSrc);
     return null;
@@ -57,8 +55,7 @@ export default function PostVideoCard({
 
   return (
     <div className={styles.card}>
-      <div className={styles.video_container}>
-        {/* YouTube Iframe */}
+      <div className={styles.video_container} onDoubleClick={handleDoubleClick}>
         <iframe
           className={styles.video_iframe}
           src={embedUrl}
@@ -67,18 +64,14 @@ export default function PostVideoCard({
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
         ></iframe>
-        
+
         <AnimatePresence>
           {doubleTap && (
             <motion.div
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0, opacity: 0 }}
-              transition={{
-                type: "spring",
-                stiffness: 260,
-                damping: 20,
-              }}
+              transition={{ type: "spring", stiffness: 260, damping: 20 }}
               className={styles.heart_double_tap}
             >
               <FaHeart />
@@ -92,11 +85,11 @@ export default function PostVideoCard({
           <div className={styles.info_top}>
             <div className={styles.profile}>
               <img
-                src={userProfileImage}
-                alt={`${username} profil fotoğrafı`}
+                src={userProfileImage || "https://i.pravatar.cc/48"}
+                alt={username || "Anonim Kullanıcı"}
                 className={styles.avatar}
               />
-              <span className={styles.username}>{username}</span>
+              <span className={styles.username}>{username || "Anonim Kullanıcı"}</span>
             </div>
             <button
               onClick={() => setFollowed(!followed)}
@@ -105,9 +98,9 @@ export default function PostVideoCard({
               {followed ? "Takibi Bırak" : "Takip Et"}
             </button>
           </div>
-          <div className={styles.description}>{description}</div>
+          <div className={styles.description}>{description}</div> {/* 'content' yerine 'description' kullanıyoruz */}
         </div>
-        
+
         <div className={styles.actions}>
           <div className={styles.icon_box} onClick={handleLikeClick}>
             {liked ? (

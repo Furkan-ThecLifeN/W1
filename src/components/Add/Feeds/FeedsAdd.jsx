@@ -3,7 +3,7 @@ import styles from './FeedsAdd.module.css';
 import { FiArrowLeft, FiSend, FiCheck, FiX } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../../../config/firebase-client';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, doc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../../../context/AuthProvider';
 import { useUser } from '../../../context/UserContext';
 import { motion } from 'framer-motion';
@@ -20,18 +20,16 @@ const FeedsAdd = ({ onClose }) => {
   const { showToast } = useAuth();
 
   const handleShare = async () => {
-    // Giriş alanları boş mu kontrol et
     if (!mediaUrl.trim() || !description.trim()) {
       setError('Lütfen tüm alanları doldurun.');
       showToast('Tüm alanlar zorunludur.', 'error');
       return;
     }
 
-    // Basit YouTube Shorts URL doğrulaması
     if (!mediaUrl.includes('youtube.com/shorts/') && !mediaUrl.includes('youtu.be/')) {
-        setError('Lütfen geçerli bir YouTube Shorts linki girin.');
-        showToast('Geçersiz YouTube Shorts linki.', 'error');
-        return;
+      setError('Geçerli bir YouTube Shorts linki girin.');
+      showToast('Geçersiz YouTube Shorts linki.', 'error');
+      return;
     }
 
     setLoading(true);
@@ -40,10 +38,18 @@ const FeedsAdd = ({ onClose }) => {
     try {
       const ownerId = currentUser.uid;
 
+      // Kullanıcı bilgilerini çek
+      const userRef = doc(db, 'users', ownerId);
+      const userSnap = await getDoc(userRef);
+      const userData = userSnap.exists() ? userSnap.data() : {};
+
+      // Feed ekle
       await addDoc(collection(db, 'globalFeeds'), {
-        ownerId: ownerId,
-        mediaUrl: mediaUrl,
-        description: description,
+        ownerId,
+        mediaUrl,
+        content: description, // artık backend ve frontend ile uyumlu
+        username: userData.username || 'Anonim Kullanıcı',
+        userProfileImage: userData.photoURL || 'https://i.pravatar.cc/48',
         createdAt: serverTimestamp(),
         likes: 0,
       });
@@ -54,11 +60,8 @@ const FeedsAdd = ({ onClose }) => {
       showToast('Feeds başarıyla paylaşıldı!', 'success');
 
       setTimeout(() => {
-        if (typeof onClose === 'function') {
-          onClose();
-        } else {
-          navigate('/home');
-        }
+        if (typeof onClose === 'function') onClose();
+        else navigate('/home');
       }, 1500);
 
     } catch (err) {
@@ -71,11 +74,8 @@ const FeedsAdd = ({ onClose }) => {
   };
 
   const handleClose = () => {
-    if (typeof onClose === 'function') {
-      onClose();
-    } else {
-      navigate('/home');
-    }
+    if (typeof onClose === 'function') onClose();
+    else navigate('/home');
   };
 
   return (
@@ -128,11 +128,7 @@ const FeedsAdd = ({ onClose }) => {
             disabled={loading}
             whileTap={{ scale: 0.95 }}
           >
-            {loading ? 'Paylaşılıyor...' : (
-              <>
-                <FiSend size={18} /> Paylaş
-              </>
-            )}
+            {loading ? 'Paylaşılıyor...' : <><FiSend size={18} /> Paylaş</>}
           </motion.button>
         </div>
       </motion.div>
