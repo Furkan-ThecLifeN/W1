@@ -2,15 +2,15 @@ import React, { useState } from 'react';
 import styles from './FeedsAdd.module.css';
 import { FiArrowLeft, FiSend, FiCheck, FiX } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
-import { db } from '../../../config/firebase-client';
-import { collection, addDoc, doc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../../../context/AuthProvider';
 import { useUser } from '../../../context/UserContext';
 import { motion } from 'framer-motion';
+import { auth } from '../../../config/firebase-client'; // ✅ Firebase auth objesini import edin
 
 const FeedsAdd = ({ onClose }) => {
   const [mediaUrl, setMediaUrl] = useState('');
   const [description, setDescription] = useState('');
+  const [ownershipAccepted, setOwnershipAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -20,6 +20,7 @@ const FeedsAdd = ({ onClose }) => {
   const { showToast } = useAuth();
 
   const handleShare = async () => {
+    // Önceki kontroller
     if (!mediaUrl.trim() || !description.trim()) {
       setError('Lütfen tüm alanları doldurun.');
       showToast('Tüm alanlar zorunludur.', 'error');
@@ -32,31 +33,62 @@ const FeedsAdd = ({ onClose }) => {
       return;
     }
 
+    if (!ownershipAccepted) {
+      setError('Lütfen sahiplik beyanını onaylayın.');
+      showToast('Paylaşım için sahiplik onayı zorunludur.', 'error');
+      return;
+    }
+    
+    // ✅ Token'ı yalnızca geçerli bir kullanıcı olduğunda almaya çalış
+    if (!auth.currentUser) {
+      setError('Lütfen önce giriş yapın.');
+      showToast('İşlem için giriş yapmalısınız.', 'error');
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      const ownerId = currentUser.uid;
+      // ✅ Kullanıcının kimlik doğrulama token'ını (JWT) alın
+      const idToken = await auth.currentUser.getIdToken();
 
-      // Kullanıcı bilgilerini çek
-      const userRef = doc(db, 'users', ownerId);
-      const userSnap = await getDoc(userRef);
-      const userData = userSnap.exists() ? userSnap.data() : {};
-
-      // Feed ekle
-      await addDoc(collection(db, 'globalFeeds'), {
-        ownerId,
-        mediaUrl,
-        content: description, // artık backend ve frontend ile uyumlu
-        username: userData.username || 'Anonim Kullanıcı',
-        userProfileImage: userData.photoURL || 'https://i.pravatar.cc/48',
-        createdAt: serverTimestamp(),
-        likes: 0,
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/feeds/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // ✅ Doğru token'ı Authorization başlığına ekleyin
+          'Authorization': `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          content: description,
+          mediaUrl: mediaUrl,
+          ownershipAccepted: ownershipAccepted
+        }),
       });
+
+      if (!response.ok) {
+        // Hata yanıtını doğru bir şekilde işleyin
+        const errorText = await response.text();
+        let errorMessage = 'Feeds paylaşılırken bir hata oluştu.';
+        try {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+            // Eğer yanıt JSON değilse, doğrudan metin olarak hata mesajını kullan
+            errorMessage = errorText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      console.log(data.message);
 
       setSuccess(true);
       setMediaUrl('');
       setDescription('');
+      setOwnershipAccepted(false);
       showToast('Feeds başarıyla paylaşıldı!', 'success');
 
       setTimeout(() => {
@@ -66,7 +98,7 @@ const FeedsAdd = ({ onClose }) => {
 
     } catch (err) {
       console.error('Feeds paylaşım hatası:', err);
-      setError('Feeds paylaşılırken bir hata oluştu.');
+      setError(err.message || 'Feeds paylaşılırken bir hata oluştu.');
       showToast('Paylaşım başarısız!', 'error');
     } finally {
       setLoading(false);
@@ -116,6 +148,16 @@ const FeedsAdd = ({ onClose }) => {
               rows="4"
               className={styles.textareaField}
             />
+          </div>
+          <div className={styles.checkboxGroup}>
+            <input
+              type="checkbox"
+              id="ownershipAccepted"
+              checked={ownershipAccepted}
+              onChange={(e) => setOwnershipAccepted(e.target.checked)}
+              className={styles.checkboxField}
+            />
+            <label htmlFor="ownershipAccepted">Bu içeriğin sahibi olduğumu beyan ederim.</label>
           </div>
           {error && <p className={styles.errorMessage}><FiX /> {error}</p>}
           {success && <p className={styles.successMessage}><FiCheck /> Başarıyla paylaşıldı!</p>}
