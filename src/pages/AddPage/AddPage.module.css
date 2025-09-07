@@ -10,3 +10,7 @@
   background: var(--special-background14);
   position: relative;
 }
+
+.mainContent {
+  margin-left: 80px;
+}

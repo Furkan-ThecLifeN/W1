@@ -1,9 +1,32 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./AddComponents.module.css";
+import FeelingsAdd from "./Feelings/FeelingsAdd";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { useEffect } from "react";
 
 const AddPage = () => {
   const navigate = useNavigate();
+  const [hoveredCard, setHoveredCard] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [authToken, setAuthToken] = useState(null);
+  const auth = getAuth();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser);
+        const token = await firebaseUser.getIdToken();
+        setAuthToken(token);
+      } else {
+        setUser(null);
+        setAuthToken(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [auth]);
 
   const cards = [
     {
@@ -14,7 +37,6 @@ const AddPage = () => {
       color: "#f59e0b",
       route: "story",
     },
-
     {
       id: 2,
       title: "Feeds",
@@ -29,7 +51,7 @@ const AddPage = () => {
       icon: "😊",
       description: "Duygularını ifade et",
       color: "#10b981",
-      route: "feeling",
+      route: "feelingadd",
     },
     {
       id: 4,
@@ -39,7 +61,6 @@ const AddPage = () => {
       color: "#6366f1",
       route: "post",
     },
-
     {
       id: 5,
       title: "Live Stream",
@@ -58,30 +79,54 @@ const AddPage = () => {
     },
   ];
 
+  const handleCardClick = (card) => {
+    if (card.route === "feelingadd") {
+      setIsModalOpen(true);
+    } else {
+      navigate(`/create/${card.route}`);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <h1 data-text="İçerik Ekle">İçerik Ekle</h1>
-      </div>
-
       <div className={styles.cardGrid}>
         {cards.map((card) => (
           <div
             key={card.id}
-            className={styles.card}
-            onClick={() => navigate(`/create/${card.route}`)}
-            style={{ "--card-color": card.color }}
+            className={`${styles.card} ${hoveredCard === card.id ? styles.cardHover : ""}`}
+            onMouseEnter={() => setHoveredCard(card.id)}
+            onMouseLeave={() => setHoveredCard(null)}
+            style={{
+              "--card-color-rgb": card.color
+                .slice(1)
+                .match(/.{2}/g)
+                .map((h) => parseInt(h, 16))
+                .join(","),
+            }}
+            onClick={() => handleCardClick(card)}
           >
-            <div className={styles.cardBorder}></div>
+            <div
+              className={styles.cardBorder}
+              style={{ borderColor: card.color }}
+            ></div>
             <div className={styles.cardContent}>
               <div className={styles.icon}>{card.icon}</div>
               <h3>{card.title}</h3>
               <p>{card.description}</p>
             </div>
-            <div className={styles.cardGlow}></div>
           </div>
         ))}
       </div>
+      
+      {isModalOpen && (
+        <div className={styles.modalOverlay}>
+          <FeelingsAdd onClose={handleCloseModal} user={user} authToken={authToken} />
+        </div>
+      )}
     </div>
   );
 };

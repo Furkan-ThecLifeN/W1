@@ -101,25 +101,6 @@
   margin-bottom: 20px;
 }
 
-.createButton {
-  background: linear-gradient(135deg, var(--color-blue), #66d9ff);
-  color: var(--color-white);
-  padding: 12px;
-  border-radius: 50%;
-  display: flex;
-  font-size: 28px;
-  transition: transform 0.2s ease, box-shadow 0.3s ease;
-}
-
-.createButton:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 12px rgba(0, 170, 255, 0.4);
-}
-
-.createIcon {
-  pointer-events: none;
-}
-
 @media (max-width: 1024px) {
   .sidebar {
     display: none;

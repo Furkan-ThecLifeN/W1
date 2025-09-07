@@ -4,9 +4,10 @@ import { FiImage, FiSmile, FiMapPin, FiX, FiSend } from "react-icons/fi";
 import { IoMdClose } from "react-icons/io";
 import { RiQuillPenLine } from "react-icons/ri";
 
-const FeelingsAdd = ({ onClose }) => {
+const FeelingsAdd = ({ onClose, user, authToken }) => {
   const [postText, setPostText] = useState("");
   const [images, setImages] = useState([]);
+  const [privacy, setPrivacy] = useState("public");
   const fileInputRef = useRef(null);
 
   const handleImageUpload = (e) => {
@@ -25,10 +26,38 @@ const FeelingsAdd = ({ onClose }) => {
     setImages(updated);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({ postText, images });
-    onClose();
+
+    if (!postText.trim() && images.length === 0) {
+      alert("Lütfen bir metin girin veya bir görsel ekleyin.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:3001/api/feelings/share", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${authToken}`, // authToken prop'unu kullan
+        },
+        body: JSON.stringify({
+          postText: postText,
+          images: images.map((img) => img.file.name),
+          privacy: privacy,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Gönderi paylaşılırken bir hata oluştu.");
+      }
+
+      const result = await response.json();
+      console.log("Gönderi başarıyla paylaşıldı:", result);
+      onClose();
+    } catch (error) {
+      console.error("Paylaşım hatası:", error.message);
+    }
   };
 
   return (
@@ -52,14 +81,24 @@ const FeelingsAdd = ({ onClose }) => {
 
       <div className={styles.postFormContent}>
         <div className={styles.userSection}>
-          <div className={styles.avatar}></div>
+          <div className={styles.avatar}>
+            <img 
+              src={user?.photoURL || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"} 
+              alt="User Avatar" 
+              className={styles.avatarImage} 
+            />
+          </div>
           <div className={styles.userInfo}>
-            <span className={styles.username}>Kullanıcı Adı</span>
+            <span className={styles.username}>{user?.displayName || "Kullanıcı Adı"}</span>
             <div className={styles.privacySelector}>
-              <select className={styles.privacySelect}>
+              <select 
+                className={styles.privacySelect} 
+                value={privacy}
+                onChange={(e) => setPrivacy(e.target.value)}
+              >
                 <option value="public">Herkese Açık</option>
                 <option value="friends">Sadece Arkadaşlar</option>
-                <option value="close_friendships">close friendships</option>
+                <option value="close_friendships">Yakın Arkadaşlar</option>
                 <option value="private">Sadece Ben</option>
               </select>
             </div>

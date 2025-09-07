@@ -1,15 +1,15 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import LeftSideBarStyles from "./Sidebar.module.css";
-import { MdOutlineAddBox } from "react-icons/md";
+import { MdAddToPhotos } from "react-icons/md";
 import { SiHearthisdotat } from "react-icons/si";
-import { BiSolidHome, BiSolidMessageSquareDots, BiSolidNotification } from 'react-icons/bi';
+import {
+  BiSolidHome,
+  BiSolidMessageSquareDots,
+  BiSolidNotification,
+} from "react-icons/bi";
 import { FaUserAlt } from "react-icons/fa";
 import { PiVideoFill } from "react-icons/pi";
-
-
-
-
 
 const Sidebar = () => {
   return (
@@ -55,7 +55,7 @@ const Sidebar = () => {
             isActive ? LeftSideBarStyles.active : LeftSideBarStyles.link
           }
         >
-          <PiVideoFill 
+          <PiVideoFill
             className={
               LeftSideBarStyles.icon + " " + LeftSideBarStyles.SiApostrophe
             }
@@ -69,7 +69,7 @@ const Sidebar = () => {
             isActive ? LeftSideBarStyles.active : LeftSideBarStyles.link
           }
         >
-          <SiHearthisdotat  className={LeftSideBarStyles.icon} />
+          <SiHearthisdotat className={LeftSideBarStyles.icon} />
           <span className={LeftSideBarStyles.tooltip}>VoCentra</span>
         </NavLink>
 
@@ -79,14 +79,20 @@ const Sidebar = () => {
             isActive ? LeftSideBarStyles.active : LeftSideBarStyles.link
           }
         >
-          <FaUserAlt  className={LeftSideBarStyles.icon} />
+          <FaUserAlt className={LeftSideBarStyles.icon} />
           <span className={LeftSideBarStyles.tooltip}>Hesabım</span>
         </NavLink>
       </nav>
 
       <div className={LeftSideBarStyles.post}>
-        <NavLink to="/create" className={LeftSideBarStyles.createButton}>
-          <MdOutlineAddBox className={LeftSideBarStyles.createIcon} />
+        <NavLink
+          to="/create"
+          className={({ isActive }) =>
+            isActive ? LeftSideBarStyles.active : LeftSideBarStyles.link
+          }
+        >
+          <MdAddToPhotos className={LeftSideBarStyles.icon} />
+          <span className={LeftSideBarStyles.tooltip}>İçerik Ekle</span>
         </NavLink>
       </div>
     </aside>

@@ -79,7 +79,7 @@ const AppContent = () => {
       <Route path="/create/post" element={<ProtectedRoute><PostAdd /></ProtectedRoute>} />
       <Route path="/create/feedadd" element={<ProtectedRoute><FeedsAdd /></ProtectedRoute>} />
       <Route path="/create/story" element={<ProtectedRoute><StoryAdd /></ProtectedRoute>} />
-      <Route path="/create/feeling" element={<ProtectedRoute><FeelingAdd /></ProtectedRoute>} />
+      <Route path="/create/feelingadd" element={<ProtectedRoute><FeelingAdd /></ProtectedRoute>} />
       <Route path="/create/livestream" element={<ProtectedRoute><LiveStreamAdd /></ProtectedRoute>} />
       <Route path="/create/drafts" element={<ProtectedRoute><DraftsAdd /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
