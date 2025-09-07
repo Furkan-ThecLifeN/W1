@@ -35,11 +35,15 @@ const FeelingsAdd = ({ onClose, user, authToken }) => {
     }
 
     try {
+      // ✅ Token'ı yenile
+      const refreshedToken = await user.getIdToken(true);
+
       const response = await fetch("http://localhost:3001/api/feelings/share", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${authToken}`, // authToken prop'unu kullan
+          // ✅ Yenilenmiş token'ı kullan
+          Authorization: `Bearer ${refreshedToken}`,
         },
         body: JSON.stringify({
           postText: postText,
@@ -53,7 +57,6 @@ const FeelingsAdd = ({ onClose, user, authToken }) => {
       }
 
       const result = await response.json();
-      console.log("Gönderi başarıyla paylaşıldı:", result);
       onClose();
     } catch (error) {
       console.error("Paylaşım hatası:", error.message);
@@ -82,17 +85,22 @@ const FeelingsAdd = ({ onClose, user, authToken }) => {
       <div className={styles.postFormContent}>
         <div className={styles.userSection}>
           <div className={styles.avatar}>
-            <img 
-              src={user?.photoURL || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"} 
-              alt="User Avatar" 
-              className={styles.avatarImage} 
+            <img
+              src={
+                user?.photoURL ||
+                "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
+              }
+              alt="User Avatar"
+              className={styles.avatarImage}
             />
           </div>
           <div className={styles.userInfo}>
-            <span className={styles.username}>{user?.displayName || "Kullanıcı Adı"}</span>
+            <span className={styles.username}>
+              {user?.displayName || "Kullanıcı Adı"}
+            </span>
             <div className={styles.privacySelector}>
-              <select 
-                className={styles.privacySelect} 
+              <select
+                className={styles.privacySelect}
                 value={privacy}
                 onChange={(e) => setPrivacy(e.target.value)}
               >
@@ -141,7 +149,7 @@ const FeelingsAdd = ({ onClose, user, authToken }) => {
         </div>
 
         <div className={styles.postFormFooter}>
-          <div className={styles.attachmentButtons}>
+         {/*  <div className={styles.attachmentButtons}>
             <button
               className={styles.attachmentButton}
               onClick={() => fileInputRef.current.click()}
@@ -162,7 +170,7 @@ const FeelingsAdd = ({ onClose, user, authToken }) => {
             <button className={styles.attachmentButton}>
               <FiMapPin size={20} />
             </button>
-          </div>
+          </div> */}
 
           <div className={styles.characterCounter}>
             <span
