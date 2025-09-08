@@ -1,4 +1,3 @@
-// src/context/UserContext.js
 import React, {
   createContext,
   useState,
@@ -6,8 +5,9 @@ import React, {
   useContext,
   useMemo,
 } from "react";
-import { auth } from "../config/firebase-client";
+import { auth, db } from "../config/firebase-client";
 import { useAuth } from "./AuthProvider";
+import { collection, getDocs } from "firebase/firestore";
 
 const UserContext = createContext();
 
@@ -47,6 +47,28 @@ export const UserProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const { showToast } = useAuth();
 
+  // ✅ Yeni fonksiyon: Kullanıcının toplam gönderi sayısını al
+  const getCombinedPostCount = async (uid) => {
+    try {
+      if (!uid) return 0;
+
+      const postsRef = collection(db, "users", uid, "posts");
+      const feedsRef = collection(db, "users", uid, "feeds");
+      const feelingsRef = collection(db, "users", uid, "feelings");
+
+      const [postsSnap, feedsSnap, feelingsSnap] = await Promise.all([
+        getDocs(postsRef),
+        getDocs(feedsRef),
+        getDocs(feelingsRef),
+      ]);
+
+      return postsSnap.size + feedsSnap.size + feelingsSnap.size;
+    } catch (error) {
+      console.error("Gönderi sayısını alırken hata oluştu:", error);
+      return 0;
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
       if (firebaseUser) {
@@ -63,14 +85,15 @@ export const UserProvider = ({ children }) => {
 
           if (res.ok) {
             const { profile } = await res.json();
+            const totalPosts = await getCombinedPostCount(firebaseUser.uid);
 
-            // ✅ defaultUser ve profile merge işlemi
             setCurrentUser({
               ...defaultUser,
               ...profile,
               stats: {
                 ...defaultUser.stats,
                 ...(profile.stats || {}),
+                posts: totalPosts,
               },
               privacySettings: {
                 ...defaultUser.privacySettings,
@@ -94,7 +117,6 @@ export const UserProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
-  // 🔹 Gizlilik ayarlarını güncelle
   const updatePrivacySettings = async (settings) => {
     try {
       const token = await auth.currentUser.getIdToken();
@@ -130,7 +152,6 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  // 🔹 Beğenileri gizleme ayarını güncelle
   const updateHideLikes = async (value) => {
     try {
       if (!auth.currentUser) throw new Error("Kullanıcı kimliği doğrulanmadı.");
@@ -176,7 +197,6 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  // 🔹 Giriş yapılan cihazı kaydet
   const saveLoginDevice = async (deviceInfo) => {
     try {
       const idToken = await auth.currentUser.getIdToken();

@@ -1,506 +1,501 @@
-/* PostAdd.module.css */
+  /* PostAdd.module.css */
 
-:root {
-  --primary-color: #7f00ff; /* Mor-tonları */
-  --secondary-color: #e100ff; /* Eflatun-tonları */
-  --text-color: #e0e0e0; /* Açık gri */
-  --background-dark: #1a1a2e; /* Koyu lacivert */
-  --card-background: #20203f; /* Koyu mor */
-  --border-color: #4a00e0; /* Mor */
-  --input-background: #2c2c4a; /* Daha koyu mor */
-  --glow-color-start: rgba(127, 0, 255, 0.4);
-  --glow-color-end: rgba(225, 0, 255, 0.2);
-  --success-color: #10b981;
-  --error-color: #ef4444;
-}
-
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-  background-color: var(--background-dark);
-  color: var(--text-color);
-  overflow-x: hidden; /* Yatay kaydırmayı engelle */
-}
-
-/* Ana Konteyner */
-.container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  padding: 20px;
-  box-sizing: border-box;
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(
-    135deg,
-    var(--background-dark) 0%,
-    #0d0d1a 100%
-  );
-}
-
-/* Arka Plan Parlama Efekti */
-.backgroundGlow {
-  position: absolute;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(
-    circle,
-    var(--glow-color-start) 0%,
-    var(--glow-color-end) 50%,
-    transparent 100%
-  );
-  border-radius: 50%;
-  filter: blur(80px);
-  z-index: 0;
-  animation: pulseGlow 15s infinite alternate;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-@keyframes pulseGlow {
-  0% {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 0.7;
+  :root {
+    --nebula-purple: #7f00ff; 
+    --galaxy-pink: #e100ff; 
+    --lunar-gray: #e0e0e0; 
+    --midnight-space: #1a1a2e; 
+    --cosmos-card: #20203f; 
+    --starlight-border: #4a00e0; 
+    --void-input: #2c2c4a; 
+    --aura-glow-start: rgba(127, 0, 255, 0.4);
+    --aura-glow-end: rgba(225, 0, 255, 0.2);
+    --comet-success: #00a6ff;
   }
-  50% {
-    transform: translate(-50%, -50%) scale(1.1);
-    opacity: 0.9;
+
+  body {
+    background-color: var(--color-black);
+    color: var(--lunar-gray);
   }
-  100% {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 0.7;
+
+  /* Ana Konteyner */
+  .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(
+      135deg,
+      var(--midnight-space) 0%,
+      #0d0d1a 100%
+    );
   }
-}
 
-/* Post Kartı */
-.postCard {
-  background-color: var(--card-background);
-  border-radius: 20px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-  width: 90%;
-  max-width: 900px;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border: 1px solid var(--border-color);
-  animation: fadeIn 0.5s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+  /* Arka Plan Parlama Efekti */
+  .backgroundGlow {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(
+      circle,
+      var(--aura-glow-start) 0%,
+      var(--aura-glow-end) 50%,
+      transparent 100%
+    );
+    border-radius: 50%;
+    filter: blur(80px);
+    z-index: 0;
+    animation: pulseGlow 15s infinite alternate;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  @keyframes pulseGlow {
+    0% {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 0.7;
+    }
+    50% {
+      transform: translate(-50%, -50%) scale(1.1);
+      opacity: 0.9;
+    }
+    100% {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 0.7;
+    }
   }
-}
 
-/* Başlık Alanı */
-.postHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 25px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: linear-gradient(
-    90deg,
-    var(--primary-color) 0%,
-    var(--secondary-color) 100%
-  );
-  color: white;
-  position: relative;
-  z-index: 2; /* Diğer elementlerin üzerinde kalması için */
-}
-
-.backButton,
-.shareButton {
-  background: none;
-  border: none;
-  color: white;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 1rem;
-  font-weight: 600;
-  padding: 8px 12px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(5px); /* Hafif blur efekti */
-}
-
-.backButton:hover,
-.shareButton:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.2);
-  transform: scale(1.05);
-}
-
-.shareButton {
-  background-color: var(--card-background);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.shareButton.active {
-  background-color: var(--success-color);
-  border-color: var(--success-color);
-}
-
-.shareButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.title {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-/* İçerik Alanı */
-.postContent {
-  display: flex;
-  flex-direction: column; /* Mobil için dikey, masaüstü için yatay */
-  gap: 20px;
-  padding: 25px;
-}
-
-@media (min-width: 768px) {
-  .postContent {
-    flex-direction: row;
-  }
-}
-
-/* Medya Yükleme Bölümü */
-.mediaUploadSection {
-  flex: 1;
-  min-height: 300px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: var(--input-background);
-  border-radius: 12px;
-  border: 1px dashed var(--border-color);
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.mediaUploadSection:hover {
-  border-color: var(--secondary-color);
-  box-shadow: 0 0 15px rgba(225, 0, 255, 0.3);
-}
-
-.mediaPreview {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-}
-
-.imageWrapper {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-}
-
-.uploadedImage {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain; /* Görseli sığdır */
-  border-radius: 10px;
-}
-
-.removeImageButton {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background-color: rgba(0, 0, 0, 0.6);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.removeImageButton:hover {
-  background-color: var(--error-color);
-}
-
-.dropzone {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-  padding: 20px;
-  text-align: center;
-  width: 100%;
-  height: 100%;
-}
-
-.dropzoneIcon {
-  color: var(--primary-color);
-  opacity: 0.7;
-}
-
-.dropzoneText {
-  font-size: 1.1rem;
-  color: var(--text-color);
-}
-
-.urlInput {
-  width: 80%;
-  padding: 10px 15px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background-color: var(--input-background);
-  color: var(--text-color);
-  font-size: 0.95rem;
-  transition: all 0.3s ease;
-  outline: none;
-}
-
-.urlInput::placeholder {
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.urlInput:focus {
-  border-color: var(--secondary-color);
-  box-shadow: 0 0 8px rgba(225, 0, 255, 0.4);
-}
-
-/* Detaylar Bölümü (Kullanıcı Bilgileri, Açıklama, Gizlilik) */
-.detailsSection {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.userInfoAndPrivacy {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 2px solid var(--primary-color);
-  flex-shrink: 0; /* Küçülmesini engelle */
-}
-
-.avatarImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.userMeta {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-}
-
-.username {
-  font-weight: 600;
-  font-size: 1.1rem;
-  color: white;
-}
-
-.privacySelector {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  background-color: var(--input-background);
-  border-radius: 6px;
-  padding: 5px 10px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.privacySelector:hover {
-  background-color: #3b3b63; /* Hafif koyulaştır */
-}
-
-.privacyDisplay {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.85rem;
-  color: var(--text-color);
-}
-
-.hiddenSelect {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
-}
-
-.captionInput {
-  width: 100%;
-  flex-grow: 1;
-  background-color: var(--input-background);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 15px;
-  color: var(--text-color);
-  font-size: 1rem;
-  resize: vertical; /* Yalnızca dikeyde yeniden boyutlandırma */
-  min-height: 100px;
-  outline: none;
-  transition: all 0.3s ease;
-}
-
-.captionInput::placeholder {
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.captionInput:focus {
-  border-color: var(--secondary-color);
-  box-shadow: 0 0 10px rgba(225, 0, 255, 0.4);
-}
-
-/* Post Aksiyon Butonları */
-.postActions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end; /* Sağ tarafa hizala */
-  padding-top: 15px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.actionButton {
-  background-color: var(--input-background);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 8px 15px;
-  color: var(--text-color);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-}
-
-.actionButton:hover {
-  background-color: var(--primary-color);
-  border-color: var(--secondary-color);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.actionText {
-  display: none; /* Varsayılan olarak gizle */
-}
-
-@media (min-width: 600px) {
-  .actionText {
-    display: inline; /* Daha büyük ekranlarda göster */
-  }
-}
-
-/* Responsive Düzenlemeler */
-@media (max-width: 767px) {
+  /* Post Kartı */
   .postCard {
-    width: 100%;
-    margin-top: 50px; /* Header'dan aşağıda başlaması için */
+    background-color: var(--cosmos-card);
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    width: 90%;
+    max-width: 900px;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--starlight-border);
+    animation: fadeIn 0.5s ease-out;
   }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Başlık Alanı */
   .postHeader {
-    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(
+      90deg,
+      var(--nebula-purple) 0%,
+      var(--galaxy-pink) 100%
+    );
+    color: white;
+    position: relative;
+    z-index: 2; /* Diğer elementlerin üzerinde kalması için */
   }
-  .title {
-    font-size: 1.2rem;
-  }
+
   .backButton,
   .shareButton {
-    padding: 6px 10px;
-    font-size: 0.9rem;
-  }
-  .postContent {
-    padding: 15px;
-  }
-  .mediaUploadSection {
-    min-height: 250px;
-  }
-  .dropzone {
-    gap: 10px;
-  }
-  .dropzoneIcon {
-    size: 40px;
-  }
-  .dropzoneText {
-    font-size: 1rem;
-  }
-  .urlInput {
-    width: 90%;
-  }
-  .userInfoAndPrivacy {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-    padding-bottom: 10px;
-  }
-  .avatar {
-    width: 40px;
-    height: 40px;
-  }
-  .username {
-    font-size: 1rem;
-  }
-  .privacySelector {
-    padding: 3px 8px;
-    font-size: 0.8rem;
-  }
-  .captionInput {
-    min-height: 80px;
-    padding: 10px;
-  }
-  .postActions {
-    justify-content: center;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
     gap: 5px;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px); /* Hafif blur efekti */
   }
-  .actionButton {
-    padding: 6px 10px;
-    font-size: 0.8rem;
-  }
-}
 
-@media (max-width: 480px) {
-  .postActions {
-    flex-wrap: wrap;
+  .backButton:hover,
+  .shareButton:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+  }
+
+  .shareButton {
+    background-color: var(--cosmos-card);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .shareButton.active {
+    background-color: var(--comet-success);
+    border-color: var(--comet-success);
+  }
+
+  .shareButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  /* İçerik Alanı */
+  .postContent {
+    display: flex;
+    flex-direction: column; /* Mobil için dikey, masaüstü için yatay */
+    gap: 20px;
+    padding: 25px;
+  }
+
+  @media (min-width: 768px) {
+    .postContent {
+      flex-direction: row;
+    }
+  }
+
+  /* Medya Yükleme Bölümü */
+  .mediaUploadSection {
+    flex: 1;
+    min-height: 300px;
+    display: flex;
     justify-content: center;
+    align-items: center;
+    background-color: var(--void-input);
+    border-radius: 12px;
+    border: 1px dashed var(--starlight-border);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
   }
-  .actionButton {
-    flex-grow: 1; /* Küçük ekranlarda eşit genişlik */
+
+  .mediaUploadSection:hover {
+    border-color: var(--galaxy-pink);
+    box-shadow: 0 0 15px rgba(225, 0, 255, 0.3);
+  }
+
+  .mediaPreview {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+
+  .imageWrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .uploadedImage {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; /* Görseli sığdır */
+    border-radius: 10px;
+  }
+
+  .removeImageButton {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .removeImageButton:hover {
+    background-color: var(--busy);
+  }
+
+  .dropzone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    padding: 20px;
     text-align: center;
+    width: 100%;
+    height: 100%;
   }
-}
+
+  .dropzoneIcon {
+    color: var(--nebula-purple);
+    opacity: 0.7;
+  }
+
+  .dropzoneText {
+    font-size: 1.1rem;
+    color: var(--lunar-gray);
+  }
+
+  .urlInput {
+    width: 80%;
+    padding: 10px 15px;
+    border: 1px solid var(--starlight-border);
+    border-radius: 8px;
+    background-color: var(--void-input);
+    color: var(--lunar-gray);
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    outline: none;
+  }
+
+  .urlInput::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  .urlInput:focus {
+    border-color: var(--galaxy-pink);
+    box-shadow: 0 0 8px rgba(225, 0, 255, 0.4);
+  }
+
+  /* Detaylar Bölümü (Kullanıcı Bilgileri, Açıklama, Gizlilik) */
+  .detailsSection {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .userInfoAndPrivacy {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--nebula-purple);
+    flex-shrink: 0; /* Küçülmesini engelle */
+  }
+
+  .avatarImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .userMeta {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+
+  .username {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: white;
+  }
+
+  .privacySelector {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--void-input);
+    border-radius: 6px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .privacySelector:hover {
+    background-color: #3b3b63; /* Hafif koyulaştır */
+  }
+
+  .privacyDisplay {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.85rem;
+    color: var(--lunar-gray);
+  }
+
+  .hiddenSelect {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .captionInput {
+    width: 100%;
+    flex-grow: 1;
+    background-color: var(--void-input);
+    border: 1px solid var(--starlight-border);
+    border-radius: 12px;
+    padding: 15px;
+    color: var(--lunar-gray);
+    font-size: 1rem;
+    resize: vertical; /* Yalnızca dikeyde yeniden boyutlandırma */
+    min-height: 100px;
+    outline: none;
+    transition: all 0.3s ease;
+  }
+
+  .captionInput::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  .captionInput:focus {
+    border-color: var(--galaxy-pink);
+    box-shadow: 0 0 10px rgba(225, 0, 255, 0.4);
+  }
+
+  /* Post Aksiyon Butonları */
+  .postActions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end; /* Sağ tarafa hizala */
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .actionButton {
+    background-color: var(--void-input);
+    border: 1px solid var(--starlight-border);
+    border-radius: 8px;
+    padding: 8px 15px;
+    color: var(--lunar-gray);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+  }
+
+  .actionButton:hover {
+    background-color: var(--nebula-purple);
+    border-color: var(--galaxy-pink);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .actionText {
+    display: none; /* Varsayılan olarak gizle */
+  }
+
+  @media (min-width: 600px) {
+    .actionText {
+      display: inline; /* Daha büyük ekranlarda göster */
+    }
+  }
+
+  /* Responsive Düzenlemeler */
+  @media (max-width: 767px) {
+    .postCard {
+      width: 100%;
+      margin-top: 50px; /* Header'dan aşağıda başlaması için */
+    }
+    .postHeader {
+      padding: 10px 15px;
+    }
+    .title {
+      font-size: 1.2rem;
+    }
+    .backButton,
+    .shareButton {
+      padding: 6px 10px;
+      font-size: 0.9rem;
+    }
+    .postContent {
+      padding: 15px;
+    }
+    .mediaUploadSection {
+      min-height: 250px;
+    }
+    .dropzone {
+      gap: 10px;
+    }
+    .dropzoneIcon {
+      size: 40px;
+    }
+    .dropzoneText {
+      font-size: 1rem;
+    }
+    .urlInput {
+      width: 90%;
+    }
+    .userInfoAndPrivacy {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      padding-bottom: 10px;
+    }
+    .avatar {
+      width: 40px;
+      height: 40px;
+    }
+    .username {
+      font-size: 1rem;
+    }
+    .privacySelector {
+      padding: 3px 8px;
+      font-size: 0.8rem;
+    }
+    .captionInput {
+      min-height: 80px;
+      padding: 10px;
+    }
+    .postActions {
+      justify-content: center;
+      gap: 5px;
+    }
+    .actionButton {
+      padding: 6px 10px;
+      font-size: 0.8rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .postActions {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .actionButton {
+      flex-grow: 1; /* Küçük ekranlarda eşit genişlik */
+      text-align: center;
+    }
+  }

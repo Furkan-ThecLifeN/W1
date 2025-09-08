@@ -97,13 +97,14 @@ const PostAdd = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Post paylaşılırken bir hata oluştu.");
+        throw new Error(
+          errorData.error || "Post paylaşılırken bir hata oluştu."
+        );
       }
 
       await response.json();
       showToast("Post başarıyla paylaşıldı", "success");
       setTimeout(() => navigate(-1), 1500);
-
     } catch (error) {
       showToast(`Gönderi paylaşılırken hata: ${error.message}`, "error");
     } finally {
@@ -121,7 +122,7 @@ const PostAdd = () => {
           <button className={styles.backButton} onClick={() => navigate(-1)}>
             <ArrowLeft size={24} />
           </button>
-          <h2 className={styles.title}>Yeni Post Oluştur</h2>
+          <h2 className={styles.title}>Create New Post</h2>
           <button
             className={`${styles.shareButton} ${
               (caption.trim() || imageUrl) && !loading ? styles.active : ""
@@ -153,7 +154,9 @@ const PostAdd = () => {
               ) : (
                 <div className={styles.dropzone}>
                   <Image size={48} className={styles.dropzoneIcon} />
-                  <p className={styles.dropzoneText}>Görsel URL'si yapıştırın</p>
+                  <p className={styles.dropzoneText}>
+                    Görsel URL'si yapıştırın
+                  </p>
                   <input
                     type="text"
                     placeholder="https://örnek.com/gorsel.jpg"
