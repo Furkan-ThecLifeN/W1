@@ -1,30 +1,23 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./AddComponents.module.css";
-import FeelingsAdd from "./Feelings/FeelingsAdd";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useEffect } from "react";
 
 const AddPage = () => {
   const navigate = useNavigate();
   const [hoveredCard, setHoveredCard] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [user, setUser] = useState(null);
-  const [authToken, setAuthToken] = useState(null);
   const auth = getAuth();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser);
-        const token = await firebaseUser.getIdToken();
-        setAuthToken(token);
       } else {
         setUser(null);
-        setAuthToken(null);
       }
     });
-
     return () => unsubscribe();
   }, [auth]);
 
@@ -51,7 +44,7 @@ const AddPage = () => {
       icon: "😊",
       description: "Duygularını ifade et",
       color: "#10b981",
-      route: "feelingadd",
+      route: "feelingadd", 
     },
     {
       id: 4,
@@ -80,15 +73,8 @@ const AddPage = () => {
   ];
 
   const handleCardClick = (card) => {
-    if (card.route === "feelingadd") {
-      setIsModalOpen(true);
-    } else {
-      navigate(`/create/${card.route}`);
-    }
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+    // Tüm kartlar için doğrudan yönlendirme kullanıyoruz
+    navigate(`/create/${card.route}`);
   };
 
   return (
@@ -121,12 +107,6 @@ const AddPage = () => {
           </div>
         ))}
       </div>
-      
-      {isModalOpen && (
-        <div className={styles.modalOverlay}>
-          <FeelingsAdd onClose={handleCloseModal} user={user} authToken={authToken} />
-        </div>
-      )}
     </div>
   );
 };

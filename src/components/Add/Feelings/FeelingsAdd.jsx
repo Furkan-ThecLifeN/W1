@@ -1,10 +1,18 @@
 import React, { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../context/AuthProvider";
+import { useUser } from "../../../context/UserContext";
+import { getAuth } from "firebase/auth";
 import styles from "./FeelingsAdd.module.css";
 import { FiImage, FiSmile, FiMapPin, FiX, FiSend } from "react-icons/fi";
 import { IoMdClose } from "react-icons/io";
 import { RiQuillPenLine } from "react-icons/ri";
 
-const FeelingsAdd = ({ onClose, user, authToken }) => {
+const FeelingsAdd = () => {
+  const { currentUser, loading } = useUser();
+  const { showToast } = useAuth();
+  const navigate = useNavigate();
+
   const [postText, setPostText] = useState("");
   const [images, setImages] = useState([]);
   const [privacy, setPrivacy] = useState("public");
@@ -30,43 +38,57 @@ const FeelingsAdd = ({ onClose, user, authToken }) => {
     e.preventDefault();
 
     if (!postText.trim() && images.length === 0) {
-      alert("Lütfen bir metin girin veya bir görsel ekleyin.");
+      showToast("Lütfen bir metin girin veya bir görsel ekleyin.", "info");
+      return;
+    }
+
+    const auth = getAuth();
+    const firebaseUser = auth.currentUser; // 🔹 Firebase kullanıcı objesi
+
+    if (!firebaseUser) {
+      showToast("Paylaşım yapmak için lütfen giriş yapın.", "error");
       return;
     }
 
     try {
-      // ✅ Token'ı yenile
-      const refreshedToken = await user.getIdToken(true);
+      const token = await firebaseUser.getIdToken(true);
 
-      const response = await fetch("http://localhost:3001/api/feelings/share", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // ✅ Yenilenmiş token'ı kullan
-          Authorization: `Bearer ${refreshedToken}`,
-        },
-        body: JSON.stringify({
-          postText: postText,
-          images: images.map((img) => img.file.name),
-          privacy: privacy,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/feelings/share`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            postText,
+            images: images.map((img) => img.file.name),
+            privacy,
+          }),
+        }
+      );
 
       if (!response.ok) {
-        throw new Error("Gönderi paylaşılırken bir hata oluştu.");
+        throw new Error("Gönderi paylaşılırken hata oluştu.");
       }
 
-      const result = await response.json();
-      onClose();
+      showToast("Gönderiniz başarıyla paylaşıldı!", "success");
+      navigate("/home");
     } catch (error) {
-      console.error("Paylaşım hatası:", error.message);
+      console.error("Sharing error:", error);
+      showToast("Gönderi paylaşılırken bir hata oluştu.", "error");
     }
   };
+
+  if (loading || !currentUser) {
+    return <div>Yükleniyor...</div>;
+  }
 
   return (
     <div className={styles.postFormContainer}>
       <div className={styles.postFormHeader}>
-        <button className={styles.closeButton} onClick={onClose}>
+        <button className={styles.closeButton} onClick={() => navigate(-1)}>
           <IoMdClose size={24} />
         </button>
         <h2 className={styles.formTitle}>Yeni Gönderi Oluştur</h2>
@@ -87,7 +109,7 @@ const FeelingsAdd = ({ onClose, user, authToken }) => {
           <div className={styles.avatar}>
             <img
               src={
-                user?.photoURL ||
+                currentUser?.photoURL ||
                 "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
               }
               alt="User Avatar"
@@ -96,7 +118,7 @@ const FeelingsAdd = ({ onClose, user, authToken }) => {
           </div>
           <div className={styles.userInfo}>
             <span className={styles.username}>
-              {user?.displayName || "Kullanıcı Adı"}
+              {currentUser?.displayName || "Kullanıcı Adı"}
             </span>
             <div className={styles.privacySelector}>
               <select
@@ -149,7 +171,7 @@ const FeelingsAdd = ({ onClose, user, authToken }) => {
         </div>
 
         <div className={styles.postFormFooter}>
-         {/*  <div className={styles.attachmentButtons}>
+          <div className={styles.attachmentButtons}>
             <button
               className={styles.attachmentButton}
               onClick={() => fileInputRef.current.click()}
@@ -170,7 +192,7 @@ const FeelingsAdd = ({ onClose, user, authToken }) => {
             <button className={styles.attachmentButton}>
               <FiMapPin size={20} />
             </button>
-          </div> */}
+          </div>
 
           <div className={styles.characterCounter}>
             <span

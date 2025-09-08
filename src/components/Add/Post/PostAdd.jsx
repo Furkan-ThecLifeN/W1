@@ -1,238 +1,213 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
-  Share,
   Image,
-  Filter,
-  Crop,
-  ChevronLeft,
-  ChevronRight,
-  Settings,
-  Smile,
+  X,
+  Send,
   Globe,
-  Tag,
+  Users,
+  Eye,
+  Lock,
 } from "lucide-react";
 import styles from "./PostAdd.module.css";
-
-const filters = [
-  { name: "Orijinal", class: styles.filterOriginal },
-  { name: "Aura", class: styles.filterAura },
-  { name: "Neon", class: styles.filterNeon },
-  { name: "Glitch", class: styles.filterGlitch },
-  { name: "Matrix", class: styles.filterMatrix },
-];
+import { useAuth } from "../../../context/AuthProvider";
+import { useUser } from "../../../context/UserContext";
+import LoadingOverlay from "../../LoadingOverlay/LoadingOverlay";
+import Toast from "../../../Toast";
 
 const PostAdd = () => {
-  const [selectedMedia, setSelectedMedia] = useState([]);
-  const [activeMediaIndex, setActiveMediaIndex] = useState(0);
-  const [selectedEditTab, setSelectedEditTab] = useState("filters");
-  const [selectedFilter, setSelectedFilter] = useState("Orijinal");
-  const [caption, setCaption] = useState("");
-  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+  const navigate = useNavigate();
+  const { currentUser, showToast } = useAuth(); // ✅ showToast kullan
+  const { currentUser: userData } = useUser();
 
-  const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    setSelectedMedia(files.map((file) => URL.createObjectURL(file)));
-    setActiveMediaIndex(0);
+  const [imageUrl, setImageUrl] = useState("");
+  const [caption, setCaption] = useState("");
+  const [privacy, setPrivacy] = useState("public");
+  const [loading, setLoading] = useState(false);
+
+  const handleUrlChange = (e) => setImageUrl(e.target.value);
+  const handleRemoveImage = () => setImageUrl("");
+
+  const getPrivacyIcon = () => {
+    switch (privacy) {
+      case "public":
+        return <Globe size={16} />;
+      case "friends":
+        return <Users size={16} />;
+      case "close_friendships":
+        return <Eye size={16} />;
+      case "private":
+        return <Lock size={16} />;
+      default:
+        return <Globe size={16} />;
+    }
   };
 
-  const renderMedia = () => {
-    if (selectedMedia.length === 0) {
-      return (
-        <label htmlFor="media-upload" className={styles.dropzone}>
-          <div className={styles.dropzoneText}>
-            <Image size={48} />
-            <p>Görsel veya video yüklemek için tıkla</p>
-          </div>
-          <input
-            id="media-upload"
-            type="file"
-            multiple
-            accept="image/*,video/*"
-            onChange={handleFileChange}
-            className={styles.fileInput}
-          />
-        </label>
-      );
+  const getPrivacyText = () => {
+    switch (privacy) {
+      case "public":
+        return "Herkese Açık";
+      case "friends":
+        return "Sadece Arkadaşlar";
+      case "close_friendships":
+        return "Yakın Arkadaşlar";
+      case "private":
+        return "Sadece Ben";
+      default:
+        return "Herkese Açık";
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    if (!currentUser) {
+      showToast("Gönderi paylaşmak için oturum açmalısınız.", "error");
+      setLoading(false);
+      return;
     }
 
-    const currentMedia = selectedMedia[activeMediaIndex];
-    const isVideo =
-      currentMedia &&
-      (currentMedia.includes(".mp4") || currentMedia.includes(".mov"));
+    if (!caption.trim() && !imageUrl) {
+      showToast("Lütfen bir açıklama girin veya bir görsel ekleyin.", "error");
+      setLoading(false);
+      return;
+    }
 
-    return (
-      <div className={styles.mediaFrame}>
-        <div className={`${styles.mediaWrapper} ${styles[selectedFilter]}`}>
-          {isVideo ? (
-            <video
-              src={currentMedia}
-              className={styles.media}
-              controls
-              autoPlay
-              muted
-            />
-          ) : (
-            <img
-              src={currentMedia}
-              alt="Post preview"
-              className={styles.media}
-            />
-          )}
-        </div>
-        {selectedMedia.length > 1 && (
-          <div className={styles.carouselControls}>
-            <button
-              className={`${styles.navButton} ${
-                activeMediaIndex === 0 ? styles.disabled : ""
-              }`}
-              onClick={() => setActiveMediaIndex((prev) => prev - 1)}
-              disabled={activeMediaIndex === 0}
-            >
-              <ChevronLeft />
-            </button>
-            <div className={styles.paginationDots}>
-              {selectedMedia.map((_, index) => (
-                <span
-                  key={index}
-                  className={`${styles.dot} ${
-                    index === activeMediaIndex ? styles.active : ""
-                  }`}
-                />
-              ))}
-            </div>
-            <button
-              className={`${styles.navButton} ${
-                activeMediaIndex === selectedMedia.length - 1
-                  ? styles.disabled
-                  : ""
-              }`}
-              onClick={() => setActiveMediaIndex((prev) => prev + 1)}
-              disabled={activeMediaIndex === selectedMedia.length - 1}
-            >
-              <ChevronRight />
-            </button>
-          </div>
-        )}
-      </div>
-    );
+    try {
+      const refreshedToken = await currentUser.getIdToken(true);
+
+      const formData = new FormData();
+      formData.append("caption", caption);
+      formData.append("privacy", privacy);
+
+      if (imageUrl instanceof File) {
+        formData.append("images", imageUrl);
+      }
+
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/posts/share`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${refreshedToken}` },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Post paylaşılırken bir hata oluştu.");
+      }
+
+      await response.json();
+      showToast("Post başarıyla paylaşıldı", "success");
+      setTimeout(() => navigate(-1), 1500);
+
+    } catch (error) {
+      showToast(`Gönderi paylaşılırken hata: ${error.message}`, "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className={styles.container}>
-      <div className={styles.box}>
-        <div className={styles.header}>
-          <button className={styles.iconBtn}>
-            <ArrowLeft />
+      {loading && <LoadingOverlay />}
+      <Toast />
+
+      <div className={styles.postCard}>
+        <div className={styles.postHeader}>
+          <button className={styles.backButton} onClick={() => navigate(-1)}>
+            <ArrowLeft size={24} />
           </button>
-          <h1 className={styles.title}>Yeni Gönderi</h1>
-          <button className={styles.actionBtn}>
-            Paylaş <Share size={18} />
+          <h2 className={styles.title}>Yeni Post Oluştur</h2>
+          <button
+            className={`${styles.shareButton} ${
+              (caption.trim() || imageUrl) && !loading ? styles.active : ""
+            }`}
+            onClick={handleSubmit}
+            disabled={loading || (!caption.trim() && !imageUrl)}
+          >
+            {loading ? "Yükleniyor..." : "Paylaş"} <Send size={18} />
           </button>
         </div>
 
-        <div className={styles.contentGrid}>
-          <section className={styles.mediaSection}>{renderMedia()}</section>
-
-          <section className={styles.detailsSection}>
-            <div className={styles.tabs}>
-              <button
-                className={`${styles.tabBtn} ${
-                  selectedEditTab === "filters" ? styles.active : ""
-                }`}
-                onClick={() => setSelectedEditTab("filters")}
-              >
-                <Filter size={20} /> Filtreler
-              </button>
-              <button
-                className={`${styles.tabBtn} ${
-                  selectedEditTab === "crop" ? styles.active : ""
-                }`}
-                onClick={() => setSelectedEditTab("crop")}
-              >
-                <Crop size={20} /> Kırp
-              </button>
-              <button
-                className={`${styles.tabBtn} ${
-                  selectedEditTab === "cover" ? styles.active : ""
-                }`}
-                onClick={() => setSelectedEditTab("cover")}
-                disabled={
-                  !selectedMedia[activeMediaIndex] ||
-                  !selectedMedia[activeMediaIndex].includes(".mp4")
-                }
-              >
-                <Image size={20} /> Kapak
-              </button>
-            </div>
-
-            {selectedEditTab === "filters" && (
-              <div className={styles.filterOptions}>
-                {filters.map((f) => (
-                  <div
-                    key={f.name}
-                    className={styles.filterItem}
-                    onClick={() => setSelectedFilter(f.name)}
+        <div className={styles.postContent}>
+          <div className={styles.mediaUploadSection}>
+            <div className={styles.mediaPreview}>
+              {imageUrl ? (
+                <div className={styles.imageWrapper}>
+                  <img
+                    src={imageUrl}
+                    alt="Görsel Önizleme"
+                    className={styles.uploadedImage}
+                  />
+                  <button
+                    className={styles.removeImageButton}
+                    onClick={handleRemoveImage}
                   >
-                    <div
-                      className={`${styles.filterPreview} ${styles[f.name]}`}
-                    ></div>
-                    <span
-                      className={
-                        selectedFilter === f.name ? styles.activeText : ""
-                      }
-                    >
-                      {f.name}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className={styles.captionArea}>
-              <textarea
-                className={styles.captionInput}
-                placeholder="Bir açıklama yaz..."
-                value={caption}
-                onChange={(e) => setCaption(e.target.value)}
-              />
-              <div className={styles.captionTools}>
-                <button className={styles.captionToolBtn}>
-                  <Smile size={18} />
-                </button>
-                <button className={styles.captionToolBtn}>
-                  <Tag size={18} />
-                </button>
-              </div>
-            </div>
-
-            <div className={styles.accordionGroup}>
-              <div
-                className={styles.accordionItem}
-                onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
-              >
-                <span className={styles.accordionHeader}>
-                  <Settings size={18} /> Gelişmiş Ayarlar
-                </span>
-                <ChevronRight
-                  size={18}
-                  className={isAdvancedOpen ? styles.rotated : ""}
-                />
-              </div>
-              {isAdvancedOpen && (
-                <div className={styles.accordionContent}>
-                  <div className={styles.advancedOption}>
-                    <Globe size={18} />
-                    <span>Konum Ekle</span>
-                  </div>
-                  <div className={styles.advancedOption}>
-                    <Image size={18} />
-                    <span>Alternatif Metin (Alt Text)</span>
-                  </div>
+                    <X size={20} />
+                  </button>
+                </div>
+              ) : (
+                <div className={styles.dropzone}>
+                  <Image size={48} className={styles.dropzoneIcon} />
+                  <p className={styles.dropzoneText}>Görsel URL'si yapıştırın</p>
+                  <input
+                    type="text"
+                    placeholder="https://örnek.com/gorsel.jpg"
+                    value={imageUrl}
+                    onChange={handleUrlChange}
+                    className={styles.urlInput}
+                  />
                 </div>
               )}
             </div>
-          </section>
+          </div>
+
+          <div className={styles.detailsSection}>
+            <div className={styles.userInfoAndPrivacy}>
+              <div className={styles.avatar}>
+                <img
+                  src={
+                    currentUser?.photoURL ||
+                    "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
+                  }
+                  alt="User Avatar"
+                  className={styles.avatarImage}
+                />
+              </div>
+              <div className={styles.userMeta}>
+                <span className={styles.username}>
+                  {currentUser?.displayName || "Kullanıcı Adı"}
+                </span>
+                <div className={styles.privacySelector}>
+                  <div className={styles.privacyDisplay}>
+                    {getPrivacyIcon()}
+                    <span>{getPrivacyText()}</span>
+                  </div>
+                  <select
+                    className={styles.hiddenSelect}
+                    value={privacy}
+                    onChange={(e) => setPrivacy(e.target.value)}
+                  >
+                    <option value="public">Herkese Açık</option>
+                    <option value="friends">Sadece Arkadaşlar</option>
+                    <option value="close_friendships">Yakın Arkadaşlar</option>
+                    <option value="private">Sadece Ben</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <textarea
+              className={styles.captionInput}
+              placeholder="Postunuza bir açıklama ekleyin..."
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+            />
+          </div>
         </div>
       </div>
     </div>
