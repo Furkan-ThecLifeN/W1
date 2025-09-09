@@ -21,24 +21,30 @@ const PostBox = ({ post }) => {
   const username = post?.username || "Bilinmiyor";
   const displayName = post?.displayName || "Kullanıcı";
   const userProfileImage =
-    post?.photoURL || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
+    post?.photoURL ||
+    "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
 
   return (
     <>
       {/* Desktop Tasarım */}
       <div className={`${styles.post_card} ${styles.desktop}`}>
-        {imageUrl && <img src={imageUrl} alt="Post" className={styles.post_image} />}
+        {imageUrl && (
+          <img src={imageUrl} alt="Post" className={styles.post_image} />
+        )}
 
         <div className={styles.post_overlay}>
           <div className={styles.post_header}>
             <div className={styles.user_info}>
               <div className={styles.avatar_widget}>
-                <img src={userProfileImage} alt={displayName} className={styles.avatar} />
+                <img
+                  src={userProfileImage}
+                  alt={displayName}
+                  className={styles.avatar}
+                />
               </div>
               <span className={styles.username}>{displayName}</span>
             </div>
             <div className={styles.actions}>
-              <button className={styles.follow_btn}>Follow</button>
               <FiMoreHorizontal className={styles.more_icon} />
             </div>
           </div>
@@ -57,7 +63,9 @@ const PostBox = ({ post }) => {
                   className={`${styles.icon} ${saved ? styles.hidden : ""}`}
                 />
                 <FaBookmark
-                  className={`${styles.icon} ${saved ? styles.visible : styles.hidden}`}
+                  className={`${styles.icon} ${
+                    saved ? styles.visible : styles.hidden
+                  }`}
                 />
               </div>
             </div>
@@ -70,12 +78,15 @@ const PostBox = ({ post }) => {
         <div className={styles.post_header_mobile}>
           <div className={styles.user_info}>
             <div className={styles.avatar_widget}>
-              <img src={userProfileImage} alt={displayName} className={styles.avatar} />
+              <img
+                src={userProfileImage}
+                alt={displayName}
+                className={styles.avatar}
+              />
             </div>
             <span className={styles.username}>{displayName}</span>
           </div>
           <div className={styles.actions}>
-            <button className={styles.follow_btn}>Follow</button>
             <FiMoreHorizontal className={styles.more_icon} />
           </div>
         </div>
@@ -96,7 +107,9 @@ const PostBox = ({ post }) => {
               className={`${styles.icon} ${saved ? styles.hidden : ""}`}
             />
             <FaBookmark
-              className={`${styles.icon} ${saved ? styles.visible : styles.hidden}`}
+              className={`${styles.icon} ${
+                saved ? styles.visible : styles.hidden
+              }`}
             />
           </div>
         </div>

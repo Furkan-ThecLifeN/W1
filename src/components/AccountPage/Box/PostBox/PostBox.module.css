@@ -76,21 +76,6 @@
   gap: 10px;
 }
 
-.follow_btn {
-  padding: 6px 14px;
-  background: var(--color-blue);
-  color: var(--color-white);
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: 0.3s ease;
-}
-
-.follow_btn:hover {
-  background-color: #0094d3;
-}
-
 .more_icon {
   color: var(--color-white);
   font-size: 22px;
