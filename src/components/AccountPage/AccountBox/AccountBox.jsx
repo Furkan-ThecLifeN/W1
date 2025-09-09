@@ -3,7 +3,7 @@ import { IoIosSettings } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import styles from "./AccountBox.module.css";
 import { useUser } from "../../../context/UserContext";
-import LoadingOverlay from "../../LoadingOverlay/LoadingOverlay";
+import LoadingOverlay from "../../LoadingOverlay/LoadingOverlay"; // 👈 LoadingOverlay'i içe aktarıyoruz
 import ConnectionsModal from "../../ConnectionsModal/ConnectionsModal";
 import { db } from "../../../config/firebase-client";
 import {
@@ -76,7 +76,8 @@ const AccountBox = () => {
       // Önceki verilerle yeni verileri birleştir, ancak benzersizlik kontrolü yap
       setData((prevData) => {
         const newData = fetchedData.filter(
-          (item) => !prevData.some((existingItem) => existingItem.id === item.id)
+          (item) =>
+            !prevData.some((existingItem) => existingItem.id === item.id)
         );
         return [...prevData, ...newData];
       });
@@ -122,11 +123,11 @@ const AccountBox = () => {
     switch (activeTab) {
       case "posts":
         return <PostCard key={item.id} post={item} />;
+      case "feelings":
+        return <TweetCard key={item.id} feeling={item} />;
       case "feeds":
         // Bu props yapısını PostVideoCard bileşeninizin iç yapısına göre düzenlemeniz gerekebilir.
         return <PostVideoCard key={item.id} feed={item} />;
-      case "feelings":
-        return <TweetCard key={item.id} feeling={item} />;
       default:
         return null;
     }
@@ -136,14 +137,18 @@ const AccountBox = () => {
     switch (activeTab) {
       case "posts":
         return `${displayName || username}, henüz bir gönderi paylaşmadınız.`;
-      case "feeds":
-        return `${displayName || username}, henüz feed'leriniz bulunmamaktadır.`;
       case "feelings":
         return `${displayName || username}, henüz bir duygu paylaşmadınız.`;
+      case "feeds":
+        return `${
+          displayName || username
+        }, henüz feed'leriniz bulunmamaktadır.`;
       case "likes":
         return `${displayName || username}, henüz bir gönderiyi beğenmediniz.`;
       case "tags":
-        return `${displayName || username}, henüz etiketlendiğiniz bir gönderi bulunmamaktadır.`;
+        return `${
+          displayName || username
+        }, henüz etiketlendiğiniz bir gönderi bulunmamaktadır.`;
       default:
         return `Henüz bir içerik bulunmamaktadır.`;
     }
@@ -213,16 +218,16 @@ const AccountBox = () => {
           Posts
         </button>
         <button
-          className={activeTab === "feeds" ? styles.active : ""}
-          onClick={() => handleTabChange("feeds")}
-        >
-          Feeds
-        </button>
-        <button
           className={activeTab === "feelings" ? styles.active : ""}
           onClick={() => handleTabChange("feelings")}
         >
           Feelings
+        </button>
+        <button
+          className={activeTab === "feeds" ? styles.active : ""}
+          onClick={() => handleTabChange("feeds")}
+        >
+          Feeds
         </button>
         <button
           className={activeTab === "likes" ? styles.active : ""}
@@ -239,7 +244,10 @@ const AccountBox = () => {
       </div>
 
       <div className={styles.tabContent}>
-        {data.length > 0 ? (
+        {/* Kontent yüklenirken veya boşken LoadingOverlay'i göster */}
+        {loadingContent ? (
+          <LoadingOverlay />
+        ) : data.length > 0 ? (
           <div className={styles.section}>
             {data.map(getCardComponent)}
             {hasMore && (

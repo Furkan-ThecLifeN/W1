@@ -12,10 +12,12 @@ const PostBox = ({ post }) => {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  // ✅ Yeni state: modal açma/kapama
+  const [showModal, setShowModal] = useState(false);
+
   const toggleLike = () => setLiked((prev) => !prev);
   const toggleSave = () => setSaved((prev) => !prev);
 
-  // Backend’den gelen veriler
   const imageUrl = post?.imageUrls?.length > 0 ? post.imageUrls[0] : null;
   const postText = post?.caption || "";
   const username = post?.username || "Bilinmiyor";
@@ -26,12 +28,11 @@ const PostBox = ({ post }) => {
 
   return (
     <>
-      {/* Desktop Tasarım */}
+      {/* Masaüstü hali */}
       <div className={`${styles.post_card} ${styles.desktop}`}>
         {imageUrl && (
           <img src={imageUrl} alt="Post" className={styles.post_image} />
         )}
-
         <div className={styles.post_overlay}>
           <div className={styles.post_header}>
             <div className={styles.user_info}>
@@ -73,51 +74,76 @@ const PostBox = ({ post }) => {
         </div>
       </div>
 
-      {/* Mobile & Tablet Tasarım */}
-      <div className={`${styles.post_card_mobile} ${styles.mobile}`}>
-        <div className={styles.post_header_mobile}>
-          <div className={styles.user_info}>
-            <div className={styles.avatar_widget}>
-              <img
-                src={userProfileImage}
-                alt={displayName}
-                className={styles.avatar}
-              />
-            </div>
-            <span className={styles.username}>{displayName}</span>
-          </div>
-          <div className={styles.actions}>
-            <FiMoreHorizontal className={styles.more_icon} />
-          </div>
-        </div>
-
+      {/* ✅ Mobile Mini Card Buton */}
+      <div
+        className={`${styles.post_card_mini} ${styles.mobile}`}
+        onClick={() => setShowModal(true)}
+      >
         {imageUrl && (
-          <img src={imageUrl} alt="Post" className={styles.post_image_mobile} />
+          <img src={imageUrl} alt="Mini Post" className={styles.post_image_mini} />
         )}
+      </div>
 
-        <div className={styles.footer_actions_mobile}>
-          <FaHeart
-            className={`${styles.icon} ${liked ? styles.liked : ""}`}
-            onClick={toggleLike}
-          />
-          <FiMessageCircle className={styles.icon} />
-          <FiSend className={styles.icon} />
-          <div className={styles.save_icon_wrapper} onClick={toggleSave}>
-            <FiBookmark
-              className={`${styles.icon} ${saved ? styles.hidden : ""}`}
-            />
-            <FaBookmark
-              className={`${styles.icon} ${
-                saved ? styles.visible : styles.hidden
-              }`}
-            />
+      {/* ✅ Modal açıldığında masaüstü hali gösterilir */}
+      {showModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
+          <div
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Masaüstü halini modal içinde tekrar render et */}
+            <div className={styles.post_card}>
+              {imageUrl && (
+                <img src={imageUrl} alt="Post" className={styles.post_image} />
+              )}
+              <div className={styles.post_overlay}>
+                <div className={styles.post_header}>
+                  <div className={styles.user_info}>
+                    <div className={styles.avatar_widget}>
+                      <img
+                        src={userProfileImage}
+                        alt={displayName}
+                        className={styles.avatar}
+                      />
+                    </div>
+                    <span className={styles.username}>{displayName}</span>
+                  </div>
+                  <div className={styles.actions}>
+                    <FiMoreHorizontal className={styles.more_icon} />
+                  </div>
+                </div>
+
+                <div className={styles.post_footer}>
+                  <p className={styles.post_text}>{postText}</p>
+                  <div className={styles.footer_actions}>
+                    <FaHeart
+                      className={`${styles.icon} ${liked ? styles.liked : ""}`}
+                      onClick={toggleLike}
+                    />
+                    <FiMessageCircle className={styles.icon} />
+                    <FiSend className={styles.icon} />
+                    <div
+                      className={styles.save_icon_wrapper}
+                      onClick={toggleSave}
+                    >
+                      <FiBookmark
+                        className={`${styles.icon} ${
+                          saved ? styles.hidden : ""
+                        }`}
+                      />
+                      <FaBookmark
+                        className={`${styles.icon} ${
+                          saved ? styles.visible : styles.hidden
+                        }`}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-
-        <div className={styles.post_footer_mobile}>
-          <p className={styles.post_text}>{postText}</p>
-        </div>
-      </div>
+      )}
     </>
   );
 };

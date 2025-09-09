@@ -71,7 +71,8 @@ const MobileProfile = () => {
 
       setData((prevData) => {
         const newData = fetchedData.filter(
-          (item) => !prevData.some((existingItem) => existingItem.id === item.id)
+          (item) =>
+            !prevData.some((existingItem) => existingItem.id === item.id)
         );
         return [...prevData, ...newData];
       });
@@ -119,14 +120,16 @@ const MobileProfile = () => {
     switch (activeTab) {
       case "posts":
         return `${displayName || username}, henüz bir gönderi paylaşmadınız.`;
-      case "feeds":
-        return `${displayName || username}, henüz feedleriniz bulunmamaktadır.`;
       case "feelings":
         return `${displayName || username}, henüz bir duygu paylaşmadınız.`;
+      case "feeds":
+        return `${displayName || username}, henüz feedleriniz bulunmamaktadır.`;
       case "likes":
         return `${displayName || username}, henüz bir gönderiyi beğenmediniz.`;
       case "tags":
-        return `${displayName || username}, henüz etiketlendiğiniz bir gönderi bulunmamaktadır.`;
+        return `${
+          displayName || username
+        }, henüz etiketlendiğiniz bir gönderi bulunmamaktadır.`;
       default:
         return `Henüz bir içerik bulunmamaktadır.`;
     }
@@ -134,8 +137,8 @@ const MobileProfile = () => {
 
   const tabs = [
     { key: "posts", label: "Posts" },
-    { key: "feeds", label: "Feeds" },
     { key: "feelings", label: "Feelings" },
+    { key: "feeds", label: "Feeds" },
     { key: "likes", label: "Liked" },
     { key: "tags", label: "Tagged" },
   ];
@@ -205,15 +208,6 @@ const MobileProfile = () => {
         <button className={styles.shareButton}>Share Profile</button>
       </div>
 
-     {/*  <div className={styles.highlights}>
-        {["Story 1", "Story 2", "Story 3"].map((label, index) => (
-          <div key={index} className={styles.highlightItem}>
-            <div className={styles.highlightSquare}></div>
-            <span className={styles.highlightLabel}>{label}</span>
-          </div>
-        ))}
-      </div>
- */}
       <div className={styles.tabs}>
         {tabs.map(({ key, label }) => (
           <button
@@ -229,8 +223,15 @@ const MobileProfile = () => {
       </div>
 
       <div className={styles.tabContent}>
-        {data.length > 0 ? (
-          <div className={styles.postsGrid}>
+        {/* Yüklenme durumunda LoadingOverlay'i göster */}
+        {loadingContent ? (
+          <LoadingOverlay />
+        ) : data.length > 0 ? (
+          <div
+            className={
+              activeTab === "feelings" ? styles.feelingsGrid : styles.postsGrid
+            }
+          >
             {data.map(getCardComponent)}
             {hasMore && (
               <div className={styles.loadMoreContainer}>
