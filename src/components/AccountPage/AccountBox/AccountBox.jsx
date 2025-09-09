@@ -3,7 +3,7 @@ import { IoIosSettings } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import styles from "./AccountBox.module.css";
 import { useUser } from "../../../context/UserContext";
-import LoadingOverlay from "../../LoadingOverlay/LoadingOverlay"; // 👈 LoadingOverlay'i içe aktarıyoruz
+import LoadingOverlay from "../../LoadingOverlay/LoadingOverlay";
 import ConnectionsModal from "../../ConnectionsModal/ConnectionsModal";
 import { db } from "../../../config/firebase-client";
 import {
@@ -15,10 +15,10 @@ import {
   startAfter,
 } from "firebase/firestore";
 
-// Yeni tasarımlı kart bileşenlerini içeri aktarıyoruz
 import PostCard from "../Box/PostBox/PostBox";
 import TweetCard from "../Box/FeelingsBox/FeelingsBox";
-import PostVideoCard from "../../Feeds/PostVideoCard/PostVideoCard";
+import VideoFeedItem from "../Box/VideoFeedItem/VideoFeedItem";
+import VideoThumbnail from "../Box/VideoFeedItem/VideoThumbnail/VideoThumbnail";
 
 // --------------------- Main Component ---------------------
 
@@ -32,75 +32,92 @@ const AccountBox = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState(null);
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState(null);
 
   const ITEMS_PER_PAGE = 10;
 
   const fetchContent = async (type, isInitialLoad = true) => {
-    if (!currentUser || !currentUser.uid) return;
+  if (!currentUser || !currentUser.uid) return;
 
-    setLoadingContent(true);
-    let collectionPath = `users/${currentUser.uid}/${type}`;
-    let q;
+  setLoadingContent(true);
+  let collectionPath = `users/${currentUser.uid}/${type}`;
+  let q;
 
-    if (isInitialLoad) {
-      // İlk yüklemede veriyi tamamen sıfırla
-      setData([]);
-      setLastVisible(null);
-      setHasMore(true);
-      q = query(
-        collection(db, collectionPath),
-        orderBy("createdAt", "desc"),
-        limit(ITEMS_PER_PAGE)
-      );
-    } else {
-      // Sonraki yüklemeler için lastVisible'ı kontrol et
-      if (!lastVisible) {
-        setLoadingContent(false);
-        return;
-      }
-      q = query(
-        collection(db, collectionPath),
-        orderBy("createdAt", "desc"),
-        startAfter(lastVisible),
-        limit(ITEMS_PER_PAGE)
-      );
-    }
-
-    try {
-      const querySnapshot = await getDocs(q);
-      const fetchedData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      // Önceki verilerle yeni verileri birleştir, ancak benzersizlik kontrolü yap
-      setData((prevData) => {
-        const newData = fetchedData.filter(
-          (item) =>
-            !prevData.some((existingItem) => existingItem.id === item.id)
-        );
-        return [...prevData, ...newData];
-      });
-
-      setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
-      setHasMore(fetchedData.length === ITEMS_PER_PAGE);
-    } catch (error) {
-      console.error("Veri çekme hatası:", error);
-    } finally {
+  if (isInitialLoad) {
+    setData([]);
+    setLastVisible(null);
+    setHasMore(true);
+    q = query(
+      collection(db, collectionPath),
+      orderBy("createdAt", "desc"),
+      limit(ITEMS_PER_PAGE)
+    );
+  } else {
+    if (!lastVisible) {
       setLoadingContent(false);
+      return;
     }
-  };
+    q = query(
+      collection(db, collectionPath),
+      orderBy("createdAt", "desc"),
+      startAfter(lastVisible),
+      limit(ITEMS_PER_PAGE)
+    );
+  }
+
+  try {
+    const querySnapshot = await getDocs(q);
+    const fetchedData = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    let filteredData = fetchedData;
+    if (type === "feeds") {
+      filteredData = fetchedData.filter((item) => item.mediaUrl);
+    }
+
+    setData((prevData) => {
+      const newData = filteredData.filter(
+        (item) =>
+          !prevData.some((existingItem) => existingItem.id === item.id)
+      );
+      return [...prevData, ...newData];
+    });
+
+    setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
+    setHasMore(fetchedData.length === ITEMS_PER_PAGE);
+  } catch (error) {
+    console.error("Veri çekme hatası:", error);
+  } finally {
+    setLoadingContent(false);
+  }
+};
+
 
   useEffect(() => {
     if (currentUser) {
-      // Sekme değiştiğinde fetchContent'i ilk yükleme olarak çağır
       fetchContent(activeTab, true);
     }
   }, [activeTab, currentUser]);
 
   const handleTabChange = (tabName) => {
     setActiveTab(tabName);
-    // State sıfırlama işlemi artık fetchContent içinde yapılıyor
+  };
+
+  const handleVideoClick = (videoData) => {
+    if (videoData && videoData.mediaUrl) {
+      setSelectedVideo(videoData);
+      setShowVideoModal(true);
+    } else {
+      console.error("Geçersiz video verisi:", videoData);
+    }
+  };
+
+  const handleCloseVideoModal = () => {
+    setShowVideoModal(false);
+    setSelectedVideo(null);
   };
 
   if (loading) {
@@ -126,8 +143,13 @@ const AccountBox = () => {
       case "feelings":
         return <TweetCard key={item.id} feeling={item} />;
       case "feeds":
-        // Bu props yapısını PostVideoCard bileşeninizin iç yapısına göre düzenlemeniz gerekebilir.
-        return <PostVideoCard key={item.id} feed={item} />;
+        return (
+          <VideoThumbnail
+            key={item.id}
+            mediaUrl={item.mediaUrl}
+            onClick={() => handleVideoClick(item)}
+          />
+        );
       default:
         return null;
     }
@@ -244,11 +266,10 @@ const AccountBox = () => {
       </div>
 
       <div className={styles.tabContent}>
-        {/* Kontent yüklenirken veya boşken LoadingOverlay'i göster */}
         {loadingContent ? (
           <LoadingOverlay />
         ) : data.length > 0 ? (
-          <div className={styles.section}>
+          <div className={`${styles.section} ${activeTab === "feeds" ? styles.feedsGrid : ""}`}>
             {data.map(getCardComponent)}
             {hasMore && (
               <div className={styles.loadMoreContainer}>
@@ -274,6 +295,19 @@ const AccountBox = () => {
           listType={modalType}
           currentUserId={currentUser.uid}
         />
+      )}
+
+      {showVideoModal && selectedVideo && (
+        <div className={styles.videoModalOverlay} onClick={handleCloseVideoModal}>
+          <div className={styles.videoModalContent} onClick={(e) => e.stopPropagation()}>
+            <VideoFeedItem
+              videoSrc={selectedVideo.mediaUrl}
+              description={selectedVideo.content}
+              username={selectedVideo.username}
+              userProfileImage={selectedVideo.userProfileImage}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
