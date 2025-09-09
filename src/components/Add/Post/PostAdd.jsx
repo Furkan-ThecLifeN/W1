@@ -18,16 +18,23 @@ import Toast from "../../../Toast";
 
 const PostAdd = () => {
   const navigate = useNavigate();
-  const { currentUser, showToast } = useAuth(); // ✅ showToast kullan
+  const { currentUser, showToast } = useAuth();
   const { currentUser: userData } = useUser();
 
   const [imageUrl, setImageUrl] = useState("");
+  const [imageFile, setImageFile] = useState(null);
   const [caption, setCaption] = useState("");
   const [privacy, setPrivacy] = useState("public");
   const [loading, setLoading] = useState(false);
 
   const handleUrlChange = (e) => setImageUrl(e.target.value);
-  const handleRemoveImage = () => setImageUrl("");
+  const handleFileChange = (e) => {
+    if (e.target.files[0]) setImageFile(e.target.files[0]);
+  };
+  const handleRemoveImage = () => {
+    setImageUrl("");
+    setImageFile(null);
+  };
 
   const getPrivacyIcon = () => {
     switch (privacy) {
@@ -69,7 +76,7 @@ const PostAdd = () => {
       return;
     }
 
-    if (!caption.trim() && !imageUrl) {
+    if (!caption.trim() && !imageUrl && !imageFile) {
       showToast("Lütfen bir açıklama girin veya bir görsel ekleyin.", "error");
       setLoading(false);
       return;
@@ -82,8 +89,11 @@ const PostAdd = () => {
       formData.append("caption", caption);
       formData.append("privacy", privacy);
 
-      if (imageUrl instanceof File) {
-        formData.append("images", imageUrl);
+      // Dosya veya URL varsa ekle
+      if (imageFile) {
+        formData.append("images", imageFile);
+      } else if (imageUrl) {
+        formData.append("imageUrls[]", imageUrl);
       }
 
       const response = await fetch(
@@ -97,9 +107,7 @@ const PostAdd = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(
-          errorData.error || "Post paylaşılırken bir hata oluştu."
-        );
+        throw new Error(errorData.error || "Post paylaşılırken bir hata oluştu.");
       }
 
       await response.json();
@@ -125,10 +133,10 @@ const PostAdd = () => {
           <h2 className={styles.title}>Create New Post</h2>
           <button
             className={`${styles.shareButton} ${
-              (caption.trim() || imageUrl) && !loading ? styles.active : ""
+              (caption.trim() || imageUrl || imageFile) && !loading ? styles.active : ""
             }`}
             onClick={handleSubmit}
-            disabled={loading || (!caption.trim() && !imageUrl)}
+            disabled={loading || (!caption.trim() && !imageUrl && !imageFile)}
           >
             {loading ? "Yükleniyor..." : "Paylaş"} <Send size={18} />
           </button>
@@ -137,10 +145,10 @@ const PostAdd = () => {
         <div className={styles.postContent}>
           <div className={styles.mediaUploadSection}>
             <div className={styles.mediaPreview}>
-              {imageUrl ? (
+              {(imageUrl || imageFile) ? (
                 <div className={styles.imageWrapper}>
                   <img
-                    src={imageUrl}
+                    src={imageFile ? URL.createObjectURL(imageFile) : imageUrl}
                     alt="Görsel Önizleme"
                     className={styles.uploadedImage}
                   />
@@ -155,7 +163,7 @@ const PostAdd = () => {
                 <div className={styles.dropzone}>
                   <Image size={48} className={styles.dropzoneIcon} />
                   <p className={styles.dropzoneText}>
-                    Görsel URL'si yapıştırın
+                    Görsel URL'si yapıştırın veya dosya yükleyin
                   </p>
                   <input
                     type="text"
@@ -163,6 +171,12 @@ const PostAdd = () => {
                     value={imageUrl}
                     onChange={handleUrlChange}
                     className={styles.urlInput}
+                  />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className={styles.fileInput}
                   />
                 </div>
               )}
