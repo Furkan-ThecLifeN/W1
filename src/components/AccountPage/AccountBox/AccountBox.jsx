@@ -208,7 +208,7 @@ const AccountBox = () => {
 
         <div className={styles.statsSection}>
           <div className={styles.statBox}>
-            <strong>{stats.posts}</strong>
+            <strong>{stats.posts || 0}</strong>
             <span className={styles.statLabel}>Post</span>
           </div>
           <div className={styles.statBox}>

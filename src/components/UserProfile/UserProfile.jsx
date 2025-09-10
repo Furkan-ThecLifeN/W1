@@ -52,17 +52,20 @@ const UserProfile = () => {
   const [hasMore, setHasMore] = useState(true);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
+  const [contentCounts, setContentCounts] = useState({
+    posts: 0,
+    feeds: 0,
+    feelings: 0,
+  });
 
   const apiBaseUrl = process.env.REACT_APP_API_URL;
 
   // Function to fetch the user's content (posts, feeds, etc.)
   const fetchUserContent = async (type, isInitialLoad = true) => {
     if (!profileData?.uid) return;
-
     setLoadingContent(true);
     let collectionPath;
 
-    // Determine the correct collection path based on the tab
     switch (type) {
       case "posts":
       case "feelings":
@@ -70,18 +73,9 @@ const UserProfile = () => {
         collectionPath = `users/${profileData.uid}/${type}`;
         break;
       case "likes":
-        // For likes, you'd likely fetch from a different collection
-        // e.g., 'users/{uid}/likes' which stores references to liked items
-        // This is a placeholder as the exact schema isn't defined
-        console.warn("Likes fetching not implemented for UserProfile.");
-        setLoadingContent(false);
-        return;
       case "tags":
-        // Similarly, tags would have a different fetching mechanism
-        console.warn("Tags fetching not implemented for UserProfile.");
-        setLoadingContent(false);
-        return;
       default:
+        console.warn(`${type} fetching not implemented for UserProfile.`);
         setLoadingContent(false);
         return;
     }
@@ -137,6 +131,28 @@ const UserProfile = () => {
     }
   };
 
+  const fetchContentCounts = async (profileUid) => {
+    if (!profileUid) return;
+    try {
+      const postsCount = (await getDocs(collection(db, `users/${profileUid}/posts`))).size;
+      const feelingsCount = (await getDocs(collection(db, `users/${profileUid}/feelings`))).size;
+      const feedsCount = (await getDocs(collection(db, `users/${profileUid}/feeds`))).size;
+
+      setContentCounts({
+        posts: postsCount,
+        feeds: feedsCount,
+        feelings: feelingsCount,
+      });
+    } catch (error) {
+      console.error("Koleksiyon sayıları çekme hatası:", error);
+      setContentCounts({
+        posts: 0,
+        feeds: 0,
+        feelings: 0,
+      });
+    }
+  };
+
   // Effect to fetch user profile and follow status on initial load
   useEffect(() => {
     const fetchUserProfileAndStatus = async () => {
@@ -159,7 +175,19 @@ const UserProfile = () => {
             headers: { Authorization: `Bearer ${idToken}` },
           }
         );
-        setFollowStatus(statusRes.data.followStatus);
+        const status = statusRes.data.followStatus;
+        setFollowStatus(status);
+
+        const canView = !profile.isPrivate || status === "following" || status === "self";
+        if (canView) {
+          fetchContentCounts(profile.uid);
+        } else {
+          setContentCounts({
+            posts: 0,
+            feeds: 0,
+            feelings: 0,
+          });
+        }
       } catch (err) {
         console.error("Profil veya takip durumu çekme hatası:", err);
         setError("Profil bilgileri yüklenemedi.");
@@ -167,7 +195,6 @@ const UserProfile = () => {
         setLoading(false);
       }
     };
-
     fetchUserProfileAndStatus();
   }, [username, currentUser, apiBaseUrl]);
 
@@ -458,7 +485,7 @@ const UserProfile = () => {
 
         <div className={styles.statsSection}>
           <div className={styles.statBox}>
-            <strong>{stats?.posts || 0}</strong>
+            <strong>{contentCounts.posts + contentCounts.feeds + contentCounts.feelings}</strong>
             <span className={styles.statLabel}>Post</span>
           </div>
           <div className={styles.statBox}>
@@ -554,7 +581,7 @@ const UserProfile = () => {
           currentUserId={profileData.uid}
         />
       )}
-      
+
       {showVideoModal && selectedVideo && (
         <div className={styles.videoModalOverlay} onClick={handleCloseVideoModal}>
           <div className={styles.videoModalContent} onClick={(e) => e.stopPropagation()}>

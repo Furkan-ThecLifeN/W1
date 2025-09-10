@@ -3,6 +3,7 @@
   max-width: 700px;
   background-color: var(--color-black);
   border-radius: 16px;
+  border: 1px solid rgb(17, 17, 17);
   padding: 16px;
   color: var(--color-white);
   display: flex;
