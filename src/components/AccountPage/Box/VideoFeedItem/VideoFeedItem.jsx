@@ -7,13 +7,13 @@ import {
   FiMoreVertical,
 } from "react-icons/fi";
 import { FaHeart, FaBookmark } from "react-icons/fa";
+import { IoCloseCircleOutline } from "react-icons/io5"; // Kapatma butonu için ikon
 import styles from "./VideoFeedItem.module.css";
 import { motion, AnimatePresence } from "framer-motion";
 
 const getYouTubeEmbedUrl = (url) => {
-  if (!url || typeof url !== "string") {
-    return null;
-  }
+  if (!url || typeof url !== "string") return null;
+
   let videoIdMatch;
   if (url.includes("/embed/")) {
     const embedId = url.split("/embed/")[1].split("?")[0];
@@ -21,6 +21,7 @@ const getYouTubeEmbedUrl = (url) => {
   } else {
     videoIdMatch = url.match(/(?:\/shorts\/|youtu\.be\/|v=)([^&?/]+)/);
   }
+
   if (videoIdMatch && videoIdMatch[1]) {
     const videoId = videoIdMatch[1];
     const params = new URLSearchParams({
@@ -33,6 +34,7 @@ const getYouTubeEmbedUrl = (url) => {
     });
     return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
   }
+
   return null;
 };
 
@@ -41,6 +43,8 @@ export default function VideoFeedItem({
   description,
   username,
   userProfileImage,
+  onClose, // Yeni prop
+  isMobile, // Yeni prop
 }) {
   const [liked, setLiked] = useState(false);
   const [doubleTap, setDoubleTap] = useState(false);
@@ -58,13 +62,10 @@ export default function VideoFeedItem({
   const handleFollowClick = () => setFollowed((prev) => !prev);
 
   const embedUrl = getYouTubeEmbedUrl(videoSrc);
-
-  if (!embedUrl) {
-    return null;
-  }
+  if (!embedUrl) return null;
 
   return (
-    <div className={styles.container}> {/* Yeni ana kapsayıcı */}
+    <div className={styles.container}>
       <div className={styles.videoCard}>
         <div className={styles.videoWrapper} onDoubleClick={handleDoubleClick}>
           <iframe
@@ -75,7 +76,6 @@ export default function VideoFeedItem({
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
           ></iframe>
-
           <AnimatePresence>
             {doubleTap && (
               <motion.div
@@ -102,9 +102,7 @@ export default function VideoFeedItem({
               <span className={styles.userName}>
                 {username || "Anonim Kullanıcı"}
               </span>
-              <div className={styles.description}>
-                {description}
-              </div>
+              <div className={styles.description}>{description}</div>
             </div>
             <button
               onClick={handleFollowClick}
@@ -117,6 +115,17 @@ export default function VideoFeedItem({
       </div>
 
       <div className={styles.actionButtons}>
+        {isMobile && onClose && (
+          <button
+            className={styles.closeButton}
+            onClick={(e) => {
+              e.stopPropagation(); // Tıklama olayının yayılmasını durdur
+              onClose();
+            }}
+          >
+            <IoCloseCircleOutline className={styles.iconItem} />
+          </button>
+        )}
         <div className={styles.iconWrapper} onClick={handleLikeClick}>
           {liked ? (
             <FaHeart className={`${styles.iconItem} ${styles.likedIcon}`} />

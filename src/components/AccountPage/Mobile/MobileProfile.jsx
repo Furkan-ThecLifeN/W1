@@ -9,27 +9,28 @@ import { db } from "../../../config/firebase-client";
 import {
   collection,
   query,
-  getDocs,
   orderBy,
   limit,
   startAfter,
+  getDocs,
 } from "firebase/firestore";
 
-// Kart bileşenleri
 import PostCard from "../Box/PostBox/PostBox";
 import TweetCard from "../Box/FeelingsBox/FeelingsBox";
-import PostVideoCard from "../../Feeds/PostVideoCard/PostVideoCard";
+import VideoFeedItem from "../Box/VideoFeedItem/VideoFeedItem";
+import VideoThumbnail from "../Box/VideoFeedItem/VideoThumbnail/VideoThumbnail";
 
 const MobileProfile = () => {
   const { currentUser, loading } = useUser();
   const [activeTab, setActiveTab] = useState("posts");
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState(null);
-
   const [data, setData] = useState([]);
   const [loadingContent, setLoadingContent] = useState(false);
   const [lastVisible, setLastVisible] = useState(null);
   const [hasMore, setHasMore] = useState(true);
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState(null);
 
   const ITEMS_PER_PAGE = 10;
 
@@ -69,8 +70,13 @@ const MobileProfile = () => {
         ...doc.data(),
       }));
 
+      let filteredData = fetchedData;
+      if (type === "feeds") {
+        filteredData = fetchedData.filter((item) => item.mediaUrl);
+      }
+
       setData((prevData) => {
-        const newData = fetchedData.filter(
+        const newData = filteredData.filter(
           (item) =>
             !prevData.some((existingItem) => existingItem.id === item.id)
         );
@@ -92,6 +98,24 @@ const MobileProfile = () => {
     }
   }, [activeTab, currentUser]);
 
+  const handleTabChange = (tabName) => {
+    setActiveTab(tabName);
+  };
+
+  const handleVideoClick = (videoData) => {
+    if (videoData && videoData.mediaUrl) {
+      setSelectedVideo(videoData);
+      setShowVideoModal(true);
+    } else {
+      console.error("Geçersiz video verisi:", videoData);
+    }
+  };
+
+  const handleCloseVideoModal = () => {
+    setShowVideoModal(false);
+    setSelectedVideo(null);
+  };
+
   if (loading) return <LoadingOverlay />;
   if (!currentUser) return <div>Lütfen giriş yapın.</div>;
 
@@ -107,10 +131,16 @@ const MobileProfile = () => {
     switch (activeTab) {
       case "posts":
         return <PostCard key={item.id} post={item} />;
-      case "feeds":
-        return <PostVideoCard key={item.id} feed={item} />;
       case "feelings":
         return <TweetCard key={item.id} feeling={item} />;
+      case "feeds":
+        return (
+          <VideoThumbnail
+            key={item.id}
+            mediaUrl={item.mediaUrl}
+            onClick={() => handleVideoClick(item)}
+          />
+        );
       default:
         return null;
     }
@@ -123,7 +153,9 @@ const MobileProfile = () => {
       case "feelings":
         return `${displayName || username}, henüz bir duygu paylaşmadınız.`;
       case "feeds":
-        return `${displayName || username}, henüz feedleriniz bulunmamaktadır.`;
+        return `${
+          displayName || username
+        }, henüz feed'leriniz bulunmamaktadır.`;
       case "likes":
         return `${displayName || username}, henüz bir gönderiyi beğenmediniz.`;
       case "tags":
@@ -215,7 +247,7 @@ const MobileProfile = () => {
             className={`${styles.tab} ${
               activeTab === key ? styles.activeTab : ""
             }`}
-            onClick={() => setActiveTab(key)}
+            onClick={() => handleTabChange(key)}
           >
             {label}
           </button>
@@ -223,13 +255,16 @@ const MobileProfile = () => {
       </div>
 
       <div className={styles.tabContent}>
-        {/* Yüklenme durumunda LoadingOverlay'i göster */}
         {loadingContent ? (
           <LoadingOverlay />
         ) : data.length > 0 ? (
           <div
             className={
-              activeTab === "feelings" ? styles.feelingsGrid : styles.postsGrid
+              activeTab === "feelings"
+                ? styles.feelingsGrid
+                : activeTab === "feeds"
+                ? styles.feedsGrid
+                : styles.postsGrid
             }
           >
             {data.map(getCardComponent)}
@@ -257,6 +292,26 @@ const MobileProfile = () => {
           listType={modalType}
           currentUserId={uid}
         />
+      )}
+      {showVideoModal && selectedVideo && (
+        <div
+          className={styles.videoModalOverlay}
+          onClick={handleCloseVideoModal}
+        >
+          <div
+            className={styles.videoModalContent}
+            onClick={(e) => e.stopPropagation()} // Tıklama olayının yayılmasını durdur
+          >
+            <VideoFeedItem
+              videoSrc={selectedVideo.mediaUrl}
+              description={selectedVideo.content}
+              username={selectedVideo.username}
+              userProfileImage={selectedVideo.userProfileImage}
+              onClose={handleCloseVideoModal}
+              isMobile={true}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
