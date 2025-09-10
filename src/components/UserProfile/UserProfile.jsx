@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import styles from "./UserProfile.module.css";
 import { useAuth } from "../../context/AuthProvider";
 import LoadingOverlay from "../LoadingOverlay/LoadingOverlay";
-import ConnectionsModal from "../ConnectionsModal/ConnectionsModal"; // ConnectionsModal import edildi
+import ConnectionsModal from "../ConnectionsModal/ConnectionsModal";
 import {
   FaUserPlus,
   FaUserMinus,
@@ -15,6 +15,24 @@ import {
   FaLock,
 } from "react-icons/fa";
 import axios from "axios";
+import { db } from "../../config/firebase-client";
+import {
+  collection,
+  query,
+  getDocs,
+  orderBy,
+  limit,
+  startAfter,
+} from "firebase/firestore";
+
+// Importing the content components
+import PostCard from "../AccountPage/Box/PostBox/PostBox";
+import TweetCard from "../AccountPage/Box/FeelingsBox/FeelingsBox";
+import VideoThumbnail from "../AccountPage/Box/VideoFeedItem/VideoThumbnail/VideoThumbnail";
+import VideoFeedItem from "../AccountPage/Box/VideoFeedItem/VideoFeedItem";
+
+// Constants
+const ITEMS_PER_PAGE = 10;
 
 const UserProfile = () => {
   const { username } = useParams();
@@ -26,11 +44,100 @@ const UserProfile = () => {
   const [activeTab, setActiveTab] = useState("posts");
   const [showDropdown, setShowDropdown] = useState(false);
   const [followStatus, setFollowStatus] = useState("none");
-  // ✅ GÜNCELLENDİ: Modal durumunu yönetmek için yeni state'ler eklendi
   const [showModal, setShowModal] = useState(false);
-  const [modalType, setModalType] = useState(null); // 'followers' veya 'following'
+  const [modalType, setModalType] = useState(null);
+  const [userData, setUserData] = useState([]); // Selected user's content
+  const [loadingContent, setLoadingContent] = useState(false);
+  const [lastVisible, setLastVisible] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState(null);
+
   const apiBaseUrl = process.env.REACT_APP_API_URL;
 
+  // Function to fetch the user's content (posts, feeds, etc.)
+  const fetchUserContent = async (type, isInitialLoad = true) => {
+    if (!profileData?.uid) return;
+
+    setLoadingContent(true);
+    let collectionPath;
+
+    // Determine the correct collection path based on the tab
+    switch (type) {
+      case "posts":
+      case "feelings":
+      case "feeds":
+        collectionPath = `users/${profileData.uid}/${type}`;
+        break;
+      case "likes":
+        // For likes, you'd likely fetch from a different collection
+        // e.g., 'users/{uid}/likes' which stores references to liked items
+        // This is a placeholder as the exact schema isn't defined
+        console.warn("Likes fetching not implemented for UserProfile.");
+        setLoadingContent(false);
+        return;
+      case "tags":
+        // Similarly, tags would have a different fetching mechanism
+        console.warn("Tags fetching not implemented for UserProfile.");
+        setLoadingContent(false);
+        return;
+      default:
+        setLoadingContent(false);
+        return;
+    }
+
+    let q;
+    if (isInitialLoad) {
+      setUserData([]);
+      setLastVisible(null);
+      setHasMore(true);
+      q = query(
+        collection(db, collectionPath),
+        orderBy("createdAt", "desc"),
+        limit(ITEMS_PER_PAGE)
+      );
+    } else {
+      if (!lastVisible) {
+        setLoadingContent(false);
+        return;
+      }
+      q = query(
+        collection(db, collectionPath),
+        orderBy("createdAt", "desc"),
+        startAfter(lastVisible),
+        limit(ITEMS_PER_PAGE)
+      );
+    }
+
+    try {
+      const querySnapshot = await getDocs(q);
+      const fetchedData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      let filteredData = fetchedData;
+      if (type === "feeds") {
+        filteredData = fetchedData.filter((item) => item.mediaUrl);
+      }
+
+      setUserData((prevData) => {
+        const newData = filteredData.filter(
+          (item) => !prevData.some((existingItem) => existingItem.id === item.id)
+        );
+        return [...prevData, ...newData];
+      });
+
+      setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
+      setHasMore(fetchedData.length === ITEMS_PER_PAGE);
+    } catch (error) {
+      console.error("Veri çekme hatası:", error);
+    } finally {
+      setLoadingContent(false);
+    }
+  };
+
+  // Effect to fetch user profile and follow status on initial load
   useEffect(() => {
     const fetchUserProfileAndStatus = async () => {
       setLoading(true);
@@ -63,6 +170,19 @@ const UserProfile = () => {
 
     fetchUserProfileAndStatus();
   }, [username, currentUser, apiBaseUrl]);
+
+  // Effect to fetch content when the active tab or profile data changes
+  useEffect(() => {
+    if (profileData?.uid) {
+      const canView = !profileData.isPrivate || followStatus === "following" || followStatus === "self";
+      if (canView) {
+        fetchUserContent(activeTab, true);
+      } else {
+        setUserData([]);
+        setLoadingContent(false);
+      }
+    }
+  }, [activeTab, profileData, followStatus]);
 
   const handleFollowAction = async () => {
     const previousFollowStatus = followStatus;
@@ -170,16 +290,63 @@ const UserProfile = () => {
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
   };
-  
-  // ✅ YENİ: İstatistiklere tıklama olayı
+
   const handleStatClick = (type) => {
-    // Profil gizliyse ve mevcut kullanıcı takip etmiyorsa, modal açma
     if (profileData.isPrivate && followStatus !== "following" && followStatus !== "self") {
       showToast("Gizli bir hesabın takipçi listesini göremezsiniz.", "error");
     } else {
-      // Aksi halde modal'ı aç
       setModalType(type);
       setShowModal(true);
+    }
+  };
+
+  const handleVideoClick = (videoData) => {
+    if (videoData && videoData.mediaUrl) {
+      setSelectedVideo(videoData);
+      setShowVideoModal(true);
+    } else {
+      console.error("Geçersiz video verisi:", videoData);
+    }
+  };
+
+  const handleCloseVideoModal = () => {
+    setShowVideoModal(false);
+    setSelectedVideo(null);
+  };
+
+  const emptyMessage = () => {
+    switch (activeTab) {
+      case "posts":
+        return `${profileData.displayName || profileData.username}, henüz bir gönderi paylaşmadı.`;
+      case "feelings":
+        return `${profileData.displayName || profileData.username}, henüz bir duygu paylaşmadı.`;
+      case "feeds":
+        return `${profileData.displayName || profileData.username}, henüz feed'leri bulunmamaktadır.`;
+      case "likes":
+        return `${profileData.displayName || profileData.username}, henüz bir gönderiyi beğenmedi.`;
+      case "tags":
+        return `${profileData.displayName || profileData.username}, henüz etiketlendiği bir gönderi bulunmamaktadır.`;
+      default:
+        return `Henüz bir içerik bulunmamaktadır.`;
+    }
+  };
+
+  const getCardComponent = (item) => {
+    switch (activeTab) {
+      case "posts":
+        return <PostCard key={item.id} post={item} />;
+      case "feelings":
+        return <TweetCard key={item.id} feeling={item} />;
+      case "feeds":
+        return (
+          <VideoThumbnail
+            key={item.id}
+            mediaUrl={item.mediaUrl}
+            onClick={() => handleVideoClick(item)}
+          />
+        );
+      default:
+        return null;
     }
   };
 
@@ -194,7 +361,7 @@ const UserProfile = () => {
   if (!profileData) {
     return <div>Kullanıcı profili bulunamadı.</div>;
   }
-  
+
   const canViewContent =
     !profileData.isPrivate || followStatus === "following" || followStatus === "self";
 
@@ -300,89 +467,85 @@ const UserProfile = () => {
           </div>
           <div
             className={styles.statBox}
-            onClick={() => handleStatClick("followers")} // ✅ GÜNCELLENDİ
+            onClick={() => handleStatClick("followers")}
           >
             <strong>{stats?.followers || 0}</strong>
             <span className={styles.statLabel}>Takipçi</span>
           </div>
           <div
             className={styles.statBox}
-            onClick={() => handleStatClick("following")} // ✅ GÜNCELLENDİ
+            onClick={() => handleStatClick("following")}
           >
             <strong>{stats?.following || 0}</strong>
             <span className={styles.statLabel}>Takip Edilen</span>
           </div>
         </div>
       </div>
-      
+
       <div className={styles.tabBar}>
         <button
           className={activeTab === "posts" ? styles.active : ""}
           onClick={() => setActiveTab("posts")}
-          disabled={!canViewContent}
         >
-          Post
+          Posts
         </button>
         <button
           className={activeTab === "feeds" ? styles.active : ""}
           onClick={() => setActiveTab("feeds")}
-          disabled={!canViewContent}
         >
           Feeds
+        </button>
+        <button
+          className={activeTab === "feelings" ? styles.active : ""}
+          onClick={() => setActiveTab("feelings")}
+        >
+          Feelings
         </button>
         <button
           className={activeTab === "likes" ? styles.active : ""}
           onClick={() => setActiveTab("likes")}
           disabled={!canViewContent}
         >
-          Beğenilen
+          Beğenilenler
         </button>
         <button
           className={activeTab === "tags" ? styles.active : ""}
           onClick={() => setActiveTab("tags")}
           disabled={!canViewContent}
         >
-          Etiketlenen
+          Etiketliler
         </button>
       </div>
 
       <div className={styles.tabContent}>
-        {
-          !canViewContent ? (
-            <div className={styles.private_message}>
-              <FaLock className={styles.privateAccountIcon} />
-              <h3>Bu hesap gizlidir.</h3>
-              <p>İçeriği görmek için takip etmelisiniz.</p>
-            </div>
-          ) : (
-            <>
-              {activeTab === "posts" && (
-                <div className={styles.section}>
-                  {displayName || username}, henüz bir gönderi paylaşmadı.
-                </div>
-              )}
-              {activeTab === "feeds" && (
-                <div className={styles.section}>
-                  {displayName || username}, henüz feedleri bulunmamaktadır.
-                </div>
-              )}
-              {activeTab === "likes" && (
-                <div className={styles.section}>
-                  {displayName || username}, henüz bir gönderiyi beğenmedi.
-                </div>
-              )}
-              {activeTab === "tags" && (
-                <div className={styles.section}>
-                  {displayName || username}, henüz etiketlendiği bir gönderi
-                  bulunmamaktadır.
-                </div>
-              )}
-            </>
-          )
-        }
+        {!canViewContent ? (
+          <div className={styles.private_message}>
+            <FaLock className={styles.privateAccountIcon} />
+            <h3>Bu hesap gizlidir.</h3>
+            <p>İçeriği görmek için takip etmelisiniz.</p>
+          </div>
+        ) : loadingContent ? (
+          <LoadingOverlay />
+        ) : userData.length > 0 ? (
+          <div className={`${styles.section} ${activeTab === "feeds" ? styles.feedsGrid : ""}`}>
+            {userData.map(getCardComponent)}
+            {hasMore && (
+              <div className={styles.loadMoreContainer}>
+                <button
+                  onClick={() => fetchUserContent(activeTab, false)}
+                  className={styles.loadMoreBtn}
+                  disabled={loadingContent}
+                >
+                  {loadingContent ? "Yükleniyor..." : "Daha Fazla Yükle"}
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className={styles.emptyState}>{emptyMessage()}</div>
+        )}
       </div>
 
-      {/* ✅ YENİ: ConnectionsModal bileşeni eklendi */}
       {showModal && profileData && (
         <ConnectionsModal
           show={showModal}
@@ -390,6 +553,19 @@ const UserProfile = () => {
           listType={modalType}
           currentUserId={profileData.uid}
         />
+      )}
+      
+      {showVideoModal && selectedVideo && (
+        <div className={styles.videoModalOverlay} onClick={handleCloseVideoModal}>
+          <div className={styles.videoModalContent} onClick={(e) => e.stopPropagation()}>
+            <VideoFeedItem
+              videoSrc={selectedVideo.mediaUrl}
+              description={selectedVideo.content}
+              username={selectedVideo.username}
+              userProfileImage={selectedVideo.userProfileImage}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

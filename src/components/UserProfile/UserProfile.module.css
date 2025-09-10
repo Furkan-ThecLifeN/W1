@@ -1,4 +1,4 @@
-/* FixedProfileComponent.module.css */
+/* UserProfile.module.css */
 
 :root {
   --posts-color: linear-gradient(135deg, #3b82f6, #60a5fa);
@@ -8,14 +8,15 @@
 }
 
 .pageWrapper {
+  padding-top: 100px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: var(--color-black); /* Değiştirildi */
-  color: var(--color-white); /* Değiştirildi */
-  max-height: 100vh;
+  background-color: var(--color-black);
+  color: var(--color-white);
+  min-height: 100vh;
   width: 100%;
-  margin-top: 50px;
+  margin-left: 80px;
 }
 
 .fixedTopBox {
@@ -43,15 +44,13 @@
   align-items: center;
 }
 
-/* AccountBox.module.css */
-
 .settingsOverlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: #1a1a1a; /* Değiştirildi */
+  background-color: var(--color-pagecolor);
   z-index: 999;
   display: flex;
   flex-direction: column;
@@ -61,8 +60,8 @@
   position: absolute;
   top: 20px;
   right: 20px;
-  background: #3a3a3a; /* Değiştirildi */
-  color: var(--color-white); /* Değiştirildi */
+  background: var(--hover-bg);
+  color: var(--text-white);
   border: none;
   padding: 10px 16px;
   border-radius: 8px;
@@ -78,14 +77,17 @@
   font-size: 22px;
   padding: 8px;
   border-radius: 8px;
-  transition: all 0.3s ease-in-out;
+  transition: background 0.2s ease;
+}
+
+.actionBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .icon {
   font-size: 22px;
 }
 
-/* Üç nokta menü stilleri */
 .dropdownMenu {
   position: absolute;
   top: 30px;
@@ -120,7 +122,6 @@
   background-color: var(--color-black);
   color: var(--color-white);
 }
-/* Üç nokta menü stilleri Bitti */
 
 .mainProfileBox {
   margin-top: 40px;
@@ -220,8 +221,8 @@
 .statBox {
   width: 100px;
   height: 100px;
-  background: var(--posts-color); /* her kutu için değişebilir */
-  color: #fefefe;
+  background: var(--posts-color);
+  color: var(--text-white);
   border-radius: 20px;
   display: flex;
   flex-direction: column;
@@ -262,54 +263,66 @@
   font-weight: 500;
 }
 
-.followButtonContainer {
+.buttonsContainer {
   display: flex;
-  justify-content: center;
-  width: 100%;
-  margin-top: 20px;
+  justify-content: space-around;
+  align-items: center;
+  gap: 20px;
+  margin-top: 15px;
+  padding: 0 20px;
 }
 
+.actionButton,
 .followBtn,
 .unfollowBtn,
 .pendingBtn,
-.frozenBtn {
-  width: 100%;
+.messageBtn {
+  flex: 1;
+  max-width: 50%;
   padding: 10px 15px;
-  border-radius: 20px;
-  border: none;
+  min-width: 250px;
+  border-radius: 8px;
   font-weight: bold;
+  font-size: 14px;
+  transition: all 0.3s ease;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  transition: background-color 0.2s ease;
+  text-align: center;
+  transition: all 0.5s ease-in-out;
 }
 
 .followBtn {
-  background-color: #87ceeb;
-  color: #121212;
-}
-
-.followBtn:hover {
-  background-color: #6a9ac7;
+  background-color: var(--color-blue);
+  color: var(--color-white);
+  border: none;
 }
 
 .unfollowBtn {
-  background-color: transparent;
-  border: 1px solid #87ceeb;
-  color: #87ceeb;
+  background-color: var(--busy);
+  color: var(--color-white);
+  border: none;
 }
 
-.unfollowBtn:hover {
-  background-color: rgba(135, 206, 235, 0.1);
+.pendingBtn {
+  background-color: #a0aec0;
+  color: var(--color-white);
+  border: none;
 }
 
-.pendingBtn,
-.frozenBtn {
-  background-color: #3a3a3a;
-  color: #aaa;
-  cursor: not-allowed;
+.messageBtn {
+  background-color: #00fb2a;
+  color: var(--color-white);
+  gap: 6px;
+}
+
+.followBtn:hover,
+.unfollowBtn:hover,
+.pendingBtn:hover,
+.messageBtn:hover {
+  background-color: var(--color-white);
+  color: var(--color-black);
 }
 
 .tabBar {
@@ -335,11 +348,15 @@
 }
 
 .tabBar .active {
-  color: #ffffff; /* Değiştirildi */
-  border-bottom: 2px solid #87ceeb; /* Değiştirildi */
+  color: var(--color-white);
+  border-bottom: 2px solid var(--color-blue);
 }
 
 .tabContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
   margin-top: 24px;
   width: 90%;
   text-align: center;
@@ -349,11 +366,65 @@
 }
 
 .section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
   padding: 16px;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  gap: 40px;
 }
 
+.feedsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 20px;
+}
+
+.videoModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.videoModalContent {
+  position: relative;
+  width: 90%;
+  max-width: 500px;
+  background: transparent;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.closeButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 2rem;
+  cursor: pointer;
+  z-index: 1001;
+}
+
+.private_message {
+  padding: 30px;
+  font-size: 1.1em;
+  color: var(--color-white);
+  text-align: center;
+}
+
+/* Modal styles */
 .overlay {
   position: fixed;
   top: 0;
@@ -361,7 +432,7 @@
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.45);
-  color: #121212; /* Değiştirildi */
+  color: var(--color-black);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -393,18 +464,19 @@
   font-weight: bold;
 }
 
-.closeBtn {
-  background: none;
+.modal .closeBtn {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 24px;
   border: none;
-  color: #aaa;
-  font-size: 1.5em;
+  background: none;
   cursor: pointer;
+  color: #555;
 }
 
-.modalContent {
-  padding: 20px;
-  max-height: 400px;
-  overflow-y: auto;
+.modal .closeBtn:hover {
+  color: #000;
 }
 
 @keyframes fadeIn {
@@ -418,82 +490,12 @@
   }
 }
 
-.private_message {
-  padding: 30px;
-  font-size: 1.1em;
-  color: var(--color-white);
-  text-align: center;
-}
-
-.buttonsContainer {
-  display: flex;
-  justify-content: space-around; /* veya space-between */
-  align-items: center;
-  gap: 20px;
-  margin-top: 15px;
-  padding: 0 20px;
-}
-
-.actionButton,
-.followBtn,
-.unfollowBtn,
-.pendingBtn,
-.messageBtn {
-  flex: 1; 
-  max-width: 50%; 
-  padding: 10px 15px;
-  min-width: 250px;
-  border-radius: 8px;
-  font-weight: bold;
-  font-size: 14px;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  transition: all 0.5s ease-in-out;
-}
-
-.followBtn {
-  background-color: var(--color-blue);
-  color: var(--color-white);
-  border: none;
-}
-
-.unfollowBtn {
-  background-color: var(--busy);
-  color: var(--color-white);
-  border: none;
-}
-
-.pendingBtn {
-  background-color: #a0aec0; /* Gri */
-  color: var(--color-white);
-  border: none;
-}
-
-.messageBtn {
-  background-color: #00fb2a; /* Açık gri */
-  color: var(--color-white);
-  gap: 6px;
-}
-
-.followBtn:hover,
-.unfollowBtn:hover,
-.pendingBtn:hover,
-.messageBtn:hover {
-  background-color: var(--color-white);
-  color: var(--color-black);
-}
-
 /* Küçük ekranlarda butonları dikey hizala */
 @media (max-width: 500px) {
   .buttonsContainer {
     flex-direction: column;
     align-items: stretch;
   }
-
   .buttonsContainer button {
     width: 100%;
   }

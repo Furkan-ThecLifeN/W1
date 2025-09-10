@@ -182,7 +182,7 @@ const AccountBox = () => {
         <div className={styles.fixedTopBox}>{username}</div>
         <div className={styles.fixedSettingsBtn}>
           <button
-            className={styles.actionBtn}
+            className={styles.actionBtn} 
             onClick={() => navigate("/settings")}
           >
             <IoIosSettings className={styles.icon} />
