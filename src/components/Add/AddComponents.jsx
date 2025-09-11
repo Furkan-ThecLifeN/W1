@@ -51,7 +51,7 @@ const AddPage = () => {
       title: "Post",
       icon: "✏️",
       description: "Yeni bir gönderi paylaş",
-      color: "#6366f1",
+      color: "#ff00e1ff",
       route: "post",
     },
     {

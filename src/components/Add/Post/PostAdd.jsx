@@ -172,12 +172,12 @@ const PostAdd = () => {
                     onChange={handleUrlChange}
                     className={styles.urlInput}
                   />
-                  <input
+                  {/* <input
                     type="file"
                     accept="image/*"
                     onChange={handleFileChange}
                     className={styles.fileInput}
-                  />
+                  /> */}
                 </div>
               )}
             </div>
