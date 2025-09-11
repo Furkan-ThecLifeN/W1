@@ -35,7 +35,7 @@ const TweetCard = ({ data }) => {
 
       <div className={styles.footer}>
         <FaHeart
-          className={`${styles.icon} ${liked ? styles.liked : ""}`}
+          className={`${styles.icon} ${styles.heart} ${liked ? styles.liked : ""}`}
           onClick={() => setLiked(!liked)}
         />
         <FiMessageCircle className={styles.icon} />

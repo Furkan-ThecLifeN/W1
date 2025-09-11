@@ -152,11 +152,15 @@
 }
 
 .icon:hover {
-  color: var(--color-yellow);
+  transition: all 0.5s ease-in-out;
+}
+
+.heart:hover {
+  transform: scale(1.3); 
 }
 
 .liked {
-  color: red;
+  color: var(--busy);
 }
 
 .save_icon_wrapper {
@@ -174,10 +178,6 @@
   width: 20px;
   height: 20px;
   color: var(--color-white);
-}
-
-.save_icon_wrapper .icon:hover {
-  color: var(--color-yellow);
 }
 
 .visible {

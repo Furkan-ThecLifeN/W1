@@ -95,15 +95,19 @@
   font-size: 18px;
   color: var(--color-white);
   cursor: pointer;
-  transition: color 0.3s ease;
+  transition: color 0.5s ease;
 }
 
 .icon:hover {
-  color: var(--color-yellow);
+  transition: all 0.5s ease-in-out;
+}
+
+.heart:hover {
+  transform: scale(1.3); 
 }
 
 .liked {
-  color: red;
+  color: var(--busy);
 }
 
 /* Responsive (mobil/tablet) */

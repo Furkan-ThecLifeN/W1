@@ -45,7 +45,7 @@ const PostCard = ({ data }) => {
             <p className={styles.post_text}>{data?.caption}</p>
             <div className={styles.footer_actions}>
               <FaHeart
-                className={`${styles.icon} ${liked ? styles.liked : ""}`}
+                className={`${styles.icon} ${styles.heart} ${liked ? styles.liked : ""}`}
                 onClick={toggleLike}
               />
               <FiMessageCircle className={styles.icon} />
@@ -94,7 +94,7 @@ const PostCard = ({ data }) => {
 
         <div className={styles.footer_actions_mobile}>
           <FaHeart
-            className={`${styles.icon} ${liked ? styles.liked : ""}`}
+            className={`${styles.icon} ${styles.heart} ${liked ? styles.liked : ""}`}
             onClick={toggleLike}
           />
           <FiMessageCircle className={styles.icon} />
