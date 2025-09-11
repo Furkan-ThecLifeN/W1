@@ -8,7 +8,7 @@
   overflow: hidden;
   width: 100%;
   color: var(--color-white);
-  position: relative; /* Modallar için gerekli */
+  position: relative;
 }
 
 .chatHeader {
@@ -75,7 +75,6 @@
   display: none; /* Chrome, Safari */
 }
 
-
 .messages {
   display: flex;
   flex-direction: column;
@@ -139,8 +138,6 @@
   color: var(--color-black);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
-
-
 
 /* File */
 .file {
@@ -650,7 +647,7 @@
 /* Kalp İkonu - Normal Hali */
 .rightIconHeart {
   font-size: 1.5rem;
-  color: #ffffff; 
+  color: #ffffff;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   padding: 5px;
@@ -670,7 +667,6 @@
   background-color: rgba(255, 255, 255, 0.15); /* Hafif arka plan */
   transform: scale(1.1);
 }
-
 
 .heartMessageContent {
   display: flex;
@@ -781,6 +777,11 @@
 
 /* ========== Responsive ========== */
 @media (max-width: 1024px) {
+  .Chat {
+    margin-bottom: 50px;
+  }
+
+  .c
   .messageInputWrapper {
     margin-bottom: 30px;
   }

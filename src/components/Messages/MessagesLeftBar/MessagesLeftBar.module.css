@@ -161,11 +161,6 @@
 }
 
 @media (max-width: 768px) {
-  .MessagesLeftBar {
-    padding: 10px;
-    max-width: 500px;
-  }
-
   .lastMessage {
     max-width: 120px;
   }
@@ -176,5 +171,13 @@
 
   .left_SearchInputBox input {
     font-size: 14px;
+  }
+}
+
+
+@media (max-width: 1024px) {
+  .MessagesLeftBar {
+    padding: 10px;
+    max-width: 1024px;
   }
 }
