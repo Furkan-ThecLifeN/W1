@@ -163,6 +163,7 @@
 @media (max-width: 768px) {
   .MessagesLeftBar {
     padding: 10px;
+    max-width: 500px;
   }
 
   .lastMessage {
