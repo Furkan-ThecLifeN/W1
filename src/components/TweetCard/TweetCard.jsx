@@ -8,7 +8,7 @@ import {
 } from "react-icons/fi";
 import { FaHeart, FaBookmark } from "react-icons/fa";
 
-const TweetCard = () => {
+const TweetCard = ({ data }) => {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -17,9 +17,13 @@ const TweetCard = () => {
       <div className={styles.header}>
         <div className={styles.user}>
           <div className={styles.avatar_widget}>
-            <div className={styles.avatar}></div>
+            <img
+              src={data?.photoURL}
+              alt="avatar"
+              className={styles.avatar}
+            />
           </div>
-          <span className={styles.username}>Jane Doe</span>
+          <span className={styles.username}>{data?.displayName}</span>
         </div>
         <div className={styles.actions}>
           <button className={styles.follow}>Follow</button>
@@ -27,9 +31,7 @@ const TweetCard = () => {
         </div>
       </div>
 
-      <div className={styles.content}>
-        “Just finished a great workout! 💪 Time to recharge and keep pushing forward. #motivation”
-      </div>
+      <div className={styles.content}>{data?.text}</div>
 
       <div className={styles.footer}>
         <FaHeart

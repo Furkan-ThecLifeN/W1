@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import styles from "./PostCard.module.css";
-import PostImage from "./PostImage.jpg";
 import {
   FiMoreHorizontal,
   FiMessageCircle,
@@ -9,7 +8,7 @@ import {
 } from "react-icons/fi";
 import { FaHeart, FaBookmark } from "react-icons/fa";
 
-const PostCard = () => {
+const PostCard = ({ data }) => {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -20,15 +19,21 @@ const PostCard = () => {
     <>
       {/* Desktop tasarımı */}
       <div className={`${styles.post_card} ${styles.desktop}`}>
-        <img src={PostImage} alt="Post" className={styles.post_image} />
+        {data?.imageUrls?.[0] && (
+          <img src={data.imageUrls[0]} alt="Post" className={styles.post_image} />
+        )}
 
         <div className={styles.post_overlay}>
           <div className={styles.post_header}>
             <div className={styles.user_info}>
               <div className={styles.avatar_widget}>
-                <div className={styles.avatar}></div>
+                <img
+                  src={data?.photoURL}
+                  alt="avatar"
+                  className={styles.avatar}
+                />
               </div>
-              <span className={styles.username}>John Doe</span>
+              <span className={styles.username}>{data?.displayName}</span>
             </div>
             <div className={styles.actions}>
               <button className={styles.follow_btn}>Follow</button>
@@ -37,10 +42,7 @@ const PostCard = () => {
           </div>
 
           <div className={styles.post_footer}>
-            <p className={styles.post_text}>
-              Just enjoyed a breathtaking sunset at the beach 🌅✨ What a
-              peaceful moment.
-            </p>
+            <p className={styles.post_text}>{data?.caption}</p>
             <div className={styles.footer_actions}>
               <FaHeart
                 className={`${styles.icon} ${liked ? styles.liked : ""}`}
@@ -68,9 +70,13 @@ const PostCard = () => {
         <div className={styles.post_header_mobile}>
           <div className={styles.user_info}>
             <div className={styles.avatar_widget}>
-              <div className={styles.avatar}></div>
+              <img
+                src={data?.photoURL}
+                alt="avatar"
+                className={styles.avatar}
+              />
             </div>
-            <span className={styles.username}>John Doe</span>
+            <span className={styles.username}>{data?.displayName}</span>
           </div>
           <div className={styles.actions}>
             <button className={styles.follow_btn}>Follow</button>
@@ -78,7 +84,13 @@ const PostCard = () => {
           </div>
         </div>
 
-        <img src={PostImage} alt="Post" className={styles.post_image_mobile} />
+        {data?.imageUrls?.[0] && (
+          <img
+            src={data.imageUrls[0]}
+            alt="Post"
+            className={styles.post_image_mobile}
+          />
+        )}
 
         <div className={styles.footer_actions_mobile}>
           <FaHeart
@@ -100,10 +112,7 @@ const PostCard = () => {
         </div>
 
         <div className={styles.post_footer_mobile}>
-          <p className={styles.post_text}>
-            Just enjoyed a breathtaking sunset at the beach 🌅✨ What a peaceful
-            moment.
-          </p>
+          <p className={styles.post_text}>{data?.caption}</p>
         </div>
       </div>
     </>
