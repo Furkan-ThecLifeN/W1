@@ -2,8 +2,7 @@
   height: 100vh;
   width: 100%;
   padding: 1rem;
-
-  overflow: hidden;
+  overflow-y: auto; /* Değişiklik: Scrollbar'ı etkinleştirir */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -11,6 +10,13 @@
   position: relative;
 }
 
+/* Diğer kurallar aynı kalabilir */
 .mainContent {
   margin-left: 80px;
+}
+
+@media (max-width: 768px) {
+  .mainContent {
+    margin-left: 0;
+  }
 }

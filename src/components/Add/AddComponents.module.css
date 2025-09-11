@@ -1,30 +1,24 @@
 .container {
   display: flex;
   flex-direction: column;
-  justify-content: flex-start; /* üstten başla */
+  justify-content: flex-start;
   align-items: center;
   width: 100%;
-  height: 100%;
-  overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
   box-sizing: border-box;
 }
-
 
 .scrollbar-hidden::-webkit-scrollbar {
   display: none;
 }
 
-
 /* Kart Sistemi */
 .cardGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 2rem;
   width: 100%;
   max-width: 1200px;
-  padding: 20px;
+  padding: 0;
 }
 
 .card {
@@ -146,16 +140,48 @@
   }
 }
 
+/* Mobil Cihazlar için Özel Stiller */
 @media (max-width: 768px) {
+  .container {
+    padding-bottom: 80px; /* Sadece alttan boşluk eklenir */
+  }
+
   .cardGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* Mobil için tek sütun */
+    gap: 1.25rem; /* Boşlukları azalt */
+    padding: 16px;
   }
 
-  .header {
-    margin-bottom: 1rem;
+  .card {
+    height: auto;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   }
 
-  .header h1 {
+  .cardContent {
+    flex-direction: row; /* Mobil için yatay hizalama */
+    justify-content: flex-start;
+    align-items: center;
+    text-align: left;
+    gap: 16px;
+  }
+
+  .icon {
     font-size: 2.2rem;
+    margin-bottom: 0;
+  }
+
+  .card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0;
+  }
+
+  .card p {
+    display: none; /* Açıklamayı mobil görünümde gizle */
+  }
+
+  .card:hover {
+    transform: none; /* Mobil hover efektini kaldır */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
   }
 }
