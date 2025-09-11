@@ -38,63 +38,62 @@ const AccountBox = () => {
   const ITEMS_PER_PAGE = 10;
 
   const fetchContent = async (type, isInitialLoad = true) => {
-  if (!currentUser || !currentUser.uid) return;
+    if (!currentUser || !currentUser.uid) return;
 
-  setLoadingContent(true);
-  let collectionPath = `users/${currentUser.uid}/${type}`;
-  let q;
+    setLoadingContent(true);
+    let collectionPath = `users/${currentUser.uid}/${type}`;
+    let q;
 
-  if (isInitialLoad) {
-    setData([]);
-    setLastVisible(null);
-    setHasMore(true);
-    q = query(
-      collection(db, collectionPath),
-      orderBy("createdAt", "desc"),
-      limit(ITEMS_PER_PAGE)
-    );
-  } else {
-    if (!lastVisible) {
-      setLoadingContent(false);
-      return;
-    }
-    q = query(
-      collection(db, collectionPath),
-      orderBy("createdAt", "desc"),
-      startAfter(lastVisible),
-      limit(ITEMS_PER_PAGE)
-    );
-  }
-
-  try {
-    const querySnapshot = await getDocs(q);
-    const fetchedData = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-
-    let filteredData = fetchedData;
-    if (type === "feeds") {
-      filteredData = fetchedData.filter((item) => item.mediaUrl);
-    }
-
-    setData((prevData) => {
-      const newData = filteredData.filter(
-        (item) =>
-          !prevData.some((existingItem) => existingItem.id === item.id)
+    if (isInitialLoad) {
+      setData([]);
+      setLastVisible(null);
+      setHasMore(true);
+      q = query(
+        collection(db, collectionPath),
+        orderBy("createdAt", "desc"),
+        limit(ITEMS_PER_PAGE)
       );
-      return [...prevData, ...newData];
-    });
+    } else {
+      if (!lastVisible) {
+        setLoadingContent(false);
+        return;
+      }
+      q = query(
+        collection(db, collectionPath),
+        orderBy("createdAt", "desc"),
+        startAfter(lastVisible),
+        limit(ITEMS_PER_PAGE)
+      );
+    }
 
-    setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
-    setHasMore(fetchedData.length === ITEMS_PER_PAGE);
-  } catch (error) {
-    console.error("Veri çekme hatası:", error);
-  } finally {
-    setLoadingContent(false);
-  }
-};
+    try {
+      const querySnapshot = await getDocs(q);
+      const fetchedData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
 
+      let filteredData = fetchedData;
+      if (type === "feeds") {
+        filteredData = fetchedData.filter((item) => item.mediaUrl);
+      }
+
+      setData((prevData) => {
+        const newData = filteredData.filter(
+          (item) =>
+            !prevData.some((existingItem) => existingItem.id === item.id)
+        );
+        return [...prevData, ...newData];
+      });
+
+      setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
+      setHasMore(fetchedData.length === ITEMS_PER_PAGE);
+    } catch (error) {
+      console.error("Veri çekme hatası:", error);
+    } finally {
+      setLoadingContent(false);
+    }
+  };
 
   useEffect(() => {
     if (currentUser) {
@@ -182,7 +181,7 @@ const AccountBox = () => {
         <div className={styles.fixedTopBox}>{username}</div>
         <div className={styles.fixedSettingsBtn}>
           <button
-            className={styles.actionBtn} 
+            className={styles.actionBtn}
             onClick={() => navigate("/settings")}
           >
             <IoIosSettings className={styles.icon} />
@@ -220,14 +219,14 @@ const AccountBox = () => {
             onClick={() => handleStatClick("followers")}
           >
             <strong>{stats.followers}</strong>
-            <span className={styles.statLabel}>Takipçiler</span>
+            <span className={styles.statLabel}>Followers</span>
           </div>
           <div
             className={styles.statBox}
             onClick={() => handleStatClick("following")}
           >
             <strong>{stats.following}</strong>
-            <span className={styles.statLabel}>Takip Edilen</span>
+            <span className={styles.statLabel}>Following</span>
           </div>
         </div>
       </div>
@@ -269,7 +268,11 @@ const AccountBox = () => {
         {loadingContent ? (
           <LoadingOverlay />
         ) : data.length > 0 ? (
-          <div className={`${styles.section} ${activeTab === "feeds" ? styles.feedsGrid : ""}`}>
+          <div
+            className={`${styles.section} ${
+              activeTab === "feeds" ? styles.feedsGrid : ""
+            }`}
+          >
             {data.map(getCardComponent)}
             {hasMore && (
               <div className={styles.loadMoreContainer}>
@@ -298,8 +301,14 @@ const AccountBox = () => {
       )}
 
       {showVideoModal && selectedVideo && (
-        <div className={styles.videoModalOverlay} onClick={handleCloseVideoModal}>
-          <div className={styles.videoModalContent} onClick={(e) => e.stopPropagation()}>
+        <div
+          className={styles.videoModalOverlay}
+          onClick={handleCloseVideoModal}
+        >
+          <div
+            className={styles.videoModalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
             <VideoFeedItem
               videoSrc={selectedVideo.mediaUrl}
               description={selectedVideo.content}
