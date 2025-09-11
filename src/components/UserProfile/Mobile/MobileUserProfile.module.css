@@ -232,8 +232,6 @@
 
 /* Tabs */
 
-
-
 .tabs {
   display: flex;
   position: sticky;
@@ -407,7 +405,6 @@
   }
 }
 
-
 /* Mobile Post */
 
 .mobilePreviewBtn {
@@ -426,7 +423,7 @@
 .desktopModalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -455,7 +452,6 @@
   cursor: pointer;
 }
 
-
 /* ... existing styles ... */
 
 /* Feelings Grid container */
@@ -464,7 +460,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 16px; 
+  gap: 16px;
   padding: 16px;
   margin-top: 16px;
 }
@@ -555,4 +551,80 @@
 .mobileWrapper {
   width: 100%;
   max-width: 100%;
+}
+
+/* button still */
+
+/* Mobil Butonlar için CSS */
+.actionButtons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 16px;
+  box-sizing: border-box;
+}
+
+.actionButton {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+  border: none;
+  font-size: 14px;
+}
+
+.followBtn {
+  background-color: var(--color-blue);
+  color: var(--color-white);
+}
+
+.followBtn:hover {
+  background-color: var(--color-blue-hover);
+  transform: translateY(-2px);
+}
+
+.unfollowBtn {
+  background-color: var(--busy);
+  color: var(--color-white);
+  border: 1px solid var(--color-border);
+}
+
+.unfollowBtn:hover {
+  background-color: var(--color-border);
+  transform: translateY(-2px);
+}
+
+.pendingBtn {
+  background-color: #626262;
+  color: var(--color-white);
+  border: 1px solid var(--color-border);
+}
+
+.pendingBtn:hover {
+  background-color: var(--color-border);
+  transform: translateY(-2px);
+}
+
+.messageBtn {
+  background-color: var(--color-white);
+  color: var(--color-black);
+}
+
+.messageBtn:hover {
+  background-color: var(--color-black);
+  color: var(--color-white);
+  transform: translateY(-2px);
+}
+
+.privateAccountIcon {
+  font-size: 2.5em;
+  color: var(--color-gray-text);
+  margin-bottom: 10px;
 }

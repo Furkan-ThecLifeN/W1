@@ -24,13 +24,11 @@ import {
   FaUserMinus,
   FaUserTimes,
   FaEllipsisV,
-  FaBan,
-  FaFlag,
   FaCommentDots,
   FaLock,
 } from "react-icons/fa";
-import axios from "axios";
 import { IoIosSettings } from "react-icons/io";
+import axios from "axios";
 
 // Constants
 const ITEMS_PER_PAGE = 10;
