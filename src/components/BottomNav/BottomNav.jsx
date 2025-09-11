@@ -4,13 +4,12 @@ import styles from "./BottomNav.module.css";
 import {
   FiHome,
   FiBell,
-  FiMessageSquare,
-  FiBookmark,
   FiUser,
 } from "react-icons/fi";
-import { MdOutlineAddBox } from "react-icons/md";
-import { SiApostrophe, SiHearthisdotat } from "react-icons/si";
+import { SiHearthisdotat } from "react-icons/si";
 import { BiSolidMessageSquareDots } from "react-icons/bi";
+import { PiVideoFill } from "react-icons/pi";
+import { FaLocationArrow } from "react-icons/fa";
 
 const BottomNav = () => {
   return (
@@ -44,7 +43,7 @@ const BottomNav = () => {
         </NavLink>
 
         <NavLink to="/create" className={styles.createButton}>
-          <MdOutlineAddBox className={styles.createIcon} />
+          <FaLocationArrow  className={styles.createIcon} />
         </NavLink>
 
         <NavLink
@@ -53,7 +52,7 @@ const BottomNav = () => {
             isActive ? styles.activeLink : styles.navLink
           }
         >
-          <SiApostrophe className={styles.icon} />
+          <PiVideoFill className={styles.icon} />
         </NavLink>
 
         <NavLink

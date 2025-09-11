@@ -1,14 +1,13 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import LeftSideBarStyles from "./Sidebar.module.css";
-import { MdAddToPhotos } from "react-icons/md";
 import { SiHearthisdotat } from "react-icons/si";
 import {
   BiSolidHome,
   BiSolidMessageSquareDots,
   BiSolidNotification,
 } from "react-icons/bi";
-import { FaUserAlt } from "react-icons/fa";
+import { FaLocationArrow, FaUserAlt } from "react-icons/fa";
 import { PiVideoFill } from "react-icons/pi";
 
 const Sidebar = () => {
@@ -91,7 +90,7 @@ const Sidebar = () => {
             isActive ? LeftSideBarStyles.active : LeftSideBarStyles.link
           }
         >
-          <MdAddToPhotos className={LeftSideBarStyles.icon} />
+          <FaLocationArrow  className={LeftSideBarStyles.icon} />
           <span className={LeftSideBarStyles.tooltip}>İçerik Ekle</span>
         </NavLink>
       </div>
