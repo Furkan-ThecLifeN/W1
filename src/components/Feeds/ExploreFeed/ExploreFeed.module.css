@@ -44,14 +44,14 @@
 
 /* Yukarı butonu için özel konum */
 .prevButton {
-  top: 20%;
+  top: 35%;
   right: 2rem;
   transform: translateY(25%);
 }
 
 /* Aşağı butonu için özel konum */
 .nextButton {
-  top: 35%;
+  top: 50%;
   right: 2rem;
   transform: translateY(-25%);
 }
