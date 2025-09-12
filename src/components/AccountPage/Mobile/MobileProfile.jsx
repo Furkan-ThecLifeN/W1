@@ -13,12 +13,13 @@ import {
   limit,
   startAfter,
   getDocs,
+  where,
 } from "firebase/firestore";
 
 import PostCard from "../Box/PostBox/PostBox";
 import TweetCard from "../Box/FeelingsBox/FeelingsBox";
-import VideoFeedItem from "../Box/VideoFeedItem/VideoFeedItem";
 import VideoThumbnail from "../Box/VideoFeedItem/VideoThumbnail/VideoThumbnail";
+import VideoFeedItem from "../Box/VideoFeedItem/VideoFeedItem";
 
 const MobileProfile = () => {
   const { currentUser, loading } = useUser();
@@ -38,32 +39,67 @@ const MobileProfile = () => {
     if (!currentUser || !currentUser.uid) return;
 
     setLoadingContent(true);
-    let collectionPath = `users/${currentUser.uid}/${type}`;
     let q;
 
     if (isInitialLoad) {
       setData([]);
       setLastVisible(null);
       setHasMore(true);
-      q = query(
-        collection(db, collectionPath),
-        orderBy("createdAt", "desc"),
-        limit(ITEMS_PER_PAGE)
-      );
-    } else {
-      if (!lastVisible) {
-        setLoadingContent(false);
-        return;
-      }
-      q = query(
-        collection(db, collectionPath),
-        orderBy("createdAt", "desc"),
-        startAfter(lastVisible),
-        limit(ITEMS_PER_PAGE)
-      );
     }
 
     try {
+      let collectionName;
+      let userFilterField = "uid";
+      
+      switch (type) {
+        case "feelings":
+          collectionName = "globalFeelings";
+          break;
+        case "posts":
+          collectionName = "globalPosts";
+          break;
+        case "feeds":
+          collectionName = "globalFeeds";
+          userFilterField = "ownerId";
+          break;
+        case "likes":
+        case "tags":
+          collectionName = `users/${currentUser.uid}/${type}`;
+          userFilterField = null;
+          break;
+        default:
+          collectionName = `users/${currentUser.uid}/${type}`;
+          userFilterField = null;
+          break;
+      }
+      
+      let queryRef = collection(db, collectionName);
+
+      if (userFilterField) {
+        queryRef = query(
+          queryRef,
+          where(userFilterField, "==", currentUser.uid),
+          orderBy("createdAt", "desc")
+        );
+      } else {
+        queryRef = query(
+          queryRef,
+          orderBy("createdAt", "desc")
+        );
+      }
+
+      q = query(
+        queryRef,
+        ...(isInitialLoad
+          ? [limit(ITEMS_PER_PAGE)]
+          : [startAfter(lastVisible), limit(ITEMS_PER_PAGE)])
+      );
+
+      if (!isInitialLoad && !lastVisible) {
+        setLoadingContent(false);
+        return;
+      }
+
       const querySnapshot = await getDocs(q);
       const fetchedData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
@@ -77,8 +113,7 @@ const MobileProfile = () => {
 
       setData((prevData) => {
         const newData = filteredData.filter(
-          (item) =>
-            !prevData.some((existingItem) => existingItem.id === item.id)
+          (item) => !prevData.some((existingItem) => existingItem.id === item.id)
         );
         return [...prevData, ...newData];
       });
@@ -87,6 +122,7 @@ const MobileProfile = () => {
       setHasMore(fetchedData.length === ITEMS_PER_PAGE);
     } catch (error) {
       console.error("Veri çekme hatası:", error);
+      // Hata yönetimi burada eklenebilir, AccountBox'ta olduğu gibi
     } finally {
       setLoadingContent(false);
     }
@@ -300,7 +336,7 @@ const MobileProfile = () => {
         >
           <div
             className={styles.videoModalContent}
-            onClick={(e) => e.stopPropagation()} // Tıklama olayının yayılmasını durdur
+            onClick={(e) => e.stopPropagation()}
           >
             <VideoFeedItem
               videoSrc={selectedVideo.mediaUrl}

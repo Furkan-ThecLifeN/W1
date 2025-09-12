@@ -23,6 +23,7 @@ import {
   orderBy,
   limit,
   startAfter,
+  where,
 } from "firebase/firestore";
 
 // Importing the content components
@@ -46,7 +47,7 @@ const UserProfile = () => {
   const [followStatus, setFollowStatus] = useState("none");
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState(null);
-  const [userData, setUserData] = useState([]); // Selected user's content
+  const [userData, setUserData] = useState([]);
   const [loadingContent, setLoadingContent] = useState(false);
   const [lastVisible, setLastVisible] = useState(null);
   const [hasMore, setHasMore] = useState(true);
@@ -64,46 +65,63 @@ const UserProfile = () => {
   const fetchUserContent = async (type, isInitialLoad = true) => {
     if (!profileData?.uid) return;
     setLoadingContent(true);
-    let collectionPath;
-
-    switch (type) {
-      case "posts":
-      case "feelings":
-      case "feeds":
-        collectionPath = `users/${profileData.uid}/${type}`;
-        break;
-      case "likes":
-      case "tags":
-      default:
-        console.warn(`${type} fetching not implemented for UserProfile.`);
-        setLoadingContent(false);
-        return;
-    }
-
     let q;
+
     if (isInitialLoad) {
       setUserData([]);
       setLastVisible(null);
       setHasMore(true);
-      q = query(
-        collection(db, collectionPath),
-        orderBy("createdAt", "desc"),
-        limit(ITEMS_PER_PAGE)
-      );
-    } else {
-      if (!lastVisible) {
-        setLoadingContent(false);
-        return;
-      }
-      q = query(
-        collection(db, collectionPath),
-        orderBy("createdAt", "desc"),
-        startAfter(lastVisible),
-        limit(ITEMS_PER_PAGE)
-      );
     }
 
     try {
+      let collectionName;
+      let userFilterField = "uid";
+
+      switch (type) {
+        case "feelings":
+          collectionName = "globalFeelings";
+          break;
+        case "posts":
+          collectionName = "globalPosts";
+          break;
+        case "feeds":
+          collectionName = "globalFeeds";
+          userFilterField = "ownerId";
+          break;
+        case "likes":
+        case "tags":
+          collectionName = `users/${profileData.uid}/${type}`;
+          userFilterField = null; // Bu koleksiyonlar zaten kullanıcıya özel
+          break;
+        default:
+          setLoadingContent(false);
+          return;
+      }
+
+      let queryRef = collection(db, collectionName);
+
+      if (userFilterField) {
+        queryRef = query(
+          queryRef,
+          where(userFilterField, "==", profileData.uid),
+          orderBy("createdAt", "desc")
+        );
+      } else {
+        queryRef = query(queryRef, orderBy("createdAt", "desc"));
+      }
+
+      q = query(
+        queryRef,
+        ...(isInitialLoad
+          ? [limit(ITEMS_PER_PAGE)]
+          : [startAfter(lastVisible), limit(ITEMS_PER_PAGE)])
+      );
+
+      if (!isInitialLoad && !lastVisible) {
+        setLoadingContent(false);
+        return;
+      }
+
       const querySnapshot = await getDocs(q);
       const fetchedData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
@@ -126,6 +144,7 @@ const UserProfile = () => {
       setHasMore(fetchedData.length === ITEMS_PER_PAGE);
     } catch (error) {
       console.error("Veri çekme hatası:", error);
+      // Hata yönetimi burada eklenebilir, AccountBox'ta olduğu gibi
     } finally {
       setLoadingContent(false);
     }
@@ -134,14 +153,21 @@ const UserProfile = () => {
   const fetchContentCounts = async (profileUid) => {
     if (!profileUid) return;
     try {
-      const postsCount = (await getDocs(collection(db, `users/${profileUid}/posts`))).size;
-      const feelingsCount = (await getDocs(collection(db, `users/${profileUid}/feelings`))).size;
-      const feedsCount = (await getDocs(collection(db, `users/${profileUid}/feeds`))).size;
+      // Global koleksiyonlardan uid'ye göre filtreleyerek sayım yapın
+      const postsCountQuery = query(collection(db, `globalPosts`), where("uid", "==", profileUid));
+      const feelingsCountQuery = query(collection(db, `globalFeelings`), where("uid", "==", profileUid));
+      const feedsCountQuery = query(collection(db, `globalFeeds`), where("ownerId", "==", profileUid));
+
+      const [postsSnapshot, feelingsSnapshot, feedsSnapshot] = await Promise.all([
+        getDocs(postsCountQuery),
+        getDocs(feelingsCountQuery),
+        getDocs(feedsCountQuery),
+      ]);
 
       setContentCounts({
-        posts: postsCount,
-        feeds: feedsCount,
-        feelings: feelingsCount,
+        posts: postsSnapshot.size,
+        feelings: feelingsSnapshot.size,
+        feeds: feedsSnapshot.size,
       });
     } catch (error) {
       console.error("Koleksiyon sayıları çekme hatası:", error);
@@ -153,7 +179,6 @@ const UserProfile = () => {
     }
   };
 
-  // Effect to fetch user profile and follow status on initial load
   useEffect(() => {
     const fetchUserProfileAndStatus = async () => {
       setLoading(true);
@@ -198,7 +223,6 @@ const UserProfile = () => {
     fetchUserProfileAndStatus();
   }, [username, currentUser, apiBaseUrl]);
 
-  // Effect to fetch content when the active tab or profile data changes
   useEffect(() => {
     if (profileData?.uid) {
       const canView = !profileData.isPrivate || followStatus === "following" || followStatus === "self";
@@ -598,4 +622,4 @@ const UserProfile = () => {
   );
 };
 
-export default UserProfile; 
+export default UserProfile;

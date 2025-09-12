@@ -67,10 +67,10 @@ const MobileUserProfile = () => {
       case "posts":
       case "feelings":
       case "feeds":
-        collectionPath = `users/${profileData.uid}/${type}`;
-        break;
       case "likes":
       case "tags":
+        collectionPath = `users/${profileData.uid}/${type}`;
+        break;
       default:
         console.warn(`${type} fetching not implemented for UserProfile.`);
         setLoadingContent(false);
