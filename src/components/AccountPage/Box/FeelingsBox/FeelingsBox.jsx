@@ -12,7 +12,7 @@ import { useUser } from "../../../../context/UserContext";
 
 const FeelingsBox = ({ feeling }) => {
   const { currentUser } = useUser();
-  const [liked, setLiked] = useState(false); // başlangıçta false
+  const [liked, setLiked] = useState(feeling?.isLikedByMe || false);
   const [saved, setSaved] = useState(feeling?.isSavedByMe || false);
   const [showModal, setShowModal] = useState(false);
   const [likeCount, setLikeCount] = useState(feeling?.stats?.likes || 0);
@@ -30,7 +30,6 @@ const FeelingsBox = ({ feeling }) => {
 
   const validPostId = feeling?.id || feeling?.postId || feeling?.uid;
 
-  // Kullanıcının daha önce beğenip beğenmediğini backend'den al
   useEffect(() => {
     if (!currentUser || !validPostId) return;
 
@@ -49,7 +48,7 @@ const FeelingsBox = ({ feeling }) => {
           }
         );
         const data = await res.json();
-        if (data.liked) setLiked(true);
+        setLiked(data.liked);
       } catch (err) {
         console.error("Beğeni durumu alınamadı:", err);
       }
@@ -59,9 +58,22 @@ const FeelingsBox = ({ feeling }) => {
   }, [currentUser, validPostId]);
 
   const handleLike = async () => {
-    if (!currentUser) return alert("Beğenmek için giriş yapın.");
-    if (!validPostId) return alert("Bu gönderi geçerli bir kimliğe sahip değil.");
+    if (!currentUser) {
+      alert("Beğenmek için giriş yapın.");
+      return;
+    }
+    if (!validPostId) {
+      alert("Bu gönderi geçerli bir kimliğe sahip değil.");
+      return;
+    }
     if (isUpdating) return;
+
+    // İyimser Güncelleme Başlangıcı
+    const previousLiked = liked;
+    const previousLikeCount = likeCount;
+
+    setLiked(!previousLiked);
+    setLikeCount(previousLiked ? previousLikeCount - 1 : previousLikeCount + 1);
     setIsUpdating(true);
 
     try {
@@ -78,13 +90,15 @@ const FeelingsBox = ({ feeling }) => {
         }
       );
 
-      if (!res.ok) throw new Error("Beğeni işlemi başarısız.");
-
-      const data = await res.json();
-      setLiked((prev) => !prev);
-      setLikeCount(data.newLikes || likeCount);
+      if (!res.ok) {
+        throw new Error("Beğeni işlemi başarısız.");
+      }
     } catch (err) {
       console.error("Beğenme hatası:", err);
+      // Hata durumunda eski duruma geri dön
+      setLiked(previousLiked);
+      setLikeCount(previousLikeCount);
+      alert("Beğenme işlemi sırasında bir hata oluştu. Lütfen tekrar deneyin.");
     } finally {
       setIsUpdating(false);
     }
@@ -125,7 +139,9 @@ const FeelingsBox = ({ feeling }) => {
 
       <div className={styles.footer}>
         <FaHeart
-          className={`${styles.icon} ${liked ? styles.liked : ""}`}
+          className={`${styles.icon} ${liked ? styles.liked : ""} ${
+            isUpdating ? styles.disabled : ""
+          }`}
           onClick={handleLike}
         />
         <span>{likeCount}</span>
@@ -189,4 +205,3 @@ const FeelingsBox = ({ feeling }) => {
 };
 
 export default FeelingsBox;
-  
