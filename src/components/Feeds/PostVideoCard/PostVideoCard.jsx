@@ -26,10 +26,9 @@ const getYouTubeEmbedUrl = (url) => {
   return null;
 };
 
-// Prop isimlerini düzeltiyoruz: 'content' yerine 'description' kullanıyoruz.
 export default function PostVideoCard({
   videoSrc,
-  description, // <-- Artık 'description' prop'unu alıyoruz
+  description,
   username,
   userProfileImage,
 }) {
@@ -46,6 +45,7 @@ export default function PostVideoCard({
 
   const handleLikeClick = () => setLiked((prev) => !prev);
   const handleSaveClick = () => setSaved((prev) => !prev);
+  const handleFollowClick = () => setFollowed((prev) => !prev);
 
   const embedUrl = getYouTubeEmbedUrl(videoSrc);
   if (!embedUrl) {
@@ -54,71 +54,82 @@ export default function PostVideoCard({
   }
 
   return (
-    <div className={styles.card}>
-      <div className={styles.video_container} onDoubleClick={handleDoubleClick}>
-        <iframe
-          className={styles.video_iframe}
-          src={embedUrl}
-          title="YouTube Shorts video player"
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        ></iframe>
+    <div className={styles.container}>
+      <div className={styles.videoCard}>
+        {/* Video Alanı */}
+        <div className={styles.videoWrapper} onDoubleClick={handleDoubleClick}>
+          <iframe
+            className={styles.videoFrame}
+            src={embedUrl}
+            title="YouTube video player"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
 
-        <AnimatePresence>
-          {doubleTap && (
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 260, damping: 20 }}
-              className={styles.heart_double_tap}
-            >
-              <FaHeart />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+          <AnimatePresence>
+            {doubleTap && (
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                className={styles.heartAnimation}
+              >
+                <FaHeart />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
-      <div className={styles.content}>
-        <div className={styles.info_box}>
-          <div className={styles.info_top}>
-            <div className={styles.profile}>
-              <img
-                src={userProfileImage || "https://i.pravatar.cc/48"}
-                alt={username || "Anonim Kullanıcı"}
-                className={styles.avatar}
-              />
-              <span className={styles.username}>{username || "Anonim Kullanıcı"}</span>
+        {/* Kullanıcı Bilgisi */}
+        <div className={styles.infoCard}>
+          <div className={styles.userInfo}>
+            <img
+              src={userProfileImage || "https://i.pravatar.cc/48"}
+              alt={username || "Anonim Kullanıcı"}
+              className={styles.userAvatar}
+            />
+            <div className={styles.userInfoText}>
+              <span className={styles.userName}>
+                {username || "Anonim Kullanıcı"}
+              </span>
+              <div className={styles.description}>{description}</div>
             </div>
             <button
-              onClick={() => setFollowed(!followed)}
-              className={styles.follow_btn}
+              onClick={handleFollowClick}
+              className={styles.followButton}
             >
               {followed ? "Takibi Bırak" : "Takip Et"}
             </button>
           </div>
-          <div className={styles.description}>{description}</div> {/* 'content' yerine 'description' kullanıyoruz */}
         </div>
+      </div>
 
-        <div className={styles.actions}>
-          <div className={styles.icon_box} onClick={handleLikeClick}>
-            {liked ? (
-              <FaHeart className={`${styles.icon} ${styles.liked}`} />
-            ) : (
-              <FiHeart className={styles.icon} />
-            )}
-          </div>
-          <FiMessageCircle className={styles.icon} />
-          <div className={styles.icon_box} onClick={handleSaveClick}>
-            {saved ? (
-              <FaBookmark className={`${styles.icon} ${styles.saved}`} />
-            ) : (
-              <FiBookmark className={styles.icon} />
-            )}
-          </div>
-          <FiSend className={styles.icon} />
-          <FiMoreVertical className={styles.icon} />
+      {/* Aksiyon Butonları */}
+      <div className={styles.actionButtons}>
+        <div className={styles.iconWrapper} onClick={handleLikeClick}>
+          {liked ? (
+            <FaHeart className={`${styles.iconItem} ${styles.likedIcon}`} />
+          ) : (
+            <FiHeart className={styles.iconItem} />
+          )}
+        </div>
+        <div className={styles.iconWrapper}>
+          <FiMessageCircle className={styles.iconItem} />
+        </div>
+        <div className={styles.iconWrapper} onClick={handleSaveClick}>
+          {saved ? (
+            <FaBookmark className={`${styles.iconItem} ${styles.savedIcon}`} />
+          ) : (
+            <FiBookmark className={styles.iconItem} />
+          )}
+        </div>
+        <div className={styles.iconWrapper}>
+          <FiSend className={styles.iconItem} />
+        </div>
+        <div className={styles.iconWrapper}>
+          <FiMoreVertical className={styles.iconItem} />
         </div>
       </div>
     </div>

@@ -5,8 +5,8 @@
   overflow: hidden;
   border-radius: 8px;
   cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0, 213, 255, 0.738);
-  border: 2px solid #00bfff;
+  box-shadow: 0 4px 8px rgba(251, 251, 251, 0.738);
+  border: 2px solid #ffffff;
   transition: transform 0.2s ease-in-out;
 }
 
