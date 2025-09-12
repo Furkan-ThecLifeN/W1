@@ -18,7 +18,7 @@ const FeelingsBox = ({ feeling }) => {
   const [likeCount, setLikeCount] = useState(feeling?.stats?.likes || 0);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const { caption, text, displayName, photoURL, imageUrls, images } =
+  const { caption, text, displayName, photoURL, imageUrls, images, privacy } =
     feeling || {};
 
   const tweetText = caption || text || "";
@@ -27,7 +27,6 @@ const FeelingsBox = ({ feeling }) => {
     photoURL ||
     "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
   const tweetImages = imageUrls || images || [];
-
   const validPostId = feeling?.id || feeling?.postId || feeling?.uid;
 
   useEffect(() => {
@@ -36,6 +35,8 @@ const FeelingsBox = ({ feeling }) => {
     const checkLiked = async () => {
       try {
         const token = await auth.currentUser.getIdToken();
+        const postType = privacy === "public" ? "globalfeelings" : "feelings";
+
         const res = await fetch(
           `${process.env.REACT_APP_API_URL}/api/actions/check-like`,
           {
@@ -44,7 +45,7 @@ const FeelingsBox = ({ feeling }) => {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ postId: validPostId, postType: "feeling" }),
+            body: JSON.stringify({ postId: validPostId, postType: postType }),
           }
         );
         const data = await res.json();
@@ -55,7 +56,7 @@ const FeelingsBox = ({ feeling }) => {
     };
 
     checkLiked();
-  }, [currentUser, validPostId]);
+  }, [currentUser, validPostId, privacy]);
 
   const handleLike = async () => {
     if (!currentUser) {
@@ -78,6 +79,8 @@ const FeelingsBox = ({ feeling }) => {
 
     try {
       const token = await auth.currentUser.getIdToken();
+      const postType = privacy === "public" ? "globalfeelings" : "feelings";
+
       const res = await fetch(
         `${process.env.REACT_APP_API_URL}/api/actions/toggle-like`,
         {
@@ -86,7 +89,7 @@ const FeelingsBox = ({ feeling }) => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ postId: validPostId, postType: "feeling" }),
+          body: JSON.stringify({ postId: validPostId, postType: postType }),
         }
       );
 

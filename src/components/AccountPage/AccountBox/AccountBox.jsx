@@ -13,6 +13,7 @@ import {
   orderBy,
   limit,
   startAfter,
+  where,
 } from "firebase/firestore";
 
 import PostCard from "../Box/PostBox/PostBox";
@@ -37,36 +38,71 @@ const AccountBox = () => {
 
   const ITEMS_PER_PAGE = 10;
 
+  // ---------------- FETCH CONTENT ----------------
   const fetchContent = async (type, isInitialLoad = true) => {
     if (!currentUser || !currentUser.uid) return;
 
     setLoadingContent(true);
-    let collectionPath = `users/${currentUser.uid}/${type}`;
     let q;
 
     if (isInitialLoad) {
       setData([]);
       setLastVisible(null);
       setHasMore(true);
-      q = query(
-        collection(db, collectionPath),
-        orderBy("createdAt", "desc"),
-        limit(ITEMS_PER_PAGE)
-      );
-    } else {
-      if (!lastVisible) {
-        setLoadingContent(false);
-        return;
-      }
-      q = query(
-        collection(db, collectionPath),
-        orderBy("createdAt", "desc"),
-        startAfter(lastVisible),
-        limit(ITEMS_PER_PAGE)
-      );
     }
 
     try {
+      // 🔹 Hangi koleksiyondan veri çekileceğini belirle
+      let collectionName;
+      let needsUserFilter = true; // 'likes' ve 'tags' için false olabilir
+      
+      switch (type) {
+        case "feelings":
+          collectionName = "globalFeelings";
+          break;
+        case "posts":
+          collectionName = "globalPosts"; // 'feelings' mantığına göre güncellendi
+          break;
+        case "feeds":
+          collectionName = "globalFeeds"; // 'feelings' mantığına göre güncellendi
+          break;
+        default:
+          collectionName = `users/${currentUser.uid}/${type}`;
+          needsUserFilter = false;
+          break;
+      }
+      
+      // 🚨 ÖNEMLİ: Eğer `globalPosts` veya `globalFeeds` koleksiyonlarında `uid` ve `createdAt` alanlarını
+      // birlikte kullanıyorsanız, Firebase konsolunda bu alanlar için bir birleşik dizin (composite index)
+      // oluşturmanız gerekir. Aksi halde kodunuz hata verecektir.
+      
+      let queryRef = collection(db, collectionName);
+
+      if (needsUserFilter) {
+        queryRef = query(
+          queryRef,
+          where("uid", "==", currentUser.uid),
+          orderBy("createdAt", "desc")
+        );
+      } else {
+        queryRef = query(
+          queryRef,
+          orderBy("createdAt", "desc")
+        );
+      }
+
+      q = query(
+        queryRef,
+        ...(isInitialLoad
+          ? [limit(ITEMS_PER_PAGE)]
+          : [startAfter(lastVisible), limit(ITEMS_PER_PAGE)])
+      );
+
+      if (!isInitialLoad && !lastVisible) {
+        setLoadingContent(false);
+        return;
+      }
+
       const querySnapshot = await getDocs(q);
       const fetchedData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
@@ -80,8 +116,7 @@ const AccountBox = () => {
 
       setData((prevData) => {
         const newData = filteredData.filter(
-          (item) =>
-            !prevData.some((existingItem) => existingItem.id === item.id)
+          (item) => !prevData.some((existingItem) => existingItem.id === item.id)
         );
         return [...prevData, ...newData];
       });
@@ -89,7 +124,7 @@ const AccountBox = () => {
       setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
       setHasMore(fetchedData.length === ITEMS_PER_PAGE);
     } catch (error) {
-      console.error("Veri çekme hatası:", error);
+      console.error("🔥 Veri çekme hatası:", error);
     } finally {
       setLoadingContent(false);
     }
@@ -101,6 +136,7 @@ const AccountBox = () => {
     }
   }, [activeTab, currentUser]);
 
+  // ---------------- HANDLERS ----------------
   const handleTabChange = (tabName) => {
     setActiveTab(tabName);
   };
@@ -135,6 +171,7 @@ const AccountBox = () => {
     setShowModal(true);
   };
 
+  // ---------------- CARD COMPONENT SWITCH ----------------
   const getCardComponent = (item) => {
     switch (activeTab) {
       case "posts":
@@ -175,8 +212,10 @@ const AccountBox = () => {
     }
   };
 
+  // ---------------- RENDER ----------------
   return (
     <div className={styles.pageWrapper}>
+      {/* Top */}
       <div className={styles.account_top}>
         <div className={styles.fixedTopBox}>{username}</div>
         <div className={styles.fixedSettingsBtn}>
@@ -189,6 +228,7 @@ const AccountBox = () => {
         </div>
       </div>
 
+      {/* Profile Info */}
       <div className={styles.mainProfileBox}>
         <div className={styles.profileImageSection}>
           <div className={styles.profileImageWrapper}>
@@ -207,30 +247,31 @@ const AccountBox = () => {
 
         <div className={styles.statsSection}>
           <div className={styles.statBox}>
-            <strong>{stats.posts || 0}</strong>
+            <strong>{stats?.posts || 0}</strong>
             <span className={styles.statLabel}>Post</span>
           </div>
           <div className={styles.statBox}>
-            <strong>{stats.rta}</strong>
+            <strong>{stats?.rta || 0}</strong>
             <span className={styles.statLabel}>RTA</span>
           </div>
           <div
             className={styles.statBox}
             onClick={() => handleStatClick("followers")}
           >
-            <strong>{stats.followers}</strong>
+            <strong>{stats?.followers || 0}</strong>
             <span className={styles.statLabel}>Followers</span>
           </div>
           <div
             className={styles.statBox}
             onClick={() => handleStatClick("following")}
           >
-            <strong>{stats.following}</strong>
+            <strong>{stats?.following || 0}</strong>
             <span className={styles.statLabel}>Following</span>
           </div>
         </div>
       </div>
 
+      {/* Tab Bar */}
       <div className={styles.tabBar}>
         <button
           className={activeTab === "posts" ? styles.active : ""}
@@ -264,6 +305,7 @@ const AccountBox = () => {
         </button>
       </div>
 
+      {/* Tab Content */}
       <div className={styles.tabContent}>
         {loadingContent ? (
           <LoadingOverlay />
@@ -291,6 +333,7 @@ const AccountBox = () => {
         )}
       </div>
 
+      {/* Modals */}
       {showModal && currentUser && (
         <ConnectionsModal
           show={showModal}
