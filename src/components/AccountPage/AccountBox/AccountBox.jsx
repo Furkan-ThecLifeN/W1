@@ -3,6 +3,7 @@ import { IoIosSettings } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import styles from "./AccountBox.module.css";
 import { useUser } from "../../../context/UserContext";
+import { useAuth } from "../../../context/AuthProvider"; // Hata yönetimi için eklendi
 import LoadingOverlay from "../../LoadingOverlay/LoadingOverlay";
 import ConnectionsModal from "../../ConnectionsModal/ConnectionsModal";
 import { db } from "../../../config/firebase-client";
@@ -25,6 +26,7 @@ import VideoThumbnail from "../Box/VideoFeedItem/VideoThumbnail/VideoThumbnail";
 
 const AccountBox = () => {
   const { currentUser, loading } = useUser();
+  const { showToast } = useAuth(); // Hata bildirimleri için useAuth hook'u kullanılıyor
   const [activeTab, setActiveTab] = useState("posts");
   const [data, setData] = useState([]);
   const [loadingContent, setLoadingContent] = useState(false);
@@ -54,21 +56,30 @@ const AccountBox = () => {
     try {
       // 🔹 Hangi koleksiyondan veri çekileceğini belirle
       let collectionName;
-      let needsUserFilter = true; // 'likes' ve 'tags' için false olabilir
+      let userFilterField = "uid";
       
       switch (type) {
         case "feelings":
           collectionName = "globalFeelings";
           break;
         case "posts":
-          collectionName = "globalPosts"; // 'feelings' mantığına göre güncellendi
+          collectionName = "globalPosts";
           break;
         case "feeds":
-          collectionName = "globalFeeds"; // 'feelings' mantığına göre güncellendi
+          collectionName = "globalFeeds";
+          userFilterField = "ownerId"; // Feeds için filtreleme alanını ownerId olarak belirle
+          break;
+        case "likes":
+        case "tags":
+          // Not: 'likes' ve 'tags' için bu koleksiyon yolu, veri yapınıza bağlı olarak
+          // farklılık gösterebilir. Örneğin, global bir `likes` koleksiyonunda
+          // `uid` alanına göre filtreleme yapmak daha yaygın olabilir.
+          collectionName = `users/${currentUser.uid}/${type}`;
+          userFilterField = null; // Bu koleksiyonlar zaten kullanıcıya özel
           break;
         default:
           collectionName = `users/${currentUser.uid}/${type}`;
-          needsUserFilter = false;
+          userFilterField = null;
           break;
       }
       
@@ -78,10 +89,10 @@ const AccountBox = () => {
       
       let queryRef = collection(db, collectionName);
 
-      if (needsUserFilter) {
+      if (userFilterField) {
         queryRef = query(
           queryRef,
-          where("uid", "==", currentUser.uid),
+          where(userFilterField, "==", currentUser.uid),
           orderBy("createdAt", "desc")
         );
       } else {
@@ -125,6 +136,18 @@ const AccountBox = () => {
       setHasMore(fetchedData.length === ITEMS_PER_PAGE);
     } catch (error) {
       console.error("🔥 Veri çekme hatası:", error);
+      // Hata mesajını kullanıcıya göster
+      if (error.code === 'failed-precondition') {
+        // Dizin hatası için özel mesaj
+        const indexMessage = "Dizin hatası: İçerikleri görüntülemek için Firebase'de gerekli dizinlerin oluşturulması gerekiyor. Lütfen konsolu kontrol edin.";
+        showToast(indexMessage, "error");
+        console.error(indexMessage);
+      } else {
+        // Diğer genel hatalar için mesaj
+        const generalMessage = "İçerikler yüklenirken bir sorun oluştu. Lütfen tekrar deneyin.";
+        showToast(generalMessage, "error");
+        console.error("Genel hata:", error.message);
+      }
     } finally {
       setLoadingContent(false);
     }
