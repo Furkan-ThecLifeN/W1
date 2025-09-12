@@ -6,12 +6,14 @@ import RightSidebar from "../../components/RightSideBar/RightSideBar";
 import PostCard from "../../components/Post/PostCard";
 import TweetCard from "../../components/TweetCard/TweetCard";
 import BottomNav from "../../components/BottomNav/BottomNav";
+import LoadingOverlay from "../../components/LoadingOverlay/LoadingOverlay"; // 🔥 import edildi
 import styles from "./HomePage.module.css";
 
 const Home = () => {
   const [posts, setPosts] = useState([]);
   const [feelings, setFeelings] = useState([]);
   const [feed, setFeed] = useState([]);
+  const [loading, setLoading] = useState(true); // 🔥 loading state
 
   useEffect(() => {
     const qPosts = query(
@@ -23,6 +25,9 @@ const Home = () => {
       orderBy("createdAt", "desc")
     );
 
+    let postsLoaded = false;
+    let feelingsLoaded = false;
+
     const unsubPosts = onSnapshot(qPosts, (snapshot) => {
       setPosts(
         snapshot.docs.map((doc) => ({
@@ -31,6 +36,8 @@ const Home = () => {
           ...doc.data(),
         }))
       );
+      postsLoaded = true;
+      if (postsLoaded && feelingsLoaded) setLoading(false);
     });
 
     const unsubFeelings = onSnapshot(qFeelings, (snapshot) => {
@@ -41,6 +48,8 @@ const Home = () => {
           ...doc.data(),
         }))
       );
+      feelingsLoaded = true;
+      if (postsLoaded && feelingsLoaded) setLoading(false);
     });
 
     return () => {
@@ -72,7 +81,6 @@ const Home = () => {
       }
     });
 
-    // Atlanan öğeleri sona ekle (hala karışık olacak)
     const missing = shuffled.filter((x) => !arranged.includes(x));
     const finalFeed = [...arranged, ...missing].sort(() => Math.random() - 0.5);
 
@@ -81,6 +89,8 @@ const Home = () => {
 
   return (
     <div className={styles.home}>
+      {loading && <LoadingOverlay />} {/* 🔥 Yükleme ekranı */}
+      
       <Sidebar />
       <main className={styles.mainContent}>
         <header className={styles.header}>
@@ -88,13 +98,14 @@ const Home = () => {
         </header>
 
         <section className={styles.feed}>
-          {feed.map((item) =>
-            item.type === "post" ? (
-              <PostCard key={item.id} data={item} />
-            ) : (
-              <TweetCard key={item.id} data={item} />
-            )
-          )}
+          {!loading &&
+            feed.map((item) =>
+              item.type === "post" ? (
+                <PostCard key={item.id} data={item} />
+              ) : (
+                <TweetCard key={item.id} data={item} />
+              )
+            )}
         </section>
       </main>
       <RightSidebar />
