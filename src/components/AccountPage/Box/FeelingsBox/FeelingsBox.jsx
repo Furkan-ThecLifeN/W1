@@ -1,3 +1,4 @@
+// /components/Box/FeelingsBox/FeelingsBox.jsx
 import React, { useState, useEffect } from "react";
 import styles from "./FeelingsBox.module.css";
 import {
@@ -9,10 +10,12 @@ import {
 import { FaHeart, FaBookmark } from "react-icons/fa";
 import { auth } from "../../../../config/firebase-client";
 import { useUser } from "../../../../context/UserContext";
+import { useAuth } from "../../../../context/AuthProvider";
 
 const FeelingsBox = ({ feeling }) => {
   const { currentUser } = useUser();
-  const [liked, setLiked] = useState(feeling?.isLikedByMe || false);
+  const { showToast } = useAuth(); // Toast bildirimi için useAuth hook'u
+  const [liked, setLiked] = useState(false); // Başlangıçta false olarak ayarla
   const [saved, setSaved] = useState(feeling?.isSavedByMe || false);
   const [showModal, setShowModal] = useState(false);
   const [likeCount, setLikeCount] = useState(feeling?.stats?.likes || 0);
@@ -28,15 +31,15 @@ const FeelingsBox = ({ feeling }) => {
     "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
   const tweetImages = imageUrls || images || [];
   const validPostId = feeling?.id || feeling?.postId || feeling?.uid;
+  const postType = privacy === "public" ? "globalFeelings" : "feelings";
 
   useEffect(() => {
-    if (!currentUser || !validPostId) return;
+    // Sayfa yüklendiğinde beğeni durumunu kontrol et
+    const checkLikedStatus = async () => {
+      if (!currentUser || !validPostId) return;
 
-    const checkLiked = async () => {
       try {
         const token = await auth.currentUser.getIdToken();
-        const postType = privacy === "public" ? "globalfeelings" : "feelings";
-
         const res = await fetch(
           `${process.env.REACT_APP_API_URL}/api/actions/check-like`,
           {
@@ -48,28 +51,29 @@ const FeelingsBox = ({ feeling }) => {
             body: JSON.stringify({ postId: validPostId, postType: postType }),
           }
         );
+
+        if (!res.ok) {
+          throw new Error("Beğeni durumu alınamadı.");
+        }
+
         const data = await res.json();
         setLiked(data.liked);
       } catch (err) {
-        console.error("Beğeni durumu alınamadı:", err);
+        console.error("Beğeni durumu kontrol hatası:", err);
       }
     };
 
-    checkLiked();
-  }, [currentUser, validPostId, privacy]);
+    checkLikedStatus();
+  }, [currentUser, validPostId, postType]);
 
   const handleLike = async () => {
     if (!currentUser) {
-      alert("Beğenmek için giriş yapın.");
+      showToast("Beğenmek için giriş yapmalısınız.", "error");
       return;
     }
-    if (!validPostId) {
-      alert("Bu gönderi geçerli bir kimliğe sahip değil.");
-      return;
-    }
-    if (isUpdating) return;
+    if (!validPostId || isUpdating) return;
 
-    // İyimser Güncelleme Başlangıcı
+    // İyimser Güncelleme: UI'ı hemen güncelle
     const previousLiked = liked;
     const previousLikeCount = likeCount;
 
@@ -79,8 +83,6 @@ const FeelingsBox = ({ feeling }) => {
 
     try {
       const token = await auth.currentUser.getIdToken();
-      const postType = privacy === "public" ? "globalfeelings" : "feelings";
-
       const res = await fetch(
         `${process.env.REACT_APP_API_URL}/api/actions/toggle-like`,
         {
@@ -94,14 +96,23 @@ const FeelingsBox = ({ feeling }) => {
       );
 
       if (!res.ok) {
-        throw new Error("Beğeni işlemi başarısız.");
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Beğeni işlemi başarısız.");
       }
+
+      // Backend'den dönen güncel beğeni sayısını al
+      const data = await res.json();
+      setLikeCount(data.newLikesCount);
+
     } catch (err) {
       console.error("Beğenme hatası:", err);
       // Hata durumunda eski duruma geri dön
       setLiked(previousLiked);
       setLikeCount(previousLikeCount);
-      alert("Beğenme işlemi sırasında bir hata oluştu. Lütfen tekrar deneyin.");
+      showToast(
+        "Beğeni işlemi sırasında bir sorun oluştu. Lütfen tekrar deneyin.",
+        "error"
+      );
     } finally {
       setIsUpdating(false);
     }
@@ -109,6 +120,7 @@ const FeelingsBox = ({ feeling }) => {
 
   const handleSave = () => setSaved(!saved);
 
+  // CardContent kısmı aynı kalır...
   const CardContent = () => (
     <>
       <div className={styles.header}>
