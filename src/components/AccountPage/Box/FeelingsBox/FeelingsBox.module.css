@@ -232,3 +232,16 @@
     display: block; /* Mobil cihazlarda kartın mobil versiyonunu göster */
   }
 }
+
+.action_item {
+  display: flex;
+  align-items: center;
+  gap: 6px; /* ikon ile sayı arasındaki boşluk */
+  cursor: pointer;
+}
+
+.action_item span {
+  font-size: 14px;
+  color: #ffffff; /* gri ton, istersen değiştir */
+  user-select: none; /* sayı seçilemesin */
+}

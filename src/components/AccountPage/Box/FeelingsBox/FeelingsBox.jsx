@@ -11,17 +11,23 @@ import { FaHeart, FaBookmark } from "react-icons/fa";
 import { auth } from "../../../../config/firebase-client";
 import { useUser } from "../../../../context/UserContext";
 import { useAuth } from "../../../../context/AuthProvider";
+import ActionsModal from "../ActionsModal/ActionsModal";
 
 const FeelingsBox = ({ feeling }) => {
   const { currentUser } = useUser();
-  const { showToast } = useAuth(); // Toast bildirimi için useAuth hook'u
-  const [liked, setLiked] = useState(false); // Başlangıçta false olarak ayarla
-  const [saved, setSaved] = useState(feeling?.isSavedByMe || false);
+  const { showToast } = useAuth();
+  const [liked, setLiked] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [likeCount, setLikeCount] = useState(feeling?.stats?.likes || 0);
+  const [commentCount, setCommentCount] = useState(
+    feeling?.stats?.comments || 0
+  );
+  const [shareCount, setShareCount] = useState(feeling?.stats?.shares || 0);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [activeModalTab, setActiveModalTab] = useState("comments");
 
-  const { caption, text, displayName, photoURL, imageUrls, images, privacy } =
+  const { caption, text, displayName, photoURL, imageUrls, images } =
     feeling || {};
 
   const tweetText = caption || text || "";
@@ -30,59 +36,56 @@ const FeelingsBox = ({ feeling }) => {
     photoURL ||
     "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
   const tweetImages = imageUrls || images || [];
-  const validPostId = feeling?.id || feeling?.postId || feeling?.uid;
-  const postType = privacy === "public" ? "globalFeelings" : "feelings";
+  const postId = feeling?.id;
+  const postType = feeling?.privacy === "public" ? "globalFeelings" : "feelings";
 
+  // kullanıcı aksiyonlarını kontrol et
   useEffect(() => {
-    // Sayfa yüklendiğinde beğeni durumunu kontrol et
-    const checkLikedStatus = async () => {
-      if (!currentUser || !validPostId) return;
-
+    const checkUserActions = async () => {
+      if (!currentUser || !postId) return;
       try {
-        const token = await auth.currentUser.getIdToken();
-        const res = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/actions/check-like`,
-          {
+        const token = await auth.currentUser?.getIdToken();
+
+        const [likeRes, saveRes] = await Promise.all([
+          fetch(`${process.env.REACT_APP_API_URL}/api/actions/check-like`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ postId: validPostId, postType: postType }),
-          }
-        );
+            body: JSON.stringify({ postId, postType }),
+          }),
+          fetch(`${process.env.REACT_APP_API_URL}/api/actions/check-save`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ postId, postType }),
+          }),
+        ]);
 
-        if (!res.ok) {
-          throw new Error("Beğeni durumu alınamadı.");
-        }
+        const [likeData, saveData] = await Promise.all([
+          likeRes.json(),
+          saveRes.json(),
+        ]);
 
-        const data = await res.json();
-        setLiked(data.liked);
-      } catch (err) {
-        console.error("Beğeni durumu kontrol hatası:", err);
+        setLiked(likeData.isLiked);
+        setSaved(saveData.isSaved);
+      } catch (error) {
+        console.error("Kullanıcı eylemlerini kontrol etme hatası:", error);
       }
     };
 
-    checkLikedStatus();
-  }, [currentUser, validPostId, postType]);
+    checkUserActions();
+  }, [currentUser, postId, postType]);
 
+  // beğen
   const handleLike = async () => {
-    if (!currentUser) {
-      showToast("Beğenmek için giriş yapmalısınız.", "error");
-      return;
-    }
-    if (!validPostId || isUpdating) return;
-
-    // İyimser Güncelleme: UI'ı hemen güncelle
-    const previousLiked = liked;
-    const previousLikeCount = likeCount;
-
-    setLiked(!previousLiked);
-    setLikeCount(previousLiked ? previousLikeCount - 1 : previousLikeCount + 1);
+    if (!currentUser || isUpdating) return;
     setIsUpdating(true);
-
     try {
-      const token = await auth.currentUser.getIdToken();
+      const token = await auth.currentUser?.getIdToken();
       const res = await fetch(
         `${process.env.REACT_APP_API_URL}/api/actions/toggle-like`,
         {
@@ -91,36 +94,68 @@ const FeelingsBox = ({ feeling }) => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ postId: validPostId, postType: postType }),
+          body: JSON.stringify({ postId: feeling.id, postType }),
         }
       );
-
-      if (!res.ok) {
+      if (res.ok) {
+        const data = await res.json();
+        setLiked(!liked);
+        setLikeCount(data.newLikesCount);
+      } else {
         const errorData = await res.json();
-        throw new Error(errorData.error || "Beğeni işlemi başarısız.");
+        showToast("error", errorData.error || "Beğeni işlemi başarısız oldu.");
       }
-
-      // Backend'den dönen güncel beğeni sayısını al
-      const data = await res.json();
-      setLikeCount(data.newLikesCount);
-
-    } catch (err) {
-      console.error("Beğenme hatası:", err);
-      // Hata durumunda eski duruma geri dön
-      setLiked(previousLiked);
-      setLikeCount(previousLikeCount);
+    } catch (error) {
       showToast(
-        "Beğeni işlemi sırasında bir sorun oluştu. Lütfen tekrar deneyin.",
-        "error"
+        "error",
+        "Bir hata oluştu. Lütfen daha sonra tekrar deneyin."
       );
     } finally {
       setIsUpdating(false);
     }
   };
 
-  const handleSave = () => setSaved(!saved);
+  // kaydet
+  const handleSave = async () => {
+    if (!currentUser || isUpdating) return;
+    setIsUpdating(true);
+    try {
+      const token = await auth.currentUser?.getIdToken();
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/actions/toggle-save`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ postId: feeling.id, postType }),
+        }
+      );
 
-  // CardContent kısmı aynı kalır...
+      if (res.ok) {
+        const data = await res.json();
+        setSaved(data.isSaved);
+        showToast("success", data.isSaved ? "Kaydedildi!" : "Kaydetme iptal edildi.");
+      } else {
+        const errorData = await res.json();
+        showToast("error", errorData.error || "Kaydetme işlemi başarısız.");
+      }
+    } catch (error) {
+      showToast("error", "Bir hata oluştu. Lütfen daha sonra tekrar deneyin.");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleCommentUpdate = (newCommentCount) => {
+    setCommentCount(newCommentCount);
+  };
+
+  const handleShareUpdate = (newShareCount) => {
+    setShareCount(newShareCount);
+  };
+
   const CardContent = () => (
     <>
       <div className={styles.header}>
@@ -134,39 +169,66 @@ const FeelingsBox = ({ feeling }) => {
           </div>
           <span className={styles.username}>{postDisplayName}</span>
         </div>
-        <div className={styles.actions}>
-          <FiMoreHorizontal className={styles.more} />
+        <div className={styles.more}>
+          <FiMoreHorizontal
+            className={styles.more_icon}
+            onClick={() => {
+              setActiveModalTab("options");
+              setShowModal(true);
+            }}
+          />
         </div>
       </div>
 
       <div className={styles.content}>
         <p>{tweetText}</p>
         {tweetImages.length > 0 && (
-          <div className={styles.imageWrapper}>
-            <img
-              src={tweetImages[0]}
-              alt="Tweet Görseli"
-              className={styles.tweetImage}
-            />
+          <div className={styles.image_container}>
+            {tweetImages.map((img, index) => (
+              <img
+                key={index}
+                src={img}
+                alt={`Post görseli ${index + 1}`}
+                className={styles.post_image}
+              />
+            ))}
           </div>
         )}
       </div>
 
+      {/* eski yapı: ikon + sayı inline */}
       <div className={styles.footer}>
-        <FaHeart
-          className={`${styles.icon} ${liked ? styles.liked : ""} ${
-            isUpdating ? styles.disabled : ""
-          }`}
-          onClick={handleLike}
-        />
-        <span>{likeCount}</span>
-        <FiMessageCircle className={styles.icon} />
-        <FiSend className={styles.icon} />
-        {saved ? (
-          <FaBookmark className={styles.icon} onClick={handleSave} />
-        ) : (
-          <FiBookmark className={styles.icon} onClick={handleSave} />
-        )}
+        <div onClick={handleLike} className={styles.action_item}>
+          <FaHeart className={`${styles.icon} ${liked ? styles.liked : ""}`} />
+          <span>{likeCount}</span>
+        </div>
+        <div
+          onClick={() => {
+            setActiveModalTab("comments");
+            setShowModal(true);
+          }}
+          className={styles.action_item}
+        >
+          <FiMessageCircle className={styles.icon} />
+          <span>{commentCount}</span>
+        </div>
+        <div
+          onClick={() => {
+            setActiveModalTab("share");
+            setShowModal(true);
+          }}
+          className={styles.action_item}
+        >
+          <FiSend className={styles.icon} />
+          <span>{shareCount}</span>
+        </div>
+        <div onClick={handleSave} className={styles.action_item}>
+          {saved ? (
+            <FaBookmark className={styles.icon} />
+          ) : (
+            <FiBookmark className={styles.icon} />
+          )}
+        </div>
       </div>
     </>
   );
@@ -179,7 +241,10 @@ const FeelingsBox = ({ feeling }) => {
 
       <div
         className={`${styles.card_mobile} ${styles.mobile}`}
-        onClick={() => setShowModal(true)}
+        onClick={() => {
+          setActiveModalTab("comments");
+          setShowModal(true);
+        }}
       >
         <div className={styles.header_mobile}>
           <div className={styles.user}>
@@ -196,24 +261,20 @@ const FeelingsBox = ({ feeling }) => {
             <FiMoreHorizontal className={styles.more} />
           </div>
         </div>
-
         <div className={styles.content_mobile}>
           <p>{tweetText}</p>
         </div>
       </div>
 
       {showModal && (
-        <div
-          className={styles.modalOverlay}
-          onClick={() => setShowModal(false)}
-        >
-          <div
-            className={styles.modalContent}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <CardContent />
-          </div>
-        </div>
+        <ActionsModal
+          show={showModal}
+          onClose={() => setShowModal(false)}
+          post={feeling}
+          initialTab={activeModalTab}
+          onCommentAdded={handleCommentUpdate}
+          onShared={handleShareUpdate}
+        />
       )}
     </>
   );
