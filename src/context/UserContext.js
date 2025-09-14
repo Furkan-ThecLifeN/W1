@@ -4,10 +4,11 @@ import React, {
   useEffect,
   useContext,
   useMemo,
+  useRef,
 } from "react";
 import { auth, db } from "../config/firebase-client";
 import { useAuth } from "./AuthProvider";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 
 const UserContext = createContext();
 
@@ -46,23 +47,29 @@ export const UserProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const { showToast } = useAuth();
+  const isMounted = useRef(true);
+  const isFetchingProfile = useRef(false);
 
-  // ✅ Yeni fonksiyon: Kullanıcının toplam gönderi sayısını al
+  // Bu fonksiyon, global koleksiyonlardaki toplam gönderi sayısını çeker
   const getCombinedPostCount = async (uid) => {
     try {
       if (!uid) return 0;
 
-      const postsRef = collection(db, "users", uid, "posts");
-      const feedsRef = collection(db, "users", uid, "feeds");
-      const feelingsRef = collection(db, "users", uid, "feelings");
+      const postsRef = collection(db, "globalPosts");
+      const feelingsRef = collection(db, "globalFeelings");
+      const feedsRef = collection(db, "globalFeeds");
 
-      const [postsSnap, feedsSnap, feelingsSnap] = await Promise.all([
-        getDocs(postsRef),
-        getDocs(feedsRef),
-        getDocs(feelingsRef),
+      const postsQuery = query(postsRef, where("uid", "==", uid));
+      const feelingsQuery = query(feelingsRef, where("uid", "==", uid));
+      const feedsQuery = query(feedsRef, where("ownerId", "==", uid));
+
+      const [postsSnap, feelingsSnap, feedsSnap] = await Promise.all([
+        getDocs(postsQuery),
+        getDocs(feelingsQuery),
+        getDocs(feedsQuery),
       ]);
 
-      return postsSnap.size + feedsSnap.size + feelingsSnap.size;
+      return postsSnap.size + feelingsSnap.size + feelingsSnap.size;
     } catch (error) {
       console.error("Gönderi sayısını alırken hata oluştu:", error);
       return 0;
@@ -70,8 +77,16 @@ export const UserProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    isMounted.current = true;
     const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
+      if (!isMounted.current) return;
+
       if (firebaseUser) {
+        if (isFetchingProfile.current) return;
+        isFetchingProfile.current = true;
+
+        setLoading(true);
+
         try {
           const idToken = await firebaseUser.getIdToken();
           const res = await fetch(
@@ -83,7 +98,7 @@ export const UserProvider = ({ children }) => {
             }
           );
 
-          if (res.ok) {
+          if (isMounted.current && res.ok) {
             const { profile } = await res.json();
             const totalPosts = await getCombinedPostCount(firebaseUser.uid);
 
@@ -101,20 +116,41 @@ export const UserProvider = ({ children }) => {
               },
             });
           } else {
-            console.error("Kullanıcı profili alınamadı.");
+            console.error(
+              "Kullanıcı profili alınamadı. Durum:",
+              res.status
+            );
             setCurrentUser(null);
+            if (res.status === 429) {
+              showToast(
+                "error",
+                "Çok fazla istek gönderildi. Lütfen birkaç saniye bekleyip tekrar deneyin."
+              );
+            }
           }
         } catch (error) {
           console.error("Kullanıcı profili alınırken hata:", error);
           setCurrentUser(null);
+          showToast(
+            "error",
+            "Profil bilgileri yüklenirken hata oluştu. Lütfen tekrar giriş yapın."
+          );
+        } finally {
+          if (isMounted.current) {
+            setLoading(false);
+          }
+          isFetchingProfile.current = false;
         }
       } else {
         setCurrentUser(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      isMounted.current = false;
+      unsubscribe();
+    };
   }, []);
 
   const updatePrivacySettings = async (settings) => {
@@ -238,7 +274,7 @@ export const UserProvider = ({ children }) => {
 
   return (
     <UserContext.Provider value={contextValue}>
-      {!loading && children}
+      {loading ? null : children}
     </UserContext.Provider>
   );
 };

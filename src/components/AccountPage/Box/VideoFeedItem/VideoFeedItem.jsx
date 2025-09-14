@@ -45,10 +45,12 @@ export default function VideoFeedItem({
   userProfileImage,
   onClose, // Yeni prop
   isMobile, // Yeni prop
+  initialLiked, // Yeni prop
+  initialSaved, // Yeni prop
 }) {
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(initialLiked);
   const [doubleTap, setDoubleTap] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState(initialSaved);
   const [followed, setFollowed] = useState(false);
 
   const handleDoubleClick = () => {

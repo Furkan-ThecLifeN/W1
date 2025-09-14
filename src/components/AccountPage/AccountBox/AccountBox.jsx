@@ -3,7 +3,7 @@ import { IoIosSettings } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import styles from "./AccountBox.module.css";
 import { useUser } from "../../../context/UserContext";
-import { useAuth } from "../../../context/AuthProvider"; // Hata yönetimi için eklendi
+import { useAuth } from "../../../context/AuthProvider";
 import LoadingOverlay from "../../LoadingOverlay/LoadingOverlay";
 import ConnectionsModal from "../../ConnectionsModal/ConnectionsModal";
 import { db } from "../../../config/firebase-client";
@@ -12,8 +12,6 @@ import {
   query,
   getDocs,
   orderBy,
-  limit,
-  startAfter,
   where,
 } from "firebase/firestore";
 
@@ -26,142 +24,139 @@ import VideoThumbnail from "../Box/VideoFeedItem/VideoThumbnail/VideoThumbnail";
 
 const AccountBox = () => {
   const { currentUser, loading } = useUser();
-  const { showToast } = useAuth(); // Hata bildirimleri için useAuth hook'u kullanılıyor
+  const { showToast } = useAuth();
   const [activeTab, setActiveTab] = useState("posts");
-  const [data, setData] = useState([]);
+  const [allData, setAllData] = useState({
+    posts: [],
+    feelings: [],
+    feeds: [],
+    likes: [],
+    tags: [],
+  });
   const [loadingContent, setLoadingContent] = useState(false);
-  const [lastVisible, setLastVisible] = useState(null);
-  const [hasMore, setHasMore] = useState(true);
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState(null);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
+  const [postCounts, setPostCounts] = useState({
+    posts: 0,
+    feelings: 0,
+    feeds: 0,
+  });
 
-  const ITEMS_PER_PAGE = 10;
+  // ---------------- COUNT POSTS ----------------
+  // Bu fonksiyon sadece sayıları çekmek için bir kez çalışır.
+  useEffect(() => {
+    const fetchPostCounts = async () => {
+      if (!currentUser?.uid) return;
+      try {
+        const postsQuery = query(
+          collection(db, "globalPosts"),
+          where("uid", "==", currentUser.uid)
+        );
+        const feelingsQuery = query(
+          collection(db, "globalFeelings"),
+          where("uid", "==", currentUser.uid)
+        );
+        const feedsQuery = query(
+          collection(db, "globalFeeds"),
+          where("ownerId", "==", currentUser.uid)
+        );
 
-  // ---------------- FETCH CONTENT ----------------
-  const fetchContent = async (type, isInitialLoad = true) => {
+        const [postsSnapshot, feelingsSnapshot, feedsSnapshot] = await Promise.all([
+          getDocs(postsQuery),
+          getDocs(feelingsQuery),
+          getDocs(feedsQuery),
+        ]);
+
+        setPostCounts({
+          posts: postsSnapshot.size,
+          feelings: feelingsSnapshot.size,
+          feeds: feedsSnapshot.size,
+        });
+      } catch (error) {
+        console.error("Gönderi sayıları çekilirken hata oluştu:", error);
+      }
+    };
+
+    if (currentUser) {
+      fetchPostCounts();
+    }
+  }, [currentUser]);
+
+  // ---------------- FETCH ALL CONTENT ----------------
+  const fetchAllUserData = async () => {
     if (!currentUser || !currentUser.uid) return;
 
     setLoadingContent(true);
-    let q;
-
-    if (isInitialLoad) {
-      setData([]);
-      setLastVisible(null);
-      setHasMore(true);
-    }
 
     try {
-      // 🔹 Hangi koleksiyondan veri çekileceğini belirle
-      let collectionName;
-      let userFilterField = "uid";
-      
-      switch (type) {
-        case "feelings":
-          collectionName = "globalFeelings";
-          break;
-        case "posts":
-          collectionName = "globalPosts";
-          break;
-        case "feeds":
-          collectionName = "globalFeeds";
-          userFilterField = "ownerId"; // Feeds için filtreleme alanını ownerId olarak belirle
-          break;
-        case "likes":
-        case "tags":
-          // Not: 'likes' ve 'tags' için bu koleksiyon yolu, veri yapınıza bağlı olarak
-          // farklılık gösterebilir. Örneğin, global bir `likes` koleksiyonunda
-          // `uid` alanına göre filtreleme yapmak daha yaygın olabilir.
-          collectionName = `users/${currentUser.uid}/${type}`;
-          userFilterField = null; // Bu koleksiyonlar zaten kullanıcıya özel
-          break;
-        default:
-          collectionName = `users/${currentUser.uid}/${type}`;
-          userFilterField = null;
-          break;
-      }
-      
-      // 🚨 ÖNEMLİ: Eğer `globalPosts` veya `globalFeeds` koleksiyonlarında `uid` ve `createdAt` alanlarını
-      // birlikte kullanıyorsanız, Firebase konsolunda bu alanlar için bir birleşik dizin (composite index)
-      // oluşturmanız gerekir. Aksi halde kodunuz hata verecektir.
-      
-      let queryRef = collection(db, collectionName);
+      // Tüm verileri paralel olarak çekiyoruz
+      const [
+        postsSnapshot,
+        feelingsSnapshot,
+        feedsSnapshot,
+        likesSnapshot,
+        tagsSnapshot,
+      ] = await Promise.all([
+        getDocs(query(collection(db, "globalPosts"), where("uid", "==", currentUser.uid), orderBy("createdAt", "desc"))),
+        getDocs(query(collection(db, "globalFeelings"), where("uid", "==", currentUser.uid), orderBy("createdAt", "desc"))),
+        getDocs(query(collection(db, "globalFeeds"), where("ownerId", "==", currentUser.uid), orderBy("createdAt", "desc"))),
+        getDocs(query(collection(db, "users", currentUser.uid, "likes"), orderBy("createdAt", "desc"))),
+        getDocs(query(collection(db, "users", currentUser.uid, "tags"), orderBy("createdAt", "desc"))),
+      ]);
 
-      if (userFilterField) {
-        queryRef = query(
-          queryRef,
-          where(userFilterField, "==", currentUser.uid),
-          orderBy("createdAt", "desc")
-        );
-      } else {
-        queryRef = query(
-          queryRef,
-          orderBy("createdAt", "desc")
-        );
-      }
+      const likedPostIds = likesSnapshot.docs.map(doc => doc.id);
+      const taggedPostIds = tagsSnapshot.docs.map(doc => doc.id);
 
-      q = query(
-        queryRef,
-        ...(isInitialLoad
-          ? [limit(ITEMS_PER_PAGE)]
-          : [startAfter(lastVisible), limit(ITEMS_PER_PAGE)])
-      );
+      const processSnapshot = (snapshot, type) => {
+        let data = snapshot.docs.map(doc => {
+          const item = { id: doc.id, ...doc.data() };
+          // Beğeni/Kaydetme durumlarını veriye ekle
+          item.initialLiked = likedPostIds.includes(item.id);
+          item.initialSaved = taggedPostIds.includes(item.id);
+          return item;
+        });
+        if (type === "feeds") {
+          data = data.filter(item => item.mediaUrl);
+        }
+        return data;
+      };
 
-      if (!isInitialLoad && !lastVisible) {
-        setLoadingContent(false);
-        return;
-      }
-
-      const querySnapshot = await getDocs(q);
-      const fetchedData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      let filteredData = fetchedData;
-      if (type === "feeds") {
-        filteredData = fetchedData.filter((item) => item.mediaUrl);
-      }
-
-      setData((prevData) => {
-        const newData = filteredData.filter(
-          (item) => !prevData.some((existingItem) => existingItem.id === item.id)
-        );
-        return [...prevData, ...newData];
+      setAllData({
+        posts: processSnapshot(postsSnapshot, 'posts'),
+        feelings: processSnapshot(feelingsSnapshot, 'feelings'),
+        feeds: processSnapshot(feedsSnapshot, 'feeds'),
+        likes: processSnapshot(likesSnapshot, 'likes'),
+        tags: processSnapshot(tagsSnapshot, 'tags'),
       });
 
-      setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
-      setHasMore(fetchedData.length === ITEMS_PER_PAGE);
     } catch (error) {
-      console.error("🔥 Veri çekme hatası:", error);
-      // Hata mesajını kullanıcıya göster
+      console.error("🔥 Tüm veriler çekilirken hata oluştu:", error);
       if (error.code === 'failed-precondition') {
-        // Dizin hatası için özel mesaj
         const indexMessage = "Dizin hatası: İçerikleri görüntülemek için Firebase'de gerekli dizinlerin oluşturulması gerekiyor. Lütfen konsolu kontrol edin.";
         showToast(indexMessage, "error");
-        console.error(indexMessage);
       } else {
-        // Diğer genel hatalar için mesaj
-        const generalMessage = "İçerikler yüklenirken bir sorun oluştu. Lütfen tekrar deneyin.";
+        const generalMessage = "Veriler yüklenirken bir sorun oluştu. Lütfen tekrar deneyin.";
         showToast(generalMessage, "error");
-        console.error("Genel hata:", error.message);
       }
     } finally {
       setLoadingContent(false);
     }
   };
 
+  // Sadece bileşen yüklendiğinde ve currentUser değiştiğinde çalışır
   useEffect(() => {
     if (currentUser) {
-      fetchContent(activeTab, true);
+      fetchAllUserData();
     }
-  }, [activeTab, currentUser]);
+  }, [currentUser]);
 
   // ---------------- HANDLERS ----------------
   const handleTabChange = (tabName) => {
     setActiveTab(tabName);
+    // Artık sekme değiştiğinde yeni bir istek ATMIYORUZ.
   };
 
   const handleVideoClick = (videoData) => {
@@ -186,8 +181,7 @@ const AccountBox = () => {
     return <div>Lütfen giriş yapın.</div>;
   }
 
-  const { uid, username, displayName, photoURL, bio, familySystem, stats } =
-    currentUser;
+  const { username, displayName, photoURL, bio, familySystem, stats } = currentUser;
 
   const handleStatClick = (type) => {
     setModalType(type);
@@ -196,11 +190,14 @@ const AccountBox = () => {
 
   // ---------------- CARD COMPONENT SWITCH ----------------
   const getCardComponent = (item) => {
+    const initialLiked = item?.initialLiked ?? false;
+    const initialSaved = item?.initialSaved ?? false;
+
     switch (activeTab) {
       case "posts":
-        return <PostCard key={item.id} post={item} />;
+        return <PostCard key={item.id} post={item} initialLiked={initialLiked} initialSaved={initialSaved} />;
       case "feelings":
-        return <TweetCard key={item.id} feeling={item} />;
+        return <TweetCard key={item.id} feeling={item} initialLiked={initialLiked} initialSaved={initialSaved} />;
       case "feeds":
         return (
           <VideoThumbnail
@@ -209,6 +206,10 @@ const AccountBox = () => {
             onClick={() => handleVideoClick(item)}
           />
         );
+      case "likes":
+      case "tags":
+        // Bu sekmeler için direkt alınan veriyi kullanıyoruz
+        return <PostCard key={item.id} post={item} initialLiked={activeTab === 'likes'} initialSaved={activeTab === 'tags'} />;
       default:
         return null;
     }
@@ -221,21 +222,19 @@ const AccountBox = () => {
       case "feelings":
         return `${displayName || username}, henüz bir duygu paylaşmadınız.`;
       case "feeds":
-        return `${
-          displayName || username
-        }, henüz feed'leriniz bulunmamaktadır.`;
+        return `${displayName || username}, henüz feed'leriniz bulunmamaktadır.`;
       case "likes":
         return `${displayName || username}, henüz bir gönderiyi beğenmediniz.`;
       case "tags":
-        return `${
-          displayName || username
-        }, henüz etiketlendiğiniz bir gönderi bulunmamaktadır.`;
+        return `${displayName || username}, henüz etiketlendiğiniz bir gönderi bulunmamaktadır.`;
       default:
         return `Henüz bir içerik bulunmamaktadır.`;
     }
   };
 
   // ---------------- RENDER ----------------
+  const currentData = allData[activeTab] || [];
+
   return (
     <div className={styles.pageWrapper}>
       {/* Top */}
@@ -270,12 +269,16 @@ const AccountBox = () => {
 
         <div className={styles.statsSection}>
           <div className={styles.statBox}>
-            <strong>{stats?.posts || 0}</strong>
+            <strong>{postCounts.posts}</strong>
             <span className={styles.statLabel}>Post</span>
           </div>
           <div className={styles.statBox}>
-            <strong>{stats?.rta || 0}</strong>
-            <span className={styles.statLabel}>RTA</span>
+            <strong>{postCounts.feelings}</strong>
+            <span className={styles.statLabel}>Feelings</span>
+          </div>
+          <div className={styles.statBox}>
+            <strong>{postCounts.feeds}</strong>
+            <span className={styles.statLabel}>Feeds</span>
           </div>
           <div
             className={styles.statBox}
@@ -332,24 +335,13 @@ const AccountBox = () => {
       <div className={styles.tabContent}>
         {loadingContent ? (
           <LoadingOverlay />
-        ) : data.length > 0 ? (
+        ) : currentData.length > 0 ? (
           <div
             className={`${styles.section} ${
               activeTab === "feeds" ? styles.feedsGrid : ""
             }`}
           >
-            {data.map(getCardComponent)}
-            {hasMore && (
-              <div className={styles.loadMoreContainer}>
-                <button
-                  onClick={() => fetchContent(activeTab, false)}
-                  className={styles.loadMoreBtn}
-                  disabled={loadingContent}
-                >
-                  {loadingContent ? "Yükleniyor..." : "Daha Fazla Yükle"}
-                </button>
-              </div>
-            )}
+            {currentData.map(getCardComponent)}
           </div>
         ) : (
           <div className={styles.emptyState}>{emptyMessage()}</div>

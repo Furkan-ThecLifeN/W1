@@ -1,5 +1,5 @@
 // /components/Box/FeelingsBox/FeelingsBox.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react"; // useEffect kaldırıldı
 import styles from "./FeelingsBox.module.css";
 import {
   FiMoreHorizontal,
@@ -13,11 +13,11 @@ import { useUser } from "../../../../context/UserContext";
 import { useAuth } from "../../../../context/AuthProvider";
 import ActionsModal from "../ActionsModal/ActionsModal";
 
-const FeelingsBox = ({ feeling }) => {
+const FeelingsBox = ({ feeling, initialLiked, initialSaved }) => { // Yeni prop'lar eklendi
   const { currentUser } = useUser();
   const { showToast } = useAuth();
-  const [liked, setLiked] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [liked, setLiked] = useState(initialLiked); // Prop'tan değer alıyor
+  const [saved, setSaved] = useState(initialSaved); // Prop'tan değer alıyor
   const [showModal, setShowModal] = useState(false);
   const [likeCount, setLikeCount] = useState(feeling?.stats?.likes || 0);
   const [commentCount, setCommentCount] = useState(
@@ -39,51 +39,21 @@ const FeelingsBox = ({ feeling }) => {
   const postId = feeling?.id;
   const postType = feeling?.privacy === "public" ? "globalFeelings" : "feelings";
 
-  // kullanıcı aksiyonlarını kontrol et
-  useEffect(() => {
-    const checkUserActions = async () => {
-      if (!currentUser || !postId) return;
-      try {
-        const token = await auth.currentUser?.getIdToken();
+  // Gereksiz arka uç isteği kaldırıldı:
+  // useEffect ve checkUserActions bloğu burada yok
 
-        const [likeRes, saveRes] = await Promise.all([
-          fetch(`${process.env.REACT_APP_API_URL}/api/actions/check-like`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ postId, postType }),
-          }),
-          fetch(`${process.env.REACT_APP_API_URL}/api/actions/check-save`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ postId, postType }),
-          }),
-        ]);
-
-        const [likeData, saveData] = await Promise.all([
-          likeRes.json(),
-          saveRes.json(),
-        ]);
-
-        setLiked(likeData.isLiked);
-        setSaved(saveData.isSaved);
-      } catch (error) {
-        console.error("Kullanıcı eylemlerini kontrol etme hatası:", error);
-      }
-    };
-
-    checkUserActions();
-  }, [currentUser, postId, postType]);
-
-  // beğen
+  // beğen (İyimser Güncelleme)
   const handleLike = async () => {
     if (!currentUser || isUpdating) return;
+    
+    // Optimistic update
+    const previousLiked = liked;
+    const previousCount = likeCount;
+
+    setLiked(!previousLiked);
+    setLikeCount(previousLiked ? previousCount - 1 : previousCount + 1);
     setIsUpdating(true);
+
     try {
       const token = await auth.currentUser?.getIdToken();
       const res = await fetch(
@@ -97,15 +67,18 @@ const FeelingsBox = ({ feeling }) => {
           body: JSON.stringify({ postId: feeling.id, postType }),
         }
       );
-      if (res.ok) {
-        const data = await res.json();
-        setLiked(!liked);
-        setLikeCount(data.newLikesCount);
-      } else {
+
+      if (!res.ok) {
         const errorData = await res.json();
+        // Revert optimistic update on error
+        setLiked(previousLiked);
+        setLikeCount(previousCount);
         showToast("error", errorData.error || "Beğeni işlemi başarısız oldu.");
       }
     } catch (error) {
+      // Revert optimistic update on error
+      setLiked(previousLiked);
+      setLikeCount(previousCount);
       showToast(
         "error",
         "Bir hata oluştu. Lütfen daha sonra tekrar deneyin."

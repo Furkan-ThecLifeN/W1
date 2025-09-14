@@ -8,9 +8,9 @@ import {
 } from "react-icons/fi";
 import { FaHeart, FaBookmark } from "react-icons/fa";
 
-const PostBox = ({ post }) => {
-  const [liked, setLiked] = useState(false);
-  const [saved, setSaved] = useState(false);
+const PostBox = ({ post, initialLiked, initialSaved }) => {
+  const [liked, setLiked] = useState(initialLiked);
+  const [saved, setSaved] = useState(initialSaved);
 
   // ✅ Yeni state: modal açma/kapama
   const [showModal, setShowModal] = useState(false);
