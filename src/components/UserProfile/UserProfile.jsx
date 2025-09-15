@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./UserProfile.module.css";
 import { useAuth } from "../../context/AuthProvider";
@@ -24,6 +24,8 @@ import {
   limit,
   startAfter,
   where,
+  doc,
+  getDoc,
 } from "firebase/firestore";
 
 // Importing the content components
@@ -47,137 +49,134 @@ const UserProfile = () => {
   const [followStatus, setFollowStatus] = useState("none");
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState(null);
-  const [userData, setUserData] = useState([]);
+  const [allData, setAllData] = useState({
+    posts: [],
+    feelings: [],
+    feeds: [],
+    likes: [],
+    tags: [],
+  });
+  const [loadedTabs, setLoadedTabs] = useState({
+    posts: false,
+    feelings: false,
+    feeds: false,
+    likes: false,
+    tags: false,
+  });
   const [loadingContent, setLoadingContent] = useState(false);
   const [lastVisible, setLastVisible] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
-  const [contentCounts, setContentCounts] = useState({
-    posts: 0,
-    feeds: 0,
-    feelings: 0,
-  });
-
   const apiBaseUrl = process.env.REACT_APP_API_URL;
 
-  // Function to fetch the user's content (posts, feeds, etc.)
-  const fetchUserContent = async (type, isInitialLoad = true) => {
-    if (!profileData?.uid) return;
-    setLoadingContent(true);
-    let q;
+  const fetchUserContent = useCallback(
+    async (type, isInitialLoad = true) => {
+      if (!profileData?.uid) return;
+      setLoadingContent(true);
 
-    if (isInitialLoad) {
-      setUserData([]);
-      setLastVisible(null);
-      setHasMore(true);
-    }
-
-    try {
-      let collectionName;
-      let userFilterField = "uid";
-
-      switch (type) {
-        case "feelings":
-          collectionName = "globalFeelings";
-          break;
-        case "posts":
-          collectionName = "globalPosts";
-          break;
-        case "feeds":
-          collectionName = "globalFeeds";
-          userFilterField = "ownerId";
-          break;
-        case "likes":
-        case "tags":
-          collectionName = `users/${profileData.uid}/${type}`;
-          userFilterField = null; // Bu koleksiyonlar zaten kullanıcıya özel
-          break;
-        default:
-          setLoadingContent(false);
-          return;
-      }
-
-      let queryRef = collection(db, collectionName);
-
-      if (userFilterField) {
-        queryRef = query(
-          queryRef,
-          where(userFilterField, "==", profileData.uid),
-          orderBy("createdAt", "desc")
-        );
-      } else {
-        queryRef = query(queryRef, orderBy("createdAt", "desc"));
-      }
-
-      q = query(
-        queryRef,
-        ...(isInitialLoad
-          ? [limit(ITEMS_PER_PAGE)]
-          : [startAfter(lastVisible), limit(ITEMS_PER_PAGE)])
-      );
-
-      if (!isInitialLoad && !lastVisible) {
+      if (isInitialLoad && loadedTabs[type]) {
         setLoadingContent(false);
+        setHasMore(allData[type].length >= ITEMS_PER_PAGE);
         return;
       }
 
-      const querySnapshot = await getDocs(q);
-      const fetchedData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      try {
+        let collectionName;
+        let userFilterField = "uid";
 
-      let filteredData = fetchedData;
-      if (type === "feeds") {
-        filteredData = fetchedData.filter((item) => item.mediaUrl);
-      }
+        switch (type) {
+          case "feelings":
+            collectionName = "globalFeelings";
+            break;
+          case "posts":
+            collectionName = "globalPosts";
+            break;
+          case "feeds":
+            collectionName = "globalFeeds";
+            userFilterField = "ownerId";
+            break;
+          case "likes":
+          case "tags":
+            collectionName = `users/${profileData.uid}/${type}`;
+            userFilterField = null;
+            break;
+          default:
+            setLoadingContent(false);
+            return;
+        }
 
-      setUserData((prevData) => {
-        const newData = filteredData.filter(
-          (item) => !prevData.some((existingItem) => existingItem.id === item.id)
+        let queryRef = collection(db, collectionName);
+
+        if (userFilterField) {
+          queryRef = query(
+            queryRef,
+            where(userFilterField, "==", profileData.uid),
+            orderBy("createdAt", "desc")
+          );
+        } else {
+          queryRef = query(queryRef, orderBy("createdAt", "desc"));
+        }
+
+        let q = query(
+          queryRef,
+          ...(isInitialLoad
+            ? [limit(ITEMS_PER_PAGE)]
+            : [startAfter(lastVisible), limit(ITEMS_PER_PAGE)])
         );
-        return [...prevData, ...newData];
-      });
 
-      setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
-      setHasMore(fetchedData.length === ITEMS_PER_PAGE);
-    } catch (error) {
-      console.error("Veri çekme hatası:", error);
-      // Hata yönetimi burada eklenebilir, AccountBox'ta olduğu gibi
-    } finally {
-      setLoadingContent(false);
-    }
-  };
+        if (!isInitialLoad && !lastVisible) {
+          setLoadingContent(false);
+          return;
+        }
 
-  const fetchContentCounts = async (profileUid) => {
-    if (!profileUid) return;
-    try {
-      // Global koleksiyonlardan uid'ye göre filtreleyerek sayım yapın
-      const postsCountQuery = query(collection(db, `globalPosts`), where("uid", "==", profileUid));
-      const feelingsCountQuery = query(collection(db, `globalFeelings`), where("uid", "==", profileUid));
-      const feedsCountQuery = query(collection(db, `globalFeeds`), where("ownerId", "==", profileUid));
+        const querySnapshot = await getDocs(q);
+        const fetchedData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
 
-      const [postsSnapshot, feelingsSnapshot, feedsSnapshot] = await Promise.all([
-        getDocs(postsCountQuery),
-        getDocs(feelingsCountQuery),
-        getDocs(feedsCountQuery),
-      ]);
+        let contentData = [];
+        if (type === "likes" || type === "tags") {
+          for (const item of fetchedData) {
+            const postRef = doc(db, item.postType, item.postId);
+            const postSnap = await getDoc(postRef);
+            if (postSnap.exists()) {
+              contentData.push({
+                id: postSnap.id,
+                ...postSnap.data(),
+                originalType: item.postType,
+              });
+            }
+          }
+        } else {
+          contentData = fetchedData;
+        }
 
-      setContentCounts({
-        posts: postsSnapshot.size,
-        feelings: feelingsSnapshot.size,
-        feeds: feedsSnapshot.size,
-      });
-    } catch (error) {
-      console.error("Koleksiyon sayıları çekme hatası:", error);
-      setContentCounts({
-        posts: 0,
-        feeds: 0,
-        feelings: 0,
-      });
-    }
-  };
+        let filteredData = contentData;
+        if (type === "feeds") {
+          filteredData = contentData.filter((item) => item.mediaUrl);
+        }
+
+        setAllData((prevData) => {
+          const newData = filteredData.filter(
+            (item) => !prevData[type].some((existingItem) => existingItem.id === item.id)
+          );
+          return { ...prevData, [type]: [...prevData[type], ...newData] };
+        });
+
+        setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
+        setHasMore(fetchedData.length === ITEMS_PER_PAGE);
+        setLoadedTabs((prev) => ({ ...prev, [type]: true }));
+      } catch (error) {
+        console.error("Veri çekme hatası:", error);
+        showToast("İçerik yüklenirken bir hata oluştu.", "error");
+      } finally {
+        setLoadingContent(false);
+      }
+    },
+    [profileData, lastVisible, showToast, allData, loadedTabs]
+  );
 
   useEffect(() => {
     const fetchUserProfileAndStatus = async () => {
@@ -192,27 +191,14 @@ const UserProfile = () => {
           }
         );
         const profile = profileRes.data.profile;
-        setProfileData(profile);
-
         const statusRes = await axios.get(
           `${apiBaseUrl}/api/users/profile/${profile.uid}/status`,
           {
             headers: { Authorization: `Bearer ${idToken}` },
           }
         );
-        const status = statusRes.data.followStatus;
-        setFollowStatus(status);
-
-        const canView = !profile.isPrivate || status === "following" || status === "self";
-        if (canView) {
-          fetchContentCounts(profile.uid);
-        } else {
-          setContentCounts({
-            posts: 0,
-            feeds: 0,
-            feelings: 0,
-          });
-        }
+        setProfileData({ ...profile, stats: statusRes.data.stats });
+        setFollowStatus(statusRes.data.followStatus);
       } catch (err) {
         console.error("Profil veya takip durumu çekme hatası:", err);
         setError("Profil bilgileri yüklenemedi.");
@@ -224,16 +210,21 @@ const UserProfile = () => {
   }, [username, currentUser, apiBaseUrl]);
 
   useEffect(() => {
-    if (profileData?.uid) {
-      const canView = !profileData.isPrivate || followStatus === "following" || followStatus === "self";
+    if (profileData && !loadedTabs[activeTab]) {
+      const canView =
+        !profileData.isPrivate || followStatus === "following" || followStatus === "self";
       if (canView) {
         fetchUserContent(activeTab, true);
-      } else {
-        setUserData([]);
-        setLoadingContent(false);
       }
     }
-  }, [activeTab, profileData, followStatus]);
+  }, [profileData, followStatus, activeTab, fetchUserContent, loadedTabs]);
+
+  const handleTabChange = (tab) => {
+    if (activeTab === tab) return;
+    setActiveTab(tab);
+    setLastVisible(null);
+    setHasMore(true);
+  };
 
   const handleFollowAction = async () => {
     const previousFollowStatus = followStatus;
@@ -285,7 +276,10 @@ const UserProfile = () => {
           headers: { Authorization: `Bearer ${idToken}` },
         }
       );
-      setProfileData(updatedProfileRes.data.profile);
+      setProfileData({
+        ...updatedProfileRes.data.profile,
+        stats: response.data.newStats || profileData.stats,
+      });
     } catch (err) {
       console.error("Takip işlemi hatası:", err.response ? err.response.data : err.message);
       setFollowStatus(previousFollowStatus);
@@ -383,11 +377,15 @@ const UserProfile = () => {
   };
 
   const getCardComponent = (item) => {
-    switch (activeTab) {
+    const type = item.originalType || activeTab;
+    switch (type) {
+      case "globalPosts":
       case "posts":
         return <PostCard key={item.id} post={item} />;
+      case "globalFeelings":
       case "feelings":
         return <TweetCard key={item.id} feeling={item} />;
+      case "globalFeeds":
       case "feeds":
         return (
           <VideoThumbnail
@@ -416,7 +414,7 @@ const UserProfile = () => {
   const canViewContent =
     !profileData.isPrivate || followStatus === "following" || followStatus === "self";
 
-  const { displayName, photoURL, bio, familySystem, stats } = profileData;
+  const { displayName, photoURL, bio, familySystem } = profileData;
 
   const renderFollowButton = () => {
     switch (followStatus) {
@@ -443,6 +441,9 @@ const UserProfile = () => {
         );
     }
   };
+
+  const currentContent = allData[activeTab] || [];
+  const totalContentCount = allData.posts.length + allData.feeds.length + allData.feelings.length;
 
   return (
     <div className={styles.pageWrapper}>
@@ -509,25 +510,25 @@ const UserProfile = () => {
 
         <div className={styles.statsSection}>
           <div className={styles.statBox}>
-            <strong>{contentCounts.posts + contentCounts.feeds + contentCounts.feelings}</strong>
+            <strong>{totalContentCount}</strong>
             <span className={styles.statLabel}>Post</span>
           </div>
           <div className={styles.statBox}>
-            <strong>{stats?.rta || 0}</strong>
+            <strong>{profileData.stats?.rta || 0}</strong>
             <span className={styles.statLabel}>RTA</span>
           </div>
           <div
             className={styles.statBox}
             onClick={() => handleStatClick("followers")}
           >
-            <strong>{stats?.followers || 0}</strong>
+            <strong>{profileData.stats?.followers || 0}</strong>
             <span className={styles.statLabel}>Followers</span>
           </div>
           <div
             className={styles.statBox}
             onClick={() => handleStatClick("following")}
           >
-            <strong>{stats?.following || 0}</strong>
+            <strong>{profileData.stats?.following || 0}</strong>
             <span className={styles.statLabel}>Following</span>
           </div>
         </div>
@@ -536,32 +537,32 @@ const UserProfile = () => {
       <div className={styles.tabBar}>
         <button
           className={activeTab === "posts" ? styles.active : ""}
-          onClick={() => setActiveTab("posts")}
+          onClick={() => handleTabChange("posts")}
         >
           Posts
         </button>
         <button
           className={activeTab === "feeds" ? styles.active : ""}
-          onClick={() => setActiveTab("feeds")}
+          onClick={() => handleTabChange("feeds")}
         >
           Feeds
         </button>
         <button
           className={activeTab === "feelings" ? styles.active : ""}
-          onClick={() => setActiveTab("feelings")}
+          onClick={() => handleTabChange("feelings")}
         >
           Feelings
         </button>
         <button
           className={activeTab === "likes" ? styles.active : ""}
-          onClick={() => setActiveTab("likes")}
+          onClick={() => handleTabChange("likes")}
           disabled={!canViewContent}
         >
           Beğenilenler
         </button>
         <button
           className={activeTab === "tags" ? styles.active : ""}
-          onClick={() => setActiveTab("tags")}
+          onClick={() => handleTabChange("tags")}
           disabled={!canViewContent}
         >
           Etiketliler
@@ -577,9 +578,9 @@ const UserProfile = () => {
           </div>
         ) : loadingContent ? (
           <LoadingOverlay />
-        ) : userData.length > 0 ? (
+        ) : currentContent.length > 0 ? (
           <div className={`${styles.section} ${activeTab === "feeds" ? styles.feedsGrid : ""}`}>
-            {userData.map(getCardComponent)}
+            {currentContent.map(getCardComponent)}
             {hasMore && (
               <div className={styles.loadMoreContainer}>
                 <button

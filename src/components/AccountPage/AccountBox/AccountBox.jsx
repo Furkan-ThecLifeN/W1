@@ -1,3 +1,5 @@
+// AccountBox.jsx
+
 import React, { useState, useEffect } from "react";
 import { IoIosSettings } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
@@ -33,7 +35,7 @@ const AccountBox = () => {
     likes: [],
     tags: [],
   });
-  const [loadingContent, setLoadingContent] = useState(false);
+  const [loadingContent, setLoadingContent] = useState({});
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState(null);
@@ -46,7 +48,6 @@ const AccountBox = () => {
   });
 
   // ---------------- COUNT POSTS ----------------
-  // Bu fonksiyon sadece sayıları çekmek için bir kez çalışır.
   useEffect(() => {
     const fetchPostCounts = async () => {
       if (!currentUser?.uid) return;
@@ -85,78 +86,103 @@ const AccountBox = () => {
     }
   }, [currentUser]);
 
-  // ---------------- FETCH ALL CONTENT ----------------
-  const fetchAllUserData = async () => {
-    if (!currentUser || !currentUser.uid) return;
-
-    setLoadingContent(true);
-
-    try {
-      // Tüm verileri paralel olarak çekiyoruz
-      const [
-        postsSnapshot,
-        feelingsSnapshot,
-        feedsSnapshot,
-        likesSnapshot,
-        tagsSnapshot,
-      ] = await Promise.all([
-        getDocs(query(collection(db, "globalPosts"), where("uid", "==", currentUser.uid), orderBy("createdAt", "desc"))),
-        getDocs(query(collection(db, "globalFeelings"), where("uid", "==", currentUser.uid), orderBy("createdAt", "desc"))),
-        getDocs(query(collection(db, "globalFeeds"), where("ownerId", "==", currentUser.uid), orderBy("createdAt", "desc"))),
-        getDocs(query(collection(db, "users", currentUser.uid, "likes"), orderBy("createdAt", "desc"))),
-        getDocs(query(collection(db, "users", currentUser.uid, "tags"), orderBy("createdAt", "desc"))),
-      ]);
-
-      const likedPostIds = likesSnapshot.docs.map(doc => doc.id);
-      const taggedPostIds = tagsSnapshot.docs.map(doc => doc.id);
-
-      const processSnapshot = (snapshot, type) => {
-        let data = snapshot.docs.map(doc => {
-          const item = { id: doc.id, ...doc.data() };
-          // Beğeni/Kaydetme durumlarını veriye ekle
-          item.initialLiked = likedPostIds.includes(item.id);
-          item.initialSaved = taggedPostIds.includes(item.id);
-          return item;
-        });
-        if (type === "feeds") {
-          data = data.filter(item => item.mediaUrl);
-        }
-        return data;
-      };
-
-      setAllData({
-        posts: processSnapshot(postsSnapshot, 'posts'),
-        feelings: processSnapshot(feelingsSnapshot, 'feelings'),
-        feeds: processSnapshot(feedsSnapshot, 'feeds'),
-        likes: processSnapshot(likesSnapshot, 'likes'),
-        tags: processSnapshot(tagsSnapshot, 'tags'),
-      });
-
-    } catch (error) {
-      console.error("🔥 Tüm veriler çekilirken hata oluştu:", error);
-      if (error.code === 'failed-precondition') {
-        const indexMessage = "Dizin hatası: İçerikleri görüntülemek için Firebase'de gerekli dizinlerin oluşturulması gerekiyor. Lütfen konsolu kontrol edin.";
-        showToast(indexMessage, "error");
-      } else {
-        const generalMessage = "Veriler yüklenirken bir sorun oluştu. Lütfen tekrar deneyin.";
-        showToast(generalMessage, "error");
-      }
-    } finally {
-      setLoadingContent(false);
-    }
-  };
-
-  // Sadece bileşen yüklendiğinde ve currentUser değiştiğinde çalışır
+  // ---------------- FETCH DATA BASED ON ACTIVE TAB ----------------
   useEffect(() => {
-    if (currentUser) {
-      fetchAllUserData();
-    }
-  }, [currentUser]);
+    const fetchTabData = async () => {
+      if (!currentUser || !currentUser.uid) return;
 
-  // ---------------- HANDLERS ----------------
+      // Check if data for the active tab already exists
+      if (allData[activeTab]?.length > 0 && activeTab !== "likes" && activeTab !== "tags") {
+        console.log(`Data for ${activeTab} already cached. Using cached data.`);
+        return; // Use cached data, no need to fetch again
+      }
+
+      setLoadingContent(prev => ({ ...prev, [activeTab]: true }));
+
+      try {
+        let snapshot;
+        let queryToRun;
+
+        const processSnapshot = (snapshot, type, likedIds = [], savedIds = []) => {
+          let data = snapshot.docs.map(doc => {
+            const item = { id: doc.id, ...doc.data() };
+            item.initialLiked = likedIds.includes(item.id);
+            item.initialSaved = savedIds.includes(item.id);
+            return item;
+          });
+          if (type === "feeds") {
+            data = data.filter(item => item.mediaUrl);
+          }
+          return data;
+        };
+
+        // Fetch likes and tags data first for all tabs
+        const [likesSnapshot, tagsSnapshot] = await Promise.all([
+          getDocs(collection(db, "users", currentUser.uid, "likes")),
+          getDocs(collection(db, "users", currentUser.uid, "tags")),
+        ]);
+        const likedIds = likesSnapshot.docs.map(doc => doc.id);
+        const savedIds = tagsSnapshot.docs.map(doc => doc.id);
+
+        switch (activeTab) {
+          case "posts":
+            queryToRun = query(collection(db, "globalPosts"), where("uid", "==", currentUser.uid), orderBy("createdAt", "desc"));
+            snapshot = await getDocs(queryToRun);
+            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab, likedIds, savedIds) }));
+            break;
+          case "feelings":
+            queryToRun = query(collection(db, "globalFeelings"), where("uid", "==", currentUser.uid), orderBy("createdAt", "desc"));
+            snapshot = await getDocs(queryToRun);
+            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab, likedIds, savedIds) }));
+            break;
+          case "feeds":
+            queryToRun = query(collection(db, "globalFeeds"), where("ownerId", "==", currentUser.uid), orderBy("createdAt", "desc"));
+            snapshot = await getDocs(queryToRun);
+            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab, likedIds, savedIds) }));
+            break;
+          case "likes":
+            // Fetch the actual liked posts
+            if (likedIds.length > 0) {
+              const likedPostsQuery = query(collection(db, "globalPosts"), where("__name__", "in", likedIds), orderBy("createdAt", "desc"));
+              const likedPostsSnapshot = await getDocs(likedPostsQuery);
+              setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(likedPostsSnapshot, activeTab, likedIds, savedIds) }));
+            } else {
+              setAllData(prev => ({ ...prev, [activeTab]: [] }));
+            }
+            break;
+          case "tags":
+            // Fetch the actual tagged posts
+            if (savedIds.length > 0) {
+              const taggedPostsQuery = query(collection(db, "globalPosts"), where("__name__", "in", savedIds), orderBy("createdAt", "desc"));
+              const taggedPostsSnapshot = await getDocs(taggedPostsQuery);
+              setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(taggedPostsSnapshot, activeTab, likedIds, savedIds) }));
+            } else {
+              setAllData(prev => ({ ...prev, [activeTab]: [] }));
+            }
+            break;
+          default:
+            setAllData(prev => ({ ...prev, [activeTab]: [] }));
+            break;
+        }
+
+      } catch (error) {
+        console.error(`🔥 Veri çekilirken hata oluştu (${activeTab}):`, error);
+        const errorMessage = error.code === 'failed-precondition' 
+          ? "Dizin hatası: İçerikleri görüntülemek için Firebase'de gerekli dizinlerin oluşturulması gerekiyor. Lütfen konsolu kontrol edin." 
+          : "Veriler yüklenirken bir sorun oluştu. Lütfen tekrar deneyin.";
+        showToast(errorMessage, "error");
+      } finally {
+        setLoadingContent(prev => ({ ...prev, [activeTab]: false }));
+      }
+    };
+
+    if (currentUser) {
+      fetchTabData();
+    }
+  }, [activeTab, currentUser, showToast]);
+
   const handleTabChange = (tabName) => {
     setActiveTab(tabName);
-    // Artık sekme değiştiğinde yeni bir istek ATMIYORUZ.
   };
 
   const handleVideoClick = (videoData) => {
@@ -188,13 +214,14 @@ const AccountBox = () => {
     setShowModal(true);
   };
 
-  // ---------------- CARD COMPONENT SWITCH ----------------
   const getCardComponent = (item) => {
     const initialLiked = item?.initialLiked ?? false;
     const initialSaved = item?.initialSaved ?? false;
 
     switch (activeTab) {
       case "posts":
+      case "likes":
+      case "tags":
         return <PostCard key={item.id} post={item} initialLiked={initialLiked} initialSaved={initialSaved} />;
       case "feelings":
         return <TweetCard key={item.id} feeling={item} initialLiked={initialLiked} initialSaved={initialSaved} />;
@@ -206,10 +233,6 @@ const AccountBox = () => {
             onClick={() => handleVideoClick(item)}
           />
         );
-      case "likes":
-      case "tags":
-        // Bu sekmeler için direkt alınan veriyi kullanıyoruz
-        return <PostCard key={item.id} post={item} initialLiked={activeTab === 'likes'} initialSaved={activeTab === 'tags'} />;
       default:
         return null;
     }
@@ -232,12 +255,10 @@ const AccountBox = () => {
     }
   };
 
-  // ---------------- RENDER ----------------
   const currentData = allData[activeTab] || [];
 
   return (
     <div className={styles.pageWrapper}>
-      {/* Top */}
       <div className={styles.account_top}>
         <div className={styles.fixedTopBox}>{username}</div>
         <div className={styles.fixedSettingsBtn}>
@@ -250,7 +271,6 @@ const AccountBox = () => {
         </div>
       </div>
 
-      {/* Profile Info */}
       <div className={styles.mainProfileBox}>
         <div className={styles.profileImageSection}>
           <div className={styles.profileImageWrapper}>
@@ -297,7 +317,6 @@ const AccountBox = () => {
         </div>
       </div>
 
-      {/* Tab Bar */}
       <div className={styles.tabBar}>
         <button
           className={activeTab === "posts" ? styles.active : ""}
@@ -331,9 +350,8 @@ const AccountBox = () => {
         </button>
       </div>
 
-      {/* Tab Content */}
       <div className={styles.tabContent}>
-        {loadingContent ? (
+        {loadingContent[activeTab] ? (
           <LoadingOverlay />
         ) : currentData.length > 0 ? (
           <div
@@ -348,7 +366,6 @@ const AccountBox = () => {
         )}
       </div>
 
-      {/* Modals */}
       {showModal && currentUser && (
         <ConnectionsModal
           show={showModal}

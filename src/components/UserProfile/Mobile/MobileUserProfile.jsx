@@ -12,6 +12,9 @@ import {
   orderBy,
   limit,
   startAfter,
+  where,
+  doc,
+  getDoc,
 } from "firebase/firestore";
 
 // Importing the content components
@@ -53,6 +56,8 @@ const MobileUserProfile = () => {
     posts: 0,
     feeds: 0,
     feelings: 0,
+    likes: 0,
+    tags: 0,
   });
 
   const apiBaseUrl = process.env.REACT_APP_API_URL;
@@ -61,55 +66,84 @@ const MobileUserProfile = () => {
   const fetchUserContent = async (type, isInitialLoad = true) => {
     if (!profileData?.uid) return;
     setLoadingContent(true);
-    let collectionPath;
 
-    switch (type) {
-      case "posts":
-      case "feelings":
-      case "feeds":
-      case "likes":
-      case "tags":
-        collectionPath = `users/${profileData.uid}/${type}`;
-        break;
-      default:
-        console.warn(`${type} fetching not implemented for UserProfile.`);
-        setLoadingContent(false);
-        return;
-    }
-
-    let q;
     if (isInitialLoad) {
       setUserData([]);
       setLastVisible(null);
       setHasMore(true);
-      q = query(
-        collection(db, collectionPath),
-        orderBy("createdAt", "desc"),
-        limit(ITEMS_PER_PAGE)
-      );
-    } else {
-      if (!lastVisible) {
-        setLoadingContent(false);
-        return;
-      }
-      q = query(
-        collection(db, collectionPath),
-        orderBy("createdAt", "desc"),
-        startAfter(lastVisible),
-        limit(ITEMS_PER_PAGE)
-      );
     }
 
     try {
+      let collectionName;
+      let userFilterField = "uid";
+
+      switch (type) {
+        case "feelings":
+          collectionName = "globalFeelings";
+          break;
+        case "posts":
+          collectionName = "globalPosts";
+          break;
+        case "feeds":
+          collectionName = "globalFeeds";
+          userFilterField = "ownerId";
+          break;
+        case "likes":
+        case "tags":
+          collectionName = `users/${profileData.uid}/${type}`;
+          userFilterField = null;
+          break;
+        default:
+          setLoadingContent(false);
+          return;
+      }
+
+      let queryRef = collection(db, collectionName);
+
+      if (userFilterField) {
+        queryRef = query(
+          queryRef,
+          where(userFilterField, "==", profileData.uid),
+          orderBy("createdAt", "desc")
+        );
+      } else {
+        queryRef = query(queryRef, orderBy("createdAt", "desc"));
+      }
+
+      const q = query(
+        queryRef,
+        ...(isInitialLoad
+          ? [limit(ITEMS_PER_PAGE)]
+          : [startAfter(lastVisible), limit(ITEMS_PER_PAGE)])
+      );
+
+      if (!isInitialLoad && !lastVisible) {
+        setLoadingContent(false);
+        return;
+      }
+
       const querySnapshot = await getDocs(q);
       const fetchedData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
 
-      let filteredData = fetchedData;
+      let contentData = [];
+      if (type === "likes" || type === "tags") {
+        for (const item of fetchedData) {
+          const postRef = doc(db, item.postType, item.postId);
+          const postSnap = await getDoc(postRef);
+          if (postSnap.exists()) {
+            contentData.push({ id: postSnap.id, ...postSnap.data(), originalType: item.postType });
+          }
+        }
+      } else {
+        contentData = fetchedData;
+      }
+
+      let filteredData = contentData;
       if (type === "feeds") {
-        filteredData = fetchedData.filter((item) => item.mediaUrl);
+        filteredData = contentData.filter((item) => item.mediaUrl);
       }
 
       setUserData((prevData) => {
@@ -123,6 +157,7 @@ const MobileUserProfile = () => {
       setHasMore(fetchedData.length === ITEMS_PER_PAGE);
     } catch (error) {
       console.error("Veri çekme hatası:", error);
+      showToast("İçerik yüklenirken bir hata oluştu.", "error");
     } finally {
       setLoadingContent(false);
     }
@@ -131,20 +166,26 @@ const MobileUserProfile = () => {
   const fetchContentCounts = async (profileUid) => {
     if (!profileUid) return;
     try {
-      const postsCount = (
-        await getDocs(collection(db, `users/${profileUid}/posts`))
-      ).size;
-      const feelingsCount = (
-        await getDocs(collection(db, `users/${profileUid}/feelings`))
-      ).size;
-      const feedsCount = (
-        await getDocs(collection(db, `users/${profileUid}/feeds`))
-      ).size;
+      const postsCountQuery = query(collection(db, `globalPosts`), where("uid", "==", profileUid));
+      const feelingsCountQuery = query(collection(db, `globalFeelings`), where("uid", "==", profileUid));
+      const feedsCountQuery = query(collection(db, `globalFeeds`), where("ownerId", "==", profileUid));
+      const likesCountQuery = query(collection(db, `users/${profileUid}/likes`));
+      const tagsCountQuery = query(collection(db, `users/${profileUid}/tags`));
+
+      const [postsSnapshot, feelingsSnapshot, feedsSnapshot, likesSnapshot, tagsSnapshot] = await Promise.all([
+        getDocs(postsCountQuery),
+        getDocs(feelingsCountQuery),
+        getDocs(feedsCountQuery),
+        getDocs(likesCountQuery),
+        getDocs(tagsCountQuery),
+      ]);
 
       setContentCounts({
-        posts: postsCount,
-        feeds: feedsCount,
-        feelings: feelingsCount,
+        posts: postsSnapshot.size,
+        feelings: feelingsSnapshot.size,
+        feeds: feedsSnapshot.size,
+        likes: likesSnapshot.size,
+        tags: tagsSnapshot.size,
       });
     } catch (error) {
       console.error("Koleksiyon sayıları çekme hatası:", error);
@@ -152,6 +193,8 @@ const MobileUserProfile = () => {
         posts: 0,
         feeds: 0,
         feelings: 0,
+        likes: 0,
+        tags: 0,
       });
     }
   };
@@ -189,6 +232,8 @@ const MobileUserProfile = () => {
             posts: 0,
             feeds: 0,
             feelings: 0,
+            likes: 0,
+            tags: 0,
           });
         }
       } catch (err) {
@@ -268,9 +313,13 @@ const MobileUserProfile = () => {
       );
       setProfileData(updatedProfileRes.data.profile);
     } catch (err) {
-      console.error("Takip işlemi hatası:", err.response ? err.response.data : err.message);
+      console.error(
+        "Takip işlemi hatası:",
+        err.response ? err.response.data : err.message
+      );
       setFollowStatus(previousFollowStatus);
-      const errorMsg = err.response?.data?.error || "Takip işlemi başarısız.";
+      const errorMsg =
+        err.response?.data?.error || "Takip işlemi başarısız.";
       showToast(errorMsg, "error");
     }
   };
@@ -299,7 +348,8 @@ const MobileUserProfile = () => {
         "Mesaj gönderme hatası:",
         err.response ? err.response.data : err.message
       );
-      const errorMsg = err.response?.data?.error || "Mesaj gönderme başarısız.";
+      const errorMsg =
+        err.response?.data?.error || "Mesaj gönderme başarısız.";
       showToast(errorMsg, "error");
     }
   };
@@ -332,11 +382,16 @@ const MobileUserProfile = () => {
   };
 
   const getCardComponent = (item) => {
-    switch (activeTab) {
+    const type = item.originalType || activeTab;
+
+    switch (type) {
+      case "globalPosts":
       case "posts":
         return <PostCard key={item.id} post={item} />;
+      case "globalFeelings":
       case "feelings":
         return <TweetCard key={item.id} feeling={item} />;
+      case "globalFeeds":
       case "feeds":
         return (
           <VideoThumbnail

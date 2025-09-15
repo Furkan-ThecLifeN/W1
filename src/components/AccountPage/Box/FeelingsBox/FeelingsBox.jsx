@@ -1,5 +1,6 @@
 // /components/Box/FeelingsBox/FeelingsBox.jsx
-import React, { useState } from "react"; // useEffect kaldırıldı
+
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import styles from "./FeelingsBox.module.css";
 import {
   FiMoreHorizontal,
@@ -8,117 +9,118 @@ import {
   FiBookmark,
 } from "react-icons/fi";
 import { FaHeart, FaBookmark } from "react-icons/fa";
-import { auth } from "../../../../config/firebase-client";
 import { useUser } from "../../../../context/UserContext";
 import { useAuth } from "../../../../context/AuthProvider";
 import ActionsModal from "../ActionsModal/ActionsModal";
+import axios from "axios";
+import { auth } from "../../../../config/firebase-client";
 
-const FeelingsBox = ({ feeling, initialLiked, initialSaved }) => { // Yeni prop'lar eklendi
+// Helper fonksiyon: Debounce
+const debounce = (func, delay) => {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      func.apply(this, args);
+    }, delay);
+  };
+};
+
+const FeelingsBox = ({ feeling, initialLiked, initialSaved }) => {
   const { currentUser } = useUser();
   const { showToast } = useAuth();
-  const [liked, setLiked] = useState(initialLiked); // Prop'tan değer alıyor
-  const [saved, setSaved] = useState(initialSaved); // Prop'tan değer alıyor
+  const [liked, setLiked] = useState(initialLiked);
+  const [saved, setSaved] = useState(initialSaved);
   const [showModal, setShowModal] = useState(false);
   const [likeCount, setLikeCount] = useState(feeling?.stats?.likes || 0);
   const [commentCount, setCommentCount] = useState(
     feeling?.stats?.comments || 0
   );
   const [shareCount, setShareCount] = useState(feeling?.stats?.shares || 0);
-  const [isUpdating, setIsUpdating] = useState(false);
+  const isUpdating = useRef(false);
   const [activeModalTab, setActiveModalTab] = useState("comments");
 
   const { caption, text, displayName, photoURL, imageUrls, images } =
     feeling || {};
 
-  const tweetText = caption || text || "";
-  const postDisplayName = displayName || "Kullanıcı";
-  const userProfileImage =
-    photoURL ||
-    "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
-  const tweetImages = imageUrls || images || [];
   const postId = feeling?.id;
   const postType = feeling?.privacy === "public" ? "globalFeelings" : "feelings";
 
-  // Gereksiz arka uç isteği kaldırıldı:
-  // useEffect ve checkUserActions bloğu burada yok
+  // Axios instance with common headers
+  const api = axios.create({
+    baseURL: process.env.REACT_APP_API_URL,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 
-  // beğen (İyimser Güncelleme)
-  const handleLike = async () => {
-    if (!currentUser || isUpdating) return;
-    
-    // Optimistic update
+  const debouncedToggleLike = useCallback(
+    debounce(async (isLikedNow, prevCount) => {
+      if (isUpdating.current) return;
+      isUpdating.current = true;
+      try {
+        const token = await auth.currentUser?.getIdToken();
+        await api.post("/api/actions/toggle-like", { postId, postType }, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      } catch (error) {
+        console.error("Beğeni durumu güncellenirken hata:", error);
+        setLiked(!isLikedNow);
+        setLikeCount(prevCount);
+        if (error.response?.status === 429) {
+          showToast("Çok fazla istek gönderdiniz. Lütfen yavaşlayın.", "error");
+        } else {
+          showToast("Beğeni işlemi başarısız oldu. Lütfen tekrar deneyin.", "error");
+        }
+      } finally {
+        isUpdating.current = false;
+      }
+    }, 500),
+    [postId, postType, showToast]
+  );
+
+  const debouncedToggleSave = useCallback(
+    debounce(async (isSavedNow) => {
+      if (isUpdating.current) return;
+      isUpdating.current = true;
+      try {
+        const token = await auth.currentUser?.getIdToken();
+        await api.post("/api/actions/toggle-save", { postId, postType }, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      } catch (error) {
+        console.error("Kaydetme durumu güncellenirken hata:", error);
+        setSaved(!isSavedNow);
+        if (error.response?.status === 429) {
+          showToast("Çok fazla istek gönderdiniz. Lütfen yavaşlayın.", "error");
+        } else {
+          showToast("Kaydetme işlemi başarısız oldu. Lütfen tekrar deneyin.", "error");
+        }
+      } finally {
+        isUpdating.current = false;
+      }
+    }, 500),
+    [postId, postType, showToast]
+  );
+
+  const handleLike = () => {
+    if (!currentUser) return;
     const previousLiked = liked;
     const previousCount = likeCount;
-
     setLiked(!previousLiked);
     setLikeCount(previousLiked ? previousCount - 1 : previousCount + 1);
-    setIsUpdating(true);
-
-    try {
-      const token = await auth.currentUser?.getIdToken();
-      const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/actions/toggle-like`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ postId: feeling.id, postType }),
-        }
-      );
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        // Revert optimistic update on error
-        setLiked(previousLiked);
-        setLikeCount(previousCount);
-        showToast("error", errorData.error || "Beğeni işlemi başarısız oldu.");
-      }
-    } catch (error) {
-      // Revert optimistic update on error
-      setLiked(previousLiked);
-      setLikeCount(previousCount);
-      showToast(
-        "error",
-        "Bir hata oluştu. Lütfen daha sonra tekrar deneyin."
-      );
-    } finally {
-      setIsUpdating(false);
-    }
+    debouncedToggleLike(!previousLiked, previousCount);
   };
 
-  // kaydet
-  const handleSave = async () => {
-    if (!currentUser || isUpdating) return;
-    setIsUpdating(true);
-    try {
-      const token = await auth.currentUser?.getIdToken();
-      const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/actions/toggle-save`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ postId: feeling.id, postType }),
-        }
-      );
-
-      if (res.ok) {
-        const data = await res.json();
-        setSaved(data.isSaved);
-        showToast("success", data.isSaved ? "Kaydedildi!" : "Kaydetme iptal edildi.");
-      } else {
-        const errorData = await res.json();
-        showToast("error", errorData.error || "Kaydetme işlemi başarısız.");
-      }
-    } catch (error) {
-      showToast("error", "Bir hata oluştu. Lütfen daha sonra tekrar deneyin.");
-    } finally {
-      setIsUpdating(false);
-    }
+  const handleSave = () => {
+    if (!currentUser) return;
+    const previousSaved = saved;
+    setSaved(!previousSaved);
+    debouncedToggleSave(!previousSaved);
   };
 
   const handleCommentUpdate = (newCommentCount) => {
@@ -129,8 +131,15 @@ const FeelingsBox = ({ feeling, initialLiked, initialSaved }) => { // Yeni prop'
     setShareCount(newShareCount);
   };
 
-  const CardContent = () => (
-    <>
+  const tweetText = caption || text || "";
+  const postDisplayName = displayName || "Kullanıcı";
+  const userProfileImage =
+    photoURL ||
+    "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
+  const tweetImages = imageUrls || images || [];
+  
+  return (
+    <div className={styles.card}>
       <div className={styles.header}>
         <div className={styles.user}>
           <div className={styles.avatar_widget}>
@@ -169,7 +178,6 @@ const FeelingsBox = ({ feeling, initialLiked, initialSaved }) => { // Yeni prop'
         )}
       </div>
 
-      {/* eski yapı: ikon + sayı inline */}
       <div className={styles.footer}>
         <div onClick={handleLike} className={styles.action_item}>
           <FaHeart className={`${styles.icon} ${liked ? styles.liked : ""}`} />
@@ -203,41 +211,6 @@ const FeelingsBox = ({ feeling, initialLiked, initialSaved }) => { // Yeni prop'
           )}
         </div>
       </div>
-    </>
-  );
-
-  return (
-    <>
-      <div className={`${styles.card} ${styles.desktop}`}>
-        <CardContent />
-      </div>
-
-      <div
-        className={`${styles.card_mobile} ${styles.mobile}`}
-        onClick={() => {
-          setActiveModalTab("comments");
-          setShowModal(true);
-        }}
-      >
-        <div className={styles.header_mobile}>
-          <div className={styles.user}>
-            <div className={styles.avatar_widget}>
-              <img
-                src={userProfileImage}
-                alt={postDisplayName}
-                className={styles.avatar}
-              />
-            </div>
-            <span className={styles.username}>{postDisplayName}</span>
-          </div>
-          <div className={styles.more_mobile}>
-            <FiMoreHorizontal className={styles.more} />
-          </div>
-        </div>
-        <div className={styles.content_mobile}>
-          <p>{tweetText}</p>
-        </div>
-      </div>
 
       {showModal && (
         <ActionsModal
@@ -249,7 +222,7 @@ const FeelingsBox = ({ feeling, initialLiked, initialSaved }) => { // Yeni prop'
           onShared={handleShareUpdate}
         />
       )}
-    </>
+    </div>
   );
 };
 
