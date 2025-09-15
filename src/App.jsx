@@ -27,6 +27,8 @@ import FeelingAdd from "./components/Add/Feelings/FeelingsAdd";
 import LiveStreamAdd from "./components/Add/LiveStream/LiveStream";
 import DraftsAdd from "./components/Add/Drafts/Drafts";
 import UserProfile from './pages/UserProfilePage/UserProfilePage';
+import PostDetailPage from "./pages/PostDetailPage/PostDetailPage";
+
 
 
 // 🔒 Korumalı rota
@@ -82,6 +84,7 @@ const AppContent = () => {
       <Route path="/create/feelingadd" element={<ProtectedRoute><FeelingAdd /></ProtectedRoute>} />
       <Route path="/create/livestream" element={<ProtectedRoute><LiveStreamAdd /></ProtectedRoute>} />
       <Route path="/create/drafts" element={<ProtectedRoute><DraftsAdd /></ProtectedRoute>} />
+      <Route path="/post/:postId" element={<PostDetailPage />} />
       <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/auth" replace />} />
     </Routes>

@@ -1,0 +1,125 @@
+.postDetail {
+  background-color: var(--color-black);
+  color: white;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Main içerik */
+.mainContent {
+  position: relative;
+  margin-left: var(--sidebar-left-width);
+  margin-right: var(--sidebar-right-width);
+  height: 100vh;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Header (W1) */
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 0;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 10;
+}
+
+.topCenterLogo {
+  font-size: 32px;
+  font-weight: 900;
+  color: white;
+  position: relative;
+  user-select: none;
+  pointer-events: none;
+  text-align: center;
+  z-index: 2;
+}
+
+/* Neon efekti */
+.topCenterLogo::before,
+.topCenterLogo::after {
+  content: "W1";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  color: transparent;
+  -webkit-text-stroke: 2px var(--scrollbar-thumb);
+  text-stroke: 2px var(--scrollbar-thumb);
+  filter: blur(12px);
+  opacity: 0.5;
+  z-index: -1;
+  pointer-events: none;
+  animation: pulseGlow 8s infinite ease-in-out alternate;
+}
+
+.topCenterLogo::after {
+  filter: blur(24px);
+  animation-delay: 3s;
+  opacity: 0.3;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.3;
+    text-shadow: 0 0 10px var(--scrollbar-thumb),
+                 0 0 20px var(--scrollbar-thumb),
+                 0 0 30px #81d4fa;
+  }
+  50% {
+    opacity: 0.8;
+    text-shadow: 0 0 30px #81d4fa,
+                 0 0 60px #4fc3f7,
+                 0 0 90px #b3e5fc;
+  }
+}
+
+/* Gönderi */
+.postWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Hata ve boş container */
+.errorContainer {
+  color: #d9534f;
+  font-size: 1.1rem;
+  text-align: center;
+  padding: 20px;
+  background: #fff0f0;
+  border: 1px solid #f5c6cb;
+  border-radius: 10px;
+}
+
+.emptyContainer {
+  text-align: center;
+  color: #666;
+  font-size: 1rem;
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .mainContent {
+    margin-left: 0;
+    margin-right: 0;
+    height: 100vh;
+    padding: 10px;
+    overflow-y: auto;
+  }
+}

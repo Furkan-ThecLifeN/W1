@@ -1,13 +1,15 @@
-// src/pages/PostDetailPage.jsx
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import PostBox from "../components/Box/PostBox/PostBox"; // veya FeelingsBox
-import LoadingOverlay from "../components/LoadingOverlay/LoadingOverlay";
+import PostBox from "../../components/AccountPage/Box/FeelingsBox/FeelingsBox"; 
+import LoadingOverlay from "../../components/LoadingOverlay/LoadingOverlay";
+import Sidebar from "../../components/LeftSideBar/Sidebar";
+import RightSidebar from "../../components/RightSideBar/RightSideBar";
+import BottomNav from "../../components/BottomNav/BottomNav";
 import styles from "./PostDetailPage.module.css";
-import { auth } from "../config/firebase-client";
+import { auth } from "../../config/firebase-client";
 
 const PostDetailPage = () => {
-  const { postId } = useParams(); // URL'den postId'yi alır
+  const { postId } = useParams();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,25 +22,20 @@ const PostDetailPage = () => {
     }
 
     const fetchPost = async () => {
-      setLoading(true);
-      setError(null);
       try {
         const token = await auth.currentUser?.getIdToken();
         const res = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/feelings/${postId}`, // Veya uygun olan backend rotanız
+          `${process.env.REACT_APP_API_URL}/api/feelings/${postId}`,
           {
             headers: {
               Authorization: token ? `Bearer ${token}` : "",
             },
           }
         );
-        if (!res.ok) {
-          throw new Error("Gönderi bulunamadı veya bir hata oluştu.");
-        }
+        if (!res.ok) throw new Error("Gönderi bulunamadı.");
         const data = await res.json();
         setPost(data.post);
       } catch (err) {
-        console.error("Gönderi çekme hatası:", err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -48,21 +45,27 @@ const PostDetailPage = () => {
     fetchPost();
   }, [postId]);
 
-  if (loading) {
-    return <LoadingOverlay />;
-  }
-
-  if (error) {
-    return <div className={styles.errorContainer}>{error}</div>;
-  }
+  if (loading) return <LoadingOverlay />;
+  if (error) return <div className={styles.errorContainer}>{error}</div>;
 
   return (
-    <div className={styles.container}>
-      {post ? (
-        <PostBox feeling={post} /> // Gönderiyi gösteren bileşeninizi kullanın
-      ) : (
-        <div className={styles.emptyContainer}>Gönderi bulunamadı.</div>
-      )}
+    <div className={styles.postDetail}>
+      <Sidebar />
+      <main className={styles.mainContent}>
+        <header className={styles.header}>
+          <div className={styles.topCenterLogo}>W1</div>
+        </header>
+
+        <section className={styles.postWrapper}>
+          {post ? (
+            <PostBox feeling={post} />
+          ) : (
+            <div className={styles.emptyContainer}>Gönderi bulunamadı.</div>
+          )}
+        </section>
+      </main>
+      <RightSidebar />
+      <BottomNav />
     </div>
   );
 };

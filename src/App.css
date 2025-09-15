@@ -15,6 +15,10 @@
   --color-secondary-accent: #00bfff;
   --color-text: #e0e0e0;
   --color-offgrey: #1f1f1f;
+  --dark-gray: #161b22;
+  --scrollbar-thumb: #58a6ff;
+  --sidebar-left-width: 80px;
+  --sidebar-right-width: 300px;
 
   /* === Durum Renkleri === */
   --online: #10b981;

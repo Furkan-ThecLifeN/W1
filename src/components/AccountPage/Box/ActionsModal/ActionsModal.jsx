@@ -4,13 +4,7 @@ import { FiX, FiSend, FiTrash2, FiLink } from "react-icons/fi";
 import { useAuth } from "../../../../context/AuthProvider";
 import { useUser } from "../../../../context/UserContext";
 import { auth, db } from "../../../../config/firebase-client";
-import {
-  collection,
-  query,
-  orderBy,
-  getDocs,
-  doc,
-} from "firebase/firestore";
+import { collection, query, orderBy, getDocs, doc } from "firebase/firestore";
 
 /**
  * Helper: farklı createdAt formatlarını milis çevirir
@@ -143,7 +137,9 @@ const ActionsModal = ({
       id: tempId,
       uid: currentUser.uid,
       displayName:
-        currentUser.displayName || currentUser.email?.split("@")[0] || "Kullanıcı",
+        currentUser.displayName ||
+        currentUser.email?.split("@")[0] ||
+        "Kullanıcı",
       username: currentUser.username || undefined,
       photoURL: currentUser.photoURL || DEFAULT_AVATAR,
       text: newComment.trim(),
@@ -157,18 +153,21 @@ const ActionsModal = ({
 
     try {
       const token = await auth.currentUser.getIdToken();
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/actions/comments`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          postId: validPostId,
-          postType,
-          commentText: optimisticComment.text,
-        }),
-      });
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/actions/comments`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            postId: validPostId,
+            postType,
+            commentText: optimisticComment.text,
+          }),
+        }
+      );
 
       if (!res.ok) {
         throw new Error("Yorum eklenemedi (sunucu hatası).");
@@ -194,24 +193,29 @@ const ActionsModal = ({
 
     try {
       const token = await auth.currentUser.getIdToken();
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/actions/comments`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          commentId: commentToDelete,
-          postId: validPostId,
-          postType,
-        }),
-      });
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/actions/comments`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            commentId: commentToDelete,
+            postId: validPostId,
+            postType,
+          }),
+        }
+      );
 
       if (!res.ok) {
         throw new Error("Yorum silinirken hata oluştu.");
       }
 
-      setComments((prev) => (prev || []).filter((c) => c?.id !== commentToDelete));
+      setComments((prev) =>
+        (prev || []).filter((c) => c?.id !== commentToDelete)
+      );
       showToast("Yorum başarıyla silindi.", "success");
       if (onCommentDeleted) onCommentDeleted();
     } catch (err) {
@@ -227,11 +231,11 @@ const ActionsModal = ({
 
   const handleShare = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href);
-      showToast("Sayfa bağlantısı kopyalandı!", "success");
+      const postUrl = `${window.location.origin}/post/${validPostId}`;
+      await navigator.clipboard.writeText(postUrl);
+      showToast("Gönderi bağlantısı kopyalandı!", "success");
       if (onShared) onShared();
     } catch (err) {
-      console.error("Kopyalama hatası:", err);
       showToast("Bağlantı kopyalanamadı.", "error");
     }
   };
@@ -257,7 +261,9 @@ const ActionsModal = ({
           {loading ? (
             <div className={styles.loading}>Yorumlar yükleniyor...</div>
           ) : !comments || comments.length === 0 ? (
-            <div className={styles.empty}>Henüz yorum yok. İlk yorumu sen yap!</div>
+            <div className={styles.empty}>
+              Henüz yorum yok. İlk yorumu sen yap!
+            </div>
           ) : (
             (comments || []).map(
               (comment) =>
@@ -274,9 +280,17 @@ const ActionsModal = ({
                           {comment?.displayName || "Bilinmeyen Kullanıcı"}
                         </span>
                         <p className={styles.commentText}>{comment?.text}</p>
-                        <small style={{ color: "#888", marginTop: 8, textAlign: "right" }}>
+                        <small
+                          style={{
+                            color: "#888",
+                            marginTop: 8,
+                            textAlign: "right",
+                          }}
+                        >
                           {comment?.createdAt
-                            ? new Date(tsToMillis(comment.createdAt)).toLocaleString()
+                            ? new Date(
+                                tsToMillis(comment.createdAt)
+                              ).toLocaleString()
                             : ""}
                         </small>
                       </div>
