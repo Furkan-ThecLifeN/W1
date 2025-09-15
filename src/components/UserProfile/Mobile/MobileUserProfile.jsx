@@ -46,10 +46,16 @@ const MobileUserProfile = () => {
   const [followStatus, setFollowStatus] = useState("none");
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState(null);
-  const [userData, setUserData] = useState([]);
-  const [loadingContent, setLoadingContent] = useState(false);
-  const [lastVisible, setLastVisible] = useState(null);
-  const [hasMore, setHasMore] = useState(true);
+  const [allData, setAllData] = useState({
+    posts: [],
+    feelings: [],
+    feeds: [],
+    likes: [],
+    tags: [],
+  });
+  const [loadingContent, setLoadingContent] = useState({});
+  const [lastVisible, setLastVisible] = useState({});
+  const [hasMore, setHasMore] = useState({});
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [contentCounts, setContentCounts] = useState({
@@ -65,13 +71,7 @@ const MobileUserProfile = () => {
   // Function to fetch the user's content (posts, feeds, etc.)
   const fetchUserContent = async (type, isInitialLoad = true) => {
     if (!profileData?.uid) return;
-    setLoadingContent(true);
-
-    if (isInitialLoad) {
-      setUserData([]);
-      setLastVisible(null);
-      setHasMore(true);
-    }
+    setLoadingContent((prev) => ({ ...prev, [type]: true }));
 
     try {
       let collectionName;
@@ -94,7 +94,7 @@ const MobileUserProfile = () => {
           userFilterField = null;
           break;
         default:
-          setLoadingContent(false);
+          setLoadingContent((prev) => ({ ...prev, [type]: false }));
           return;
       }
 
@@ -114,11 +114,12 @@ const MobileUserProfile = () => {
         queryRef,
         ...(isInitialLoad
           ? [limit(ITEMS_PER_PAGE)]
-          : [startAfter(lastVisible), limit(ITEMS_PER_PAGE)])
+          : [startAfter(lastVisible[type]), limit(ITEMS_PER_PAGE)])
       );
 
-      if (!isInitialLoad && !lastVisible) {
-        setLoadingContent(false);
+      if (!isInitialLoad && !lastVisible[type]) {
+        setLoadingContent((prev) => ({ ...prev, [type]: false }));
+        setHasMore((prev) => ({ ...prev, [type]: false }));
         return;
       }
 
@@ -134,7 +135,11 @@ const MobileUserProfile = () => {
           const postRef = doc(db, item.postType, item.postId);
           const postSnap = await getDoc(postRef);
           if (postSnap.exists()) {
-            contentData.push({ id: postSnap.id, ...postSnap.data(), originalType: item.postType });
+            contentData.push({
+              id: postSnap.id,
+              ...postSnap.data(),
+              originalType: item.postType,
+            });
           }
         }
       } else {
@@ -146,33 +151,53 @@ const MobileUserProfile = () => {
         filteredData = contentData.filter((item) => item.mediaUrl);
       }
 
-      setUserData((prevData) => {
+      setAllData((prevData) => {
         const newData = filteredData.filter(
-          (item) => !prevData.some((existingItem) => existingItem.id === item.id)
+          (item) => !prevData[type].some((existingItem) => existingItem.id === item.id)
         );
-        return [...prevData, ...newData];
+        return { ...prevData, [type]: [...prevData[type], ...newData] };
       });
 
-      setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
-      setHasMore(fetchedData.length === ITEMS_PER_PAGE);
+      setLastVisible((prev) => ({
+        ...prev,
+        [type]: querySnapshot.docs[querySnapshot.docs.length - 1],
+      }));
+      setHasMore((prev) => ({ ...prev, [type]: fetchedData.length === ITEMS_PER_PAGE }));
     } catch (error) {
       console.error("Veri çekme hatası:", error);
       showToast("İçerik yüklenirken bir hata oluştu.", "error");
     } finally {
-      setLoadingContent(false);
+      setLoadingContent((prev) => ({ ...prev, [type]: false }));
     }
   };
 
   const fetchContentCounts = async (profileUid) => {
     if (!profileUid) return;
     try {
-      const postsCountQuery = query(collection(db, `globalPosts`), where("uid", "==", profileUid));
-      const feelingsCountQuery = query(collection(db, `globalFeelings`), where("uid", "==", profileUid));
-      const feedsCountQuery = query(collection(db, `globalFeeds`), where("ownerId", "==", profileUid));
-      const likesCountQuery = query(collection(db, `users/${profileUid}/likes`));
+      const postsCountQuery = query(
+        collection(db, `globalPosts`),
+        where("uid", "==", profileUid)
+      );
+      const feelingsCountQuery = query(
+        collection(db, `globalFeelings`),
+        where("uid", "==", profileUid)
+      );
+      const feedsCountQuery = query(
+        collection(db, `globalFeeds`),
+        where("ownerId", "==", profileUid)
+      );
+      const likesCountQuery = query(
+        collection(db, `users/${profileUid}/likes`)
+      );
       const tagsCountQuery = query(collection(db, `users/${profileUid}/tags`));
 
-      const [postsSnapshot, feelingsSnapshot, feedsSnapshot, likesSnapshot, tagsSnapshot] = await Promise.all([
+      const [
+        postsSnapshot,
+        feelingsSnapshot,
+        feedsSnapshot,
+        likesSnapshot,
+        tagsSnapshot,
+      ] = await Promise.all([
         getDocs(postsCountQuery),
         getDocs(feelingsCountQuery),
         getDocs(feedsCountQuery),
@@ -253,10 +278,18 @@ const MobileUserProfile = () => {
         followStatus === "following" ||
         followStatus === "self";
       if (canView) {
-        fetchUserContent(activeTab, true);
+        if (allData[activeTab].length === 0) {
+          fetchUserContent(activeTab, true);
+        }
       } else {
-        setUserData([]);
-        setLoadingContent(false);
+        setAllData({
+          posts: [],
+          feelings: [],
+          feeds: [],
+          likes: [],
+          tags: [],
+        });
+        setLoadingContent({});
       }
     }
   }, [activeTab, profileData, followStatus]);
@@ -408,15 +441,25 @@ const MobileUserProfile = () => {
   const emptyMessage = () => {
     switch (activeTab) {
       case "posts":
-        return `${profileData.displayName || profileData.username}, henüz bir gönderi paylaşmadı.`;
+        return `${
+          profileData.displayName || profileData.username
+        }, henüz bir gönderi paylaşmadı.`;
       case "feelings":
-        return `${profileData.displayName || profileData.username}, henüz bir duygu paylaşmadı.`;
+        return `${
+          profileData.displayName || profileData.username
+        }, henüz bir duygu paylaşmadı.`;
       case "feeds":
-        return `${profileData.displayName || profileData.username}, henüz feed'leri bulunmamaktadır.`;
+        return `${
+          profileData.displayName || profileData.username
+        }, henüz feed'leri bulunmamaktadır.`;
       case "likes":
-        return `${profileData.displayName || profileData.username}, henüz bir gönderiyi beğenmedi.`;
+        return `${
+          profileData.displayName || profileData.username
+        }, henüz bir gönderiyi beğenmedi.`;
       case "tags":
-        return `${profileData.displayName || profileData.username}, henüz etiketlendiği bir gönderi bulunmamaktadır.`;
+        return `${
+          profileData.displayName || profileData.username
+        }, henüz etiketlendiği bir gönderi bulunmamaktadır.`;
       default:
         return `Henüz bir içerik bulunmamaktadır.`;
     }
@@ -435,7 +478,9 @@ const MobileUserProfile = () => {
   }
 
   const canViewContent =
-    !profileData.isPrivate || followStatus === "following" || followStatus === "self";
+    !profileData.isPrivate ||
+    followStatus === "following" ||
+    followStatus === "self";
 
   const { displayName, photoURL, bio, familySystem, stats } = profileData;
 
@@ -511,7 +556,9 @@ const MobileUserProfile = () => {
         <div className={styles.stats}>
           <div className={styles.stat_content}>
             <div className={styles.stat}>
-              <span className={styles.statNumber}>{contentCounts.posts + contentCounts.feeds + contentCounts.feelings}</span>
+              <span className={styles.statNumber}>
+                {contentCounts.posts + contentCounts.feeds + contentCounts.feelings}
+              </span>
               <span className={styles.statLabel}>Post</span>
             </div>
             <div className={styles.stat}>
@@ -525,7 +572,9 @@ const MobileUserProfile = () => {
               onClick={() => handleStatClick("followers")}
               style={{ cursor: "pointer" }}
             >
-              <span className={styles.statNumber}>{stats?.followers || 0}</span>
+              <span className={styles.statNumber}>
+                {stats?.followers || 0}
+              </span>
               <span className={styles.statLabel}>Followers</span>
             </div>
             <div
@@ -533,7 +582,9 @@ const MobileUserProfile = () => {
               onClick={() => handleStatClick("following")}
               style={{ cursor: "pointer" }}
             >
-              <span className={styles.statNumber}>{stats?.following || 0}</span>
+              <span className={styles.statNumber}>
+                {stats?.following || 0}
+              </span>
               <span className={styles.statLabel}>Following</span>
             </div>
           </div>
@@ -582,9 +633,9 @@ const MobileUserProfile = () => {
             <h3>Bu hesap gizlidir.</h3>
             <p>İçeriği görmek için takip etmelisiniz.</p>
           </div>
-        ) : loadingContent ? (
+        ) : loadingContent[activeTab] ? (
           <LoadingOverlay />
-        ) : userData.length > 0 ? (
+        ) : allData[activeTab].length > 0 ? (
           <div
             className={
               activeTab === "feelings"
@@ -594,15 +645,15 @@ const MobileUserProfile = () => {
                 : styles.postsGrid
             }
           >
-            {userData.map(getCardComponent)}
-            {hasMore && (
+            {allData[activeTab].map(getCardComponent)}
+            {hasMore[activeTab] && (
               <div className={styles.loadMoreContainer}>
                 <button
                   onClick={() => fetchUserContent(activeTab, false)}
                   className={styles.loadMoreBtn}
-                  disabled={loadingContent}
+                  disabled={loadingContent[activeTab]}
                 >
-                  {loadingContent ? "Yükleniyor..." : "Daha Fazla Yükle"}
+                  {loadingContent[activeTab] ? "Yükleniyor..." : "Daha Fazla Yükle"}
                 </button>
               </div>
             )}

@@ -3,16 +3,15 @@ import { IoIosSettings } from "react-icons/io";
 import styles from "./MobileProfile.module.css";
 import { Link } from "react-router-dom";
 import { useUser } from "../../../context/UserContext";
+import { useAuth } from "../../../context/AuthProvider";
 import LoadingOverlay from "../../LoadingOverlay/LoadingOverlay";
 import ConnectionsModal from "../../ConnectionsModal/ConnectionsModal";
 import { db } from "../../../config/firebase-client";
 import {
   collection,
   query,
-  orderBy,
-  limit,
-  startAfter,
   getDocs,
+  orderBy,
   where,
 } from "firebase/firestore";
 
@@ -23,116 +22,157 @@ import VideoFeedItem from "../Box/VideoFeedItem/VideoFeedItem";
 
 const MobileProfile = () => {
   const { currentUser, loading } = useUser();
+  const { showToast } = useAuth();
   const [activeTab, setActiveTab] = useState("posts");
+  const [allData, setAllData] = useState({
+    posts: [],
+    feelings: [],
+    feeds: [],
+    likes: [],
+    tags: [],
+  });
+  const [loadingContent, setLoadingContent] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState(null);
-  const [data, setData] = useState([]);
-  const [loadingContent, setLoadingContent] = useState(false);
-  const [lastVisible, setLastVisible] = useState(null);
-  const [hasMore, setHasMore] = useState(true);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
+  const [postCounts, setPostCounts] = useState({
+    posts: 0,
+    feelings: 0,
+    feeds: 0,
+  });
 
-  const ITEMS_PER_PAGE = 10;
-
-  const fetchContent = async (type, isInitialLoad = true) => {
-    if (!currentUser || !currentUser.uid) return;
-
-    setLoadingContent(true);
-    let q;
-
-    if (isInitialLoad) {
-      setData([]);
-      setLastVisible(null);
-      setHasMore(true);
-    }
-
-    try {
-      let collectionName;
-      let userFilterField = "uid";
-      
-      switch (type) {
-        case "feelings":
-          collectionName = "globalFeelings";
-          break;
-        case "posts":
-          collectionName = "globalPosts";
-          break;
-        case "feeds":
-          collectionName = "globalFeeds";
-          userFilterField = "ownerId";
-          break;
-        case "likes":
-        case "tags":
-          collectionName = `users/${currentUser.uid}/${type}`;
-          userFilterField = null;
-          break;
-        default:
-          collectionName = `users/${currentUser.uid}/${type}`;
-          userFilterField = null;
-          break;
-      }
-      
-      let queryRef = collection(db, collectionName);
-
-      if (userFilterField) {
-        queryRef = query(
-          queryRef,
-          where(userFilterField, "==", currentUser.uid),
-          orderBy("createdAt", "desc")
-        );
-      } else {
-        queryRef = query(
-          queryRef,
-          orderBy("createdAt", "desc")
-        );
-      }
-
-      q = query(
-        queryRef,
-        ...(isInitialLoad
-          ? [limit(ITEMS_PER_PAGE)]
-          : [startAfter(lastVisible), limit(ITEMS_PER_PAGE)])
-      );
-
-      if (!isInitialLoad && !lastVisible) {
-        setLoadingContent(false);
-        return;
-      }
-
-      const querySnapshot = await getDocs(q);
-      const fetchedData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      let filteredData = fetchedData;
-      if (type === "feeds") {
-        filteredData = fetchedData.filter((item) => item.mediaUrl);
-      }
-
-      setData((prevData) => {
-        const newData = filteredData.filter(
-          (item) => !prevData.some((existingItem) => existingItem.id === item.id)
-        );
-        return [...prevData, ...newData];
-      });
-
-      setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
-      setHasMore(fetchedData.length === ITEMS_PER_PAGE);
-    } catch (error) {
-      console.error("Veri çekme hatası:", error);
-      // Hata yönetimi burada eklenebilir, AccountBox'ta olduğu gibi
-    } finally {
-      setLoadingContent(false);
-    }
-  };
-
+  // ---------------- COUNT POSTS ----------------
   useEffect(() => {
+    const fetchPostCounts = async () => {
+      if (!currentUser?.uid) return;
+      try {
+        const postsQuery = query(
+          collection(db, "globalPosts"),
+          where("uid", "==", currentUser.uid)
+        );
+        const feelingsQuery = query(
+          collection(db, "globalFeelings"),
+          where("uid", "==", currentUser.uid)
+        );
+        const feedsQuery = query(
+          collection(db, "globalFeeds"),
+          where("ownerId", "==", currentUser.uid)
+        );
+
+        const [postsSnapshot, feelingsSnapshot, feedsSnapshot] = await Promise.all([
+          getDocs(postsQuery),
+          getDocs(feelingsQuery),
+          getDocs(feedsQuery),
+        ]);
+
+        setPostCounts({
+          posts: postsSnapshot.size,
+          feelings: feelingsSnapshot.size,
+          feeds: feedsSnapshot.size,
+        });
+      } catch (error) {
+        console.error("Gönderi sayıları çekilirken hata oluştu:", error);
+      }
+    };
+
     if (currentUser) {
-      fetchContent(activeTab, true);
+      fetchPostCounts();
     }
-  }, [activeTab, currentUser]);
+  }, [currentUser]);
+
+  // ---------------- FETCH DATA BASED ON ACTIVE TAB ----------------
+  useEffect(() => {
+    const fetchTabData = async () => {
+      if (!currentUser || !currentUser.uid) return;
+
+      // Check if data for the active tab already exists
+      if (allData[activeTab]?.length > 0 && activeTab !== "likes" && activeTab !== "tags") {
+        return; // Use cached data, no need to fetch again
+      }
+
+      setLoadingContent(prev => ({ ...prev, [activeTab]: true }));
+
+      try {
+        let snapshot;
+        let queryToRun;
+
+        const processSnapshot = (snapshot, type, likedIds = [], savedIds = []) => {
+          let data = snapshot.docs.map(doc => {
+            const item = { id: doc.id, ...doc.data() };
+            item.initialLiked = likedIds.includes(item.id);
+            item.initialSaved = savedIds.includes(item.id);
+            return item;
+          });
+          if (type === "feeds") {
+            data = data.filter(item => item.mediaUrl);
+          }
+          return data;
+        };
+
+        // Fetch likes and tags data first for all tabs
+        const [likesSnapshot, tagsSnapshot] = await Promise.all([
+          getDocs(collection(db, "users", currentUser.uid, "likes")),
+          getDocs(collection(db, "users", currentUser.uid, "tags")),
+        ]);
+        const likedIds = likesSnapshot.docs.map(doc => doc.id);
+        const savedIds = tagsSnapshot.docs.map(doc => doc.id);
+
+        switch (activeTab) {
+          case "posts":
+            queryToRun = query(collection(db, "globalPosts"), where("uid", "==", currentUser.uid), orderBy("createdAt", "desc"));
+            snapshot = await getDocs(queryToRun);
+            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab, likedIds, savedIds) }));
+            break;
+          case "feelings":
+            queryToRun = query(collection(db, "globalFeelings"), where("uid", "==", currentUser.uid), orderBy("createdAt", "desc"));
+            snapshot = await getDocs(queryToRun);
+            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab, likedIds, savedIds) }));
+            break;
+          case "feeds":
+            queryToRun = query(collection(db, "globalFeeds"), where("ownerId", "==", currentUser.uid), orderBy("createdAt", "desc"));
+            snapshot = await getDocs(queryToRun);
+            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab, likedIds, savedIds) }));
+            break;
+          case "likes":
+            // Fetch the actual liked posts
+            if (likedIds.length > 0) {
+              const likedPostsQuery = query(collection(db, "globalPosts"), where("__name__", "in", likedIds), orderBy("createdAt", "desc"));
+              const likedPostsSnapshot = await getDocs(likedPostsQuery);
+              setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(likedPostsSnapshot, activeTab, likedIds, savedIds) }));
+            } else {
+              setAllData(prev => ({ ...prev, [activeTab]: [] }));
+            }
+            break;
+          case "tags":
+            // Fetch the actual tagged posts
+            if (savedIds.length > 0) {
+              const taggedPostsQuery = query(collection(db, "globalPosts"), where("__name__", "in", savedIds), orderBy("createdAt", "desc"));
+              const taggedPostsSnapshot = await getDocs(taggedPostsQuery);
+              setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(taggedPostsSnapshot, activeTab, likedIds, savedIds) }));
+            } else {
+              setAllData(prev => ({ ...prev, [activeTab]: [] }));
+            }
+            break;
+          default:
+            setAllData(prev => ({ ...prev, [activeTab]: [] }));
+            break;
+        }
+      } catch (error) {
+        console.error(`🔥 Veri çekilirken hata oluştu (${activeTab}):`, error);
+        const errorMessage = error.code === 'failed-precondition'
+          ? "Dizin hatası: İçerikleri görüntülemek için Firebase'de gerekli dizinlerin oluşturulması gerekiyor. Lütfen konsolu kontrol edin."
+          : "Veriler yüklenirken bir sorun oluştu. Lütfen tekrar deneyin.";
+        showToast(errorMessage, "error");
+      } finally {
+        setLoadingContent(prev => ({ ...prev, [activeTab]: false }));
+      }
+    };
+
+    if (currentUser) {
+      fetchTabData();
+    }
+  }, [activeTab, currentUser, showToast]);
 
   const handleTabChange = (tabName) => {
     setActiveTab(tabName);
@@ -155,7 +195,7 @@ const MobileProfile = () => {
   if (loading) return <LoadingOverlay />;
   if (!currentUser) return <div>Lütfen giriş yapın.</div>;
 
-  const { username, displayName, photoURL, bio, familySystem, stats, uid } =
+  const { username, displayName, photoURL, bio, familySystem, uid } =
     currentUser;
 
   const handleStatClick = (type) => {
@@ -164,11 +204,16 @@ const MobileProfile = () => {
   };
 
   const getCardComponent = (item) => {
+    const initialLiked = item?.initialLiked ?? false;
+    const initialSaved = item?.initialSaved ?? false;
+
     switch (activeTab) {
       case "posts":
-        return <PostCard key={item.id} post={item} />;
+      case "likes":
+      case "tags":
+        return <PostCard key={item.id} post={item} initialLiked={initialLiked} initialSaved={initialSaved} />;
       case "feelings":
-        return <TweetCard key={item.id} feeling={item} />;
+        return <TweetCard key={item.id} feeling={item} initialLiked={initialLiked} initialSaved={initialSaved} />;
       case "feeds":
         return (
           <VideoThumbnail
@@ -207,9 +252,11 @@ const MobileProfile = () => {
     { key: "posts", label: "Posts" },
     { key: "feelings", label: "Feelings" },
     { key: "feeds", label: "Feeds" },
-    { key: "likes", label: "Liked" },
-    { key: "tags", label: "Tagged" },
+    { key: "likes", label: "Beğenilenler" },
+    { key: "tags", label: "Etiketliler" },
   ];
+
+  const currentData = allData[activeTab] || [];
 
   return (
     <div className={styles.container}>
@@ -234,12 +281,12 @@ const MobileProfile = () => {
         <div className={styles.stats}>
           <div className={styles.stat_content}>
             <div className={styles.stat}>
-              <span className={styles.statNumber}>{stats.posts}</span>
+              <span className={styles.statNumber}>{postCounts.posts}</span>
               <span className={styles.statLabel}>Posts</span>
             </div>
             <div className={styles.stat}>
-              <span className={styles.statNumber}>{stats.rta}</span>
-              <span className={styles.statLabel}>RTA</span>
+              <span className={styles.statNumber}>{postCounts.feelings}</span>
+              <span className={styles.statLabel}>Feelings</span>
             </div>
           </div>
           <div className={styles.stat_content}>
@@ -248,7 +295,7 @@ const MobileProfile = () => {
               onClick={() => handleStatClick("followers")}
               style={{ cursor: "pointer" }}
             >
-              <span className={styles.statNumber}>{stats.followers}</span>
+              <span className={styles.statNumber}>{currentUser.stats?.followers || 0}</span>
               <span className={styles.statLabel}>Followers</span>
             </div>
             <div
@@ -256,7 +303,7 @@ const MobileProfile = () => {
               onClick={() => handleStatClick("following")}
               style={{ cursor: "pointer" }}
             >
-              <span className={styles.statNumber}>{stats.following}</span>
+              <span className={styles.statNumber}>{currentUser.stats?.following || 0}</span>
               <span className={styles.statLabel}>Following</span>
             </div>
           </div>
@@ -291,9 +338,9 @@ const MobileProfile = () => {
       </div>
 
       <div className={styles.tabContent}>
-        {loadingContent ? (
+        {loadingContent[activeTab] ? (
           <LoadingOverlay />
-        ) : data.length > 0 ? (
+        ) : currentData.length > 0 ? (
           <div
             className={
               activeTab === "feelings"
@@ -303,25 +350,14 @@ const MobileProfile = () => {
                 : styles.postsGrid
             }
           >
-            {data.map(getCardComponent)}
-            {hasMore && (
-              <div className={styles.loadMoreContainer}>
-                <button
-                  onClick={() => fetchContent(activeTab, false)}
-                  className={styles.loadMoreBtn}
-                  disabled={loadingContent}
-                >
-                  {loadingContent ? "Yükleniyor..." : "Daha Fazla Yükle"}
-                </button>
-              </div>
-            )}
+            {currentData.map(getCardComponent)}
           </div>
         ) : (
           <div className={styles.emptyState}>{emptyMessage()}</div>
         )}
       </div>
 
-      {showModal && (
+      {showModal && currentUser && (
         <ConnectionsModal
           show={showModal}
           onClose={() => setShowModal(false)}

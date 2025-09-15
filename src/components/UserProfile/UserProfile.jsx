@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./UserProfile.module.css";
 import { useAuth } from "../../context/AuthProvider";
@@ -21,8 +21,6 @@ import {
   query,
   getDocs,
   orderBy,
-  limit,
-  startAfter,
   where,
   doc,
   getDoc,
@@ -33,9 +31,6 @@ import PostCard from "../AccountPage/Box/PostBox/PostBox";
 import TweetCard from "../AccountPage/Box/FeelingsBox/FeelingsBox";
 import VideoThumbnail from "../AccountPage/Box/VideoFeedItem/VideoThumbnail/VideoThumbnail";
 import VideoFeedItem from "../AccountPage/Box/VideoFeedItem/VideoFeedItem";
-
-// Constants
-const ITEMS_PER_PAGE = 10;
 
 const UserProfile = () => {
   const { username } = useParams();
@@ -56,128 +51,12 @@ const UserProfile = () => {
     likes: [],
     tags: [],
   });
-  const [loadedTabs, setLoadedTabs] = useState({
-    posts: false,
-    feelings: false,
-    feeds: false,
-    likes: false,
-    tags: false,
-  });
-  const [loadingContent, setLoadingContent] = useState(false);
-  const [lastVisible, setLastVisible] = useState(null);
-  const [hasMore, setHasMore] = useState(true);
+  const [loadingContent, setLoadingContent] = useState({});
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const apiBaseUrl = process.env.REACT_APP_API_URL;
 
-  const fetchUserContent = useCallback(
-    async (type, isInitialLoad = true) => {
-      if (!profileData?.uid) return;
-      setLoadingContent(true);
-
-      if (isInitialLoad && loadedTabs[type]) {
-        setLoadingContent(false);
-        setHasMore(allData[type].length >= ITEMS_PER_PAGE);
-        return;
-      }
-
-      try {
-        let collectionName;
-        let userFilterField = "uid";
-
-        switch (type) {
-          case "feelings":
-            collectionName = "globalFeelings";
-            break;
-          case "posts":
-            collectionName = "globalPosts";
-            break;
-          case "feeds":
-            collectionName = "globalFeeds";
-            userFilterField = "ownerId";
-            break;
-          case "likes":
-          case "tags":
-            collectionName = `users/${profileData.uid}/${type}`;
-            userFilterField = null;
-            break;
-          default:
-            setLoadingContent(false);
-            return;
-        }
-
-        let queryRef = collection(db, collectionName);
-
-        if (userFilterField) {
-          queryRef = query(
-            queryRef,
-            where(userFilterField, "==", profileData.uid),
-            orderBy("createdAt", "desc")
-          );
-        } else {
-          queryRef = query(queryRef, orderBy("createdAt", "desc"));
-        }
-
-        let q = query(
-          queryRef,
-          ...(isInitialLoad
-            ? [limit(ITEMS_PER_PAGE)]
-            : [startAfter(lastVisible), limit(ITEMS_PER_PAGE)])
-        );
-
-        if (!isInitialLoad && !lastVisible) {
-          setLoadingContent(false);
-          return;
-        }
-
-        const querySnapshot = await getDocs(q);
-        const fetchedData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        let contentData = [];
-        if (type === "likes" || type === "tags") {
-          for (const item of fetchedData) {
-            const postRef = doc(db, item.postType, item.postId);
-            const postSnap = await getDoc(postRef);
-            if (postSnap.exists()) {
-              contentData.push({
-                id: postSnap.id,
-                ...postSnap.data(),
-                originalType: item.postType,
-              });
-            }
-          }
-        } else {
-          contentData = fetchedData;
-        }
-
-        let filteredData = contentData;
-        if (type === "feeds") {
-          filteredData = contentData.filter((item) => item.mediaUrl);
-        }
-
-        setAllData((prevData) => {
-          const newData = filteredData.filter(
-            (item) => !prevData[type].some((existingItem) => existingItem.id === item.id)
-          );
-          return { ...prevData, [type]: [...prevData[type], ...newData] };
-        });
-
-        setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
-        setHasMore(fetchedData.length === ITEMS_PER_PAGE);
-        setLoadedTabs((prev) => ({ ...prev, [type]: true }));
-      } catch (error) {
-        console.error("Veri çekme hatası:", error);
-        showToast("İçerik yüklenirken bir hata oluştu.", "error");
-      } finally {
-        setLoadingContent(false);
-      }
-    },
-    [profileData, lastVisible, showToast, allData, loadedTabs]
-  );
-
+  // ---------------- FETCH USER PROFILE AND FOLLOW STATUS ----------------
   useEffect(() => {
     const fetchUserProfileAndStatus = async () => {
       setLoading(true);
@@ -206,24 +85,111 @@ const UserProfile = () => {
         setLoading(false);
       }
     };
-    fetchUserProfileAndStatus();
+
+    if (currentUser) {
+      fetchUserProfileAndStatus();
+    }
   }, [username, currentUser, apiBaseUrl]);
 
+  // ---------------- FETCH DATA BASED ON ACTIVE TAB ----------------
   useEffect(() => {
-    if (profileData && !loadedTabs[activeTab]) {
-      const canView =
+    const fetchTabData = async () => {
+      if (!profileData || !profileData.uid) return;
+
+      const canViewContent =
         !profileData.isPrivate || followStatus === "following" || followStatus === "self";
-      if (canView) {
-        fetchUserContent(activeTab, true);
+
+      if (!canViewContent && activeTab !== "posts" && activeTab !== "feelings" && activeTab !== "feeds") {
+        return;
       }
+      
+      if (allData[activeTab]?.length > 0) {
+        return; // Use cached data, no need to fetch again
+      }
+
+      setLoadingContent(prev => ({ ...prev, [activeTab]: true }));
+
+      try {
+        let snapshot;
+        let queryToRun;
+
+        const processSnapshot = (snapshot, type, likedIds = [], savedIds = []) => {
+          let data = snapshot.docs.map(doc => {
+            const item = { id: doc.id, ...doc.data() };
+            item.initialLiked = likedIds.includes(item.id);
+            item.initialSaved = savedIds.includes(item.id);
+            return item;
+          });
+          if (type === "feeds") {
+            data = data.filter(item => item.mediaUrl);
+          }
+          return data;
+        };
+
+        const [likesSnapshot, tagsSnapshot] = await Promise.all([
+          getDocs(collection(db, "users", profileData.uid, "likes")),
+          getDocs(collection(db, "users", profileData.uid, "tags")),
+        ]);
+        const likedIds = likesSnapshot.docs.map(doc => doc.id);
+        const savedIds = tagsSnapshot.docs.map(doc => doc.id);
+
+        switch (activeTab) {
+          case "posts":
+            queryToRun = query(collection(db, "globalPosts"), where("uid", "==", profileData.uid), orderBy("createdAt", "desc"));
+            snapshot = await getDocs(queryToRun);
+            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab, likedIds, savedIds) }));
+            break;
+          case "feelings":
+            queryToRun = query(collection(db, "globalFeelings"), where("uid", "==", profileData.uid), orderBy("createdAt", "desc"));
+            snapshot = await getDocs(queryToRun);
+            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab, likedIds, savedIds) }));
+            break;
+          case "feeds":
+            queryToRun = query(collection(db, "globalFeeds"), where("ownerId", "==", profileData.uid), orderBy("createdAt", "desc"));
+            snapshot = await getDocs(queryToRun);
+            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab, likedIds, savedIds) }));
+            break;
+          case "likes":
+            if (likedIds.length > 0) {
+              const likedPostsQuery = query(collection(db, "globalPosts"), where("__name__", "in", likedIds), orderBy("createdAt", "desc"));
+              const likedPostsSnapshot = await getDocs(likedPostsQuery);
+              setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(likedPostsSnapshot, activeTab, likedIds, savedIds) }));
+            } else {
+              setAllData(prev => ({ ...prev, [activeTab]: [] }));
+            }
+            break;
+          case "tags":
+            if (savedIds.length > 0) {
+              const taggedPostsQuery = query(collection(db, "globalPosts"), where("__name__", "in", savedIds), orderBy("createdAt", "desc"));
+              const taggedPostsSnapshot = await getDocs(taggedPostsQuery);
+              setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(taggedPostsSnapshot, activeTab, likedIds, savedIds) }));
+            } else {
+              setAllData(prev => ({ ...prev, [activeTab]: [] }));
+            }
+            break;
+          default:
+            setAllData(prev => ({ ...prev, [activeTab]: [] }));
+            break;
+        }
+      } catch (error) {
+        console.error(`🔥 Veri çekilirken hata oluştu (${activeTab}):`, error);
+        const errorMessage = error.code === 'failed-precondition'
+          ? "Dizin hatası: İçerikleri görüntülemek için Firebase'de gerekli dizinlerin oluşturulması gerekiyor. Lütfen konsolu kontrol edin."
+          : "Veriler yüklenirken bir sorun oluştu. Lütfen tekrar deneyin.";
+        showToast(errorMessage, "error");
+      } finally {
+        setLoadingContent(prev => ({ ...prev, [activeTab]: false }));
+      }
+    };
+
+    if (profileData && (followStatus === "following" || followStatus === "self" || !profileData.isPrivate)) {
+      fetchTabData();
     }
-  }, [profileData, followStatus, activeTab, fetchUserContent, loadedTabs]);
+  }, [activeTab, profileData, followStatus, showToast]);
 
   const handleTabChange = (tab) => {
     if (activeTab === tab) return;
     setActiveTab(tab);
-    setLastVisible(null);
-    setHasMore(true);
   };
 
   const handleFollowAction = async () => {
@@ -381,6 +347,8 @@ const UserProfile = () => {
     switch (type) {
       case "globalPosts":
       case "posts":
+      case "likes":
+      case "tags":
         return <PostCard key={item.id} post={item} />;
       case "globalFeelings":
       case "feelings":
@@ -576,22 +544,11 @@ const UserProfile = () => {
             <h3>Bu hesap gizlidir.</h3>
             <p>İçeriği görmek için takip etmelisiniz.</p>
           </div>
-        ) : loadingContent ? (
+        ) : loadingContent[activeTab] ? (
           <LoadingOverlay />
         ) : currentContent.length > 0 ? (
           <div className={`${styles.section} ${activeTab === "feeds" ? styles.feedsGrid : ""}`}>
             {currentContent.map(getCardComponent)}
-            {hasMore && (
-              <div className={styles.loadMoreContainer}>
-                <button
-                  onClick={() => fetchUserContent(activeTab, false)}
-                  className={styles.loadMoreBtn}
-                  disabled={loadingContent}
-                >
-                  {loadingContent ? "Yükleniyor..." : "Daha Fazla Yükle"}
-                </button>
-              </div>
-            )}
           </div>
         ) : (
           <div className={styles.emptyState}>{emptyMessage()}</div>
