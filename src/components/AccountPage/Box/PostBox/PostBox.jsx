@@ -1,5 +1,3 @@
-// /components/Box/PostBox/PostBox.jsx
-
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import styles from "./PostBox.module.css";
 import {
@@ -11,10 +9,10 @@ import {
 import { FaHeart, FaBookmark } from "react-icons/fa";
 import { useAuth } from "../../../../context/AuthProvider";
 import axios from "axios";
-import { auth } from "../../../../config/firebase-client";
+import { auth, db } from "../../../../config/firebase-client";
+import { doc, getDoc, setDoc, deleteDoc, onSnapshot } from "firebase/firestore";
 import PostsActionsModal from "./PostsActionsModal/PostsActionsModal";
 
-// Helper fonksiyon: Debounce
 const debounce = (func, delay) => {
   let timeoutId;
   return (...args) => {
@@ -41,77 +39,83 @@ const PostBox = ({ post, initialLiked, initialSaved }) => {
   const isUpdating = useRef(false);
 
   const postId = post?._id || post?.id;
-  const { caption, username, displayName, photoURL, imageUrls } = post || {};
+  const { caption, displayName, photoURL, imageUrls } = post || {};
   const imageUrl = imageUrls?.length > 0 ? imageUrls[0] : null;
 
-  // useEffect
+  const api = axios.create({
+    baseURL: process.env.REACT_APP_API_URL,
+    withCredentials: true,
+    headers: { "Content-Type": "application/json" },
+  });
+
+  // Firestore realtime listener ile like durumunu takip et
+  useEffect(() => {
+    if (!postId) return;
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const likeDocRef = doc(db, "posts", postId, "likes", user.uid);
+
+    const unsubscribe = onSnapshot(likeDocRef, (docSnap) => {
+      const exists = docSnap.exists();
+      setLiked(exists);
+    });
+
+    return () => unsubscribe();
+  }, [postId]);
+
+  // Stats değerlerini UI'ya yükle
   useEffect(() => {
     setLikeCount(Number(post?.stats?.likes) || 0);
     setCommentCount(Number(post?.stats?.comments) || 0);
     setShareCount(Number(post?.stats?.shares) || 0);
   }, [post?.stats?.likes, post?.stats?.comments, post?.stats?.shares]);
 
-  const api = axios.create({
-    baseURL: process.env.REACT_APP_API_URL,
-    withCredentials: true,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  const handleLike = async () => {
+    if (isUpdating.current) return;
+    isUpdating.current = true;
 
-  const debouncedToggleLike = useCallback(
-    debounce(async (isLikedNow, prevCount) => {
-      if (isUpdating.current) return;
-      isUpdating.current = true;
+    const user = auth.currentUser;
+    if (!user) {
+      showToast("Bu işlemi yapmak için lütfen giriş yapın.", "error");
+      isUpdating.current = false;
+      return;
+    }
 
-      try {
-        const token = await auth.currentUser?.getIdToken();
-        if (!token) {
-          showToast("Bu işlemi yapmak için lütfen giriş yapın.", "error");
-          setLiked(!isLikedNow);
-          setLikeCount(prevCount);
-          isUpdating.current = false;
-          return;
-        }
+    const likeDocRef = doc(db, "posts", postId, "likes", user.uid);
 
-        const response = await api.post(
-          "/api/posts/like-toggle",
-          { postId, postType: "posts" },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+    try {
+      const likeDoc = await getDoc(likeDocRef);
 
-        if (response.data.success) {
-          setLiked(response.data.isLiked);
-          setLikeCount(Number(response.data.likeCount) || 0);
-        }
-      } catch (error) {
-        console.error("Beğeni durumu güncellenirken hata:", error);
-        setLiked(!isLikedNow);
-        setLikeCount(prevCount);
-
-        if (error.response?.status === 401) {
-          showToast(
-            "Bu işlemi yapmak için oturumunuzun açık olması gerekiyor. Lütfen giriş yapın.",
-            "error"
-          );
-        } else if (error.response?.status === 429) {
-          showToast("Çok fazla istek gönderdiniz. Lütfen yavaşlayın.", "error");
-        } else {
-          showToast(
-            "Beğeni işlemi başarısız oldu. Lütfen tekrar deneyin.",
-            "error"
-          );
-        }
-      } finally {
-        isUpdating.current = false;
+      if (likeDoc.exists()) {
+        await deleteDoc(likeDocRef); // beğeniyi kaldır
+        setLikeCount((prev) => prev - 1);
+      } else {
+        await setDoc(likeDocRef, { uid: user.uid, likedAt: new Date() }); // beğen
+        setLikeCount((prev) => prev + 1);
       }
-    }, 500),
-    [postId, showToast]
-  );
+
+      // Backend toggle API çağrısı
+      const token = await user.getIdToken();
+      await api.post(
+        "/api/posts/like-toggle",
+        { postId, postType: "posts" },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+    } catch (err) {
+      console.error("Beğeni hatası:", err);
+      showToast("Beğeni işlemi başarısız oldu.", "error");
+    } finally {
+      isUpdating.current = false;
+    }
+  };
+
+  const handleSave = () => {
+    const previousSaved = saved;
+    setSaved(!previousSaved);
+    debouncedToggleSave(!previousSaved);
+  };
 
   const debouncedToggleSave = useCallback(
     debounce(async (isSavedNow) => {
@@ -122,92 +126,18 @@ const PostBox = ({ post, initialLiked, initialSaved }) => {
         await api.post(
           "/api/posts/save-toggle",
           { postId, postType: "posts" },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
       } catch (error) {
-        console.error("Kaydetme durumu güncellenirken hata:", error);
+        console.error("Kaydetme hatası:", error);
         setSaved(!isSavedNow);
-        if (error.response?.status === 429) {
-          showToast("Çok fazla istek gönderdiniz. Lütfen yavaşlayın.", "error");
-        } else {
-          showToast(
-            "Kaydetme işlemi başarısız oldu. Lütfen tekrar deneyin.",
-            "error"
-          );
-        }
+        showToast("Kaydetme işlemi başarısız oldu.", "error");
       } finally {
         isUpdating.current = false;
       }
     }, 500),
-    [postId, showToast]
+    [postId]
   );
-
-  const handleLike = async () => {
-  if (isUpdating.current) return;
-  isUpdating.current = true;
-
-  const previousLiked = liked;
-  const previousCount = likeCount;
-
-  // 🔥 Optimistic update (UI hemen güncellenir)
-  setLiked(!previousLiked);
-  setLikeCount(previousLiked ? previousCount - 1 : previousCount + 1);
-
-  try {
-    const token = await auth.currentUser?.getIdToken();
-    if (!token) {
-      showToast("Bu işlemi yapmak için lütfen giriş yapın.", "error");
-      setLiked(previousLiked);
-      setLikeCount(previousCount);
-      return;
-    }
-
-    // Backend isteği
-    const response = await api.post(
-      "/api/posts/like-toggle",
-      { postId, postType: "posts" },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    if (response.data.success) {
-      // ✅ Backend sayısı ile senkronize et
-      setLiked(response.data.isLiked);
-      setLikeCount(Number(response.data.likeCount) || 0);
-    } else {
-      setLiked(previousLiked);
-      setLikeCount(previousCount);
-    }
-  } catch (error) {
-    console.error("Beğeni hatası:", error);
-    setLiked(previousLiked);
-    setLikeCount(previousCount);
-
-    if (error.response?.status === 401) {
-      showToast("Lütfen giriş yapın.", "error");
-    } else if (error.response?.status === 429) {
-      showToast("Çok fazla istek gönderdiniz.", "error");
-    } else {
-      showToast("Beğeni işlemi başarısız oldu.", "error");
-    }
-  } finally {
-    isUpdating.current = false;
-  }
-};
-
-
-  const handleSave = () => {
-    const previousSaved = saved;
-    setSaved(!previousSaved);
-    debouncedToggleSave(!previousSaved);
-  };
 
   const handleCommentUpdate = () => {
     setCommentCount((prev) => Number(prev) + 1);
@@ -219,27 +149,22 @@ const PostBox = ({ post, initialLiked, initialSaved }) => {
       await api.post(
         "/api/posts/share-post",
         { postId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setShareCount((prev) => Number(prev) + 1);
     } catch (error) {
-      console.error("Paylaşım sayısı güncellenirken hata:", error);
+      console.error("Paylaşım hatası:", error);
       showToast("Paylaşım işlemi başarısız oldu.", "error");
     }
   };
 
   const postText = post?.caption || "";
   const userProfileImage =
-    post?.photoURL ||
+    photoURL ||
     "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
 
   return (
     <>
-      {/* Masaüstü hali */}
       <div className={`${styles.post_card} ${styles.desktop}`}>
         {imageUrl && (
           <img src={imageUrl} alt="Post" className={styles.post_image} />
@@ -284,7 +209,6 @@ const PostBox = ({ post, initialLiked, initialSaved }) => {
                 onClick={() => {
                   setActiveModalTab("share");
                   setShowModal(true);
-                  handleShareUpdate();
                 }}
                 className={styles.action_item}
               >
@@ -303,7 +227,6 @@ const PostBox = ({ post, initialLiked, initialSaved }) => {
         </div>
       </div>
 
-      {/* Mobile Mini Card Buton */}
       <div
         className={`${styles.post_card_mini} ${styles.mobile}`}
         onClick={() => {

@@ -1,22 +1,15 @@
-// /components/Box/PostsActionsModal/PostsActionsModal.jsx
-
-import React, { useEffect, useRef, useState, useCallback } from "react"; // ✅ useCallback buraya eklendi
+import React, { useEffect, useRef, useState } from "react";
 import styles from "./PostsActionsModal.module.css";
 import { FiX, FiSend, FiTrash2, FiLink } from "react-icons/fi";
 import { useAuth } from "../../../../../context/AuthProvider";
 import { useUser } from "../../../../../context/UserContext";
-import { auth } from "../../../../../config/firebase-client";
-import axios from "axios";
+import { auth, db } from "../../../../../config/firebase-client";
+import { collection, query, orderBy, getDocs } from "firebase/firestore";
 
-// Helper: farklı createdAt formatlarını milis çevirir
 const tsToMillis = (ts) => {
   if (!ts) return 0;
   if (ts.toDate instanceof Function) {
-    try {
-      return ts.toDate().getTime();
-    } catch {
-      return 0;
-    }
+    try { return ts.toDate().getTime(); } catch { return 0; }
   }
   if (typeof ts === "object" && ts.seconds !== undefined) {
     return ts.seconds * 1000 + Math.floor((ts.nanoseconds || 0) / 1e6);
@@ -30,297 +23,202 @@ const tsToMillis = (ts) => {
   return 0;
 };
 
-// Axios instance
-const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+const DEFAULT_AVATAR = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
 
-const PostsActionsModal = ({
-  show,
-  onClose,
-  post,
-  initialTab,
-  onCommentAdded,
-  onShared,
-}) => {
-  const modalRef = useRef(null);
-  const { currentUser } = useUser();
-  const { showToast } = useAuth();
-  const [activeTab, setActiveTab] = useState(initialTab || "comments");
-  const [newComment, setNewComment] = useState("");
+const DeleteConfirmationModal = ({ show, onConfirm, onCancel }) => {
+  if (!show) return null;
+  return (
+    <div className={styles.postsConfirmationModalOverlay} onClick={onCancel}>
+      <div className={styles.postsConfirmationModalContent} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.postsConfirmationHeader}>
+          <h4>Yorumu Sil</h4>
+          <button onClick={onCancel} className={styles.postsConfirmationCloseButton}><FiX /></button>
+        </div>
+        <p>Bu yorumu silmek istediğinize emin misiniz?</p>
+        <div className={styles.postsConfirmationActions}>
+          <button onClick={onCancel} className={styles.postsCancelButton}>İptal</button>
+          <button onClick={onConfirm} className={styles.postsConfirmButton}>Sil</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const PostsActionsModal = ({ show, onClose, post, onCommentAdded, onCommentDeleted, onShared }) => {
   const [comments, setComments] = useState([]);
-  const [loadingComments, setLoadingComments] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState(null);
 
-  const postId = post?._id;
-  const isMounted = useRef(false);
+  const { showToast } = useAuth();
+  const { currentUser } = useUser();
+  const isMounted = useRef(true);
+
+  const validPostId = post?.id || post?.postId;
+  const postType = post?.postType || "globalFeelings";
+
+  useEffect(() => { isMounted.current = true; return () => { isMounted.current = false; }; }, []);
 
   useEffect(() => {
-    isMounted.current = true;
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
+    if (show && validPostId) fetchComments();
+  }, [show, validPostId, postType]);
 
-  const fetchComments = useCallback(async () => {
-    if (!postId || !isMounted.current) return;
-    setLoadingComments(true);
+  const fetchComments = async () => {
+    setLoading(true);
     try {
-      const token = await auth.currentUser?.getIdToken();
-      // ✅ Yorumları çekmek için doğru rota
-      const response = await api.get(`/api/posts/comments?postId=${postId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (isMounted.current) {
-        setComments(response.data.comments);
-      }
-    } catch (error) {
-      console.error("Yorumlar getirilirken hata:", error);
-      showToast("Yorumlar yüklenirken bir sorun oluştu.", "error");
-    } finally {
-      if (isMounted.current) {
-        setLoadingComments(false);
-      }
-    }
-  }, [postId, showToast]);
-
-  useEffect(() => {
-    if (show && activeTab === "comments") {
-      fetchComments();
-    }
-  }, [show, activeTab, fetchComments]);
+      const q = query(collection(db, postType, validPostId, "comments"), orderBy("createdAt", "desc"));
+      const querySnapshot = await getDocs(q);
+      const fetchedComments = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      if (isMounted.current) setComments(fetchedComments);
+    } catch (err) {
+      console.error("Yorum çekme hatası:", err);
+      showToast("Yorumlar yüklenirken hata oluştu.", "error");
+    } finally { if (isMounted.current) setLoading(false); }
+  };
 
   const handleAddComment = async (e) => {
     e.preventDefault();
+    if (!currentUser) { showToast("Yorum eklemek için giriş yapmalısınız.", "error"); return; }
     if (!newComment.trim() || isSubmitting) return;
 
-    setIsSubmitting(true);
-    const tempComment = {
-      id: "temp-" + Date.now(),
-      displayName: currentUser.displayName,
-      photoURL: currentUser.photoURL,
-      commentText: newComment,
-      createdAt: { seconds: Date.now() / 1000, nanoseconds: 0 },
+    const tempId = `temp-${Date.now()}`;
+    const optimisticComment = {
+      id: tempId,
       uid: currentUser.uid,
+      displayName: currentUser.displayName || currentUser.email?.split("@")[0] || "Kullanıcı",
+      username: currentUser.username || undefined,
+      photoURL: currentUser.photoURL || DEFAULT_AVATAR,
+      text: newComment.trim(),
+      createdAt: new Date(),
+      __optimistic: true,
     };
-    setComments((prevComments) => [tempComment, ...prevComments]);
+
+    setComments((prev) => [optimisticComment, ...(prev || [])]);
     setNewComment("");
+    setIsSubmitting(true);
 
     try {
-      const token = await auth.currentUser?.getIdToken();
-      // ✅ Yorum eklemek için doğru rota
-      await api.post(
-        "/api/posts/comments",
-        { postId, commentText: tempComment.commentText },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      onCommentAdded();
-      showToast("Yorumunuz eklendi.", "success");
-    } catch (error) {
-      console.error("Yorum eklenirken hata:", error);
-      showToast("Yorum eklenemedi. Lütfen tekrar deneyin.", "error");
-      setComments((prevComments) =>
-        prevComments.filter((c) => c.id !== tempComment.id)
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+      const token = await auth.currentUser.getIdToken();
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/actions/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ postId: validPostId, postType, commentText: optimisticComment.text }),
+      });
+
+      if (!res.ok) throw new Error("Yorum eklenemedi (sunucu hatası).");
+
+      fetchComments();
+      if (onCommentAdded) onCommentAdded();
+      showToast("Yorum başarıyla eklendi.", "success");
+    } catch (err) {
+      console.error("Yorum ekleme hatası:", err);
+      setComments((prev) => (prev || []).filter((c) => c.id !== tempId));
+      showToast("Yorum eklenirken hata oluştu.", "error");
+    } finally { if (isMounted.current) setIsSubmitting(false); }
   };
 
   const handleDeleteComment = async () => {
     if (!commentToDelete) return;
     setShowDeleteModal(false);
-
+    setLoading(true);
     try {
-      const token = await auth.currentUser?.getIdToken();
-      // ✅ Yorum silmek için doğru rota
-      await api.delete("/api/posts/comments", {
-        data: { postId, commentId: commentToDelete },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const token = await auth.currentUser.getIdToken();
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/actions/comments`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ commentId: commentToDelete, postId: validPostId, postType }),
       });
-      setComments((prevComments) =>
-        prevComments.filter((c) => c.id !== commentToDelete)
-      );
-      onCommentAdded();
+
+      if (!res.ok) throw new Error("Yorum silinirken hata oluştu.");
+      setComments((prev) => (prev || []).filter((c) => c?.id !== commentToDelete));
       showToast("Yorum başarıyla silindi.", "success");
-    } catch (error) {
-      console.error("Yorum silinirken hata:", error);
-      showToast("Yorum silinirken bir sorun oluştu.", "error");
-    } finally {
-      setCommentToDelete(null);
-    }
+      if (onCommentDeleted) onCommentDeleted();
+    } catch (err) {
+      console.error("Yorum silme hatası:", err);
+      showToast("Yorum silinirken hata oluştu.", "error");
+    } finally { if (isMounted.current) { setLoading(false); setCommentToDelete(null); } }
   };
 
-  const handleShare = () => {
-    const shareUrl = `${window.location.origin}/post/${postId}`;
-    navigator.clipboard
-      .writeText(shareUrl)
-      .then(() => {
-        showToast("Gönderi linki kopyalandı!", "success");
-        onShared();
-      })
-      .catch((err) => {
-        console.error("Panoya kopyalama başarısız:", err);
-        showToast("Link kopyalanamadı.", "error");
-      });
+  const handleShare = async () => {
+    try {
+      const postUrl = `${window.location.origin}/post/${validPostId}`;
+      await navigator.clipboard.writeText(postUrl);
+      showToast("Gönderi bağlantısı kopyalandı!", "success");
+      if (onShared) onShared();
+    } catch (err) { showToast("Bağlantı kopyalanamadı.", "error"); }
   };
 
-  const PostContent = () => (
-    <div className={styles.postCardContent}>
-      <img
-        src={post?.imageUrls?.[0]}
-        alt="Post"
-        className={styles.postImage}
-      />
-      <div className={styles.postDetails}>
-        <div className={styles.postHeader}>
-          <img src={post?.photoURL} alt="Profil" className={styles.avatar} />
-          <span className={styles.username}>{post?.displayName}</span>
-        </div>
-        <p className={styles.caption}>{post?.caption}</p>
-      </div>
-    </div>
-  );
-
-  const formattedDate = (ts) => {
-    const date = new Date(tsToMillis(ts));
-    return new Intl.DateTimeFormat("tr-TR", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(date);
-  };
+  if (!show) return null;
 
   return (
-    <div className={styles.modalOverlay} onClick={onClose}>
-      <div
-        className={styles.modalContent}
-        onClick={(e) => e.stopPropagation()}
-        ref={modalRef}
-      >
-        <button className={styles.closeBtn} onClick={onClose}>
-          <FiX />
-        </button>
-
-        <div className={styles.tabHeader}>
-          <button
-            className={`${styles.tabButton} ${
-              activeTab === "comments" ? styles.active : ""
-            }`}
-            onClick={() => setActiveTab("comments")}
-          >
-            Yorumlar
-          </button>
-          <button
-            className={`${styles.tabButton} ${
-              activeTab === "share" ? styles.active : ""
-            }`}
-            onClick={() => setActiveTab("share")}
-          >
-            Paylaş
-          </button>
+    <div className={styles.postsModalOverlay} onClick={onClose}>
+      <div className={styles.postsModalContent} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.postsModalHeader}>
+          <h3>Yorumlar</h3>
+          <div className={styles.postsHeaderButtons}>
+            <button onClick={handleShare} className={styles.postsHeaderButton}><FiLink /></button>
+            <button onClick={onClose} className={styles.postsCloseButton}><FiX /></button>
+          </div>
         </div>
 
-        {activeTab === "share" && (
-          <div className={styles.shareSection}>
-            <p>Bu gönderinin linkini kopyalayabilirsiniz:</p>
-            <button className={styles.copyLinkBtn} onClick={handleShare}>
-              <FiLink /> Bağlantıyı Kopyala
-            </button>
-          </div>
-        )}
-
-        {activeTab === "comments" && (
-          <div className={styles.commentsSection}>
-            <PostContent />
-            {loadingComments ? (
-              <p>Yorumlar yükleniyor...</p>
-            ) : comments.length === 0 ? (
-              <p>Henüz yorum yok. İlk yorumu siz yapın!</p>
-            ) : (
-              <div className={styles.commentsList}>
-                {comments
-                  .sort((a, b) => tsToMillis(b.createdAt) - tsToMillis(a.createdAt))
-                  .map((comment) => (
-                    <div key={comment.id} className={styles.commentItem}>
-                      <img
-                        src={comment.photoURL}
-                        alt="Profil"
-                        className={styles.commentAvatar}
-                      />
-                      <div className={styles.commentTextContent}>
-                        <div className={styles.commentHeader}>
-                          <span className={styles.commentUsername}>
-                            {comment.displayName}
-                          </span>
-                          <span className={styles.commentDate}>
-                            {formattedDate(comment.createdAt)}
-                          </span>
-                        </div>
-                        <p className={styles.commentBody}>{comment.commentText}</p>
-                      </div>
-                      {currentUser?.uid === comment?.uid && (
-                        <button
-                          className={styles.deleteIcon}
-                          onClick={() => {
-                            setCommentToDelete(comment.id);
-                            setShowDeleteModal(true);
-                          }}
-                          aria-label="Yorumu sil"
-                          title="Yorumu sil"
-                        >
-                          <FiTrash2 />
-                        </button>
-                      )}
+        <div className={styles.postsCommentsList}>
+          {loading ? (
+            <div className={styles.postsLoading}>Yorumlar yükleniyor...</div>
+          ) : !comments || comments.length === 0 ? (
+            <div className={styles.postsEmpty}>Henüz yorum yok. İlk yorumu sen yap!</div>
+          ) : (
+            (comments || []).map(
+              (comment) => comment && (
+                <div key={comment.id} className={styles.postsCommentCard}>
+                  <div className={styles.postsCommentCardInner}>
+                    <img src={comment?.photoURL || DEFAULT_AVATAR} alt={comment?.displayName || "Kullanıcı"} className={styles.postsCommentAvatar} />
+                    <div className={styles.postsCommentContent}>
+                      <span className={styles.postsCommentUsername}>{comment?.displayName || "Bilinmeyen Kullanıcı"}</span>
+                      <p className={styles.postsCommentText}>{comment?.text}</p>
+                      <small style={{ color: "#888", marginTop: 8, textAlign: "right" }}>
+                        {comment?.createdAt ? new Date(tsToMillis(comment.createdAt)).toLocaleString() : ""}
+                      </small>
                     </div>
-                  ))}
-              </div>
-            )}
+                  </div>
+                  {currentUser?.uid === comment?.uid && (
+                    <button
+                      className={styles.postsDeleteIcon}
+                      onClick={() => { setCommentToDelete(comment.id); setShowDeleteModal(true); }}
+                      aria-label="Yorumu sil"
+                      title="Yorumu sil"
+                    ><FiTrash2 /></button>
+                  )}
+                </div>
+              )
+            )
+          )}
+        </div>
 
-            <form onSubmit={handleAddComment} className={styles.commentForm}>
-              <input
-                type="text"
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Yorum yaz..."
-                className={styles.commentInput}
-                disabled={isSubmitting}
-              />
-              <button
-                type="submit"
-                className={styles.submitBtn}
-                disabled={isSubmitting || !newComment.trim()}
-                aria-disabled={isSubmitting || !newComment.trim()}
-              >
-                <FiSend />
-              </button>
-            </form>
-          </div>
-        )}
-
-        {showDeleteModal && (
-          <div className={styles.deleteModal}>
-            <p>Bu yorumu silmek istediğinizden emin misiniz?</p>
-            <button onClick={handleDeleteComment}>Evet, Sil</button>
-            <button onClick={() => setShowDeleteModal(false)}>İptal</button>
-          </div>
-        )}
+        <form onSubmit={handleAddComment} className={styles.postsCommentForm}>
+          <input
+            type="text"
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="Yorum yaz..."
+            className={styles.postsCommentInput}
+            disabled={isSubmitting}
+          />
+          <button
+            type="submit"
+            className={styles.postsSubmitBtn}
+            disabled={isSubmitting || !newComment.trim()}
+            aria-disabled={isSubmitting || !newComment.trim()}
+          ><FiSend /></button>
+        </form>
       </div>
+
+      <DeleteConfirmationModal
+        show={showDeleteModal}
+        onConfirm={handleDeleteComment}
+        onCancel={() => setShowDeleteModal(false)}
+      />
     </div>
   );
 };
