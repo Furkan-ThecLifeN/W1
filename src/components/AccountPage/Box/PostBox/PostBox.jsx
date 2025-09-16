@@ -29,8 +29,12 @@ const PostBox = ({ post, initialLiked, initialSaved }) => {
   const { showToast } = useAuth();
   const [liked, setLiked] = useState(initialLiked);
   const [likeCount, setLikeCount] = useState(Number(post?.stats?.likes) || 0);
-  const [commentCount, setCommentCount] = useState(Number(post?.stats?.comments) || 0);
-  const [shareCount, setShareCount] = useState(Number(post?.stats?.shares) || 0);
+  const [commentCount, setCommentCount] = useState(
+    Number(post?.stats?.comments) || 0
+  );
+  const [shareCount, setShareCount] = useState(
+    Number(post?.stats?.shares) || 0
+  );
   const [saved, setSaved] = useState(initialSaved);
   const [showModal, setShowModal] = useState(false);
   const [activeModalTab, setActiveModalTab] = useState("comments");
@@ -142,13 +146,62 @@ const PostBox = ({ post, initialLiked, initialSaved }) => {
     [postId, showToast]
   );
 
-  const handleLike = () => {
-    const previousLiked = liked;
-    const previousCount = Number(likeCount) || 0;
-    setLiked(!previousLiked);
-    setLikeCount(previousLiked ? previousCount - 1 : previousCount + 1);
-    debouncedToggleLike(!previousLiked, previousCount);
-  };
+  const handleLike = async () => {
+  if (isUpdating.current) return;
+  isUpdating.current = true;
+
+  const previousLiked = liked;
+  const previousCount = likeCount;
+
+  // 🔥 Optimistic update (UI hemen güncellenir)
+  setLiked(!previousLiked);
+  setLikeCount(previousLiked ? previousCount - 1 : previousCount + 1);
+
+  try {
+    const token = await auth.currentUser?.getIdToken();
+    if (!token) {
+      showToast("Bu işlemi yapmak için lütfen giriş yapın.", "error");
+      setLiked(previousLiked);
+      setLikeCount(previousCount);
+      return;
+    }
+
+    // Backend isteği
+    const response = await api.post(
+      "/api/posts/like-toggle",
+      { postId, postType: "posts" },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (response.data.success) {
+      // ✅ Backend sayısı ile senkronize et
+      setLiked(response.data.isLiked);
+      setLikeCount(Number(response.data.likeCount) || 0);
+    } else {
+      setLiked(previousLiked);
+      setLikeCount(previousCount);
+    }
+  } catch (error) {
+    console.error("Beğeni hatası:", error);
+    setLiked(previousLiked);
+    setLikeCount(previousCount);
+
+    if (error.response?.status === 401) {
+      showToast("Lütfen giriş yapın.", "error");
+    } else if (error.response?.status === 429) {
+      showToast("Çok fazla istek gönderdiniz.", "error");
+    } else {
+      showToast("Beğeni işlemi başarısız oldu.", "error");
+    }
+  } finally {
+    isUpdating.current = false;
+  }
+};
+
 
   const handleSave = () => {
     const previousSaved = saved;
