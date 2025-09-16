@@ -1,0 +1,302 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.modalContent {
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  animation: slide-up 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.closeBtn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  color: #e0e0e0;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  z-index: 10;
+}
+
+.closeBtn:hover {
+  color: #ff6b6b;
+}
+
+.tabHeader {
+  display: flex;
+  justify-content: space-around;
+  padding: 15px 0;
+  border-bottom: 1px solid #333;
+}
+
+.tabButton {
+  background: transparent;
+  border: none;
+  color: #888;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  position: relative;
+}
+
+.tabButton.active {
+  color: #fff;
+}
+
+.tabButton.active::after {
+  content: "";
+  position: absolute;
+  bottom: -15px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #e0e0e0;
+}
+
+.shareSection {
+  padding: 30px;
+  text-align: center;
+}
+
+.copyLinkBtn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 25px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background-color 0.2s ease;
+  margin: 20px auto 0;
+}
+
+.copyLinkBtn:hover {
+  background-color: #0056b3;
+}
+
+.commentsSection {
+  padding: 20px;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.postCardContent {
+  display: flex;
+  flex-direction: column;
+  background-color: #242424;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.postImage {
+  width: 100%;
+  max-height: 250px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.postDetails {
+  display: flex;
+  flex-direction: column;
+}
+
+.postHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.username {
+  font-weight: 600;
+  color: #fff;
+}
+
+.caption {
+  font-size: 0.9rem;
+  color: #ccc;
+  margin: 0;
+}
+
+.commentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.commentItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background-color: #242424;
+  padding: 12px;
+  border-radius: 10px;
+  position: relative;
+}
+
+.commentAvatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.commentTextContent {
+  flex-grow: 1;
+}
+
+.commentHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.commentUsername {
+  font-weight: 600;
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.commentDate {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.commentBody {
+  font-size: 0.9rem;
+  color: #ccc;
+  margin: 0;
+}
+
+.deleteIcon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.deleteIcon:hover {
+  color: #ff6b6b;
+}
+
+.commentForm {
+  display: flex;
+  padding-top: 20px;
+  border-top: 1px solid #333;
+  margin-top: 10px;
+  gap: 10px;
+}
+
+.commentInput {
+  flex-grow: 1;
+  padding: 10px 15px;
+  border-radius: 20px;
+  border: 1px solid #555;
+  background-color: #333;
+  color: #e0e0e0;
+  font-size: 1rem;
+}
+
+.commentInput::placeholder {
+  color: #888;
+}
+
+.submitBtn {
+  background-color: transparent;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.submitBtn:disabled {
+  color: #444;
+  cursor: not-allowed;
+}
+
+.deleteModal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #242424;
+  padding: 25px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+  z-index: 1001;
+}
+
+.deleteModal p {
+  margin-bottom: 15px;
+}
+
+.deleteModal button {
+  padding: 8px 15px;
+  margin: 0 5px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.deleteModal button:first-child {
+  background-color: #dc3545;
+  color: white;
+}
+
+.deleteModal button:last-child {
+  background-color: #6c757d;
+  color: white;
+}
