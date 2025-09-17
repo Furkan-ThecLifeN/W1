@@ -16,8 +16,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../../../context/AuthProvider";
 import axios from "axios";
 import { auth, db } from "../../../../config/firebase-client";
-import { doc, onSnapshot, getDoc, setDoc, deleteDoc } from "firebase/firestore";
-import api from "../../../../utils/axios";
+import { collection, doc, onSnapshot, getDoc, setDoc, deleteDoc } from "firebase/firestore";import api from "../../../../utils/axios";
 
 // Debounce helper
 function debounce(func, delay) {
@@ -67,7 +66,7 @@ export function useItemActions({
   const [liked, setLiked] = useState(initialLiked);
   const [saved, setSaved] = useState(initialSaved);
   const [likeCount, setLikeCount] = useState(0);
-  const [commentCount, setCommentCount] = useState(0);
+  const [commentCount, setCommentCount] = useState(0); 
   const [shareCount, setShareCount] = useState(0);
   const isUpdating = useRef(false);
 
@@ -101,27 +100,36 @@ export function useItemActions({
   }, [id, itemType, initialLiked]);
 
   // Firebase listener - stats
-  useEffect(() => {
-    if (!id) return;
-    const statsRef =
-      itemType === "posts" ? doc(db, "posts", id) : doc(db, "globalFeeds", id);
+ useEffect(() => {
+    if (!id) return;
+    const statsRef =
+      itemType === "posts" ? doc(db, "posts", id) : doc(db, "globalFeeds", id);
+    
+    // ✅ Yorum sayısını alt koleksiyondan almak için yeni listener
+    const commentsCollectionRef = collection(statsRef, "comments");
+    const unsubscribeComments = onSnapshot(commentsCollectionRef, (snapshot) => {
+      setCommentCount(snapshot.size); // Koleksiyondaki belge sayısını kullan
+    });
 
-    const unsubscribe = onSnapshot(statsRef, (docSnap) => {
-      if (!docSnap.exists()) return;
-      const data = docSnap.data();
-      if (itemType === "posts") {
-        setLikeCount(Number(data?.stats?.likes) || 0);
-        setCommentCount(Number(data?.stats?.comments) || 0);
-        setShareCount(Number(data?.stats?.shares) || 0);
-      } else {
-        setLikeCount(Number(data?.likes) || 0);
-        setCommentCount(Number(data?.comments) || 0);
-        setShareCount(Number(data?.shares) || 0);
-      }
-    });
-
-    return () => unsubscribe();
-  }, [id, itemType]);
+    // Mevcut like ve share count listener
+    const unsubscribeStats = onSnapshot(statsRef, (docSnap) => {
+      if (!docSnap.exists()) return;
+      const data = docSnap.data();
+      if (itemType === "posts") {
+        setLikeCount(Number(data?.stats?.likes) || 0);
+        setShareCount(Number(data?.stats?.shares) || 0);
+      } else {
+        setLikeCount(Number(data?.likes) || 0);
+        setShareCount(Number(data?.shares) || 0);
+      }
+    });
+    
+    // İki listener'ı da temizlediğimizden emin olmalıyız
+    return () => {
+      unsubscribeComments();
+      unsubscribeStats();
+    };
+  }, [id, itemType]);
 
   // LIKE handler
   const handleLike = async () => {
