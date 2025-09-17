@@ -515,10 +515,10 @@ const UserProfile = () => {
             <strong>{totalContentCount}</strong>
             <span className={styles.statLabel}>Post</span>
           </div>
-          <div className={styles.statBox}>
+          {/* <div className={styles.statBox}>
             <strong>{profileData.stats?.rta || 0}</strong>
             <span className={styles.statLabel}>RTA</span>
-          </div>
+          </div> */}
           <div
             className={styles.statBox}
             onClick={() => handleStatClick("followers")}

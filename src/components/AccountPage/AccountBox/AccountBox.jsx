@@ -288,16 +288,8 @@ const AccountBox = () => {
 
         <div className={styles.statsSection}>
           <div className={styles.statBox}>
-            <strong>{postCounts.posts}</strong>
-            <span className={styles.statLabel}>Post</span>
-          </div>
-          <div className={styles.statBox}>
-            <strong>{postCounts.feelings}</strong>
-            <span className={styles.statLabel}>Feelings</span>
-          </div>
-          <div className={styles.statBox}>
-            <strong>{postCounts.feeds}</strong>
-            <span className={styles.statLabel}>Feeds</span>
+            <strong>{postCounts.posts + postCounts.feelings + postCounts.feeds}</strong>
+            <span className={styles.statLabel}>Posts</span>
           </div>
           <div
             className={styles.statBox}

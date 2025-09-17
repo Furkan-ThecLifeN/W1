@@ -281,12 +281,12 @@ const MobileProfile = () => {
         <div className={styles.stats}>
           <div className={styles.stat_content}>
             <div className={styles.stat}>
-              <span className={styles.statNumber}>{postCounts.posts}</span>
+              <span className={styles.statNumber}>{postCounts.posts + postCounts.feelings + postCounts.feeds}</span>
               <span className={styles.statLabel}>Posts</span>
             </div>
             <div className={styles.stat}>
-              <span className={styles.statNumber}>{postCounts.feelings}</span>
-              <span className={styles.statLabel}>Feelings</span>
+              <span className={styles.statNumber}>0</span>
+              <span className={styles.statLabel}>RTA</span>
             </div>
           </div>
           <div className={styles.stat_content}>
