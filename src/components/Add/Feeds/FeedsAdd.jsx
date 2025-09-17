@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
-import styles from './FeedsAdd.module.css';
-import { FiArrowLeft, FiSend, FiCheck, FiX } from 'react-icons/fi';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../context/AuthProvider';
-import { useUser } from '../../../context/UserContext';
-import { motion } from 'framer-motion';
-import { auth } from '../../../config/firebase-client'; // ✅ Firebase auth objesini import edin
+import React, { useState } from "react";
+import styles from "./FeedsAdd.module.css";
+import { FiArrowLeft, FiSend, FiCheck, FiX } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../context/AuthProvider";
+import { useUser } from "../../../context/UserContext";
+import { motion } from "framer-motion";
+import { auth } from "../../../config/firebase-client";
 
 const FeedsAdd = ({ onClose }) => {
-  const [mediaUrl, setMediaUrl] = useState('');
-  const [description, setDescription] = useState('');
+  const [mediaUrl, setMediaUrl] = useState("");
+  const [description, setDescription] = useState("");
   const [ownershipAccepted, setOwnershipAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -22,27 +22,28 @@ const FeedsAdd = ({ onClose }) => {
   const handleShare = async () => {
     // Önceki kontroller
     if (!mediaUrl.trim() || !description.trim()) {
-      setError('Lütfen tüm alanları doldurun.');
-      showToast('Tüm alanlar zorunludur.', 'error');
+      setError("Lütfen tüm alanları doldurun.");
+      showToast("Tüm alanlar zorunludur.", "error");
       return;
     }
 
-    if (!mediaUrl.includes('youtube.com/shorts/') && !mediaUrl.includes('youtu.be/')) {
-      setError('Geçerli bir YouTube Shorts linki girin.');
-      showToast('Geçersiz YouTube Shorts linki.', 'error');
+    if (
+      !mediaUrl.includes("youtube.com/shorts/") &&
+      !mediaUrl.includes("youtu.be/")
+    ) {
+      setError("Geçerli bir YouTube Shorts linki girin.");
+      showToast("Geçersiz YouTube Shorts linki.", "error");
       return;
     }
 
     if (!ownershipAccepted) {
-      setError('Lütfen sahiplik beyanını onaylayın.');
-      showToast('Paylaşım için sahiplik onayı zorunludur.', 'error');
+      setError("Lütfen sahiplik beyanını onaylayın.");
+      showToast("Paylaşım için sahiplik onayı zorunludur.", "error");
       return;
     }
-    
-    // ✅ Token'ı yalnızca geçerli bir kullanıcı olduğunda almaya çalış
     if (!auth.currentUser) {
-      setError('Lütfen önce giriş yapın.');
-      showToast('İşlem için giriş yapmalısınız.', 'error');
+      setError("Lütfen önce giriş yapın.");
+      showToast("İşlem için giriş yapmalısınız.", "error");
       setLoading(false);
       return;
     }
@@ -51,33 +52,32 @@ const FeedsAdd = ({ onClose }) => {
     setError(null);
 
     try {
-      // ✅ Kullanıcının kimlik doğrulama token'ını (JWT) alın
       const idToken = await auth.currentUser.getIdToken();
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/feeds/create`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // ✅ Doğru token'ı Authorization başlığına ekleyin
-          'Authorization': `Bearer ${idToken}`,
-        },
-        body: JSON.stringify({
-          content: description,
-          mediaUrl: mediaUrl,
-          ownershipAccepted: ownershipAccepted
-        }),
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/feeds/create`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${idToken}`,
+          },
+          body: JSON.stringify({
+            postText: description, // ✅ Burayı 'postText' olarak değiştirin
+            mediaUrl: mediaUrl,
+            ownershipAccepted: ownershipAccepted,
+          }),
+        }
+      );
 
       if (!response.ok) {
-        // Hata yanıtını doğru bir şekilde işleyin
         const errorText = await response.text();
-        let errorMessage = 'Feeds paylaşılırken bir hata oluştu.';
+        let errorMessage = "Feeds paylaşılırken bir hata oluştu.";
         try {
-            const errorData = JSON.parse(errorText);
-            errorMessage = errorData.error || errorMessage;
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.error || errorMessage;
         } catch (e) {
-            // Eğer yanıt JSON değilse, doğrudan metin olarak hata mesajını kullan
-            errorMessage = errorText || errorMessage;
+          errorMessage = errorText || errorMessage;
         }
         throw new Error(errorMessage);
       }
@@ -86,38 +86,37 @@ const FeedsAdd = ({ onClose }) => {
       console.log(data.message);
 
       setSuccess(true);
-      setMediaUrl('');
-      setDescription('');
+      setMediaUrl("");
+      setDescription("");
       setOwnershipAccepted(false);
-      showToast('Feeds başarıyla paylaşıldı!', 'success');
+      showToast("Feeds başarıyla paylaşıldı!", "success");
 
       setTimeout(() => {
-        if (typeof onClose === 'function') onClose();
-        else navigate('/home');
+        if (typeof onClose === "function") onClose();
+        else navigate("/home");
       }, 1500);
-
     } catch (err) {
-      console.error('Feeds paylaşım hatası:', err);
-      setError(err.message || 'Feeds paylaşılırken bir hata oluştu.');
-      showToast('Paylaşım başarısız!', 'error');
+      console.error("Feeds paylaşım hatası:", err);
+      setError(err.message || "Feeds paylaşılırken bir hata oluştu.");
+      showToast("Paylaşım başarısız!", "error");
     } finally {
       setLoading(false);
     }
   };
 
   const handleClose = () => {
-    if (typeof onClose === 'function') onClose();
-    else navigate('/home');
+    if (typeof onClose === "function") onClose();
+    else navigate("/home");
   };
 
   return (
     <div className={styles.modalOverlay}>
       <motion.div
         className={styles.modalContainer}
-        initial={{ y: '100vh' }}
+        initial={{ y: "100vh" }}
         animate={{ y: 0 }}
-        exit={{ y: '100vh' }}
-        transition={{ type: 'spring', damping: 20, stiffness: 100 }}
+        exit={{ y: "100vh" }}
+        transition={{ type: "spring", damping: 20, stiffness: 100 }}
       >
         <div className={styles.modalHeader}>
           <button className={styles.backButton} onClick={handleClose}>
@@ -125,7 +124,6 @@ const FeedsAdd = ({ onClose }) => {
           </button>
           <h2 className={styles.modalTitle}>Yeni Feeds Paylaş</h2>
         </div>
-
         <div className={styles.formContent}>
           <div className={styles.inputGroup}>
             <label htmlFor="mediaUrl">YouTube Shorts Linki</label>
@@ -157,12 +155,21 @@ const FeedsAdd = ({ onClose }) => {
               onChange={(e) => setOwnershipAccepted(e.target.checked)}
               className={styles.checkboxField}
             />
-            <label htmlFor="ownershipAccepted">Bu içeriğin sahibi olduğumu beyan ederim.</label>
+            <label htmlFor="ownershipAccepted">
+              Bu içeriğin sahibi olduğumu beyan ederim.
+            </label>
           </div>
-          {error && <p className={styles.errorMessage}><FiX /> {error}</p>}
-          {success && <p className={styles.successMessage}><FiCheck /> Başarıyla paylaşıldı!</p>}
+          {error && (
+            <p className={styles.errorMessage}>
+              <FiX /> {error}
+            </p>
+          )}
+          {success && (
+            <p className={styles.successMessage}>
+              <FiCheck /> Başarıyla paylaşıldı!
+            </p>
+          )}
         </div>
-
         <div className={styles.modalFooter}>
           <motion.button
             className={styles.shareButton}
@@ -170,7 +177,13 @@ const FeedsAdd = ({ onClose }) => {
             disabled={loading}
             whileTap={{ scale: 0.95 }}
           >
-            {loading ? 'Paylaşılıyor...' : <><FiSend size={18} /> Paylaş</>}
+            {loading ? (
+              "Paylaşılıyor..."
+            ) : (
+              <>
+                <FiSend size={18} /> Paylaş
+              </>
+            )}
           </motion.button>
         </div>
       </motion.div>

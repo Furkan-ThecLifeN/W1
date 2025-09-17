@@ -140,15 +140,21 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 44px;
+  gap: 6px;
+  width: 40px;
   height: 44px;
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  backdrop-filter: blur(3px);
+  background-color: transparent;
 }
 
 .iconWrapper:hover {
   transform: scale(1.1);
+}
+
+.actionCount {
+  font-size: 1rem;
+  color: #ffffff;
+  user-select: none;
+  font-weight: bold;
 }
 
 .iconItem {
@@ -157,11 +163,11 @@
 }
 
 .likedIcon {
-  color: #ff3e5b;
+  color: var(--busy);
 }
 
 .savedIcon {
-  color: #ffc107;
+  color: #ffffff;
 }
 
 /* Mobil için (1024px ve altı tüm cihazlar için) */
@@ -249,4 +255,5 @@
     z-index: 1001;
   }
 }
+
 

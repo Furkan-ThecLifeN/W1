@@ -93,7 +93,6 @@ const AccountBox = () => {
 
       // Check if data for the active tab already exists
       if (allData[activeTab]?.length > 0 && activeTab !== "likes" && activeTab !== "tags") {
-        console.log(`Data for ${activeTab} already cached. Using cached data.`);
         return; // Use cached data, no need to fetch again
       }
 
@@ -385,10 +384,14 @@ const AccountBox = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <VideoFeedItem
+              // Gerekli prop'lar korunuyor
               videoSrc={selectedVideo.mediaUrl}
               description={selectedVideo.content}
               username={selectedVideo.username}
               userProfileImage={selectedVideo.userProfileImage}
+              // Ek olarak, beğeni fonksiyonunun çalışması için feed prop'unu ekliyoruz
+              feed={selectedVideo}
+              onClose={handleCloseVideoModal}
             />
           </div>
         </div>
