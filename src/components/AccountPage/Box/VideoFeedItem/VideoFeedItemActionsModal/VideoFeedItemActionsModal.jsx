@@ -274,6 +274,7 @@ const VideoFeedItemActionsModal = ({
                             color: "#888",
                             marginTop: 8,
                             textAlign: "right",
+                            display: "none",
                           }}
                         >
                           {comment?.createdAt

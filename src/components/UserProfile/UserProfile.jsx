@@ -59,6 +59,7 @@ const UserProfile = () => {
   // ---------------- FETCH USER PROFILE AND FOLLOW STATUS ----------------
   useEffect(() => {
     const fetchUserProfileAndStatus = async () => {
+      console.log(`ℹ️ Profil ve takip durumu çekiliyor: ${username}`);
       setLoading(true);
       setError(null);
       try {
@@ -78,8 +79,9 @@ const UserProfile = () => {
         );
         setProfileData({ ...profile, stats: statusRes.data.stats });
         setFollowStatus(statusRes.data.followStatus);
+        console.log("✅ Profil ve takip durumu başarıyla çekildi.");
       } catch (err) {
-        console.error("Profil veya takip durumu çekme hatası:", err);
+        console.error("❌ Profil veya takip durumu çekme hatası:", err);
         setError("Profil bilgileri yüklenemedi.");
       } finally {
         setLoading(false);
@@ -94,19 +96,25 @@ const UserProfile = () => {
   // ---------------- FETCH DATA BASED ON ACTIVE TAB ----------------
   useEffect(() => {
     const fetchTabData = async () => {
-      if (!profileData || !profileData.uid) return;
+      if (!profileData || !profileData.uid) {
+        console.log("ℹ️ Profil verisi olmadığı için içerik çekme atlandı.");
+        return;
+      }
 
       const canViewContent =
         !profileData.isPrivate || followStatus === "following" || followStatus === "self";
 
       if (!canViewContent && activeTab !== "posts" && activeTab !== "feelings" && activeTab !== "feeds") {
+        console.log(`🔒 Gizli hesap: ${activeTab} sekmesi için içerik çekilemiyor.`);
         return;
       }
       
       if (allData[activeTab]?.length > 0) {
+        console.log(`✅ ${activeTab} verisi önbellekten kullanılıyor.`);
         return; // Use cached data, no need to fetch again
       }
 
+      console.log(`⏳ ${activeTab} sekmesi için veri çekiliyor...`);
       setLoadingContent(prev => ({ ...prev, [activeTab]: true }));
 
       try {
@@ -132,30 +140,37 @@ const UserProfile = () => {
         ]);
         const likedIds = likesSnapshot.docs.map(doc => doc.id);
         const savedIds = tagsSnapshot.docs.map(doc => doc.id);
+        console.log(`ℹ️ Beğenilenler (${likedIds.length}) ve Etiketliler (${savedIds.length}) IDs çekildi.`);
+
 
         switch (activeTab) {
           case "posts":
             queryToRun = query(collection(db, "globalPosts"), where("uid", "==", profileData.uid), orderBy("createdAt", "desc"));
             snapshot = await getDocs(queryToRun);
             setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab, likedIds, savedIds) }));
+            console.log(`✅ Posts verisi başarıyla çekildi. Toplam: ${snapshot.size}`);
             break;
           case "feelings":
             queryToRun = query(collection(db, "globalFeelings"), where("uid", "==", profileData.uid), orderBy("createdAt", "desc"));
             snapshot = await getDocs(queryToRun);
             setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab, likedIds, savedIds) }));
+            console.log(`✅ Feelings verisi başarıyla çekildi. Toplam: ${snapshot.size}`);
             break;
           case "feeds":
             queryToRun = query(collection(db, "globalFeeds"), where("ownerId", "==", profileData.uid), orderBy("createdAt", "desc"));
             snapshot = await getDocs(queryToRun);
             setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab, likedIds, savedIds) }));
+            console.log(`✅ Feeds verisi başarıyla çekildi. Toplam: ${snapshot.size}`);
             break;
           case "likes":
             if (likedIds.length > 0) {
               const likedPostsQuery = query(collection(db, "globalPosts"), where("__name__", "in", likedIds), orderBy("createdAt", "desc"));
               const likedPostsSnapshot = await getDocs(likedPostsQuery);
               setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(likedPostsSnapshot, activeTab, likedIds, savedIds) }));
+              console.log(`✅ Beğenilenler verisi başarıyla çekildi. Toplam: ${likedPostsSnapshot.size}`);
             } else {
               setAllData(prev => ({ ...prev, [activeTab]: [] }));
+              console.log("ℹ️ Hiç beğenilen gönderi bulunamadı.");
             }
             break;
           case "tags":
@@ -163,12 +178,15 @@ const UserProfile = () => {
               const taggedPostsQuery = query(collection(db, "globalPosts"), where("__name__", "in", savedIds), orderBy("createdAt", "desc"));
               const taggedPostsSnapshot = await getDocs(taggedPostsQuery);
               setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(taggedPostsSnapshot, activeTab, likedIds, savedIds) }));
+              console.log(`✅ Etiketliler verisi başarıyla çekildi. Toplam: ${taggedPostsSnapshot.size}`);
             } else {
               setAllData(prev => ({ ...prev, [activeTab]: [] }));
+              console.log("ℹ️ Hiç etiketli gönderi bulunamadı.");
             }
             break;
           default:
             setAllData(prev => ({ ...prev, [activeTab]: [] }));
+            console.log("⚠️ Geçersiz sekme adı.");
             break;
         }
       } catch (error) {
@@ -190,11 +208,13 @@ const UserProfile = () => {
   const handleTabChange = (tab) => {
     if (activeTab === tab) return;
     setActiveTab(tab);
+    console.log(`➡️ Sekme değiştirildi: ${tab}`);
   };
 
   const handleFollowAction = async () => {
     const previousFollowStatus = followStatus;
     const isPrivate = profileData?.isPrivate;
+    console.log(`🔄 Takip işlemi başlatıldı. Mevcut durum: ${previousFollowStatus}`);
 
     try {
       if (previousFollowStatus === "none") {
@@ -220,6 +240,7 @@ const UserProfile = () => {
         endpoint = `${apiBaseUrl}/api/users/unfollow/${profileData.uid}`;
         method = "DELETE";
       } else {
+        console.warn("⚠️ Geçersiz takip işlemi.");
         return;
       }
 
@@ -235,6 +256,7 @@ const UserProfile = () => {
 
       setFollowStatus(response.data.status || "none");
       showToast(response.data.message, "success");
+      console.log(`✅ Takip işlemi başarılı. Yeni durum: ${response.data.status}`);
 
       const updatedProfileRes = await axios.get(
         `${apiBaseUrl}/api/users/profile/${username}`,
@@ -247,7 +269,7 @@ const UserProfile = () => {
         stats: response.data.newStats || profileData.stats,
       });
     } catch (err) {
-      console.error("Takip işlemi hatası:", err.response ? err.response.data : err.message);
+      console.error("❌ Takip işlemi hatası:", err.response ? err.response.data : err.message);
       setFollowStatus(previousFollowStatus);
       const errorMsg = err.response?.data?.error || "Takip işlemi başarısız.";
       showToast(errorMsg, "error");
@@ -256,7 +278,11 @@ const UserProfile = () => {
 
   const handleMessageAction = async () => {
     const messageContent = prompt("Göndermek istediğiniz mesajı yazın:");
-    if (!messageContent) return;
+    if (!messageContent) {
+      console.log("ℹ️ Mesaj gönderme iptal edildi.");
+      return;
+    }
+    console.log("💬 Mesaj gönderme işlemi başlatıldı.");
     try {
       const idToken = await currentUser.getIdToken();
       const response = await axios.post(
@@ -273,9 +299,10 @@ const UserProfile = () => {
         }
       );
       showToast(response.data.message, "success");
+      console.log("✅ Mesaj başarıyla gönderildi.");
     } catch (err) {
       console.error(
-        "Mesaj gönderme hatası:",
+        "❌ Mesaj gönderme hatası:",
         err.response ? err.response.data : err.message
       );
       const errorMsg = err.response?.data?.error || "Mesaj gönderme başarısız.";
@@ -284,16 +311,19 @@ const UserProfile = () => {
   };
 
   const handleBlockUser = async () => {
+    console.log("🚫 Kullanıcı engellendi.");
     showToast("Kullanıcı engellendi.", "success");
     setShowDropdown(false);
   };
 
   const handleReportUser = async () => {
+    console.log("🚩 Kullanıcı şikayet edildi.");
     showToast("Kullanıcı şikayet edildi.", "success");
     setShowDropdown(false);
   };
 
   const handleFeedback = () => {
+    console.log("📢 Geri bildirim formu açılıyor.");
     showToast("Geri bildirim sayfanız açıldı.", "info");
     setShowDropdown(false);
   };
@@ -303,8 +333,10 @@ const UserProfile = () => {
   };
 
   const handleStatClick = (type) => {
+    console.log(`📊 ${type} istatistikleri için modal açılıyor.`);
     if (profileData.isPrivate && followStatus !== "following" && followStatus !== "self") {
       showToast("Gizli bir hesabın takipçi listesini göremezsiniz.", "error");
+      console.warn("⚠️ Gizli hesap olduğu için istatistiklere erişim engellendi.");
     } else {
       setModalType(type);
       setShowModal(true);
@@ -312,15 +344,17 @@ const UserProfile = () => {
   };
 
   const handleVideoClick = (videoData) => {
+    console.log("▶️ Video modalı açılıyor.");
     if (videoData && videoData.mediaUrl) {
       setSelectedVideo(videoData);
       setShowVideoModal(true);
     } else {
-      console.error("Geçersiz video verisi:", videoData);
+      console.error("❌ Geçersiz video verisi:", videoData);
     }
   };
 
   const handleCloseVideoModal = () => {
+    console.log("⏹️ Video modalı kapatılıyor.");
     setShowVideoModal(false);
     setSelectedVideo(null);
   };
@@ -565,13 +599,21 @@ const UserProfile = () => {
       )}
 
       {showVideoModal && selectedVideo && (
-        <div className={styles.videoModalOverlay} onClick={handleCloseVideoModal}>
-          <div className={styles.videoModalContent} onClick={(e) => e.stopPropagation()}>
+        <div
+          className={styles.videoModalOverlay}
+          onClick={handleCloseVideoModal}
+        >
+          <div
+            className={styles.videoModalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
             <VideoFeedItem
               videoSrc={selectedVideo.mediaUrl}
               description={selectedVideo.content}
               username={selectedVideo.username}
               userProfileImage={selectedVideo.userProfileImage}
+              feed={selectedVideo}
+              onClose={handleCloseVideoModal}
             />
           </div>
         </div>

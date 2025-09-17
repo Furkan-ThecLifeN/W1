@@ -685,6 +685,7 @@ const MobileUserProfile = () => {
               description={selectedVideo.content}
               username={selectedVideo.username}
               userProfileImage={selectedVideo.userProfileImage}
+              feed={selectedVideo}
               onClose={handleCloseVideoModal}
               isMobile={true}
             />
