@@ -12,11 +12,14 @@ import { FaHeart, FaBookmark } from "react-icons/fa";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import styles from "./VideoFeedItem.module.css";
 import VideoFeedItemActionsModal from "./VideoFeedItemActionsModal/VideoFeedItemActionsModal";
+import DeleteFeedModal from "../DeleteFeedModal/DeleteFeedModal";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../../../context/AuthProvider";
+import { useUser } from "../../../../context/UserContext";
 import axios from "axios";
 import { auth, db } from "../../../../config/firebase-client";
-import { collection, doc, onSnapshot, getDoc, setDoc, deleteDoc } from "firebase/firestore";import api from "../../../../utils/axios";
+import { collection, doc, onSnapshot, getDoc, setDoc, deleteDoc } from "firebase/firestore";
+import api from "../../../../utils/axios";
 
 // Debounce helper
 function debounce(func, delay) {
@@ -66,7 +69,7 @@ export function useItemActions({
   const [liked, setLiked] = useState(initialLiked);
   const [saved, setSaved] = useState(initialSaved);
   const [likeCount, setLikeCount] = useState(0);
-  const [commentCount, setCommentCount] = useState(0); 
+  const [commentCount, setCommentCount] = useState(0); 
   const [shareCount, setShareCount] = useState(0);
   const isUpdating = useRef(false);
 
@@ -101,35 +104,35 @@ export function useItemActions({
 
   // Firebase listener - stats
  useEffect(() => {
-    if (!id) return;
-    const statsRef =
-      itemType === "posts" ? doc(db, "posts", id) : doc(db, "globalFeeds", id);
-    
-    // ✅ Yorum sayısını alt koleksiyondan almak için yeni listener
-    const commentsCollectionRef = collection(statsRef, "comments");
-    const unsubscribeComments = onSnapshot(commentsCollectionRef, (snapshot) => {
-      setCommentCount(snapshot.size); // Koleksiyondaki belge sayısını kullan
-    });
+    if (!id) return;
+    const statsRef =
+      itemType === "posts" ? doc(db, "posts", id) : doc(db, "globalFeeds", id);
+    
+    // ✅ Yorum sayısını alt koleksiyondan almak için yeni listener
+    const commentsCollectionRef = collection(statsRef, "comments");
+    const unsubscribeComments = onSnapshot(commentsCollectionRef, (snapshot) => {
+      setCommentCount(snapshot.size); // Koleksiyondaki belge sayısını kullan
+    });
 
-    // Mevcut like ve share count listener
-    const unsubscribeStats = onSnapshot(statsRef, (docSnap) => {
-      if (!docSnap.exists()) return;
-      const data = docSnap.data();
-      if (itemType === "posts") {
-        setLikeCount(Number(data?.stats?.likes) || 0);
-        setShareCount(Number(data?.stats?.shares) || 0);
-      } else {
-        setLikeCount(Number(data?.likes) || 0);
-        setShareCount(Number(data?.shares) || 0);
-      }
-    });
-    
-    // İki listener'ı da temizlediğimizden emin olmalıyız
-    return () => {
-      unsubscribeComments();
-      unsubscribeStats();
-    };
-  }, [id, itemType]);
+    // Mevcut like ve share count listener
+    const unsubscribeStats = onSnapshot(statsRef, (docSnap) => {
+      if (!docSnap.exists()) return;
+      const data = docSnap.data();
+      if (itemType === "posts") {
+        setLikeCount(Number(data?.stats?.likes) || 0);
+        setShareCount(Number(data?.stats?.shares) || 0);
+      } else {
+        setLikeCount(Number(data?.likes) || 0);
+        setShareCount(Number(data?.shares) || 0);
+      }
+    });
+    
+    // İki listener'ı da temizlediğimizden emin olmalıyız
+    return () => {
+      unsubscribeComments();
+      unsubscribeStats();
+    };
+  }, [id, itemType]);
 
   // LIKE handler
   const handleLike = async () => {
@@ -271,8 +274,13 @@ export default function VideoFeedItem(props) {
     initialLiked,
     initialSaved,
   } = props;
+  const { currentUser } = useUser();
+  const { showToast } = useAuth();
+  const [doubleTap, setDoubleTap] = useState(false);
+  const [followed, setFollowed] = useState(false);
+  const [showCommentModal, setShowCommentModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // Yeni state
 
-  // The fix is here: Check for '_id', 'id', and 'feedId'
   const feedId = feed?._id || feed?.id || feed?.feedId;
   const {
     liked,
@@ -290,10 +298,6 @@ export default function VideoFeedItem(props) {
     initialSaved,
   });
 
-  const [doubleTap, setDoubleTap] = useState(false);
-  const [followed, setFollowed] = useState(false);
-  const [showCommentModal, setShowCommentModal] = useState(false);
-
   const embedUrl = getYouTubeEmbedUrl(videoSrc);
   if (!embedUrl) return null;
 
@@ -301,6 +305,24 @@ export default function VideoFeedItem(props) {
     setDoubleTap(true);
     handleLike();
     setTimeout(() => setDoubleTap(false), 1000);
+  };
+
+  const handleDeleteFeed = async () => {
+    if (!feedId) {
+      showToast("Gönderi bilgisi eksik.", "error");
+      return;
+    }
+
+    try {
+      const feedRef = doc(db, "globalFeeds", feedId);
+      await deleteDoc(feedRef);
+      showToast("Gönderi başarıyla silindi.", "success");
+      setShowDeleteModal(false);
+      onClose(); // Parent component'in gönderiyi kaldırması için
+    } catch (error) {
+      console.error("Gönderi silme hatası:", error);
+      showToast("Gönderi silinirken bir hata oluştu.", "error");
+    }
   };
 
   return (
@@ -398,7 +420,15 @@ export default function VideoFeedItem(props) {
           <div className={styles.iconWrapper} onClick={handleShare}>
             <FiSend className={styles.iconItem} />
           </div>
-          <FiMoreVertical className={styles.iconItem} />
+          {/* Sadece gönderi sahibi için Silme butonu göster */}
+          {currentUser?.uid === feed?.uid && (
+            <div
+              className={styles.iconWrapper}
+              onClick={() => setShowDeleteModal(true)}
+            >
+              <FiMoreVertical className={styles.iconItem} />
+            </div>
+          )}
         </div>
       </div>
       {showCommentModal && (
@@ -410,6 +440,12 @@ export default function VideoFeedItem(props) {
           onCommentAdded={handleCommentAdded}
         />
       )}
+      {/* Yeni modalı ekle */}
+      <DeleteFeedModal
+        show={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onDelete={handleDeleteFeed}
+      />
     </>
   );
 }

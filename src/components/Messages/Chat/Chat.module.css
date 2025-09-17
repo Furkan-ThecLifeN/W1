@@ -672,11 +672,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(135deg, #b80b0b, #ff0000);
+  background: linear-gradient(135deg, #ff2bc7, #ff00ee);
   color: white;
   padding: 10px 15px;
   border-radius: 20px;
-  box-shadow: 0 4px 12px rgba(255, 0, 0, 0.4);
+  box-shadow: 0 4px 12px rgb(255, 0, 170);
   position: relative;
   height: 49px;
 }

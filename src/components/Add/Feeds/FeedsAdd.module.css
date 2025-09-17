@@ -4,144 +4,153 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgb(0, 0, 0);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  padding: 20px;
 }
 
 .modalContainer {
-  background-color: var(--color-white);
-  color: var(--color-black);
-  width: 90%;
-  max-width: 500px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  background: rgba(28, 28, 30, 0.95); /* Glass effect */
+  border-radius: 20px;
+  width: 400px;
+  max-width: 100%;
+  padding: 24px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  font-family: 'Inter', sans-serif;
+  gap: 20px;
 }
 
 .modalHeader {
   display: flex;
   align-items: center;
-  padding: 1rem;
-  border-bottom: 1px solid #333;
-  position: relative;
+  gap: 12px;
 }
 
 .backButton {
-  background: none;
+  background: transparent;
   border: none;
+  color: #fff;
   cursor: pointer;
-  font-size: 1rem;
-  padding: 0.5rem;
-  border-radius: 50%;
-  transition: background-color 0.2s;
-  display: flex;
-  align-items: center;  justify-content: center;
+  transition: transform 0.2s ease;
 }
 
 .backButton:hover {
-  background-color: #e4e4e4;
+  transform: rotate(-45deg) scale(1.1);
 }
 
 .modalTitle {
-  flex-grow: 1;
-  text-align: center;
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: 0;
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 .formContent {
-  padding: 1.5rem;
-  flex-grow: 1;
-  overflow-y: auto;
-}
-
-.inputGroup {
-  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .inputGroup label {
+  color: #ccc;
+  font-size: 14px;
+  margin-bottom: 6px;
   display: block;
-  font-size: 0.9rem;
-  color: #3d3d3d;
-  margin-bottom: 0.5rem;
 }
 
-.inputField, .textareaField {
-  width: 100%;
-  padding: 0.75rem;
-  background-color: #ffffff;
-  border: 1px solid #ececece7;
-  border-radius: 8px;
-  color: #000000;
-  font-size: 1rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  box-sizing: border-box;
-}
-
-.inputField:focus, .textareaField:focus {
-  outline: none;
-  border-color: #ff0000;
-  box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.2);
-}
-
+.inputField,
 .textareaField {
-  resize: vertical;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(40, 40, 42, 0.6);
+  color: #fff;
+  outline: none;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+.inputField:focus,
+.textareaField:focus {
+  border: 1px solid #ff416c;
+  box-shadow: 0 0 8px rgba(255, 65, 108, 0.6);
+}
+
+.checkboxGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ccc;
+  font-size: 13px;
+}
+
+.checkboxField {
+  width: 16px;
+  height: 16px;
+  accent-color: #ff416c; /* Neon checkbox */
+  cursor: pointer;
+}
+
+.errorMessage,
+.successMessage {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 8px;
 }
 
 .errorMessage {
-  color: #ff5555;
-  font-size: 0.9rem;
-  margin-top: -1rem;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  background: rgba(255, 82, 82, 0.15);
+  color: #ff5252;
 }
 
 .successMessage {
-  color: #4CAF50;
-  font-size: 0.9rem;
-  margin-top: -1rem;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  background: rgba(76, 217, 100, 0.15);
+  color: #4cd964;
 }
 
 .modalFooter {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid #333;
   display: flex;
   justify-content: flex-end;
 }
 
 .shareButton {
-  background-color: #ff0000;
-  color: #fff;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  border-radius: 50px;
-  cursor: pointer;
-  transition: background-color 0.2s;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 8px;
+  background: linear-gradient(135deg, #ff416c, #ff4b2b);
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  border-radius: 14px;
+  padding: 12px 20px;
+  cursor: pointer;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(255, 65, 108, 0.4);
+}
+
+.shareButton:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 30px rgba(255, 65, 108, 0.6);
 }
 
 .shareButton:disabled {
-  background-color: #888;
+  opacity: 0.6;
   cursor: not-allowed;
-}
-
-.shareButton:not(:disabled):hover {
-  background-color: #cc0000;
+  transform: none;
+  box-shadow: 0 4px 10px rgba(255, 65, 108, 0.3);
 }
