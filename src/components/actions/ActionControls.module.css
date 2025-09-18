@@ -1,7 +1,6 @@
 :root {
   --Actions-border-color: #30363d;
   --Actions-text-color: #f0f6fc;
-  --Actions-blue: #58a6ff;
   --Actions-like-color: #ff0000;
   --Actions-primary-glow: rgba(22, 185, 255, 0.4);
   --Actions-secondary-glow: rgb(19, 200, 255);
@@ -106,7 +105,7 @@
   margin: 0;
   font-weight: 800; /* Bolder font for prominence */
   font-size: 1.5rem;
-  color: var(--Actions-blue);
+  color: var(--color-white);
   text-shadow: 0 0 8px rgba(88, 166, 255, 0.8);
   letter-spacing: 0.5px;
 }
@@ -145,13 +144,13 @@
 
 .commentForm input:focus {
   outline: none;
-  border-color: var(--Actions-blue);
+  border-color: var(--color-white);
   box-shadow: 0 0 10px var(--Actions-primary-glow);
 }
 
 .commentForm button {
   padding: 15px 25px; /* Larger button */
-  background: var(--Actions-blue);
+  background: var(--color-white);
   border: none;
   border-radius: 10px;
   color: var(--color-black);
@@ -203,7 +202,7 @@
   gap: 15px;
   align-items: center;
   margin-bottom: 10px;
-  color: var(--Actions-blue);
+  color: var(--color-white);
   font-size: 1rem;
 }
 

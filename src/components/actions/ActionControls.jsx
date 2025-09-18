@@ -10,42 +10,34 @@ import {
 } from "./api";
 import { useActionsQueue } from "./useActionsQueue";
 import styles from "./ActionControls.module.css";
-import { FaHeart, FaRegHeart, FaBookmark, FaRegBookmark, FaComment, FaShare } from "react-icons/fa";
+import { FaHeart, FaRegHeart, FaComment, FaShare } from "react-icons/fa";
 
 /*
 Props:
 - targetType: "post" | "feed" | "feeling"
 - targetId: string
 - initialLiked: boolean
-- initialSaved: boolean
-- initialCounts: { likesCount, commentsCount, shareCount }
-- getAuthToken (optional) - async function returning Bearer token (defaults to Firebase if present)
+- initialStats: { likes: number, comments: number, shares: number }
+- getAuthToken (optional)
 */
 
 export default function ActionControls({
   targetType,
   targetId,
   initialLiked = false,
-  initialSaved = false,
-  initialCounts = { likesCount: 0, commentsCount: 0, shareCount: 0 },
+  initialStats = { likes: 0, comments: 0, shares: 0 },
   getAuthToken = defaultGetAuthToken,
 }) {
   const [liked, setLiked] = useState(initialLiked);
-  const [saved, setSaved] = useState(initialSaved);
-  const [counts, setCounts] = useState(initialCounts);
+  const [stats, setStats] = useState(initialStats);
   const [commentModalOpen, setCommentModalOpen] = useState(false);
 
-  // debounce timers per action
   const likeTimerRef = useRef(null);
-  const saveTimerRef = useRef(null);
   const pendingLikeRef = useRef(null);
-  const pendingSaveRef = useRef(null);
 
-  const { enqueue, flushQueue } = useActionsQueue({ getAuthToken });
+  const { enqueue } = useActionsQueue({ getAuthToken });
 
-  // optimistic handler with 15s commit
   async function commitActionNow(action) {
-    // action = { type: 'like'|'save', finalState: boolean }
     try {
       const token = await getAuthToken();
       await toggleActionRemote({
@@ -54,9 +46,7 @@ export default function ActionControls({
         targetId,
         token,
       });
-      // success: nothing more (server adjusted counters via transaction)
     } catch (e) {
-      // if network failed, add to local queue for retry
       enqueue({
         type: action.type,
         targetType,
@@ -67,10 +57,8 @@ export default function ActionControls({
   }
 
   function scheduleCommit(action, timerRef, pendingRef) {
-    // clear existing timer
     if (timerRef.current) clearTimeout(timerRef.current);
     pendingRef.current = action;
-    // set timer 15s
     timerRef.current = setTimeout(() => {
       commitActionNow(action);
       pendingRef.current = null;
@@ -81,28 +69,16 @@ export default function ActionControls({
   function toggleLike() {
     const next = !liked;
     setLiked(next);
-    setCounts((c) => ({ ...c, likesCount: c.likesCount + (next ? 1 : -1) }));
+    setStats((s) => ({ ...s, likes: s.likes + (next ? 1 : -1) }));
     scheduleCommit({ type: "like", finalState: next }, likeTimerRef, pendingLikeRef);
   }
 
-  function toggleSave() {
-    const next = !saved;
-    setSaved(next);
-    setCounts((c) => ({ ...c, savesCount: (c.savesCount || 0) + (next ? 1 : -1) }));
-    scheduleCommit({ type: "save", finalState: next }, saveTimerRef, pendingSaveRef);
-  }
-
-  // flush pending on unmount
   useEffect(() => {
     return () => {
       if (likeTimerRef.current && pendingLikeRef.current) {
         commitActionNow(pendingLikeRef.current);
       }
-      if (saveTimerRef.current && pendingSaveRef.current) {
-        commitActionNow(pendingSaveRef.current);
-      }
     };
-    // eslint-disable-next-line
   }, []);
 
   async function openComments() {
@@ -114,22 +90,20 @@ export default function ActionControls({
       const token = await getAuthToken();
       const res = await getShareLinkRemote({ targetType, targetId, token });
       const link = res.shareLink;
-      // copy to clipboard
-      if (navigator.clipboard && navigator.clipboard.writeText) {
+
+      if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(link);
-        alert("Link kopyalandı: " + link);
       } else {
-        // fallback
         const ta = document.createElement("textarea");
         ta.value = link;
         document.body.appendChild(ta);
         ta.select();
         document.execCommand("copy");
         document.body.removeChild(ta);
-        alert("Link kopyalandı: " + link);
       }
-      // update share count optimistically
-      setCounts((c) => ({ ...c, shareCount: (c.shareCount || 0) + 1 }));
+
+      setStats((s) => ({ ...s, shares: (s.shares || 0) + 1 }));
+      alert("Link kopyalandı: " + link);
     } catch (e) {
       alert("Paylaş linki üretilemedi: " + e.message);
     }
@@ -138,19 +112,15 @@ export default function ActionControls({
   return (
     <div className={styles.actionControls}>
       <button onClick={toggleLike} data-active={liked} className={styles.btnLike}>
-        {liked ? <FaHeart size={18} /> : <FaRegHeart size={18} />} <span>{counts.likesCount}</span>
+        {liked ? <FaHeart size={18} /> : <FaRegHeart size={18} />} <span>{stats.likes}</span>
       </button>
 
       <button onClick={openComments} className={styles.btnComment}>
-        <FaComment size={18} /> <span>{counts.commentsCount}</span>
-      </button>
-
-      <button onClick={toggleSave} data-active={saved} className={styles.btnSave}>
-        {saved ? <FaBookmark size={18} /> : <FaRegBookmark size={18} />} <span>{counts.savesCount || 0}</span>
+        <FaComment size={18} /> <span>{stats.comments}</span>
       </button>
 
       <button onClick={handleShare} className={styles.btnShare}>
-        <FaShare size={18} /> <span>{counts.shareCount || 0}</span>
+        <FaShare size={18} /> <span>{stats.shares}</span>
       </button>
 
       {commentModalOpen && (
@@ -158,7 +128,7 @@ export default function ActionControls({
           targetType={targetType}
           targetId={targetId}
           onClose={() => setCommentModalOpen(false)}
-          onCountsChange={(delta) => setCounts((c) => ({ ...c, commentsCount: c.commentsCount + delta }))}
+          onCountsChange={(delta) => setStats((s) => ({ ...s, comments: s.comments + delta }))}
           getAuthToken={getAuthToken}
         />
       )}
@@ -189,27 +159,32 @@ function CommentModal({ targetType, targetId, onClose, onCountsChange, getAuthTo
 
   useEffect(() => {
     fetchComments();
-    // eslint-disable-next-line
   }, []);
 
   async function submitComment(e) {
     e.preventDefault();
     if (!newText.trim()) return;
+
     setSubmitting(true);
-    // optimistic UI: push locally immediately with temp id
     const tempId = `temp-${Date.now()}`;
-    const tempComment = { id: tempId, userId: "me", content: newText, createdAt: new Date().toISOString() };
+    const tempComment = {
+      id: tempId,
+      uid: "me",
+      username: "me",
+      displayName: "Sen",
+      photoURL: "",
+      text: newText,
+      createdAt: new Date().toISOString(),
+    };
     setComments((c) => [tempComment, ...c]);
     setNewText("");
     onCountsChange(1);
 
     try {
       const token = await getAuthToken();
-      await postCommentRemote({ targetType, targetId, content: tempComment.content, token });
-      // refetch latest for consistent ids
+      await postCommentRemote({ targetType, targetId, content: tempComment.text, token });
       await fetchComments();
     } catch (e) {
-      // remove temp and decrement count
       setComments((c) => c.filter((x) => x.id !== tempId));
       onCountsChange(-1);
       alert("Yorum gönderilemedi: " + e.message);
@@ -218,7 +193,7 @@ function CommentModal({ targetType, targetId, onClose, onCountsChange, getAuthTo
     }
   }
 
-  async function removeComment(commentId, authorId) {
+  async function removeComment(commentId) {
     if (!window.confirm("Yorumu silmek istiyor musun?")) return;
     try {
       const token = await getAuthToken();
@@ -244,16 +219,22 @@ function CommentModal({ targetType, targetId, onClose, onCountsChange, getAuthTo
         </form>
 
         <div className={styles.commentsList}>
-          {loading ? <p>Yükleniyor...</p> : comments.length === 0 ? <p>Yorum yok</p> : comments.map((c) => (
-            <div key={c.id} className={styles.commentItem}>
-              <div className={styles.meta}>
-                <strong>{c.userDisplay || c.userId === "me" ? "Sen" : c.userId}</strong>
-                <small>{new Date(c.createdAt?.seconds ? c.createdAt.seconds * 1000 : c.createdAt).toLocaleString()}</small>
+          {loading ? (
+            <p>Yükleniyor...</p>
+          ) : comments.length === 0 ? (
+            <p>Yorum yok</p>
+          ) : (
+            comments.map((c) => (
+              <div key={c.id} className={styles.commentItem}>
+                <div className={styles.meta}>
+                  <strong>{c.displayName || c.username}</strong>
+                  <small>{new Date(c.createdAt).toLocaleString()}</small>
+                </div>
+                <p>{c.text}</p>
+                {c.uid === "me" && <button onClick={() => removeComment(c.id)}>Sil</button>}
               </div>
-              <p>{c.content}</p>
-              {c.userId === "me" && <button onClick={() => removeComment(c.id)}>Sil</button>}
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>
