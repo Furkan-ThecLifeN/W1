@@ -1,39 +1,85 @@
-import React, { useState } from "react";
+// PostCard.jsx
+import React, { useState, useEffect } from "react";
 import styles from "./PostCard.module.css";
-import {
-  FiMoreHorizontal,
-  FiMessageCircle,
-  FiSend,
-  FiBookmark,
-} from "react-icons/fi";
-import { FaHeart, FaBookmark } from "react-icons/fa";
+import { FiMoreHorizontal } from "react-icons/fi";
+import ActionControls from "../actions/ActionControls";
 
 const PostCard = ({ data }) => {
-  const [liked, setLiked] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [tokenError, setTokenError] = useState(false);
 
-  const toggleLike = () => setLiked((prev) => !prev);
-  const toggleSave = () => setSaved((prev) => !prev);
+  // Token alma fonksiyonu
+  const getToken = async () => {
+    try {
+      const module = await import("../actions/api");
+      if (!module.defaultGetAuthToken) {
+        console.error("PostCard: Token fonksiyonu bulunamadı!");
+        setTokenError(true);
+        return null;
+      }
+      return await module.defaultGetAuthToken();
+    } catch (e) {
+      console.error("PostCard: Token alma hatası ->", e.message);
+      setTokenError(true);
+      return null;
+    }
+  };
+
+  // ActionControls wrapper
+  const renderActionControls = () => {
+    if (!data?.id) {
+      console.warn("PostCard: id yok, ActionControls render edilmedi!");
+      return null;
+    }
+    return (
+      <ActionControls
+        targetType="post"
+        targetId={data.id}
+        initialLiked={data?.userLiked ?? false}
+        initialSaved={data?.userSaved ?? false}
+        initialCounts={{
+          likesCount: data?.likesCount || 0,
+          commentsCount: data?.commentsCount || 0,
+          shareCount: data?.shareCount || 0,
+        }}
+        getAuthToken={getToken}
+      />
+    );
+  };
+
+  // Kısa console log kontrolleri
+  useEffect(() => {
+    if (!data) return console.warn("PostCard: data yok!");
+    if (!data.id) console.warn("PostCard: post id eksik!");
+    if (!data.caption) console.warn("PostCard: caption eksik!");
+    if (!data.imageUrls?.[0]) console.warn("PostCard: image yok!");
+    console.log("PostCard Firestore id =>", data?.id);
+  }, [data]);
 
   return (
     <>
-      {/* Desktop tasarımı */}
+      {/* Desktop */}
       <div className={`${styles.post_card} ${styles.desktop}`}>
-        {data?.imageUrls?.[0] && (
-          <img src={data.imageUrls[0]} alt="Post" className={styles.post_image} />
-        )}
+        {data?.imageUrls?.[0] ? (
+          <img
+            src={data.imageUrls[0]}
+            alt="Post"
+            className={styles.post_image}
+          />
+        ) : null}
 
         <div className={styles.post_overlay}>
           <div className={styles.post_header}>
             <div className={styles.user_info}>
               <div className={styles.avatar_widget}>
                 <img
-                  src={data?.photoURL}
+                  src={data?.photoURL || ""}
                   alt="avatar"
                   className={styles.avatar}
                 />
               </div>
-              <span className={styles.username}>{data?.displayName}</span>
+              <span className={styles.username}>
+                {data?.displayName || "Bilinmeyen Kullanıcı"}
+              </span>
             </div>
             <div className={styles.actions}>
               <button className={styles.follow_btn}>Follow</button>
@@ -42,41 +88,32 @@ const PostCard = ({ data }) => {
           </div>
 
           <div className={styles.post_footer}>
-            <p className={styles.post_text}>{data?.caption}</p>
-            <div className={styles.footer_actions}>
-              <FaHeart
-                className={`${styles.icon} ${styles.heart} ${liked ? styles.liked : ""}`}
-                onClick={toggleLike}
-              />
-              <FiMessageCircle className={styles.icon} />
-              <FiSend className={styles.icon} />
-              <div className={styles.save_icon_wrapper} onClick={toggleSave}>
-                <FiBookmark
-                  className={`${styles.icon} ${saved ? styles.hidden : ""}`}
-                />
-                <FaBookmark
-                  className={`${styles.icon} ${
-                    saved ? styles.visible : styles.hidden
-                  }`}
-                />
+            <p className={styles.post_text}>{data?.caption || ""}</p>
+            {renderActionControls()}
+
+            {tokenError && (
+              <div style={{ color: "red", fontSize: "12px" }}>
+                Token alınamadı, ActionControls çalışmayabilir!
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Mobil & Tablet tasarımı */}
+      {/* Mobile */}
       <div className={`${styles.post_card_mobile} ${styles.mobile}`}>
         <div className={styles.post_header_mobile}>
           <div className={styles.user_info}>
             <div className={styles.avatar_widget}>
               <img
-                src={data?.photoURL}
+                src={data?.photoURL || ""}
                 alt="avatar"
                 className={styles.avatar}
               />
             </div>
-            <span className={styles.username}>{data?.displayName}</span>
+            <span className={styles.username}>
+              {data?.displayName || "Bilinmeyen Kullanıcı"}
+            </span>
           </div>
           <div className={styles.actions}>
             <button className={styles.follow_btn}>Follow</button>
@@ -84,35 +121,17 @@ const PostCard = ({ data }) => {
           </div>
         </div>
 
-        {data?.imageUrls?.[0] && (
+        {data?.imageUrls?.[0] ? (
           <img
             src={data.imageUrls[0]}
             alt="Post"
             className={styles.post_image_mobile}
           />
-        )}
-
-        <div className={styles.footer_actions_mobile}>
-          <FaHeart
-            className={`${styles.icon} ${styles.heart} ${liked ? styles.liked : ""}`}
-            onClick={toggleLike}
-          />
-          <FiMessageCircle className={styles.icon} />
-          <FiSend className={styles.icon} />
-          <div className={styles.save_icon_wrapper} onClick={toggleSave}>
-            <FiBookmark
-              className={`${styles.icon} ${saved ? styles.hidden : ""}`}
-            />
-            <FaBookmark
-              className={`${styles.icon} ${
-                saved ? styles.visible : styles.hidden
-              }`}
-            />
-          </div>
-        </div>
+        ) : null}
 
         <div className={styles.post_footer_mobile}>
-          <p className={styles.post_text}>{data?.caption}</p>
+          <p className={styles.post_text}>{data?.caption || ""}</p>
+          {renderActionControls()}
         </div>
       </div>
     </>

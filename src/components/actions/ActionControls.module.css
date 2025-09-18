@@ -1,0 +1,249 @@
+:root {
+  --Actions-border-color: #30363d;
+  --Actions-text-color: #f0f6fc;
+  --Actions-blue: #58a6ff;
+  --Actions-like-color: #ff0000;
+  --Actions-primary-glow: rgba(22, 185, 255, 0.4);
+  --Actions-secondary-glow: rgb(19, 200, 255);
+}
+
+/* --------------------
+ * ActionControls Styling
+ * -------------------- */
+.actionControls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 8px;
+  border-radius: 12px;
+  background: var(--bg-main);
+  border: 1px solid var(--Actions-border-color);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.actionControls button {
+  padding: 8px 14px;
+  border-radius: 9999px;
+  border: 1px solid var(--Actions-border-color);
+  background: var(--color-black);
+  color: var(--Actions-text-color);
+  cursor: pointer;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.actionControls button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px var(--Actions-primary-glow);
+}
+
+.actionControls button:active {
+  transform: translateY(0);
+}
+
+/* Active State for Like/Save (when clicked) */
+.btnLike[data-active="true"] {
+  color: var(--Actions-like-color);
+  border-color: var(--Actions-like-color);
+}
+
+.btnSave[data-active="true"] {
+  color: var(--color-white);
+  border-color: var(--color-white);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.534);
+}
+
+/*
+ * Updated CommentModal Styling for Centering
+ */
+
+/* Modal Overlay: Fills the entire viewport */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex; /* Use flexbox for centering */
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  background: rgba(0, 0, 0, 0.75); /* Darker overlay for better focus */
+  backdrop-filter: blur(12px); /* Stronger blur for a more futuristic look */
+  z-index: 9999;
+  animation: fadeIn 0.3s ease-out; /* Smooth fade-in animation */
+}
+
+/* The Modal Box itself */
+.modal {
+  width: 540px; /* Slightly larger for better readability */
+  max-width: 90%; /* More responsive on smaller screens */
+  background: var(--bg-main);
+  border-radius: 20px; /* More rounded corners */
+  padding: 30px; /* Increased padding */
+  box-shadow: 0 0 60px rgba(88, 166, 255, 0.4); /* Stronger glow effect */
+  color: var(--Actions-text-color);
+  border: 1px solid var(--Actions-border-color);
+  transform: scale(0.9); /* Start smaller for the zoom effect */
+  animation: zoomIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; /* Pop-in animation */
+}
+
+/* Modal Header and its elements */
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--Actions-border-color);
+  margin-bottom: 20px;
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-weight: 800; /* Bolder font for prominence */
+  font-size: 1.5rem;
+  color: var(--Actions-blue);
+  text-shadow: 0 0 8px rgba(88, 166, 255, 0.8);
+  letter-spacing: 0.5px;
+}
+
+.closeBtn {
+  background: transparent;
+  border: none;
+  color: var(--Actions-text-color);
+  font-size: 1.8rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.closeBtn:hover {
+  transform: rotate(90deg) scale(1.2); /* A more dynamic hover effect */
+  color: #ff002f; /* Highlight with red on hover */
+}
+
+/* Comment Form */
+.commentForm {
+  display: flex;
+  gap: 15px;
+  margin: 15px 0;
+}
+
+.commentForm input {
+  flex: 1;
+  padding: 15px; /* Larger padding for input */
+  border-radius: 10px; /* More rounded */
+  border: 1px solid var(--Actions-border-color);
+  background: var(--color-black);
+  color: var(--Actions-text-color);
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.commentForm input:focus {
+  outline: none;
+  border-color: var(--Actions-blue);
+  box-shadow: 0 0 10px var(--Actions-primary-glow);
+}
+
+.commentForm button {
+  padding: 15px 25px; /* Larger button */
+  background: var(--Actions-blue);
+  border: none;
+  border-radius: 10px;
+  color: var(--color-black);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  text-transform: uppercase;
+}
+
+.commentForm button:disabled {
+  background: var(--Actions-border-color);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Comments List */
+.commentsList {
+  max-height: 400px; /* A bit more space for comments */
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.commentsList::-webkit-scrollbar {
+  width: 10px;
+}
+
+.commentsList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.commentsList::-webkit-scrollbar-thumb {
+  background-color: var(--Actions-border-color);
+  border-radius: 5px;
+}
+
+/* Comment Item */
+.commentItem {
+  padding: 18px;
+  border-radius: 15px;
+  background: var(--color-black);
+  border: 1px solid var(--Actions-border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.meta {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 10px;
+  color: var(--Actions-blue);
+  font-size: 1rem;
+}
+
+.meta strong {
+  font-weight: 600;
+}
+
+.meta small {
+  color: #a0a0a0;
+  font-size: 0.9rem;
+}
+
+.commentItem p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.commentItem button {
+  margin-top: 10px;
+  background: #ff002f; /* Red for delete */
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.commentItem button:hover {
+  background: #e03b57;
+}
+
+/* Animation Keyframes */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.9); }
+  to { transform: scale(1); }
+}
