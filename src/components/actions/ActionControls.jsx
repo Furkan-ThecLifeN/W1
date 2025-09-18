@@ -1,7 +1,8 @@
 // ActionControls.jsx
 import React, { useState, useEffect, useRef } from "react";
 import {
-  toggleActionRemote,
+  toggleLikeRemote, // Buradan import edilmeli
+  toggleSaveRemote, // Buradan import edilmeli
   getCommentsRemote,
   postCommentRemote,
   deleteCommentRemote,
@@ -10,13 +11,14 @@ import {
 } from "./api";
 import { useActionsQueue } from "./useActionsQueue";
 import styles from "./ActionControls.module.css";
-import { FaHeart, FaRegHeart, FaComment, FaShare } from "react-icons/fa";
+import { FaHeart, FaRegHeart, FaComment, FaShare, FaBookmark, FaRegBookmark } from "react-icons/fa";
 
 /*
 Props:
 - targetType: "post" | "feed" | "feeling"
 - targetId: string
 - initialLiked: boolean
+- initialSaved: boolean
 - initialStats: { likes: number, comments: number, shares: number }
 - getAuthToken (optional)
 */
@@ -25,27 +27,30 @@ export default function ActionControls({
   targetType,
   targetId,
   initialLiked = false,
+  initialSaved = false,
   initialStats = { likes: 0, comments: 0, shares: 0 },
   getAuthToken = defaultGetAuthToken,
 }) {
   const [liked, setLiked] = useState(initialLiked);
+  const [saved, setSaved] = useState(initialSaved);
   const [stats, setStats] = useState(initialStats);
   const [commentModalOpen, setCommentModalOpen] = useState(false);
 
   const likeTimerRef = useRef(null);
+  const saveTimerRef = useRef(null);
   const pendingLikeRef = useRef(null);
+  const pendingSaveRef = useRef(null);
 
   const { enqueue } = useActionsQueue({ getAuthToken });
 
   async function commitActionNow(action) {
     try {
       const token = await getAuthToken();
-      await toggleActionRemote({
-        type: action.type,
-        targetType,
-        targetId,
-        token,
-      });
+      if (action.type === "like") {
+        await toggleLikeRemote({ targetType, targetId, token });
+      } else if (action.type === "save") {
+        await toggleSaveRemote({ targetType, targetId, token });
+      }
     } catch (e) {
       enqueue({
         type: action.type,
@@ -73,10 +78,19 @@ export default function ActionControls({
     scheduleCommit({ type: "like", finalState: next }, likeTimerRef, pendingLikeRef);
   }
 
+  function toggleSave() {
+    const next = !saved;
+    setSaved(next);
+    scheduleCommit({ type: "save", finalState: next }, saveTimerRef, pendingSaveRef);
+  }
+
   useEffect(() => {
     return () => {
       if (likeTimerRef.current && pendingLikeRef.current) {
         commitActionNow(pendingLikeRef.current);
+      }
+      if (saveTimerRef.current && pendingSaveRef.current) {
+        commitActionNow(pendingSaveRef.current);
       }
     };
   }, []);
@@ -113,6 +127,10 @@ export default function ActionControls({
     <div className={styles.actionControls}>
       <button onClick={toggleLike} data-active={liked} className={styles.btnLike}>
         {liked ? <FaHeart size={18} /> : <FaRegHeart size={18} />} <span>{stats.likes}</span>
+      </button>
+
+      <button onClick={toggleSave} data-active={saved} className={styles.btnSave}>
+        {saved ? <FaBookmark size={18} /> : <FaRegBookmark size={18} />}
       </button>
 
       <button onClick={openComments} className={styles.btnComment}>
@@ -174,7 +192,7 @@ function CommentModal({ targetType, targetId, onClose, onCountsChange, getAuthTo
       displayName: "Sen",
       photoURL: "",
       text: newText,
-      createdAt: new Date().toISOString(),
+      createdAt: new Date(),
     };
     setComments((c) => [tempComment, ...c]);
     setNewText("");
@@ -228,7 +246,7 @@ function CommentModal({ targetType, targetId, onClose, onCountsChange, getAuthTo
               <div key={c.id} className={styles.commentItem}>
                 <div className={styles.meta}>
                   <strong>{c.displayName || c.username}</strong>
-                  <small>{new Date(c.createdAt).toLocaleString()}</small>
+                  <small>{new Date(c.createdAt?.seconds ? c.createdAt.seconds * 1000 : c.createdAt).toLocaleString()}</small>
                 </div>
                 <p>{c.text}</p>
                 {c.uid === "me" && <button onClick={() => removeComment(c.id)}>Sil</button>}

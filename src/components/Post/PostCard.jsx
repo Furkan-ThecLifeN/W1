@@ -4,25 +4,60 @@ import styles from "./PostCard.module.css";
 import { FiMoreHorizontal } from "react-icons/fi";
 import ActionControls from "../actions/ActionControls";
 
+// api.js dosyasından çekilecek fonksiyonları ekledik
+import { defaultGetAuthToken, getPostStats } from "../actions/api";
+
 const PostCard = ({ data }) => {
   const [tokenError, setTokenError] = useState(false);
+  
+  // Yeni state'ler tanımlandı
+  const [liked, setLiked] = useState(data?.userLiked ?? false);
+  const [saved, setSaved] = useState(data?.userSaved ?? false);
+  const [stats, setStats] = useState(data?.initialStats ?? { likes: 0, comments: 0, shares: 0 });
 
   // Token alma fonksiyonu
   const getToken = async () => {
     try {
-      const module = await import("../actions/api");
-      if (!module.defaultGetAuthToken) {
-        console.error("PostCard: Token fonksiyonu bulunamadı!");
-        setTokenError(true);
-        return null;
-      }
-      return await module.defaultGetAuthToken();
+      // Artık import edildiği için dinamik import'a gerek yok
+      return await defaultGetAuthToken();
     } catch (e) {
       console.error("PostCard: Token alma hatası ->", e.message);
       setTokenError(true);
       return null;
     }
   };
+
+  // Yeni useEffect hook'u: Component yüklendiğinde veya data.id değiştiğinde çalışır
+  useEffect(() => {
+    // API'den güncel verileri çekecek asenkron fonksiyon
+    async function fetchPostStatus() {
+      if (!data?.id) {
+        console.warn("PostCard: Post ID eksik, istatistikler çekilemiyor.");
+        return;
+      }
+      try {
+        const token = await getToken();
+        if (!token) {
+          console.error("PostCard: Token bulunamadı, istatistikler çekilemiyor.");
+          return;
+        }
+        
+        // API'den stats, liked ve saved durumlarını çekme
+        const res = await getPostStats({ targetType: 'post', targetId: data.id, token });
+        
+        // State'leri API yanıtıyla güncelleme
+        setStats(res.stats);
+        setLiked(res.liked);
+        setSaved(res.saved);
+      } catch (e) {
+        console.error("PostCard: İstatistik çekme hatası ->", e.message);
+      }
+    }
+
+    fetchPostStatus();
+    
+    // eslint-disable-next-line
+  }, [data?.id]); // data.id değiştiğinde tekrar çalışır
 
   // ActionControls wrapper
   const renderActionControls = () => {
@@ -34,13 +69,10 @@ const PostCard = ({ data }) => {
       <ActionControls
         targetType="post"
         targetId={data.id}
-        initialLiked={data?.userLiked ?? false}
-        initialSaved={data?.userSaved ?? false}
-        initialCounts={{
-          likesCount: data?.likesCount || 0,
-          commentsCount: data?.commentsCount || 0,
-          shareCount: data?.shareCount || 0,
-        }}
+        // State'ten gelen dinamik değerler props olarak gönderiliyor
+        initialLiked={liked}
+        initialSaved={saved}
+        initialStats={stats}
         getAuthToken={getToken}
       />
     );
