@@ -31,7 +31,6 @@ export default function ActionControls({
   const [saved, setSaved] = useState(false);
   const [stats, setStats] = useState({ likes: 0, comments: 0, shares: 0 });
   const [commentModalOpen, setCommentModalOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
   const shareBtnRef = useRef(null);
 
@@ -42,46 +41,62 @@ export default function ActionControls({
 
   const { enqueue } = useActionsQueue({ getAuthToken });
 
-  // 1.1 Tek seferlik veri çekme
+  // 1️⃣ İstekleri sadece ilk render’da yap
   useEffect(() => {
+    let mounted = true;
+
     async function fetchStats() {
-      setLoading(true);
       try {
         const token = await getAuthToken();
-        if (token) {
-          const res = await getPostStats({ targetType, targetId, token });
-          setStats(res.stats);
-          setLiked(res.liked);
-          setSaved(res.saved);
-        }
+        if (!token || !mounted) return;
+
+        const res = await getPostStats({ targetType, targetId, token });
+
+        if (!mounted) return;
+        setStats(res.stats);
+        setLiked(res.liked);
+        setSaved(res.saved);
       } catch (e) {
         console.error("İstatistikler alınamadı: ", e);
-      } finally {
-        setLoading(false);
       }
     }
+
     fetchStats();
-  }, [targetId, targetType, getAuthToken]);
+
+    return () => {
+      mounted = false;
+    };
+  }, []); // targetId ve targetType bağımlılıklarını kaldırdık
 
   async function commitActionNow(action) {
     try {
       const token = await getAuthToken();
       if (action.type === "like") {
-        await toggleLikeRemote({ targetType, targetId, token });
+        await toggleLikeRemote({
+          targetType: action.targetType,
+          targetId: action.targetId,
+          finalState: action.finalState,
+          token,
+        });
       } else if (action.type === "save") {
-        await toggleSaveRemote({ targetType, targetId, token });
+        await toggleSaveRemote({
+          targetType: action.targetType,
+          targetId: action.targetId,
+          finalState: action.finalState,
+          token,
+        });
       }
     } catch (e) {
       enqueue({
         type: action.type,
-        targetType,
-        targetId,
+        targetType: action.targetType,
+        targetId: action.targetId,
         finalState: action.finalState,
       });
     }
   }
 
-  // 1.2 Beğenme ve Kaydetme Optimistik UI
+  // 2️⃣ Beğenme ve Kaydetme Optimistik UI
   function scheduleCommit(action, timerRef, pendingRef) {
     if (timerRef.current) clearTimeout(timerRef.current);
     pendingRef.current = action;
@@ -97,9 +112,9 @@ export default function ActionControls({
   function toggleLike() {
     const next = !liked;
     setLiked(next);
-    setStats((s) => ({ ...s, likes: s.likes + (next ? 1 : -1) }));
+    setStats((s) => ({ ...s, likes: Math.max(0, s.likes + (next ? 1 : -1)) }));
     scheduleCommit(
-      { type: "like", finalState: next },
+      { type: "like", targetType, targetId, finalState: next },
       likeTimerRef,
       pendingLikeRef
     );
@@ -108,8 +123,12 @@ export default function ActionControls({
   function toggleSave() {
     const next = !saved;
     setSaved(next);
+    setStats((s) => ({
+      ...s,
+      saves: Math.max(0, (s.saves || 0) + (next ? 1 : -1)),
+    }));
     scheduleCommit(
-      { type: "save", finalState: next },
+      { type: "save", targetType, targetId, finalState: next },
       saveTimerRef,
       pendingSaveRef
     );
@@ -147,9 +166,7 @@ export default function ActionControls({
     setTimeout(() => setToast(null), 2000);
   };
 
-  // 1.3 Paylaşma (Share) debounce/throttle mantığı
   async function handleShare() {
-    // Sadece tek bir paylaşım isteğinin işlenmesini sağlar
     if (shareThrottleTimer) return;
 
     try {
@@ -162,21 +179,12 @@ export default function ActionControls({
       setStats((s) => ({ ...s, shares: (s.shares || 0) + 1 }));
       showToast("Gönderi linki kopyalandı!", "success");
 
-      // Throttle mekanizmasını etkinleştir
       shareThrottleTimer = setTimeout(() => {
         shareThrottleTimer = null;
-      }, 5000); // 5 saniye bekleme süresi
+      }, 5000);
     } catch (e) {
       showToast("Paylaş linki üretilemedi: " + e.message, "error");
     }
-  }
-
-  if (loading) {
-    return (
-      <div className={styles.actionControls}>
-        <p>Yükleniyor...</p>
-      </div>
-    );
   }
 
   return (
@@ -187,14 +195,19 @@ export default function ActionControls({
           data-active={liked}
           className={styles.btnLike}
         >
-          {liked ? <FaHeart size={18} /> : <FaRegHeart size={18} />} <span>{stats.likes}</span>
+          {liked ? <FaHeart size={18} /> : <FaRegHeart size={18} />}{" "}
+          <span>{stats.likes}</span>
         </button>
 
         <button onClick={openComments} className={styles.btnComment}>
           <FaComment size={18} /> <span>{stats.comments}</span>
         </button>
 
-        <button ref={shareBtnRef} onClick={handleShare} className={styles.btnShare}>
+        <button
+          ref={shareBtnRef}
+          onClick={handleShare}
+          className={styles.btnShare}
+        >
           <FaShare size={18} /> <span>{stats.shares}</span>
         </button>
 
@@ -226,7 +239,10 @@ export default function ActionControls({
             style={{
               position: "absolute",
               top: shareBtnRef.current.offsetTop - 36 + "px",
-              left: shareBtnRef.current.offsetLeft + shareBtnRef.current.offsetWidth / 2 + "px",
+              left:
+                shareBtnRef.current.offsetLeft +
+                shareBtnRef.current.offsetWidth / 2 +
+                "px",
               transform: "translateX(-50%)",
               whiteSpace: "nowrap",
               zIndex: 10,

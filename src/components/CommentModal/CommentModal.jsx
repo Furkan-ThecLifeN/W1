@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import ReactDOM from "react-dom"; 
+import ReactDOM from "react-dom";
 import {
   getCommentsRemote,
   postCommentRemote,
@@ -19,71 +19,78 @@ export default function CommentModal({
   const [loading, setLoading] = useState(true);
   const [newText, setNewText] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
-  async function fetchComments() {
-    setLoading(true);
-    try {
-      const token = await getAuthToken();
-      const res = await getCommentsRemote({ targetType, targetId, token });
-      setComments(res.comments || []);
-    } catch (e) {
-      console.error(e);
-      alert("Yorumlar alınamadı");
-    } finally {
-      setLoading(false);
-    }
-  }
-
+  // Kullanıcı ID'sini almak ve yorumları yüklemek için
   useEffect(() => {
-    fetchComments();
-  }, []);
+    async function initComments() {
+      setLoading(true);
+      try {
+        const token = await getAuthToken();
+        const res = await getCommentsRemote({ targetType, targetId, token });
+        const { uid } = JSON.parse(atob(token.split(".")[1]));
+        setCurrentUserId(uid);
+        setComments(res.comments || []);
+      } catch (e) {
+        console.error("Yorumlar alınamadı: ", e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    initComments();
+  }, [targetId, targetType, getAuthToken]);
 
   async function submitComment(e) {
     e.preventDefault();
-    if (!newText.trim()) return;
+    if (!newText.trim() || !currentUserId) return;
 
     setSubmitting(true);
     const tempId = `temp-${Date.now()}`;
     const tempComment = {
       id: tempId,
-      uid: "me",
-      username: "me",
-      displayName: "Sen",
-      photoURL: "",
+      uid: currentUserId,
+      displayName: "Sen", // Bu geçici bilgi daha sonra backend'den gelen veri ile güncellenecek
       text: newText,
       createdAt: new Date(),
     };
+    
+    // Opt-inistik UI güncellemesi
     setComments((c) => [tempComment, ...c]);
     setNewText("");
     onCountsChange(1);
 
     try {
       const token = await getAuthToken();
-      await postCommentRemote({
+      const res = await postCommentRemote({
         targetType,
         targetId,
         content: tempComment.text,
         token,
       });
-      await fetchComments();
+
+      // Backend'den gelen gerçek ID ile geçici yorumu güncelle
+      setComments((c) =>
+        c.map((comment) => (comment.id === tempId ? { ...comment, id: res.id } : comment))
+      );
     } catch (e) {
+      // Hata durumunda optimistik güncellemeyi geri al
       setComments((c) => c.filter((x) => x.id !== tempId));
       onCountsChange(-1);
-      alert("Yorum gönderilemedi: " + e.message);
+      console.error("Yorum gönderilemedi: ", e);
     } finally {
       setSubmitting(false);
     }
   }
 
-  async function removeComment(commentId) {
-    if (!window.confirm("Yorumu silmek istiyor musun?")) return;
+  // Yorumu silme işlevi
+  async function handleDelete(commentId) {
     try {
       const token = await getAuthToken();
       await deleteCommentRemote({ targetType, targetId, commentId, token });
-      setComments((c) => c.filter((x) => x.id !== commentId));
+      setComments((prev) => prev.filter(c => c.id !== commentId));
       onCountsChange(-1);
     } catch (e) {
-      alert("Yorum silinemedi: " + e.message);
+      console.error("Yorum silinemedi: ", e);
     }
   }
 
@@ -102,6 +109,7 @@ export default function CommentModal({
             value={newText}
             onChange={(e) => setNewText(e.target.value)}
             placeholder="Yorum yaz..."
+            disabled={submitting}
           />
           <button disabled={submitting || !newText.trim()}>Gönder</button>
         </form>
@@ -113,21 +121,18 @@ export default function CommentModal({
             <p>Yorum yok</p>
           ) : (
             comments.map((c) => (
-              <div key={c.id} className={styles.commentItem}>
+              <div key={c.id} className={styles.commentCard}>
                 <div className={styles.meta}>
                   <strong>{c.displayName || c.username}</strong>
                   <small>
-                    {new Date(
-                      c.createdAt?.seconds ? c.createdAt.seconds * 1000 : c.createdAt
-                    ).toLocaleString()}
+                    {c.createdAt?.seconds
+                      ? new Date(c.createdAt.seconds * 1000).toLocaleString()
+                      : "Just now"}
                   </small>
                 </div>
                 <p>{c.text}</p>
-                {c.uid === "me" && (
-                  <button
-                    className={styles.deleteBtn}
-                    onClick={() => removeComment(c.id)}
-                  >
+                {c.uid === currentUserId && (
+                  <button onClick={() => handleDelete(c.id)} className={styles.deleteBtn}>
                     Sil
                   </button>
                 )}
@@ -137,6 +142,6 @@ export default function CommentModal({
         </div>
       </div>
     </div>,
-    document.body 
+    document.body
   );
 }

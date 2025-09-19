@@ -32,19 +32,19 @@ async function request(path, { method = "GET", body, token } = {}) {
 }
 
 // Like toggle endpoint
-export async function toggleLikeRemote({ targetType, targetId, token }) {
+export async function toggleLikeRemote({ targetType, targetId, finalState, token }) {
   return request("/api/actions/toggleLike", {
     method: "POST",
-    body: { targetType, targetId },
+    body: { targetType, targetId, finalState },
     token,
   });
 }
 
 // Save toggle endpoint
-export async function toggleSaveRemote({ targetType, targetId, token }) {
+export async function toggleSaveRemote({ targetType, targetId, finalState, token }) {
   return request("/api/actions/toggleSave", {
     method: "POST",
-    body: { targetType, targetId },
+    body: { targetType, targetId, finalState },
     token,
   });
 }
