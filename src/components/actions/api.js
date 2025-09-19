@@ -52,17 +52,23 @@ export async function toggleSaveRemote({ targetType, targetId, token }) {
 
 // Yeni: Gönderi istatistiklerini almak için endpoint
 export async function getPostStats({ targetType, targetId, token }) {
-  return request(`/api/actions/getStats/${encodeURIComponent(targetType)}/${encodeURIComponent(targetId)}`, {
-    method: "GET",
-    token,
-  });
+  return request(
+    `/api/actions/getStats/${encodeURIComponent(targetType)}/${encodeURIComponent(
+      targetId
+    )}`,
+    {
+      method: "GET",
+      token,
+    }
+  );
 }
-
 
 // Mevcut fonksiyonlar (değişiklik yapılmadı)
 export async function toggleActionRemote({ type, targetType, targetId, token }) {
   if (!["like", "share"].includes(type)) {
-    throw new Error("Invalid action type for toggleActionRemote. Supported types: 'like', 'share'");
+    throw new Error(
+      "Invalid action type for toggleActionRemote. Supported types: 'like', 'share'"
+    );
   }
   return request("/api/actions/toggle", {
     method: "POST",
@@ -80,17 +86,27 @@ export async function postCommentRemote({ targetType, targetId, content, token }
 }
 
 export async function getCommentsRemote({ targetType, targetId, token }) {
-  return request(`/api/actions/comments/${encodeURIComponent(targetType)}/${encodeURIComponent(targetId)}`, {
-    method: "GET",
-    token,
-  });
+  return request(
+    `/api/actions/comments/${encodeURIComponent(targetType)}/${encodeURIComponent(
+      targetId
+    )}`,
+    {
+      method: "GET",
+      token,
+    }
+  );
 }
 
 export async function deleteCommentRemote({ targetType, targetId, commentId, token }) {
-  return request(`/api/actions/comment/${encodeURIComponent(targetType)}/${encodeURIComponent(targetId)}/${encodeURIComponent(commentId)}`, {
-    method: "DELETE",
-    token,
-  });
+  return request(
+    `/api/actions/comment/${encodeURIComponent(targetType)}/${encodeURIComponent(
+      targetId
+    )}/${encodeURIComponent(commentId)}`,
+    {
+      method: "DELETE",
+      token,
+    }
+  );
 }
 
 export async function getShareLinkRemote({ targetType, targetId, token }) {

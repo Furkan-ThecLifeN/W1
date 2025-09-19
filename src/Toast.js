@@ -1,3 +1,4 @@
+// Toast.js
 import React from 'react';
 // ✅ AuthProvider'ın belirtilen doğru yolu
 import { useAuth } from '../src/context/AuthProvider'; 
