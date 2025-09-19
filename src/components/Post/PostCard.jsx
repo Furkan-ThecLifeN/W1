@@ -2,20 +2,16 @@ import React, { useState, useEffect } from "react";
 import styles from "./PostCard.module.css";
 import { FiMoreHorizontal } from "react-icons/fi";
 import ActionControls from "../actions/ActionControls";
-
-// api.js dosyasından çekilecek fonksiyonları ekledik
-import { defaultGetAuthToken } from "../actions/api"; // 👈 getPostStats artık burada kullanılmayacak
+import { defaultGetAuthToken } from "../actions/api";
 
 const PostCard = ({ data }) => {
   const [tokenError, setTokenError] = useState(false);
 
-  // Artık stateleri burada tutmaya gerek yok, ActionControls kendi içinde yönetecek.
-  // Bu state'ler kaldırılabilir veya başlangıç değerleri olarak kullanılabilir.
-  //const [liked, setLiked] = useState(data?.userLiked ?? false);
-  //const [saved, setSaved] = useState(data?.userSaved ?? false);
-  //const [stats, setStats] = useState(data?.initialStats ?? { likes: 0, comments: 0, shares: 0 });
+  // Bu state'ler artık PostCard'da tutulmayacak
+  // const [liked, setLiked] = useState(data?.userLiked ?? false);
+  // const [saved, setSaved] = useState(data?.userSaved ?? false);
+  // const [stats, setStats] = useState(data?.initialStats ?? { likes: 0, comments: 0, shares: 0 });
 
-  // Token alma fonksiyonu
   const getToken = async () => {
     try {
       return await defaultGetAuthToken();
@@ -26,18 +22,15 @@ const PostCard = ({ data }) => {
     }
   };
 
-  // 👈 Yeni useEffect hook'u kaldırıldı
-  // PostCard bileşeninin ilk yüklemede veriyi çekme mantığı artık ActionControls'e taşındı.
+  // Veri çekme mantığı ActionControls'e taşındığı için bu hook kaldırıldı
   // useEffect(() => { ... }, [data?.id]);
 
-  // ActionControls wrapper
   const renderActionControls = () => {
     if (!data?.id) {
       console.warn("PostCard: id yok, ActionControls render edilmedi!");
       return null;
     }
     return (
-      // 👈 ActionControls'e stat'ler prop olarak gönderilmeyecek
       <ActionControls
         targetType="post"
         targetId={data.id}
@@ -46,7 +39,6 @@ const PostCard = ({ data }) => {
     );
   };
 
-  // Kısa console log kontrolleri
   useEffect(() => {
     if (!data) return console.warn("PostCard: data yok!");
     if (!data.id) console.warn("PostCard: post id eksik!");
@@ -57,7 +49,6 @@ const PostCard = ({ data }) => {
 
   return (
     <>
-      {/* Desktop */}
       <div className={`${styles.post_card} ${styles.desktop}`}>
         {data?.imageUrls?.[0] ? (
           <img
@@ -100,7 +91,6 @@ const PostCard = ({ data }) => {
         </div>
       </div>
 
-      {/* Mobile */}
       <div className={`${styles.post_card_mobile} ${styles.mobile}`}>
         <div className={styles.post_header_mobile}>
           <div className={styles.user_info}>

@@ -1,92 +1,88 @@
-// useActionsQueue.js
 import { useEffect, useRef, useCallback } from "react";
-import { batchActionsRemote, defaultGetAuthToken } from "./api";
+import { batchActionsRemote, sharePostRemote, defaultGetAuthToken } from "./api";
 
-// Simple local queue stored in localStorage for pending action objects:
-// { type, targetType, targetId, finalState (bool), ts }
-// Will flush automatically when online or on mount. Also supports navigator.sendBeacon on unload.
-
-const QUEUE_KEY = "actions_pending_queue_v1";
+const QUEUE_KEY = "actions_pending_queue_v2";
 
 function readQueue() {
-  try {
-    const raw = localStorage.getItem(QUEUE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch (e) {
-    return [];
-  }
+  try { return JSON.parse(localStorage.getItem(QUEUE_KEY)) || []; }
+  catch { return []; }
 }
+
 function writeQueue(items) {
-  localStorage.setItem(QUEUE_KEY, JSON.stringify(items));
+  try { localStorage.setItem(QUEUE_KEY, JSON.stringify(items)); }
+  catch (e) { console.error("Kuyruk yazma hatası:", e); }
 }
 
 export function useActionsQueue({ getAuthToken = defaultGetAuthToken } = {}) {
   const flushingRef = useRef(false);
+  const shareThrottleRef = useRef({});
 
   const enqueue = useCallback((action) => {
     const q = readQueue();
-    q.push({ ...action, ts: Date.now() });
-    writeQueue(q);
-    // attempt flush in background
+    const existingIndex = q.findIndex(
+      (i) => i.type === action.type && i.targetType === action.targetType && i.targetId === action.targetId
+    );
+
+    if (action.type === "share") {
+      // Sadece son share kaydedilsin
+      shareThrottleRef.current[action.targetId] = action;
+    } else if (existingIndex !== -1) {
+      q[existingIndex] = { ...action, ts: Date.now() };
+      writeQueue(q);
+    } else {
+      q.push({ ...action, ts: Date.now() });
+      writeQueue(q);
+    }
+
     flushQueue();
   }, []);
 
   const flushQueue = useCallback(async () => {
     if (flushingRef.current) return;
     const items = readQueue();
-    if (!items.length) return;
+    if (!items.length && Object.keys(shareThrottleRef.current).length === 0) return;
+
     flushingRef.current = true;
+
     try {
       const token = await getAuthToken();
-      // transform to expected batch item format: { type, targetType, targetId, finalState }
-      const batch = items.map((it) => ({
-        type: it.type,
-        targetType: it.targetType,
-        targetId: it.targetId,
-        finalState: it.finalState,
-        userId: it.userId, // optional
-      }));
-      await batchActionsRemote({ items: batch, token });
-      // on success clear queue
+
+      // Like/Save batch
+      const batchItems = items.filter(i => i.type !== "share");
+      if (batchItems.length) {
+        await batchActionsRemote({ items: batchItems.map(({ type, targetType, targetId, finalState }) => ({ type, targetType, targetId, finalState })), token });
+      }
+
+      // Share aksiyonları, throttle mantığı ile
+      const shareItems = Object.values(shareThrottleRef.current);
+      for (const s of shareItems) {
+        await sharePostRemote(s.targetId, s.targetType, token);
+      }
+      shareThrottleRef.current = {};
+
       writeQueue([]);
-    } catch (e) {
-      // leave queue intact for retry later
-      // optionally: exponential backoff or limit retries
-      // console.error("batch flush error", e);
+    } catch (err) {
+      console.error("Toplu işlem hatası:", err);
     } finally {
       flushingRef.current = false;
     }
   }, [getAuthToken]);
 
   useEffect(() => {
-    // flush on mount and on reconnect
     flushQueue();
-    function onOnline() {
-      flushQueue();
-    }
+    const onOnline = () => flushQueue();
     window.addEventListener("online", onOnline);
 
-    // beforeunload -> try sendBeacon single items
-    function onBeforeUnload(e) {
+    const onBeforeUnload = () => {
       const q = readQueue();
       if (!q.length) return;
-      try {
-        const payload = JSON.stringify(q.map(it => ({
-          type: it.type,
-          targetType: it.targetType,
-          targetId: it.targetId,
-          finalState: it.finalState,
-        })));
-        // use navigator.sendBeacon if available
-        if (navigator.sendBeacon) {
-          const blob = new Blob([payload], { type: "application/json" });
-          navigator.sendBeacon("/api/actions/batch", blob);
-        }
-      } catch (err) {
-        // noop
+      if (navigator.sendBeacon) {
+        const blob = new Blob([JSON.stringify(q)], { type: "application/json" });
+        navigator.sendBeacon("/api/actions/batch", blob);
       }
-    }
+    };
     window.addEventListener("beforeunload", onBeforeUnload);
+
     return () => {
       window.removeEventListener("online", onOnline);
       window.removeEventListener("beforeunload", onBeforeUnload);

@@ -1,8 +1,7 @@
 // api.js
-// Small API wrapper for actions endpoints. Uses Firebase modular SDK if available to get ID token.
-// If you don't use Firebase client here, pass getAuthToken function to the hooks/components (see README).
+// API wrapper for actions endpoints. Uses Firebase modular SDK if available to get ID token.
+// If you don't use Firebase client here, pass getAuthToken function to the hooks/components.
 
-// Corrected BASE_URL to the root of your API.
 const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
 
 export async function defaultGetAuthToken() {
@@ -32,7 +31,7 @@ async function request(path, { method = "GET", body, token } = {}) {
   return res.json();
 }
 
-// Yeni: Toggle Like için spesifik endpoint
+// Like toggle endpoint
 export async function toggleLikeRemote({ targetType, targetId, token }) {
   return request("/api/actions/toggleLike", {
     method: "POST",
@@ -41,7 +40,7 @@ export async function toggleLikeRemote({ targetType, targetId, token }) {
   });
 }
 
-// Yeni: Toggle Save için spesifik endpoint
+// Save toggle endpoint
 export async function toggleSaveRemote({ targetType, targetId, token }) {
   return request("/api/actions/toggleSave", {
     method: "POST",
@@ -50,25 +49,18 @@ export async function toggleSaveRemote({ targetType, targetId, token }) {
   });
 }
 
-// Yeni: Gönderi istatistiklerini almak için endpoint
+// Get post stats
 export async function getPostStats({ targetType, targetId, token }) {
-  return request(
-    `/api/actions/getStats/${encodeURIComponent(targetType)}/${encodeURIComponent(
-      targetId
-    )}`,
-    {
-      method: "GET",
-      token,
-    }
-  );
+  return request(`/api/actions/getStats/${encodeURIComponent(targetType)}/${encodeURIComponent(targetId)}`, {
+    method: "GET",
+    token,
+  });
 }
 
-// Mevcut fonksiyonlar (değişiklik yapılmadı)
+// Like/share unified toggle (legacy)
 export async function toggleActionRemote({ type, targetType, targetId, token }) {
   if (!["like", "share"].includes(type)) {
-    throw new Error(
-      "Invalid action type for toggleActionRemote. Supported types: 'like', 'share'"
-    );
+    throw new Error("Invalid action type. Supported: 'like', 'share'");
   }
   return request("/api/actions/toggle", {
     method: "POST",
@@ -77,38 +69,30 @@ export async function toggleActionRemote({ type, targetType, targetId, token }) 
   });
 }
 
+// Comment endpoints
 export async function postCommentRemote({ targetType, targetId, content, token }) {
   return request("/api/actions/comment", {
     method: "POST",
-    body: { type: "comment", targetType, targetId, content },
+    body: { targetType, targetId, content },
     token,
   });
 }
 
 export async function getCommentsRemote({ targetType, targetId, token }) {
-  return request(
-    `/api/actions/comments/${encodeURIComponent(targetType)}/${encodeURIComponent(
-      targetId
-    )}`,
-    {
-      method: "GET",
-      token,
-    }
-  );
+  return request(`/api/actions/comments/${encodeURIComponent(targetType)}/${encodeURIComponent(targetId)}`, {
+    method: "GET",
+    token,
+  });
 }
 
 export async function deleteCommentRemote({ targetType, targetId, commentId, token }) {
-  return request(
-    `/api/actions/comment/${encodeURIComponent(targetType)}/${encodeURIComponent(
-      targetId
-    )}/${encodeURIComponent(commentId)}`,
-    {
-      method: "DELETE",
-      token,
-    }
-  );
+  return request(`/api/actions/comment/${encodeURIComponent(targetType)}/${encodeURIComponent(targetId)}/${encodeURIComponent(commentId)}`, {
+    method: "DELETE",
+    token,
+  });
 }
 
+// Share link endpoint
 export async function getShareLinkRemote({ targetType, targetId, token }) {
   return request("/api/actions/shareLink", {
     method: "POST",
@@ -117,11 +101,20 @@ export async function getShareLinkRemote({ targetType, targetId, token }) {
   });
 }
 
-// Optional: batch endpoint, only if backend supports /actions/batch
+// Share post endpoint (for queue/throttle)
+export async function sharePostRemote(targetId, targetType, token) {
+  return request("/api/actions/shareLink", {
+    method: "POST",
+    body: { targetId, targetType },
+    token,
+  });
+}
+
+// Batch endpoint for like/save actions
 export async function batchActionsRemote({ items, token }) {
   return request("/api/actions/batch", {
     method: "POST",
-    body: { actions: items },
+    body: { items },
     token,
   });
 }

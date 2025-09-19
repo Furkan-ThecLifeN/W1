@@ -19,6 +19,9 @@ import {
 } from "react-icons/fa";
 import CommentModal from "../CommentModal/CommentModal";
 
+// Paylaşma işlemi için bir throttle mekanizması
+let shareThrottleTimer = null;
+
 export default function ActionControls({
   targetType,
   targetId,
@@ -39,6 +42,7 @@ export default function ActionControls({
 
   const { enqueue } = useActionsQueue({ getAuthToken });
 
+  // 1.1 Tek seferlik veri çekme
   useEffect(() => {
     async function fetchStats() {
       setLoading(true);
@@ -77,6 +81,7 @@ export default function ActionControls({
     }
   }
 
+  // 1.2 Beğenme ve Kaydetme Optimistik UI
   function scheduleCommit(action, timerRef, pendingRef) {
     if (timerRef.current) clearTimeout(timerRef.current);
     pendingRef.current = action;
@@ -142,7 +147,11 @@ export default function ActionControls({
     setTimeout(() => setToast(null), 2000);
   };
 
+  // 1.3 Paylaşma (Share) debounce/throttle mantığı
   async function handleShare() {
+    // Sadece tek bir paylaşım isteğinin işlenmesini sağlar
+    if (shareThrottleTimer) return;
+
     try {
       const token = await getAuthToken();
       const res = await getShareLinkRemote({ targetType, targetId, token });
@@ -152,6 +161,11 @@ export default function ActionControls({
 
       setStats((s) => ({ ...s, shares: (s.shares || 0) + 1 }));
       showToast("Gönderi linki kopyalandı!", "success");
+
+      // Throttle mekanizmasını etkinleştir
+      shareThrottleTimer = setTimeout(() => {
+        shareThrottleTimer = null;
+      }, 5000); // 5 saniye bekleme süresi
     } catch (e) {
       showToast("Paylaş linki üretilemedi: " + e.message, "error");
     }
