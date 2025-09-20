@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import {
   getCommentsRemote,
@@ -8,6 +8,7 @@ import {
 } from "../actions/api";
 import styles from "./CommentModal.module.css";
 
+// Yorum modalı bileşeni
 export default function CommentModal({
   targetType,
   targetId,
@@ -17,122 +18,165 @@ export default function CommentModal({
 }) {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [newText, setNewText] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const [newCommentText, setNewCommentText] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [isClosing, setIsClosing] = useState(false); // Yeni state
+  const modalRef = useRef(null);
 
-  // Kullanıcı ID'sini almak ve yorumları yüklemek için
+  // Yorumları yükleme
   useEffect(() => {
-    async function initComments() {
+    async function loadComments() {
       setLoading(true);
       try {
         const token = await getAuthToken();
-        const res = await getCommentsRemote({ targetType, targetId, token });
         const { uid } = JSON.parse(atob(token.split(".")[1]));
         setCurrentUserId(uid);
-        setComments(res.comments || []);
-      } catch (e) {
-        console.error("Yorumlar alınamadı: ", e);
+        const response = await getCommentsRemote({ targetType, targetId, token });
+        setComments(response.comments || []);
+      } catch (error) {
+        console.error("Yorumlar yüklenirken bir hata oluştu:", error);
+        setComments([]);
       } finally {
         setLoading(false);
       }
     }
-    initComments();
+    loadComments();
   }, [targetId, targetType, getAuthToken]);
 
-  async function submitComment(e) {
+  // Yeni yorum gönderme
+  async function handleCommentSubmit(e) {
     e.preventDefault();
-    if (!newText.trim() || !currentUserId) return;
+    if (!newCommentText.trim() || isSubmitting) return;
 
-    setSubmitting(true);
+    setIsSubmitting(true);
     const tempId = `temp-${Date.now()}`;
     const tempComment = {
       id: tempId,
       uid: currentUserId,
-      displayName: "Sen", // Bu geçici bilgi daha sonra backend'den gelen veri ile güncellenecek
-      text: newText,
+      displayName: "Siz",
+      text: newCommentText,
       createdAt: new Date(),
     };
-    
-    // Opt-inistik UI güncellemesi
-    setComments((c) => [tempComment, ...c]);
-    setNewText("");
+
+    setComments((prevComments) => [tempComment, ...prevComments]);
+    setNewCommentText("");
     onCountsChange(1);
 
     try {
       const token = await getAuthToken();
-      const res = await postCommentRemote({
+      const response = await postCommentRemote({
         targetType,
         targetId,
         content: tempComment.text,
         token,
       });
 
-      // Backend'den gelen gerçek ID ile geçici yorumu güncelle
-      setComments((c) =>
-        c.map((comment) => (comment.id === tempId ? { ...comment, id: res.id } : comment))
+      setComments((prevComments) =>
+        prevComments.map((comment) =>
+          comment.id === tempId ? { ...comment, id: response.id } : comment
+        )
       );
-    } catch (e) {
-      // Hata durumunda optimistik güncellemeyi geri al
-      setComments((c) => c.filter((x) => x.id !== tempId));
+    } catch (error) {
+      console.error("Yorum gönderilemedi:", error);
+      setComments((prevComments) =>
+        prevComments.filter((comment) => comment.id !== tempId)
+      );
       onCountsChange(-1);
-      console.error("Yorum gönderilemedi: ", e);
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
   }
 
-  // Yorumu silme işlevi
-  async function handleDelete(commentId) {
+  // Yorum silme
+  async function handleCommentDelete(commentId) {
+    if (!window.confirm("Bu yorumu silmek istediğinize emin misiniz?")) {
+      return;
+    }
+
+    const originalComments = comments;
+    setComments((prev) => prev.filter((c) => c.id !== commentId));
+    onCountsChange(-1);
+
     try {
       const token = await getAuthToken();
       await deleteCommentRemote({ targetType, targetId, commentId, token });
-      setComments((prev) => prev.filter(c => c.id !== commentId));
-      onCountsChange(-1);
-    } catch (e) {
-      console.error("Yorum silinemedi: ", e);
+    } catch (error) {
+      console.error("Yorum silinemedi:", error);
+      setComments(originalComments);
+      onCountsChange(1);
     }
   }
 
+  // 👇 Değişiklikler burada başlıyor 👇
+
+  // Kapatma animasyonunu tetikleyen fonksiyon
+  const handleClose = () => {
+    setIsClosing(true);
+  };
+
+  // Animasyon bitimini dinleyen useEffect
+  useEffect(() => {
+    const modalElement = modalRef.current;
+    const handleAnimationEnd = () => {
+      // Eğer kapanış animasyonu bittiyse modalı kaldır
+      if (isClosing) {
+        onClose();
+      }
+    };
+
+    if (modalElement) {
+      modalElement.addEventListener('animationend', handleAnimationEnd);
+    }
+
+    // Temizleme fonksiyonu
+    return () => {
+      if (modalElement) {
+        modalElement.removeEventListener('animationend', handleAnimationEnd);
+      }
+    };
+  }, [isClosing, onClose]); // `onClose` fonksiyonu değişmediğinden bağımlılık olarak ekliyoruz
+
   return ReactDOM.createPortal(
-    <div className={styles.modalOverlay}>
-      <div className={styles.modal}>
+    <div className={styles.modalOverlay} onClick={handleClose}>
+      <div 
+        ref={modalRef}
+        className={`${styles.modal} ${isClosing ? styles.closing : ''}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Başlık ve Kapatma Butonu */}
         <header className={styles.modalHeader}>
           <h3>Yorumlar</h3>
-          <button onClick={onClose} className={styles.closeBtn}>
+          <button onClick={handleClose} className={styles.closeBtn}>
             ✕
           </button>
         </header>
 
-        <form onSubmit={submitComment} className={styles.commentForm}>
-          <input
-            value={newText}
-            onChange={(e) => setNewText(e.target.value)}
-            placeholder="Yorum yaz..."
-            disabled={submitting}
-          />
-          <button disabled={submitting || !newText.trim()}>Gönder</button>
-        </form>
-
+        {/* Yorum Listesi */}
         <div className={styles.commentsList}>
           {loading ? (
-            <p>Yükleniyor...</p>
+            <p style={{ textAlign: "center", color: "#888" }}>Yükleniyor...</p>
           ) : comments.length === 0 ? (
-            <p>Yorum yok</p>
+            <p style={{ textAlign: "center", color: "#888" }}>Henüz yorum yok. İlk yorumu siz yapın! ✍️</p>
           ) : (
-            comments.map((c) => (
-              <div key={c.id} className={styles.commentCard}>
-                <div className={styles.meta}>
-                  <strong>{c.displayName || c.username}</strong>
-                  <small>
-                    {c.createdAt?.seconds
-                      ? new Date(c.createdAt.seconds * 1000).toLocaleString()
-                      : "Just now"}
-                  </small>
+            comments.map((comment) => (
+              <div key={comment.id} className={styles.commentCard}>
+                <img
+                  src={comment.photoURL || "https://picsum.photos/40"}
+                  alt={comment.displayName || "Kullanıcı"}
+                  className={styles.avatar}
+                />
+                <div className={styles.commentContent}>
+                  <strong className={styles.username}>
+                    {comment.displayName || comment.username || "Anonim"}
+                  </strong>
+                  <p className={styles.commentText}>{comment.text}</p>
                 </div>
-                <p>{c.text}</p>
-                {c.uid === currentUserId && (
-                  <button onClick={() => handleDelete(c.id)} className={styles.deleteBtn}>
+                {comment.uid === currentUserId && (
+                  <button
+                    onClick={() => handleCommentDelete(comment.id)}
+                    className={styles.deleteBtn}
+                  >
                     Sil
                   </button>
                 )}
@@ -140,6 +184,24 @@ export default function CommentModal({
             ))
           )}
         </div>
+
+        {/* Yorum Yazma Formu */}
+        <form onSubmit={handleCommentSubmit} className={styles.commentForm}>
+          <input
+            value={newCommentText}
+            onChange={(e) => setNewCommentText(e.target.value)}
+            placeholder="Yorumunuzu yazın..."
+            className={styles.commentInput}
+            disabled={isSubmitting}
+          />
+          <button
+            type="submit"
+            className={styles.sendBtn}
+            disabled={isSubmitting || !newCommentText.trim()}
+          >
+            Gönder
+          </button>
+        </form>
       </div>
     </div>,
     document.body
