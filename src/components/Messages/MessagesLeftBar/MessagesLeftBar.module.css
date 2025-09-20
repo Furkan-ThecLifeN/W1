@@ -105,8 +105,9 @@
 }
 
 .userCard:hover {
-  background-color: var(--bg-main);
+  background-color: var(--color-black);
   color: var(--color-white);
+  border: 1px solid #171717;
 }
 
 .userProfileBox {
@@ -116,7 +117,7 @@
 }
 
 .userProfileBackground {
-  background: var(--color-blue);
+  background: transparent;
   padding: 1.5px;
   border-radius: 50%;
   display: flex;

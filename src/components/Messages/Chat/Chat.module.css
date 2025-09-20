@@ -107,7 +107,6 @@
   object-fit: cover;
   margin-right: 0.15rem;
   align-self: flex-end;
-  border: 2px solid var(--color-blue); /* Avatar rengi güncellendi */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: relative;
   top: -35px;
