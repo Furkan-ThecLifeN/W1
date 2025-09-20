@@ -4,7 +4,6 @@ import ReactDOM from "react-dom";
 import {
   toggleLikeRemote,
   toggleSaveRemote,
-  getShareLinkRemote,
   getPostStats,
   defaultGetAuthToken,
 } from "./api";
@@ -19,9 +18,7 @@ import {
   FaRegBookmark,
 } from "react-icons/fa";
 import CommentModal from "../CommentModal/CommentModal";
-
-// Paylaşma işlemi için bir throttle mekanizması
-let shareThrottleTimer = null;
+import ShareModal from "../ShareModal/ShareModal"; // Yeni: ShareModal'ı içe aktar
 
 export default function ActionControls({
   targetType,
@@ -32,6 +29,7 @@ export default function ActionControls({
   const [saved, setSaved] = useState(false);
   const [stats, setStats] = useState({ likes: 0, comments: 0, shares: 0 });
   const [commentModalOpen, setCommentModalOpen] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false); // Yeni: Paylaş modalı için state
   const [toast, setToast] = useState(null);
   const shareBtnRef = useRef(null);
 
@@ -67,7 +65,7 @@ export default function ActionControls({
     return () => {
       mounted = false;
     };
-  }, []); // targetId ve targetType bağımlılıklarını kaldırdık
+  }, [targetType, targetId]); // targetId ve targetType bağımlılıklarını geri ekledim, çünkü her post için istatistikler farklıdır.
 
   async function commitActionNow(action) {
     try {
@@ -150,6 +148,12 @@ export default function ActionControls({
     setCommentModalOpen(true);
   }
 
+  // Yeni handleShare fonksiyonu: Paylaş modalını açar
+  async function handleShare() {
+    setShareModalOpen(true);
+  }
+
+  // Toast'ı artık kullanmıyoruz çünkü modal açılıyor, bu yüzden bu kod parçası kaldırılabilir.
   const showToast = (message, type = "success") => {
     if (!shareBtnRef.current) return;
     const rect = shareBtnRef.current.getBoundingClientRect();
@@ -161,32 +165,12 @@ export default function ActionControls({
         top: rect.top + window.scrollY - 36 + "px",
         left: rect.left + rect.width / 2 + "px",
         transform: "translateX(-50%)",
+        whiteSpace: "nowrap",
       },
     });
 
     setTimeout(() => setToast(null), 2000);
   };
-
-  async function handleShare() {
-    if (shareThrottleTimer) return;
-
-    try {
-      const token = await getAuthToken();
-      const res = await getShareLinkRemote({ targetType, targetId, token });
-      const link = res.shareLink;
-
-      await navigator.clipboard.writeText(link);
-
-      setStats((s) => ({ ...s, shares: (s.shares || 0) + 1 }));
-      showToast("Gönderi linki kopyalandı!", "success");
-
-      shareThrottleTimer = setTimeout(() => {
-        shareThrottleTimer = null;
-      }, 5000);
-    } catch (e) {
-      showToast("Paylaş linki üretilemedi: " + e.message, "error");
-    }
-  }
 
   return (
     <>
@@ -229,6 +213,15 @@ export default function ActionControls({
           onCountsChange={(delta) =>
             setStats((s) => ({ ...s, comments: s.comments + delta }))
           }
+          getAuthToken={getAuthToken}
+        />
+      )}
+
+      {/* Yeni: ShareModal'ı ekle */}
+      {shareModalOpen && (
+        <ShareModal
+          postId={targetId}
+          onClose={() => setShareModalOpen(false)}
           getAuthToken={getAuthToken}
         />
       )}

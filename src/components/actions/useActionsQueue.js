@@ -75,12 +75,7 @@ export function useActionsQueue({ getAuthToken = defaultGetAuthToken } = {}) {
     window.addEventListener("online", onOnline);
 
     const onBeforeUnload = () => {
-      const q = readQueue();
-      if (!q.length) return;
-      if (navigator.sendBeacon) {
-        const blob = new Blob([JSON.stringify(q)], { type: "application/json" });
-        navigator.sendBeacon("/api/actions/batch", blob);
-      }
+      // intentionally empty: rely on online event and app lifecycle to flush queue
     };
     window.addEventListener("beforeunload", onBeforeUnload);
 

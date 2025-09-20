@@ -118,3 +118,13 @@ export async function batchActionsRemote({ items, token }) {
     token,
   });
 }
+
+// New: Get following users endpoint
+export async function getFollowingRemote({ token }) {
+  return request("/api/actions/following", { method: "GET", token });
+}
+
+// New: Send share to specific users endpoint
+export async function sendShareRemote({ postId, recipients, token }) {
+  return request("/api/actions/sendShare", { method: "POST", body: { postId, recipients }, token });
+}

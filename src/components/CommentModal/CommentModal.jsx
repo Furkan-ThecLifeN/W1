@@ -1,4 +1,4 @@
-//CommentModal.jsx
+// CommentModal.jsx
 import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import {
@@ -22,7 +22,7 @@ export default function CommentModal({
   const [newCommentText, setNewCommentText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
-  const [isClosing, setIsClosing] = useState(false); // Yeni state
+  const [isClosing, setIsClosing] = useState(false);
   const modalRef = useRef(null);
 
   // Yorumları yükleme
@@ -31,8 +31,11 @@ export default function CommentModal({
       setLoading(true);
       try {
         const token = await getAuthToken();
-        const { uid } = JSON.parse(atob(token.split(".")[1]));
-        setCurrentUserId(uid);
+        // JWT'yi çözerek kullanıcı UID'sini al
+        if (token) {
+          const { uid } = JSON.parse(atob(token.split(".")[1]));
+          setCurrentUserId(uid);
+        }
         const response = await getCommentsRemote({ targetType, targetId, token });
         setComments(response.comments || []);
       } catch (error) {
@@ -56,8 +59,9 @@ export default function CommentModal({
       id: tempId,
       uid: currentUserId,
       displayName: "Siz",
+      username: "",
+      photoURL: "",
       text: newCommentText,
-      createdAt: new Date(),
     };
 
     setComments((prevComments) => [tempComment, ...prevComments]);
@@ -73,13 +77,24 @@ export default function CommentModal({
         token,
       });
 
-      setComments((prevComments) =>
-        prevComments.map((comment) =>
-          comment.id === tempId ? { ...comment, id: response.id } : comment
-        )
-      );
+      // Backend'den dönen tam yorum objesini kullanarak temp yorumu güncelle
+      if (response && response.comment) {
+        setComments((prevComments) =>
+          prevComments.map((comment) =>
+            comment.id === tempId ? response.comment : comment
+          )
+        );
+      } else if (response && response.id) {
+        // Fallback: Eğer backend sadece id dönerse, temp id'yi güncelle
+        setComments((prevComments) =>
+          prevComments.map((comment) =>
+            comment.id === tempId ? { ...comment, id: response.id } : comment
+          )
+        );
+      }
     } catch (error) {
       console.error("Yorum gönderilemedi:", error);
+      // Hata durumunda optimistik olarak eklenen yorumu kaldır
       setComments((prevComments) =>
         prevComments.filter((comment) => comment.id !== tempId)
       );
@@ -109,8 +124,6 @@ export default function CommentModal({
     }
   }
 
-  // 👇 Değişiklikler burada başlıyor 👇
-
   // Kapatma animasyonunu tetikleyen fonksiyon
   const handleClose = () => {
     setIsClosing(true);
@@ -120,29 +133,27 @@ export default function CommentModal({
   useEffect(() => {
     const modalElement = modalRef.current;
     const handleAnimationEnd = () => {
-      // Eğer kapanış animasyonu bittiyse modalı kaldır
       if (isClosing) {
         onClose();
       }
     };
 
     if (modalElement) {
-      modalElement.addEventListener('animationend', handleAnimationEnd);
+      modalElement.addEventListener("animationend", handleAnimationEnd);
     }
 
-    // Temizleme fonksiyonu
     return () => {
       if (modalElement) {
-        modalElement.removeEventListener('animationend', handleAnimationEnd);
+        modalElement.removeEventListener("animationend", handleAnimationEnd);
       }
     };
-  }, [isClosing, onClose]); // `onClose` fonksiyonu değişmediğinden bağımlılık olarak ekliyoruz
+  }, [isClosing, onClose]);
 
   return ReactDOM.createPortal(
     <div className={styles.modalOverlay} onClick={handleClose}>
-      <div 
+      <div
         ref={modalRef}
-        className={`${styles.modal} ${isClosing ? styles.closing : ''}`}
+        className={`${styles.modal} ${isClosing ? styles.closing : ""}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Başlık ve Kapatma Butonu */}
