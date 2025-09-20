@@ -148,6 +148,11 @@ export default function ActionControls({
     setCommentModalOpen(true);
   }
 
+  // Paylaşım başarılı olduğunda çağrılacak yeni fonksiyon
+  const handleShareSuccess = () => {
+    setStats((s) => ({ ...s, shares: (s.shares || 0) + 1 }));
+  };
+
   // Yeni handleShare fonksiyonu: Paylaş modalını açar
   async function handleShare() {
     setShareModalOpen(true);
@@ -223,6 +228,7 @@ export default function ActionControls({
           postId={targetId}
           onClose={() => setShareModalOpen(false)}
           getAuthToken={getAuthToken}
+          onSuccess={handleShareSuccess} // Yeni: Paylaşım başarı callback'i
         />
       )}
 

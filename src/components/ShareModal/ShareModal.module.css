@@ -139,8 +139,8 @@
   transition: background-color 0.2s ease;
   flex-shrink: 0;
 
-  pointer-events: none; 
-  opacity: 0.6; 
+/*   pointer-events: none; 
+  opacity: 0.6;  */
 }
 
 .sendBtn:disabled {

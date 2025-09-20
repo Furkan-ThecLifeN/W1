@@ -85,11 +85,14 @@ export async function getCommentsRemote({ targetType, targetId, token }) {
   });
 }
 
-export async function deleteCommentRemote({ targetType, targetId, commentId, token }) {
-  return request(`/api/actions/comment/${encodeURIComponent(targetType)}/${encodeURIComponent(targetId)}/${encodeURIComponent(commentId)}`, {
+// Yorum silme isteği
+export async function deleteCommentRemote({ commentId, token, targetType, targetId }) {
+  const res = await fetch(`${BASE_URL}/api/actions/deleteComment/${commentId}?targetType=${targetType}&targetId=${targetId}`, {
     method: "DELETE",
-    token,
+    headers: { Authorization: `Bearer ${token}` },
   });
+  if (!res.ok) throw new Error("Delete comment failed");
+  return res.json();
 }
 
 // Share link endpoint
@@ -110,6 +113,21 @@ export async function sharePostRemote(targetId, targetType, token) {
   });
 }
 
+// Paylaşım isteği
+export async function sendShareRemote({ targetType, targetId, receiverUid, getAuthToken = defaultGetAuthToken }) {
+  const token = await getAuthToken();
+  const res = await fetch(`${process.env.REACT_APP_API_URL}/api/actions/share`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ targetType, targetId, receiverUid }),
+  });
+  if (!res.ok) throw new Error("Share failed");
+  return res.json();
+}
+
 // Batch endpoint for like/save actions
 export async function batchActionsRemote({ items, token }) {
   return request("/api/actions/batch", {
@@ -122,9 +140,4 @@ export async function batchActionsRemote({ items, token }) {
 // New: Get following users endpoint
 export async function getFollowingRemote({ token }) {
   return request("/api/actions/following", { method: "GET", token });
-}
-
-// New: Send share to specific users endpoint
-export async function sendShareRemote({ postId, recipients, token }) {
-  return request("/api/actions/sendShare", { method: "POST", body: { postId, recipients }, token });
 }

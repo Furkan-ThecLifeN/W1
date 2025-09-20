@@ -1,4 +1,3 @@
-// CommentModal.jsx
 import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import {
@@ -8,6 +7,7 @@ import {
   defaultGetAuthToken,
 } from "../actions/api";
 import styles from "./CommentModal.module.css";
+import { getAuth } from "firebase/auth";
 
 // Yorum modalı bileşeni
 export default function CommentModal({
@@ -27,25 +27,36 @@ export default function CommentModal({
 
   // Yorumları yükleme
   useEffect(() => {
+    let mounted = true;
     async function loadComments() {
       setLoading(true);
       try {
         const token = await getAuthToken();
-        // JWT'yi çözerek kullanıcı UID'sini al
-        if (token) {
-          const { uid } = JSON.parse(atob(token.split(".")[1]));
-          setCurrentUserId(uid);
+        const auth = getAuth();
+        const user = auth.currentUser;
+        if (user) {
+          setCurrentUserId(user.uid);
         }
+
         const response = await getCommentsRemote({ targetType, targetId, token });
-        setComments(response.comments || []);
+        if (mounted) {
+          setComments(response.comments || []);
+        }
       } catch (error) {
         console.error("Yorumlar yüklenirken bir hata oluştu:", error);
-        setComments([]);
+        if (mounted) {
+          setComments([]);
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     }
     loadComments();
+    return () => {
+      mounted = false;
+    };
   }, [targetId, targetType, getAuthToken]);
 
   // Yeni yorum gönderme
@@ -65,6 +76,7 @@ export default function CommentModal({
     };
 
     setComments((prevComments) => [tempComment, ...prevComments]);
+    const commentToPost = newCommentText;
     setNewCommentText("");
     onCountsChange(1);
 
@@ -73,11 +85,10 @@ export default function CommentModal({
       const response = await postCommentRemote({
         targetType,
         targetId,
-        content: tempComment.text,
+        content: commentToPost,
         token,
       });
 
-      // Backend'den dönen tam yorum objesini kullanarak temp yorumu güncelle
       if (response && response.comment) {
         setComments((prevComments) =>
           prevComments.map((comment) =>
@@ -85,7 +96,6 @@ export default function CommentModal({
           )
         );
       } else if (response && response.id) {
-        // Fallback: Eğer backend sadece id dönerse, temp id'yi güncelle
         setComments((prevComments) =>
           prevComments.map((comment) =>
             comment.id === tempId ? { ...comment, id: response.id } : comment
@@ -94,7 +104,6 @@ export default function CommentModal({
       }
     } catch (error) {
       console.error("Yorum gönderilemedi:", error);
-      // Hata durumunda optimistik olarak eklenen yorumu kaldır
       setComments((prevComments) =>
         prevComments.filter((comment) => comment.id !== tempId)
       );
