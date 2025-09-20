@@ -1,3 +1,4 @@
+// PostCard.jsx
 import React, { useState, useEffect } from "react";
 import styles from "./PostCard.module.css";
 import { FiMoreHorizontal } from "react-icons/fi";
@@ -6,11 +7,6 @@ import { defaultGetAuthToken } from "../actions/api";
 
 const PostCard = ({ data }) => {
   const [tokenError, setTokenError] = useState(false);
-
-  // Bu state'ler artık PostCard'da tutulmayacak
-  // const [liked, setLiked] = useState(data?.userLiked ?? false);
-  // const [saved, setSaved] = useState(data?.userSaved ?? false);
-  // const [stats, setStats] = useState(data?.initialStats ?? { likes: 0, comments: 0, shares: 0 });
 
   const getToken = async () => {
     try {
@@ -22,8 +18,6 @@ const PostCard = ({ data }) => {
     }
   };
 
-  // Veri çekme mantığı ActionControls'e taşındığı için bu hook kaldırıldı
-  // useEffect(() => { ... }, [data?.id]);
 
   const renderActionControls = () => {
     if (!data?.id) {
