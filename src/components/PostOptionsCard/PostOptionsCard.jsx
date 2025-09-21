@@ -12,8 +12,10 @@ const PostOptionsCard = ({
   isOwner,
   postId,
   postOwnerId,
+  commentsDisabled,
   onDelete,
   onDisableComments,
+  onEnableComments,
 }) => {
   const [showReportModal, setShowReportModal] = useState(false);
 
@@ -21,22 +23,31 @@ const PostOptionsCard = ({
     <div className={styles.card}>
       {isOwner && (
         <>
-          <button
-            className={styles.deleteButton}
-            onClick={onDelete}
-          >
+          <button className={styles.deleteButton} onClick={onDelete}>
             <FiTrash2 className={styles.icon} />
             <span>Sil</span>
           </button>
-          <button
-            className={styles.disableCommentsButton}
-            onClick={onDisableComments}
-          >
-            <FiMessageCircle className={styles.icon} />
-            <span>Yorumları Kapat</span>
-          </button>
+
+          {commentsDisabled ? (
+            <button
+              className={styles.enableCommentsButton}
+              onClick={onEnableComments}
+            >
+              <FiMessageCircle className={styles.icon} />
+              <span>Yorumları Aç</span>
+            </button>
+          ) : (
+            <button
+              className={styles.disableCommentsButton}
+              onClick={onDisableComments}
+            >
+              <FiMessageCircle className={styles.icon} />
+              <span>Yorumları Kapat</span>
+            </button>
+          )}
         </>
       )}
+
       <button
         className={styles.reportButton}
         onClick={() => setShowReportModal(true)}

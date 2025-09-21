@@ -79,6 +79,22 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
     }
   };
 
+  // Yorumları açma fonksiyonu
+  const handleEnableComments = async () => {
+    try {
+      const token = await getToken();
+      await fetch(`${BASE_URL}/api/posts/${data.id}/enable-comments`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      alert("Yorumlar açıldı.");
+      setShowOptions(false);
+    } catch (error) {
+      console.error("Yorumları açma hatası:", error);
+      alert("Yorumlar açılırken bir hata oluştu.");
+    }
+  };
+
   useEffect(() => {
     if (!data) return console.warn("PostCard: data yok!");
     if (!data.id) console.warn("PostCard: post id eksik!");
@@ -93,7 +109,11 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
       {/* Desktop View */}
       <div className={`${styles.post_card} ${styles.desktop}`}>
         {data.imageUrls?.[0] && (
-          <img src={data.imageUrls[0]} alt="Post" className={styles.post_image} />
+          <img
+            src={data.imageUrls[0]}
+            alt="Post"
+            className={styles.post_image}
+          />
         )}
 
         <div className={styles.post_overlay}>
@@ -132,8 +152,10 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
                     isOwner={isOwnPost}
                     postId={data.id}
                     postOwnerId={data.uid}
+                    commentsDisabled={data.commentsDisabled} 
                     onDelete={handleDeletePost}
                     onDisableComments={handleDisableComments}
+                    onEnableComments={handleEnableComments} 
                   />
                 )}
               </div>
@@ -199,7 +221,11 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
         </div>
 
         {data.imageUrls?.[0] && (
-          <img src={data.imageUrls[0]} alt="Post" className={styles.post_image_mobile} />
+          <img
+            src={data.imageUrls[0]}
+            alt="Post"
+            className={styles.post_image_mobile}
+          />
         )}
 
         <div className={styles.post_footer_mobile}>
