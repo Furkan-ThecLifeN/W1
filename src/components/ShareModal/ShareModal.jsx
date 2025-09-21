@@ -84,7 +84,7 @@ export default function ShareModal({
 
   async function handleCopyLink() {
     try {
-      const link = `${window.location.origin}/feelings/${postId}`;
+      const link = `${window.location.origin}/post/${postId}`;
       await navigator.clipboard.writeText(link);
       alert("Link kopyalandı!");
       handleExternalShare();

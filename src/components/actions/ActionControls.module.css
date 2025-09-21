@@ -1,66 +1,80 @@
 .actionControls {
   display: flex;
-  position: relative;
-  gap: 8px; /* daha az boşluk */
+  gap: 12px;
   align-items: center;
-  padding: 4px 6px; /* daha ince padding */
-  border-radius: 10px;
+  justify-content: flex-start;
+  padding: 6px 10px;
+  border-radius: 14px;
   background: var(--bg-main);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.05), 
+              0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
+/* Ortak stil */
 .actionControls button {
-  padding: 5px 10px;   /* küçültüldü */
-  border-radius: 20px; /* daha az yuvarlak */
-  border: 1px solid var(--Actions-border-color);
-  background: var(--color-black);
-  color: var(--Actions-text-color);
-  cursor: pointer;
   display: flex;
-  gap: 6px;            /* ikon + sayı arasındaki boşluk azaltıldı */
   align-items: center;
-  font-size: 0.85rem;  /* yazı boyutu küçültüldü */
-  font-weight: 500;    /* biraz daha hafif */
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px; /* tamamen yuvarlak chip */
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--Actions-text-color);
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  transition: all 0.25s ease;
 }
 
+/* İkon boyutu */
 .actionControls button svg {
-  width: 14px;  /* ikon boyutu küçültüldü */
-  height: 14px;
+  width: 16px;
+  height: 16px;
 }
 
+/* Hover */
 .actionControls button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 0 8px var(--Actions-primary-glow);
-}
-
-.actionControls button:active {
-  transform: translateY(0);
+  transform: translateY(-2px) scale(1.05);
+  background: rgba(255,255,255,0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
 }
 
 /* Aktif durumlar */
 .btnLike[data-active="true"] {
-  color: var(--busy);
-  border-color: var(--Actions-like-color);
+  color: #ff002f;
+  background: var(--color-white);
+  box-shadow: 0 0 10px rgba(255,79,112,0.6);
 }
 
 .btnSave[data-active="true"] {
   color: var(--color-white);
-  border-color: var(--color-white);
+  background: rgba(255,255,255,0.1);
 }
 
-/* Toast */
+.btnShare[data-active="true"] {
+  color: #4fc3f7;
+  background: linear-gradient(135deg, #81d4fa, #4fc3f7);
+  box-shadow: 0 0 10px rgba(79,195,247,0.5);
+}
+
+/* Toast daha modern */
 .toast {
   position: absolute;
-  background: white;
-  color: black;
-  padding: 3px 6px;
-  border-radius: 4px;
-  font-size: 11px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  white-space: nowrap;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  background: rgba(30,30,30,0.95);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  animation: fadeInUp 0.3s ease forwards;
   z-index: 1000;
-  opacity: 0.95;
 }
-.toast.success { border: 1px solid #4CAF50; }
-.toast.error { border: 1px solid #f44336; }
+.toast.success { border-left: 4px solid #4CAF50; }
+.toast.error { border-left: 4px solid #f44336; }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

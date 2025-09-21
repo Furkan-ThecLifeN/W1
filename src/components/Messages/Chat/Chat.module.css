@@ -13,7 +13,7 @@
 
 .chatHeader {
   display: flex;
-  justify-content: flex-start; /* Başlık ve geri butonu yan yana */
+  justify-content: space-between; /* Başlık ve geri butonu yan yana */
   gap: 1rem;
   background-color: var(--color-black);
   align-items: center;
@@ -678,31 +678,6 @@
   box-shadow: 0 4px 12px rgb(255, 0, 170);
   position: relative;
   height: 49px;
-}
-
-/* Küçük kalp - sadece kalpte animasyon */
-.heartIcon {
-  font-size: 18px;
-  color: #fff;
-  animation: heartbeat 1.6s infinite ease-in-out;
-}
-
-@keyframes heartbeat {
-  0% {
-    transform: scale(1);
-  }
-  25% {
-    transform: scale(1.2);
-  }
-  50% {
-    transform: scale(1);
-  }
-  75% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
-  }
 }
 
 /* Yazı ile aynı boyda */

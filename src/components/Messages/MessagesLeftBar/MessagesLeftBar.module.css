@@ -11,8 +11,10 @@
   color: var(--color-black);
 }
 
+/* İlerde eklenecek */
+
 .left_SearchInputBox {
-  display: flex;
+  display: none;
   align-items: center;
   gap: 0.75rem;
   background-color: var(--color-white);

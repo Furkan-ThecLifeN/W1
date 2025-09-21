@@ -17,7 +17,6 @@ const HeartMessage = ({ msg, isSender, user }) => {
       )}
 
       <div className={styles.heartMessageContent}>
-        <FaHeart className={styles.heartIcon} />
         <p className={styles.heartMessageText}>{msg.text}</p>
       </div>
     </div>

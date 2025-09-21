@@ -37,8 +37,8 @@
   position: relative;
   margin-bottom: 20px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #202020;
-}
+/*   border-bottom: 1px solid #202020;
+ */}
 
 .header h3 {
   font-size: 1.25rem;
@@ -71,7 +71,7 @@
   max-height: 40vh;
   overflow-y: auto;
   margin-bottom: 24px;
-  display: flex;
+  display: none;
   flex-direction: column;
   gap: 12px;
   padding-right: 8px;
@@ -157,8 +157,8 @@
   gap: 12px;
   justify-content: space-around;
   padding-top: 16px;
-  border-top: 1px solid #202020;
-}
+/*   border-top: 1px solid #202020;
+ */}
 
 .socialBtn {
   display: flex;
@@ -193,5 +193,59 @@
 @media (max-width: 480px) {
   .modal {
     border-radius: 0;
+  }
+}
+
+/* 📱 Mobile Responsive */
+@media (max-width: 480px) {
+  .modal {
+    max-width: 100%;
+    width: 100%;
+    border-radius: 0;
+    padding: 20px 14px;
+    bottom: 30px;
+  }
+
+  .header h3 {
+    font-size: 1.1rem;
+  }
+
+  .avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .displayName {
+    font-size: 0.9rem;
+  }
+
+  .username {
+    font-size: 0.75rem;
+  }
+
+  .sendBtn {
+    padding: 8px;
+    font-size: 0.85rem;
+  }
+
+  .list {
+    max-height: 35vh;
+    gap: 10px;
+  }
+
+  .socialRow {
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .socialBtn {
+    font-size: 0.75rem;
+    flex: 1 1 30%;
+    max-width: 90px;
+  }
+
+  .socialBtn svg {
+    font-size: 1.3rem;
   }
 }
