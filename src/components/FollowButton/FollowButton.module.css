@@ -1,0 +1,60 @@
+/* FollowButton.module.css */
+
+.actionButton {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+}
+
+/* FOLLOW ET BUTONU */
+.followBtn {
+  background: linear-gradient(135deg, #00f0ff, #00c9ff);
+  color: #fff;
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.6);
+}
+
+.followBtn:hover {
+  box-shadow: 0 0 20px #00f0ff, 0 0 30px #00c9ff inset;
+  transform: scale(1.08);
+}
+
+/* TAKİBİ BIRAK BUTONU */
+.unfollowBtn {
+  background: linear-gradient(135deg, #ff4f4f, #ff1a1a);
+  color: #fff;
+  text-shadow: 0 0 5px rgba(255, 80, 80, 0.6);
+}
+
+.unfollowBtn:hover {
+  box-shadow: 0 0 20px #ff4f4f, 0 0 30px #ff1a1a inset;
+  transform: scale(1.08);
+}
+
+/* İSTEK GÖNDERİLDİ BUTONU */
+.pendingBtn {
+  background: linear-gradient(135deg, #ffa500, #ffce00);
+  color: #fff;
+  text-shadow: 0 0 5px rgba(255, 200, 0, 0.6);
+}
+
+.pendingBtn:hover {
+  box-shadow: 0 0 20px #ffa500, 0 0 30px #ffce00 inset;
+  transform: scale(1.08);
+}
+
+/* ICONLAR İÇİN MINİ HAREKET */
+.actionButton svg {
+  transition: transform 0.3s ease;
+}
+
+.actionButton:hover svg {
+  transform: rotate(20deg) scale(1.2);
+}
