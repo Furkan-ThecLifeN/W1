@@ -18,18 +18,19 @@ import {
   FaRegBookmark,
 } from "react-icons/fa";
 import CommentModal from "../CommentModal/CommentModal";
-import ShareModal from "../ShareModal/ShareModal"; // Yeni: ShareModal'ı içe aktar
+import ShareModal from "../ShareModal/ShareModal";
 
 export default function ActionControls({
   targetType,
   targetId,
   getAuthToken = defaultGetAuthToken,
+  commentsDisabled, // Yeni prop: Yorumların kapalı olup olmadığını belirtir
 }) {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [stats, setStats] = useState({ likes: 0, comments: 0, shares: 0 });
   const [commentModalOpen, setCommentModalOpen] = useState(false);
-  const [shareModalOpen, setShareModalOpen] = useState(false); // Yeni: Paylaş modalı için state
+  const [shareModalOpen, setShareModalOpen] = useState(false);
   const [toast, setToast] = useState(null);
   const shareBtnRef = useRef(null);
 
@@ -65,7 +66,7 @@ export default function ActionControls({
     return () => {
       mounted = false;
     };
-  }, [targetType, targetId]); // targetId ve targetType bağımlılıklarını geri ekledim, çünkü her post için istatistikler farklıdır.
+  }, [targetType, targetId]);
 
   async function commitActionNow(action) {
     try {
@@ -189,9 +190,12 @@ export default function ActionControls({
           <span>{stats.likes}</span>
         </button>
 
-        <button onClick={openComments} className={styles.btnComment}>
-          <FaComment size={18} /> <span>{stats.comments}</span>
-        </button>
+        {/* Yeni: Yorumları kapatma durumu kontrolü */}
+        {!commentsDisabled && (
+          <button onClick={openComments} className={styles.btnComment}>
+            <FaComment size={18} /> <span>{stats.comments}</span>
+          </button>
+        )}
 
         <button
           ref={shareBtnRef}
@@ -228,7 +232,7 @@ export default function ActionControls({
           postId={targetId}
           onClose={() => setShareModalOpen(false)}
           getAuthToken={getAuthToken}
-          onSuccess={handleShareSuccess} // Yeni: Paylaşım başarı callback'i
+          onSuccess={handleShareSuccess}
         />
       )}
 

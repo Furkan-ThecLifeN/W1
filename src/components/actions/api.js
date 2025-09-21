@@ -1,4 +1,4 @@
-// api.js
+// actions/api.js
 // API wrapper for actions endpoints. Uses Firebase modular SDK if available to get ID token.
 // If you don't use Firebase client here, pass getAuthToken function to the hooks/components.
 
@@ -87,12 +87,10 @@ export async function getCommentsRemote({ targetType, targetId, token }) {
 
 // Yorum silme isteği
 export async function deleteCommentRemote({ commentId, token, targetType, targetId }) {
-  const res = await fetch(`${BASE_URL}/api/actions/deleteComment/${commentId}?targetType=${targetType}&targetId=${targetId}`, {
+  return request(`/api/actions/deleteComment/${commentId}?targetType=${targetType}&targetId=${targetId}`, {
     method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
+    token,
   });
-  if (!res.ok) throw new Error("Delete comment failed");
-  return res.json();
 }
 
 // Share link endpoint
@@ -116,16 +114,11 @@ export async function sharePostRemote(targetId, targetType, token) {
 // Paylaşım isteği
 export async function sendShareRemote({ targetType, targetId, receiverUid, getAuthToken = defaultGetAuthToken }) {
   const token = await getAuthToken();
-  const res = await fetch(`${process.env.REACT_APP_API_URL}/api/actions/share`, {
+  return request("/api/actions/share", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ targetType, targetId, receiverUid }),
+    body: { targetType, targetId, receiverUid },
+    token,
   });
-  if (!res.ok) throw new Error("Share failed");
-  return res.json();
 }
 
 // Batch endpoint for like/save actions
@@ -140,4 +133,13 @@ export async function batchActionsRemote({ items, token }) {
 // New: Get following users endpoint
 export async function getFollowingRemote({ token }) {
   return request("/api/actions/following", { method: "GET", token });
+}
+
+// ✨ YENİ: Şikayet gönderme fonksiyonu
+export async function createReportRemote({ postId, reportedUserId, reason, token }) {
+  return request("/api/reports/create", { // Güncellenmiş rota: /api/reports/create
+    method: "POST",
+    body: { postId, reportedUserId, reason },
+    token,
+  });
 }

@@ -1,17 +1,23 @@
-// src/components/AccountPage/Box/PostBox/PostBox.jsx
+// src/components/Post/PostCard.jsx
 import React, { useState, useEffect } from "react";
 import styles from "./PostCard.module.css";
 import { FiMoreHorizontal } from "react-icons/fi";
 import ActionControls from "../actions/ActionControls";
 import { defaultGetAuthToken } from "../actions/api";
-import FollowButton from "../FollowButton/FollowButton"; 
+import FollowButton from "../FollowButton/FollowButton";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthProvider";
+import PostOptionsCard from "../PostOptionsCard/PostOptionsCard"; // Yeni import
+
+// API'nin temel URL'ini ortam değişkeninden alıyoruz.
+// Bu, hem geliştirme hem de üretim ortamında doğru çalışmayı sağlar.
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
 
 const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
   const [tokenError, setTokenError] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
   const navigate = useNavigate();
-  const { currentUser } = useAuth(); // AuthProvider’dan güncel kullanıcı bilgisi
+  const { currentUser } = useAuth();
 
   const getToken = async () => {
     try {
@@ -23,12 +29,54 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
     }
   };
 
-  // Kullanıcının kendi gönderisi olup olmadığını kontrol et
   const isOwnPost = currentUser?.uid === data?.uid;
 
   const renderActionControls = () => {
     if (!data?.id) return null;
-    return <ActionControls targetType="post" targetId={data.id} getAuthToken={getToken} />;
+    return (
+      <ActionControls
+        targetType="post"
+        targetId={data.id}
+        getAuthToken={getToken}
+        commentsDisabled={data.commentsDisabled}
+      />
+    );
+  };
+
+  // Gönderiyi silme fonksiyonu
+  const handleDeletePost = async () => {
+    if (window.confirm("Gönderiyi silmek istediğinize emin misiniz?")) {
+      try {
+        const token = await getToken();
+        // URL güncellendi: Doğru API adresini kullanıyor
+        await fetch(`${BASE_URL}/api/posts/${data.id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        alert("Gönderi silindi.");
+        setShowOptions(false);
+      } catch (error) {
+        console.error("Gönderi silme hatası:", error);
+        alert("Gönderi silinirken bir hata oluştu.");
+      }
+    }
+  };
+
+  // Yorumları kapatma fonksiyonu
+  const handleDisableComments = async () => {
+    try {
+      const token = await getToken();
+      // URL güncellendi: Doğru API adresini kullanıyor
+      await fetch(`${BASE_URL}/api/posts/${data.id}/disable-comments`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      alert("Yorumlar kapatıldı.");
+      setShowOptions(false);
+    } catch (error) {
+      console.error("Yorumları kapatma hatası:", error);
+      alert("Yorumlar kapatılırken bir hata oluştu.");
+    }
   };
 
   useEffect(() => {
@@ -64,7 +112,6 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
               </span>
             </div>
             <div className={styles.actions}>
-              {/* Sadece başkasının gönderisinde FollowButton göster */}
               {!isOwnPost && (
                 <FollowButton
                   targetUid={data.uid}
@@ -75,7 +122,21 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
                   }
                 />
               )}
-              <FiMoreHorizontal className={styles.more_icon} />
+              <div className={styles.optionsContainer}>
+                <FiMoreHorizontal
+                  className={styles.more_icon}
+                  onClick={() => setShowOptions(!showOptions)}
+                />
+                {showOptions && (
+                  <PostOptionsCard
+                    isOwner={isOwnPost}
+                    postId={data.id}
+                    postOwnerId={data.uid}
+                    onDelete={handleDeletePost}
+                    onDisableComments={handleDisableComments}
+                  />
+                )}
+              </div>
             </div>
           </div>
 
@@ -119,7 +180,21 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
                 }
               />
             )}
-            <FiMoreHorizontal className={styles.more_icon} />
+            <div className={styles.optionsContainer}>
+              <FiMoreHorizontal
+                className={styles.more_icon}
+                onClick={() => setShowOptions(!showOptions)}
+              />
+              {showOptions && (
+                <PostOptionsCard
+                  isOwner={isOwnPost}
+                  postId={data.id}
+                  postOwnerId={data.uid}
+                  onDelete={handleDeletePost}
+                  onDisableComments={handleDisableComments}
+                />
+              )}
+            </div>
           </div>
         </div>
 
