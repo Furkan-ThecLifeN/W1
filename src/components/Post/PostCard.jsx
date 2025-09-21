@@ -6,10 +6,12 @@ import ActionControls from "../actions/ActionControls";
 import { defaultGetAuthToken } from "../actions/api";
 import FollowButton from "../FollowButton/FollowButton"; 
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthProvider";
 
-const PostCard = ({ data, isCurrentUser = false, followStatus = "none", onFollowStatusChange }) => {
+const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
   const [tokenError, setTokenError] = useState(false);
   const navigate = useNavigate();
+  const { currentUser } = useAuth(); // AuthProvider’dan güncel kullanıcı bilgisi
 
   const getToken = async () => {
     try {
@@ -21,6 +23,9 @@ const PostCard = ({ data, isCurrentUser = false, followStatus = "none", onFollow
     }
   };
 
+  // Kullanıcının kendi gönderisi olup olmadığını kontrol et
+  const isOwnPost = currentUser?.uid === data?.uid;
+
   const renderActionControls = () => {
     if (!data?.id) return null;
     return <ActionControls targetType="post" targetId={data.id} getAuthToken={getToken} />;
@@ -31,7 +36,6 @@ const PostCard = ({ data, isCurrentUser = false, followStatus = "none", onFollow
     if (!data.id) console.warn("PostCard: post id eksik!");
     if (!data.caption) console.warn("PostCard: caption eksik!");
     if (!data.imageUrls?.[0]) console.warn("PostCard: image yok!");
-    console.log("PostCard Firestore id =>", data?.id);
   }, [data]);
 
   if (!data) return null;
@@ -60,7 +64,8 @@ const PostCard = ({ data, isCurrentUser = false, followStatus = "none", onFollow
               </span>
             </div>
             <div className={styles.actions}>
-              {!isCurrentUser && (
+              {/* Sadece başkasının gönderisinde FollowButton göster */}
+              {!isOwnPost && (
                 <FollowButton
                   targetUid={data.uid}
                   isTargetPrivate={data.isPrivate}
@@ -104,7 +109,7 @@ const PostCard = ({ data, isCurrentUser = false, followStatus = "none", onFollow
             </span>
           </div>
           <div className={styles.actions}>
-            {!isCurrentUser && (
+            {!isOwnPost && (
               <FollowButton
                 targetUid={data.uid}
                 isTargetPrivate={data.isPrivate}
