@@ -1,61 +1,142 @@
+/* UserCard.module.css */
+
+/* Genel Kart */
 .user_card {
+  position: relative;
   display: flex;
   align-items: center;
-  background-color: #f0f0f0; /* Açık gri kart */
-  border-radius: 12px;
-  padding: 15px 20px;
-  margin-bottom: 15px;
-  width: 100%; /* Ekran genişliğine göre uzasın */
-  max-width: 600px; /* İsteğe bağlı maksimum genişlik */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.user_card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-}
-
-.user_card_link {
-  text-decoration: none;
-  color: inherit;
-  display: flex;
-  align-items: center;
+  gap: clamp(0.5rem, 2%, 1rem); /* kutuya göre dinamik gap */
+  padding: clamp(0.5rem, 2%, 1rem);
+  background-color: #1a1a1a;
+  border-radius: clamp(6px, 2%, 10px);
+  border: 1px solid #333;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
   width: 100%;
+  box-sizing: border-box;
 }
 
+/* Hover efekti */
+.user_card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 200, 255, 0.15);
+}
+
+/* Kart linki */
+.user_card_link {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.3rem, 1.5%, 0.75rem);
+  text-decoration: none;
+  color: #fff;
+  flex-grow: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+/* Avatar */
 .user_avatar {
-  width: 60px;
-  height: 60px;
+  width: clamp(30px, 12%, 50px);
+  height: clamp(30px, 12%, 50px);
   border-radius: 50%;
   object-fit: cover;
-  margin-right: 20px;
-  border: 2px solid #000; /* Fotoğrafı çerçevelemek için */
-  transition: transform 0.3s ease;
+  flex-shrink: 0;
 }
 
-.user_card:hover .user_avatar {
-  transform: scale(1.1);
-}
-
+/* Kullanıcı bilgisi */
 .user_info {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  flex: 1; /* Kart genişliğine göre uzasın */
+  overflow: hidden;
+  min-width: 0;
 }
 
 .username {
-  font-size: 1.2em;
-  font-weight: bold;
-  color: #000; /* Siyah username */
-  margin-bottom: 4px;
+  font-size: clamp(0.7rem, 2vw, 1rem);
+  font-weight: 600;
+  color: #00c8ff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bio {
-  font-size: 0.95em;
-  color: #555;
+  font-size: clamp(0.55rem, 1.5vw, 0.75rem);
+  color: #bbb;
+  margin-top: 0.15rem;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Butonlar */
+.action_button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.25rem, 1%, 0.5rem) clamp(0.5rem, 2%, 0.9rem);
+  border: none;
+  border-radius: clamp(4px, 2%, 6px);
+  font-size: clamp(0.65rem, 1.5vw, 0.9rem);
+  font-weight: 600;
+  cursor: pointer;
   white-space: nowrap;
+  transition: all 0.3s ease;
+}
+
+.action_button svg {
+  margin-right: clamp(0.2rem, 1%, 0.4rem);
+  font-size: clamp(0.6rem, 1.5vw, 0.8rem);
+}
+
+/* Farklı durumlar */
+.remove_button {
+  background-color: #b30909;
+  color: #fff;
+}
+.remove_button:hover {
+  background-color: #ff0000;
+  transform: scale(1.03);
+}
+
+.follow_button {
+  background-color: #00c8ff;
+  color: #000;
+}
+.follow_button:hover {
+  background-color: #00aacc;
+  transform: scale(1.03);
+}
+
+.following_button {
+  background-color: #2e2e2e;
+  color: #00c8ff;
+  border: 1px solid #00c8ff;
+}
+.following_button:hover {
+  background-color: #1e1e1e;
+  transform: scale(1.03);
+}
+
+.pending_button {
+  background-color: #333;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Küçük ekranlar için ekstra kontrol */
+@media (max-width: 400px) {
+  .user_card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: clamp(0.4rem, 3%, 0.7rem); /* Gap biraz büyütüldü */
+    padding: clamp(0.5rem, 3%, 0.8rem); /* Padding artırıldı */
+  }
+
+  .user_card_link {
+    flex-direction: column;
+    gap: clamp(0.35rem, 2%, 0.6rem); /* Link içindeki boşluk artırıldı */
+  }
 }
