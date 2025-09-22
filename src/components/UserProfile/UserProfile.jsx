@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styles from "./UserProfile.module.css";
 import { useAuth } from "../../context/AuthProvider";
@@ -22,8 +22,6 @@ import {
   getDocs,
   orderBy,
   where,
-  doc,
-  getDoc,
 } from "firebase/firestore";
 
 // Importing the content components
@@ -54,167 +52,242 @@ const UserProfile = () => {
   const [loadingContent, setLoadingContent] = useState({});
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
-  const apiBaseUrl = process.env.REACT_APP_API_URL;
+  const [isFollowProcessing, setIsFollowProcessing] = useState(false);
 
-  // ---------------- FETCH USER PROFILE AND FOLLOW STATUS ----------------
+  const apiBaseUrl = process.env.REACT_APP_API_URL;
+  const idTokenRef = useRef(null);
+  const cachedLikedIdsRef = useRef([]);
+  const cachedSavedIdsRef = useRef([]);
+
+  const inflightRequests = useRef(new Map());
+
+  const axiosInstance = useRef(axios.create({ baseURL: apiBaseUrl }));
+
+  const dedupedFetch = async (key, fetcher) => {
+    if (inflightRequests.current.has(key)) {
+      return inflightRequests.current.get(key);
+    }
+    const promise = fetcher();
+    inflightRequests.current.set(key, promise);
+    try {
+      const result = await promise;
+      return result;
+    } finally {
+      inflightRequests.current.delete(key);
+    }
+  };
+
   useEffect(() => {
-    const fetchUserProfileAndStatus = async () => {
-      console.log(`ℹ️ Profil ve takip durumu çekiliyor: ${username}`);
+    let mounted = true;
+    if (!currentUser) {
+      idTokenRef.current = null;
+      return;
+    }
+    const fetchToken = async () => {
+      try {
+        const t = await currentUser.getIdToken();
+        if (mounted) {
+          idTokenRef.current = t;
+        }
+      } catch (err) {
+        console.error("Token alınamadı:", err);
+      }
+    };
+    fetchToken();
+    return () => { mounted = false; };
+  }, [currentUser]);
+
+  // Yeni ve daha sağlam profil çekme mantığı
+  useEffect(() => {
+    let mounted = true;
+    const fetchProfileAndStatus = async () => {
       setLoading(true);
       setError(null);
       try {
-        const idToken = await currentUser.getIdToken();
-        const profileRes = await axios.get(
-          `${apiBaseUrl}/api/users/profile/${username}`,
-          {
-            headers: { Authorization: `Bearer ${idToken}` },
-          }
+        // 1. Her zaman herkese açık olan profil verilerini çek
+        // Bu çağrı artık stats verilerini de getirecek
+        const profileRes = await dedupedFetch(
+          `profile/${username}`,
+          () => axiosInstance.current.get(`/api/users/profile/${username}`)
         );
+
+        if (!mounted) return;
         const profile = profileRes.data.profile;
-        const statusRes = await axios.get(
-          `${apiBaseUrl}/api/users/profile/${profile.uid}/status`,
-          {
-            headers: { Authorization: `Bearer ${idToken}` },
+
+        // 2. Eğer kullanıcı giriş yapmışsa, takip durumunu çek
+        let currentFollowStatus = "none";
+        if (currentUser) {
+          while (!idTokenRef.current) {
+            await new Promise(resolve => setTimeout(resolve, 50));
           }
-        );
-        setProfileData({ ...profile, stats: statusRes.data.stats });
-        setFollowStatus(statusRes.data.followStatus);
-        console.log("✅ Profil ve takip durumu başarıyla çekildi.");
+
+          // Kendi profilini görüntülüyorsa
+          if (profile.uid === currentUser.uid) {
+            currentFollowStatus = "self";
+          } else {
+            const headers = { Authorization: `Bearer ${idTokenRef.current}` };
+            const statusRes = await dedupedFetch(
+              `status/${profile.uid}`,
+              () => axiosInstance.current.get(`/api/users/profile/${profile.uid}/status`, { headers })
+            );
+            if (!mounted) return;
+            currentFollowStatus = statusRes.data.followStatus;
+          }
+        }
+
+        if (mounted) {
+          setFollowStatus(currentFollowStatus);
+          setProfileData(profile); // Tüm veriler zaten profile nesnesinin içinde
+        }
+
       } catch (err) {
-        console.error("❌ Profil veya takip durumu çekme hatası:", err);
+        console.error("Profil veya takip durumu çekme hatası:", err.response?.data || err.message);
         setError("Profil bilgileri yüklenemedi.");
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
 
-    if (currentUser) {
-      fetchUserProfileAndStatus();
+    if (username) {
+      fetchProfileAndStatus();
     }
-  }, [username, currentUser, apiBaseUrl]);
+    return () => { mounted = false; };
+  }, [username, currentUser]);
+
+  // ---------------- FETCH AND CACHE LIKES/TAGS IDs ONCE ----------------
+  useEffect(() => {
+    let mounted = true;
+    if (!profileData?.uid) return;
+    const fetchLikesAndTags = async () => {
+      try {
+        const [likesSnapshot, tagsSnapshot] = await Promise.all([
+          getDocs(collection(db, "users", profileData.uid, "likes")),
+          getDocs(collection(db, "users", profileData.uid, "tags")),
+        ]);
+        if (!mounted) return;
+        cachedLikedIdsRef.current = likesSnapshot.docs.map(doc => doc.id);
+        cachedSavedIdsRef.current = tagsSnapshot.docs.map(doc => doc.id);
+      } catch (e) {
+        console.error("Beğenilenler/etiketliler çekme hatası:", e);
+      }
+    };
+    fetchLikesAndTags();
+    return () => { mounted = false; };
+  }, [profileData?.uid]);
+
+  // Helper function to chunk large arrays for Firestore `in` queries (limit 10)
+  const chunkArray = (arr, size) => {
+    const result = [];
+    for (let i = 0; i < arr.length; i += size) {
+      result.push(arr.slice(i, i + size));
+    }
+    return result;
+  };
+
+  // Helper function to fetch posts by IDs with chunking
+  const fetchPostsByIds = async (ids) => {
+    if (!ids || ids.length === 0) return [];
+    const chunks = chunkArray(ids, 10);
+    const snapshots = await Promise.all(chunks.map(chunk =>
+      getDocs(query(collection(db, "globalPosts"), where("__name__", "in", chunk)))
+    ));
+    const items = snapshots.flatMap(snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    return items;
+  };
 
   // ---------------- FETCH DATA BASED ON ACTIVE TAB ----------------
   useEffect(() => {
+    let mounted = true;
     const fetchTabData = async () => {
-      if (!profileData || !profileData.uid) {
-        console.log("ℹ️ Profil verisi olmadığı için içerik çekme atlandı.");
-        return;
-      }
+      if (!profileData || !profileData.uid) return;
+      const canViewContent = !profileData.isPrivate || followStatus === "following" || followStatus === "self";
+      if (!canViewContent && !["posts", "feelings", "feeds"].includes(activeTab)) return;
+      if (allData[activeTab]?.length > 0) return;
 
-      const canViewContent =
-        !profileData.isPrivate || followStatus === "following" || followStatus === "self";
-
-      if (!canViewContent && activeTab !== "posts" && activeTab !== "feelings" && activeTab !== "feeds") {
-        console.log(`🔒 Gizli hesap: ${activeTab} sekmesi için içerik çekilemiyor.`);
-        return;
-      }
-      
-      if (allData[activeTab]?.length > 0) {
-        console.log(`✅ ${activeTab} verisi önbellekten kullanılıyor.`);
-        return; // Use cached data, no need to fetch again
-      }
-
-      console.log(`⏳ ${activeTab} sekmesi için veri çekiliyor...`);
       setLoadingContent(prev => ({ ...prev, [activeTab]: true }));
-
       try {
-        let snapshot;
-        let queryToRun;
-
-        const processSnapshot = (snapshot, type, likedIds = [], savedIds = []) => {
-          let data = snapshot.docs.map(doc => {
-            const item = { id: doc.id, ...doc.data() };
-            item.initialLiked = likedIds.includes(item.id);
-            item.initialSaved = savedIds.includes(item.id);
-            return item;
-          });
+        const processSnapshot = (docs, type) => {
+          const likedIds = cachedLikedIdsRef.current;
+          const savedIds = cachedSavedIdsRef.current;
+          let data = docs.map(item => ({ 
+            id: item.id, 
+            ...item, 
+            initialLiked: likedIds.includes(item.id), 
+            initialSaved: savedIds.includes(item.id) 
+          }));
           if (type === "feeds") {
             data = data.filter(item => item.mediaUrl);
           }
           return data;
         };
 
-        const [likesSnapshot, tagsSnapshot] = await Promise.all([
-          getDocs(collection(db, "users", profileData.uid, "likes")),
-          getDocs(collection(db, "users", profileData.uid, "tags")),
-        ]);
-        const likedIds = likesSnapshot.docs.map(doc => doc.id);
-        const savedIds = tagsSnapshot.docs.map(doc => doc.id);
-        console.log(`ℹ️ Beğenilenler (${likedIds.length}) ve Etiketliler (${savedIds.length}) IDs çekildi.`);
-
-
         switch (activeTab) {
-          case "posts":
-            queryToRun = query(collection(db, "globalPosts"), where("uid", "==", profileData.uid), orderBy("createdAt", "desc"));
-            snapshot = await getDocs(queryToRun);
-            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab, likedIds, savedIds) }));
-            console.log(`✅ Posts verisi başarıyla çekildi. Toplam: ${snapshot.size}`);
+          case "posts": {
+            const q = query(collection(db, "globalPosts"), where("uid", "==", profileData.uid), orderBy("createdAt", "desc"));
+            const snapshot = await getDocs(q);
+            if (!mounted) return;
+            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot.docs.map(d => ({id: d.id, ...d.data()})), activeTab) }));
             break;
-          case "feelings":
-            queryToRun = query(collection(db, "globalFeelings"), where("uid", "==", profileData.uid), orderBy("createdAt", "desc"));
-            snapshot = await getDocs(queryToRun);
-            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab, likedIds, savedIds) }));
-            console.log(`✅ Feelings verisi başarıyla çekildi. Toplam: ${snapshot.size}`);
+          }
+          case "feelings": {
+            const q = query(collection(db, "globalFeelings"), where("uid", "==", profileData.uid), orderBy("createdAt", "desc"));
+            const snapshot = await getDocs(q);
+            if (!mounted) return;
+            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot.docs.map(d => ({id: d.id, ...d.data()})), activeTab) }));
             break;
-          case "feeds":
-            queryToRun = query(collection(db, "globalFeeds"), where("ownerId", "==", profileData.uid), orderBy("createdAt", "desc"));
-            snapshot = await getDocs(queryToRun);
-            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab, likedIds, savedIds) }));
-            console.log(`✅ Feeds verisi başarıyla çekildi. Toplam: ${snapshot.size}`);
+          }
+          case "feeds": {
+            const q = query(collection(db, "globalFeeds"), where("ownerId", "==", profileData.uid), orderBy("createdAt", "desc"));
+            const snapshot = await getDocs(q);
+            if (!mounted) return;
+            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot.docs.map(d => ({id: d.id, ...d.data()})), activeTab) }));
             break;
-          case "likes":
-            if (likedIds.length > 0) {
-              const likedPostsQuery = query(collection(db, "globalPosts"), where("__name__", "in", likedIds), orderBy("createdAt", "desc"));
-              const likedPostsSnapshot = await getDocs(likedPostsQuery);
-              setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(likedPostsSnapshot, activeTab, likedIds, savedIds) }));
-              console.log(`✅ Beğenilenler verisi başarıyla çekildi. Toplam: ${likedPostsSnapshot.size}`);
-            } else {
-              setAllData(prev => ({ ...prev, [activeTab]: [] }));
-              console.log("ℹ️ Hiç beğenilen gönderi bulunamadı.");
-            }
+          }
+          case "likes": {
+            const likedIds = cachedLikedIdsRef.current;
+            const likedPosts = await fetchPostsByIds(likedIds);
+            if (!mounted) return;
+            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(likedPosts, activeTab) }));
             break;
-          case "tags":
-            if (savedIds.length > 0) {
-              const taggedPostsQuery = query(collection(db, "globalPosts"), where("__name__", "in", savedIds), orderBy("createdAt", "desc"));
-              const taggedPostsSnapshot = await getDocs(taggedPostsQuery);
-              setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(taggedPostsSnapshot, activeTab, likedIds, savedIds) }));
-              console.log(`✅ Etiketliler verisi başarıyla çekildi. Toplam: ${taggedPostsSnapshot.size}`);
-            } else {
-              setAllData(prev => ({ ...prev, [activeTab]: [] }));
-              console.log("ℹ️ Hiç etiketli gönderi bulunamadı.");
-            }
+          }
+          case "tags": {
+            const savedIds = cachedSavedIdsRef.current;
+            const taggedPosts = await fetchPostsByIds(savedIds);
+            if (!mounted) return;
+            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(taggedPosts, activeTab) }));
             break;
+          }
           default:
-            setAllData(prev => ({ ...prev, [activeTab]: [] }));
-            console.log("⚠️ Geçersiz sekme adı.");
+            if (mounted) setAllData(prev => ({ ...prev, [activeTab]: [] }));
             break;
         }
       } catch (error) {
-        console.error(`🔥 Veri çekilirken hata oluştu (${activeTab}):`, error);
+        console.error(`Veri çekilirken hata oluştu (${activeTab}):`, error);
         const errorMessage = error.code === 'failed-precondition'
           ? "Dizin hatası: İçerikleri görüntülemek için Firebase'de gerekli dizinlerin oluşturulması gerekiyor. Lütfen konsolu kontrol edin."
           : "Veriler yüklenirken bir sorun oluştu. Lütfen tekrar deneyin.";
         showToast(errorMessage, "error");
       } finally {
-        setLoadingContent(prev => ({ ...prev, [activeTab]: false }));
+        if (mounted) setLoadingContent(prev => ({ ...prev, [activeTab]: false }));
       }
     };
 
     if (profileData && (followStatus === "following" || followStatus === "self" || !profileData.isPrivate)) {
       fetchTabData();
     }
-  }, [activeTab, profileData, followStatus, showToast]);
+    return () => { mounted = false; };
+  }, [activeTab, profileData, followStatus]);
 
   const handleTabChange = (tab) => {
     if (activeTab === tab) return;
     setActiveTab(tab);
-    console.log(`➡️ Sekme değiştirildi: ${tab}`);
   };
 
   const handleFollowAction = async () => {
+    if (!profileData?.uid || isFollowProcessing) return;
+    setIsFollowProcessing(true);
     const previousFollowStatus = followStatus;
     const isPrivate = profileData?.isPrivate;
-    console.log(`🔄 Takip işlemi başlatıldı. Mevcut durum: ${previousFollowStatus}`);
 
     try {
       if (previousFollowStatus === "none") {
@@ -223,120 +296,91 @@ const UserProfile = () => {
         setFollowStatus("none");
       }
 
-      const idToken = await currentUser.getIdToken();
+      const idToken = idTokenRef.current;
+      if (!idToken) {
+        throw new Error("Kimlik doğrulama belirteci mevcut değil.");
+      }
+
       let endpoint;
       let method;
       let data = {};
 
       if (previousFollowStatus === "none") {
-        endpoint = `${apiBaseUrl}/api/users/follow`;
+        endpoint = `/api/users/follow`;
         method = "POST";
         data = { targetUid: profileData.uid };
       } else if (previousFollowStatus === "pending") {
-        endpoint = `${apiBaseUrl}/api/users/follow/request/retract`;
+        endpoint = `/api/users/follow/request/retract`;
         method = "DELETE";
         data = { targetUid: profileData.uid };
       } else if (previousFollowStatus === "following") {
-        endpoint = `${apiBaseUrl}/api/users/unfollow/${profileData.uid}`;
+        endpoint = `/api/users/unfollow/${profileData.uid}`;
         method = "DELETE";
       } else {
-        console.warn("⚠️ Geçersiz takip işlemi.");
+        setIsFollowProcessing(false);
         return;
       }
 
-      const response = await axios({
-        method: method,
-        url: endpoint,
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-          "Content-Type": "application/json",
-        },
-        data: data,
-      });
+      const headers = { Authorization: `Bearer ${idToken}`, "Content-Type": "application/json" };
+      const response = await axiosInstance.current.request({ method, url: endpoint, data, headers });
 
       setFollowStatus(response.data.status || "none");
-      showToast(response.data.message, "success");
-      console.log(`✅ Takip işlemi başarılı. Yeni durum: ${response.data.status}`);
+      
+      // ✅ GÜNCELLEME: newStats verisini kullanarak stats'ı güncelle
+      if (response.data.newStats) {
+        setProfileData(prevData => ({
+          ...prevData,
+          stats: response.data.newStats,
+        }));
+      }
 
-      const updatedProfileRes = await axios.get(
-        `${apiBaseUrl}/api/users/profile/${username}`,
-        {
-          headers: { Authorization: `Bearer ${idToken}` },
-        }
-      );
-      setProfileData({
-        ...updatedProfileRes.data.profile,
-        stats: response.data.newStats || profileData.stats,
-      });
+      showToast(response.data.message, "success");
+
     } catch (err) {
-      console.error("❌ Takip işlemi hatası:", err.response ? err.response.data : err.message);
+      console.error("Takip işlemi hatası:", err.response?.data || err.message);
       setFollowStatus(previousFollowStatus);
       const errorMsg = err.response?.data?.error || "Takip işlemi başarısız.";
       showToast(errorMsg, "error");
+    } finally {
+      setIsFollowProcessing(false);
     }
   };
 
   const handleMessageAction = async () => {
     const messageContent = prompt("Göndermek istediğiniz mesajı yazın:");
-    if (!messageContent) {
-      console.log("ℹ️ Mesaj gönderme iptal edildi.");
-      return;
-    }
-    console.log("💬 Mesaj gönderme işlemi başlatıldı.");
+    if (!messageContent) return;
     try {
-      const idToken = await currentUser.getIdToken();
-      const response = await axios.post(
-        `${apiBaseUrl}/api/users/message`,
-        {
-          targetUid: profileData.uid,
-          messageContent: messageContent,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const idToken = idTokenRef.current;
+      const headers = idToken ? { Authorization: `Bearer ${idToken}`, "Content-Type": "application/json" } : { "Content-Type": "application/json" };
+      const response = await axiosInstance.current.post(`/api/users/message`, { targetUid: profileData.uid, messageContent }, { headers });
       showToast(response.data.message, "success");
-      console.log("✅ Mesaj başarıyla gönderildi.");
     } catch (err) {
-      console.error(
-        "❌ Mesaj gönderme hatası:",
-        err.response ? err.response.data : err.message
-      );
+      console.error("Mesaj gönderme hatası:", err.response?.data || err.message);
       const errorMsg = err.response?.data?.error || "Mesaj gönderme başarısız.";
       showToast(errorMsg, "error");
     }
   };
 
-  const handleBlockUser = async () => {
-    console.log("🚫 Kullanıcı engellendi.");
+  const handleBlockUser = () => {
     showToast("Kullanıcı engellendi.", "success");
     setShowDropdown(false);
   };
 
-  const handleReportUser = async () => {
-    console.log("🚩 Kullanıcı şikayet edildi.");
+  const handleReportUser = () => {
     showToast("Kullanıcı şikayet edildi.", "success");
     setShowDropdown(false);
   };
 
   const handleFeedback = () => {
-    console.log("📢 Geri bildirim formu açılıyor.");
     showToast("Geri bildirim sayfanız açıldı.", "info");
     setShowDropdown(false);
   };
 
-  const toggleDropdown = () => {
-    setShowDropdown(!showDropdown);
-  };
+  const toggleDropdown = () => setShowDropdown(!showDropdown);
 
   const handleStatClick = (type) => {
-    console.log(`📊 ${type} istatistikleri için modal açılıyor.`);
     if (profileData.isPrivate && followStatus !== "following" && followStatus !== "self") {
       showToast("Gizli bir hesabın takipçi listesini göremezsiniz.", "error");
-      console.warn("⚠️ Gizli hesap olduğu için istatistiklere erişim engellendi.");
     } else {
       setModalType(type);
       setShowModal(true);
@@ -344,17 +388,13 @@ const UserProfile = () => {
   };
 
   const handleVideoClick = (videoData) => {
-    console.log("▶️ Video modalı açılıyor.");
     if (videoData && videoData.mediaUrl) {
       setSelectedVideo(videoData);
       setShowVideoModal(true);
-    } else {
-      console.error("❌ Geçersiz video verisi:", videoData);
     }
   };
 
   const handleCloseVideoModal = () => {
-    console.log("⏹️ Video modalı kapatılıyor.");
     setShowVideoModal(false);
     setSelectedVideo(null);
   };
@@ -413,10 +453,10 @@ const UserProfile = () => {
     return <div>Kullanıcı profili bulunamadı.</div>;
   }
 
-  const canViewContent =
-    !profileData.isPrivate || followStatus === "following" || followStatus === "self";
-
+  const canViewContent = !profileData.isPrivate || followStatus === "following" || followStatus === "self";
   const { displayName, photoURL, bio, familySystem } = profileData;
+  const currentContent = allData[activeTab] || [];
+  const totalContentCount = (profileData.stats?.posts || 0) + (profileData.stats?.feeds || 0) + (profileData.stats?.feelings || 0);
 
   const renderFollowButton = () => {
     switch (followStatus) {
@@ -424,28 +464,25 @@ const UserProfile = () => {
         return null;
       case "following":
         return (
-          <button onClick={handleFollowAction} className={`${styles.unfollowBtn} ${styles.actionButton}`}>
+          <button onClick={handleFollowAction} className={`${styles.unfollowBtn} ${styles.actionButton}`} disabled={isFollowProcessing}>
             <FaUserMinus /> Takibi Bırak
           </button>
         );
       case "pending":
         return (
-          <button onClick={handleFollowAction} className={`${styles.pendingBtn} ${styles.actionButton}`}>
+          <button onClick={handleFollowAction} className={`${styles.pendingBtn} ${styles.actionButton}`} disabled={isFollowProcessing}>
             <FaUserTimes /> İstek Gönderildi
           </button>
         );
       case "none":
       default:
         return (
-          <button onClick={handleFollowAction} className={`${styles.followBtn} ${styles.actionButton}`}>
+          <button onClick={handleFollowAction} className={`${styles.followBtn} ${styles.actionButton}`} disabled={isFollowProcessing}>
             <FaUserPlus /> Takip Et
           </button>
         );
     }
   };
-
-  const currentContent = allData[activeTab] || [];
-  const totalContentCount = allData.posts.length + allData.feeds.length + allData.feelings.length;
 
   return (
     <div className={styles.pageWrapper}>
@@ -515,10 +552,6 @@ const UserProfile = () => {
             <strong>{totalContentCount}</strong>
             <span className={styles.statLabel}>Post</span>
           </div>
-          {/* <div className={styles.statBox}>
-            <strong>{profileData.stats?.rta || 0}</strong>
-            <span className={styles.statLabel}>RTA</span>
-          </div> */}
           <div
             className={styles.statBox}
             onClick={() => handleStatClick("followers")}
