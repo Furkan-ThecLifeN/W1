@@ -1,7 +1,7 @@
 // src/components/Post/PostCard.jsx
 import React, { useState, useEffect } from "react";
 import styles from "./PostCard.module.css";
-import { FiMoreHorizontal } from "react-icons/fi";
+import { MdMore } from "react-icons/md";
 import ActionControls from "../actions/ActionControls";
 import { defaultGetAuthToken } from "../actions/api";
 import FollowButton from "../FollowButton/FollowButton";
@@ -143,19 +143,20 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
                 />
               )}
               <div className={styles.optionsContainer}>
-                <FiMoreHorizontal
+                <MdMore
                   className={styles.more_icon}
                   onClick={() => setShowOptions(!showOptions)}
                 />
+
                 {showOptions && (
                   <PostOptionsCard
                     isOwner={isOwnPost}
                     postId={data.id}
                     postOwnerId={data.uid}
-                    commentsDisabled={data.commentsDisabled} 
+                    commentsDisabled={data.commentsDisabled}
                     onDelete={handleDeletePost}
                     onDisableComments={handleDisableComments}
-                    onEnableComments={handleEnableComments} 
+                    onEnableComments={handleEnableComments}
                   />
                 )}
               </div>
@@ -203,7 +204,7 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
               />
             )}
             <div className={styles.optionsContainer}>
-              <FiMoreHorizontal
+              <MdMore
                 className={styles.more_icon}
                 onClick={() => setShowOptions(!showOptions)}
               />

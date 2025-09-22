@@ -1,60 +1,62 @@
 /* FollowButton.module.css */
 
 .actionButton {
-  font-family: "Montserrat", sans-serif;
   font-weight: 600;
-  padding: 8px 18px;
-  border-radius: 12px;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 8px;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
-  transition: all 0.3s ease-in-out;
-  box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+  gap: 4px;
+  transition: all 0.25s ease-in-out;
+  box-shadow: 0 0 3px rgba(255, 255, 255, 0.2);
 }
 
-/* FOLLOW ET BUTONU */
+/* FOLLOW BUTTON */
 .followBtn {
   background: linear-gradient(135deg, #00f0ff, #00c9ff);
   color: #fff;
-  text-shadow: 0 0 5px rgba(0, 255, 255, 0.6);
+  text-shadow: 0 0 3px rgba(0, 255, 255, 0.6);
 }
 
 .followBtn:hover {
-  box-shadow: 0 0 20px #00f0ff, 0 0 30px #00c9ff inset;
-  transform: scale(1.08);
+  box-shadow: 0 0 10px #00f0ff, 0 0 15px #00c9ff inset;
+  transform: scale(1.05);
 }
 
-/* TAKİBİ BIRAK BUTONU */
+/* UNFOLLOW BUTTON */
 .unfollowBtn {
   background: linear-gradient(135deg, #ff4f4f, #ff1a1a);
   color: #fff;
-  text-shadow: 0 0 5px rgba(255, 80, 80, 0.6);
+  text-shadow: 0 0 3px rgba(255, 80, 80, 0.6);
 }
 
 .unfollowBtn:hover {
-  box-shadow: 0 0 20px #ff4f4f, 0 0 30px #ff1a1a inset;
-  transform: scale(1.08);
+  box-shadow: 0 0 10px #ff4f4f, 0 0 15px #ff1a1a inset;
+  transform: scale(1.05);
 }
 
-/* İSTEK GÖNDERİLDİ BUTONU */
+/* PENDING BUTTON */
 .pendingBtn {
   background: linear-gradient(135deg, #ffa500, #ffce00);
   color: #fff;
-  text-shadow: 0 0 5px rgba(255, 200, 0, 0.6);
+  text-shadow: 0 0 3px rgba(255, 200, 0, 0.6);
 }
 
 .pendingBtn:hover {
-  box-shadow: 0 0 20px #ffa500, 0 0 30px #ffce00 inset;
-  transform: scale(1.08);
+  box-shadow: 0 0 10px #ffa500, 0 0 15px #ffce00 inset;
+  transform: scale(1.05);
 }
 
-/* ICONLAR İÇİN MINİ HAREKET */
+/* ICONS */
 .actionButton svg {
-  transition: transform 0.3s ease;
+  width: 14px;
+  height: 14px;
+  transition: transform 0.25s ease;
 }
 
 .actionButton:hover svg {
-  transform: rotate(20deg) scale(1.2);
+  transform: rotate(15deg) scale(1.15);
 }
