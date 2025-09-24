@@ -1,3 +1,4 @@
+// Notification.jsx
 import React, { useState, useEffect } from "react";
 import styles from "./Notification.module.css";
 import {
@@ -8,95 +9,90 @@ import {
 } from "react-icons/fa";
 import { useAuth } from "../../context/AuthProvider";
 import { Link } from "react-router-dom";
-import LoadingOverlay from "../LoadingOverlay/LoadingOverlay"; // Dosya yolunu doğru şekilde ayarlayın
+import LoadingOverlay from "../LoadingOverlay/LoadingOverlay";
+import axios from "axios"; // Axios import edildi
 
 const Notification = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { currentUser } = useAuth();
+  const { currentUser, showToast } = useAuth(); // showToast eklendi
   const apiBaseUrl = process.env.REACT_APP_API_URL;
 
   const fetchNotifications = async () => {
     setLoading(true);
     try {
       const idToken = await currentUser.getIdToken();
-      const response = await fetch(`${apiBaseUrl}/api/users/notifications`, {
+      const response = await axios.get(`${apiBaseUrl}/api/users/notifications`, {
         headers: { Authorization: `Bearer ${idToken}` },
       });
 
-      if (!response.ok) {
-        throw new Error("Bildirimler getirilirken bir sorun oluştu.");
-      }
+      const allNotifications = response.data.notifications;
 
-      const data = await response.json();
-      const sortedNotifications = data.notifications.sort((a, b) => {
-        if (a.type === "follow_request" && b.type !== "follow_request") return -1;
-        if (a.type !== "follow_request" && b.type === "follow_request") return 1;
+      // Aynı kullanıcıdan gelen birden fazla takip isteği bildirimini grupla
+      const uniqueFollowRequests = {};
+      const otherNotifications = [];
+
+      allNotifications.forEach(item => {
+        if (item.type === "follow_request") {
+          // fromUid'si aynı olan bildirimleri tek bir kartta topla
+          if (!uniqueFollowRequests[item.fromUid]) {
+            uniqueFollowRequests[item.fromUid] = item;
+          }
+        } else {
+          otherNotifications.push(item);
+        }
+      });
+
+      const combinedNotifications = [
+        ...Object.values(uniqueFollowRequests),
+        ...otherNotifications,
+      ];
+
+      const sortedNotifications = combinedNotifications.sort((a, b) => {
         return new Date(b.createdAt) - new Date(a.createdAt);
       });
+
       setNotifications(sortedNotifications);
     } catch (error) {
       console.error("Bildirimler getirilirken hata oluştu:", error);
+      showToast("Bildirimler yüklenirken bir sorun oluştu.", "error");
       setNotifications([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Bildirimleri okundu olarak işaretleme
-  const markAsRead = async () => {
-    try {
-      const idToken = await currentUser.getIdToken();
-      await fetch(`${apiBaseUrl}/api/users/notifications/read`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${idToken}` },
-      });
-      setNotifications((prev) =>
-        prev.map((n) => ({ ...n, isRead: true }))
-      );
-    } catch (error) {
-      console.error("Bildirimleri okundu olarak işaretleme hatası:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchNotifications();
-    // Opsiyonel: Bildirimler sayfasına girildiğinde okundu işaretle
-    // markAsRead();
-  }, [currentUser, apiBaseUrl]);
-
   const handleFollowRequest = async (requesterUid, action) => {
     setLoading(true);
-    const updatedNotifications = notifications.filter(
-      (n) => !(n.fromUid === requesterUid && n.type === "follow_request")
-    );
-    setNotifications(updatedNotifications);
 
     try {
       const idToken = await currentUser.getIdToken();
       const endpoint = `${apiBaseUrl}/api/users/follow/${action}/${requesterUid}`;
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${idToken}` },
-      });
 
-      if (response.ok) {
-        fetchNotifications();
-      } else {
-        const errorData = await response.json();
-        alert(errorData.error || "İşlem başarısız oldu.");
-        fetchNotifications();
-      }
+      const response = await axios.post(
+        endpoint,
+        {}, // Boş bir body gönderiliyor
+        {
+          headers: { Authorization: `Bearer ${idToken}` },
+        }
+      );
+
+      // Başarılı olursa, bildirimleri yeniden çek
+      showToast(response.data.message, "success");
+      await fetchNotifications();
     } catch (error) {
-      console.error("İşlem hatası:", error);
-      alert("Bir hata oluştu.");
-      fetchNotifications();
+      console.error("Takip isteği işlem hatası:", error);
+      showToast(
+        error.response?.data?.error || "İşlem başarısız oldu.",
+        "error"
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const getNotificationContent = (item) => {
+    // İçerik mantığı aynı kalacak
     switch (item.type) {
       case "follow_request":
         return {
@@ -133,6 +129,10 @@ const Notification = () => {
     }
   };
 
+  useEffect(() => {
+    fetchNotifications();
+  }, [currentUser, apiBaseUrl]);
+
   return (
     <div className={styles.notification_page}>
       <h2 className={styles.page_title}>Bildirimler</h2>
@@ -145,9 +145,8 @@ const Notification = () => {
             return (
               <li
                 key={item.id}
-                className={`${styles.notification_item} ${
-                  !item.isRead ? styles.unread : ""
-                }`}
+                className={`${styles.notification_item} ${!item.isRead ? styles.unread : ""
+                  }`}
               >
                 <div className={styles.icon_wrapper}>{icon}</div>
                 <div className={styles.text_wrapper}>
@@ -161,9 +160,8 @@ const Notification = () => {
                     <span className={styles.message}>{message}</span>
                   </div>
                   <div className={styles.time}>
-                    {new Date(item.createdAt).toLocaleString()}
+                    {item.createdAt && new Date(item.createdAt).toLocaleString()}
                   </div>
-
                   {item.type === "follow_request" && (
                     <div className={styles.button_group}>
                       <button
