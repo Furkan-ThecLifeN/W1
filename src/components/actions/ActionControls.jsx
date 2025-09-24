@@ -124,7 +124,7 @@ export default function ActionControls({
         pendingRef.current = null;
       }
       timerRef.current = null;
-    }, 5000);
+    }, 100);
   }
 
   function toggleLike() {
