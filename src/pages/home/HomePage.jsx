@@ -6,48 +6,52 @@ import RightSidebar from "../../components/RightSideBar/RightSideBar";
 import PostCard from "../../components/Post/PostCard";
 import TweetCard from "../../components/TweetCard/TweetCard";
 import BottomNav from "../../components/BottomNav/BottomNav";
-import LoadingOverlay from "../../components/LoadingOverlay/LoadingOverlay"; // 🔥 import edildi
+import LoadingOverlay from "../../components/LoadingOverlay/LoadingOverlay";
 import styles from "./HomePage.module.css";
 
 const Home = () => {
-  const [posts, setPosts] = useState([]);
-  const [feelings, setFeelings] = useState([]);
   const [feed, setFeed] = useState([]);
-  const [loading, setLoading] = useState(true); // 🔥 loading state
+  const [loading, setLoading] = useState(true);
+
+  // basit shuffle fonksiyonu
+  const shuffleArray = (arr) => {
+    return [...arr].sort(() => Math.random() - 0.5);
+  };
 
   useEffect(() => {
-    const qPosts = query(
-      collection(db, "globalPosts"),
-      orderBy("createdAt", "desc")
-    );
-    const qFeelings = query(
-      collection(db, "globalFeelings"),
-      orderBy("createdAt", "desc")
-    );
+    const qPosts = query(collection(db, "globalPosts"), orderBy("createdAt", "desc"));
+    const qFeelings = query(collection(db, "globalFeelings"), orderBy("createdAt", "desc"));
 
     let postsLoaded = false;
     let feelingsLoaded = false;
 
+    const handleChanges = (snapshot, type) => {
+      setFeed((prev) => {
+        let updated = [...prev];
+        snapshot.docChanges().forEach((change) => {
+          const item = { id: change.doc.id, type, ...change.doc.data() };
+          if (change.type === "added") {
+            updated.push(item);
+          }
+          if (change.type === "modified") {
+            updated = updated.map((f) => (f.id === item.id ? item : f));
+          }
+          if (change.type === "removed") {
+            updated = updated.filter((f) => f.id !== item.id);
+          }
+        });
+        return shuffleArray(updated); // 🔥 her güncellemeden sonra shuffle
+      });
+    };
+
     const unsubPosts = onSnapshot(qPosts, (snapshot) => {
-      setPosts(
-        snapshot.docs.map((doc) => ({
-          id: doc.id,
-          type: "post",
-          ...doc.data(),
-        }))
-      );
+      handleChanges(snapshot, "post");
       postsLoaded = true;
       if (postsLoaded && feelingsLoaded) setLoading(false);
     });
 
     const unsubFeelings = onSnapshot(qFeelings, (snapshot) => {
-      setFeelings(
-        snapshot.docs.map((doc) => ({
-          id: doc.id,
-          type: "feeling",
-          ...doc.data(),
-        }))
-      );
+      handleChanges(snapshot, "feeling");
       feelingsLoaded = true;
       if (postsLoaded && feelingsLoaded) setLoading(false);
     });
@@ -58,39 +62,9 @@ const Home = () => {
     };
   }, []);
 
-  useEffect(() => {
-    const combined = [...posts, ...feelings];
-    const shuffled = combined.sort(() => Math.random() - 0.5);
-
-    const arranged = [];
-    let lastType = null;
-    let count = 0;
-
-    shuffled.forEach((item) => {
-      if (item.type === lastType) {
-        if (count < 2) {
-          arranged.push(item);
-          count++;
-        } else {
-          // 2 aynı tip ard arda oldu, bu itemi şimdilik sona bırak
-        }
-      } else {
-        arranged.push(item);
-        lastType = item.type;
-        count = 1;
-      }
-    });
-
-    const missing = shuffled.filter((x) => !arranged.includes(x));
-    const finalFeed = [...arranged, ...missing].sort(() => Math.random() - 0.5);
-
-    setFeed(finalFeed);
-  }, [posts, feelings]);
-
   return (
     <div className={styles.home}>
-      {loading && <LoadingOverlay />} {/* 🔥 Yükleme ekranı */}
-      
+      {loading && <LoadingOverlay />}
       <Sidebar />
       <main className={styles.mainContent}>
         <header className={styles.header}>
