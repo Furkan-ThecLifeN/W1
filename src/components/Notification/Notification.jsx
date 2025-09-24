@@ -43,20 +43,35 @@ const Notification = () => {
     }
   };
 
+  // Bildirimleri okundu olarak işaretleme
+  const markAsRead = async () => {
+    try {
+      const idToken = await currentUser.getIdToken();
+      await fetch(`${apiBaseUrl}/api/users/notifications/read`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${idToken}` },
+      });
+      setNotifications((prev) =>
+        prev.map((n) => ({ ...n, isRead: true }))
+      );
+    } catch (error) {
+      console.error("Bildirimleri okundu olarak işaretleme hatası:", error);
+    }
+  };
+
   useEffect(() => {
     fetchNotifications();
+    // Opsiyonel: Bildirimler sayfasına girildiğinde okundu işaretle
+    // markAsRead();
   }, [currentUser, apiBaseUrl]);
 
   const handleFollowRequest = async (requesterUid, action) => {
-    // İşlem başlarken loading durumunu etkinleştir
     setLoading(true);
-    
-    // UI'ı hemen güncelle: Takip isteği kartını listeden kaldır
     const updatedNotifications = notifications.filter(
       (n) => !(n.fromUid === requesterUid && n.type === "follow_request")
     );
     setNotifications(updatedNotifications);
-    
+
     try {
       const idToken = await currentUser.getIdToken();
       const endpoint = `${apiBaseUrl}/api/users/follow/${action}/${requesterUid}`;
@@ -66,50 +81,52 @@ const Notification = () => {
       });
 
       if (response.ok) {
-        // İşlem başarılı, yeni bildirimleri almak için listeyi yeniden çek
         fetchNotifications();
       } else {
         const errorData = await response.json();
         alert(errorData.error || "İşlem başarısız oldu.");
-        // Hata durumunda eski listeyi geri yükle
         fetchNotifications();
       }
     } catch (error) {
       console.error("İşlem hatası:", error);
       alert("Bir hata oluştu.");
-      // Hata durumunda eski listeyi geri yükle
       fetchNotifications();
     } finally {
       setLoading(false);
     }
   };
 
-  const getNotificationText = (item) => {
+  const getNotificationContent = (item) => {
     switch (item.type) {
       case "follow_request":
         return {
           message: "sana takip isteği gönderdi.",
-          icon: <FaUserPlus />,
+          icon: <FaUserPlus size={20} color="var(--color-blue)" />,
         };
       case "new_follower":
         return {
           message: "seni takip etmeye başladı.",
-          icon: <FaUserPlus />,
+          icon: <FaUserPlus size={20} color="var(--color-blue)" />,
         };
       case "follow_accepted":
         return {
           message: "takip isteğini onayladı.",
-          icon: <FaCheckCircle />,
+          icon: <FaCheckCircle size={20} color="#27ae60" />,
         };
       case "like":
         return {
           message: "gönderini beğendi.",
-          icon: <FaHeart />,
+          icon: <FaHeart size={20} color="var(--busy)" />,
         };
       case "comment":
         return {
-          message: `gönderinize yorum yaptı: "${item.content}"`,
-          icon: <FaRegCommentDots />,
+          message: (
+            <>
+              gönderine yorum yaptı:{" "}
+              <strong>"{item.content || item.commentText}..."</strong>
+            </>
+          ),
+          icon: <FaRegCommentDots size={20} color="#3498db" />,
         };
       default:
         return { message: "Yeni bildirim.", icon: null };
@@ -124,30 +141,44 @@ const Notification = () => {
       ) : notifications.length > 0 ? (
         <ul className={styles.notification_list}>
           {notifications.map((item) => {
-            const { message, icon } = getNotificationText(item);
+            const { message, icon } = getNotificationContent(item);
             return (
-              <li key={item.id} className={styles.notification_item}>
+              <li
+                key={item.id}
+                className={`${styles.notification_item} ${
+                  !item.isRead ? styles.unread : ""
+                }`}
+              >
                 <div className={styles.icon_wrapper}>{icon}</div>
                 <div className={styles.text_wrapper}>
                   <div>
-                    <Link to={`/profile/${item.fromUsername}`} className={styles.username}>
+                    <Link
+                      to={`/profile/${item.fromUsername}`}
+                      className={styles.username}
+                    >
                       {item.fromUsername}
                     </Link>{" "}
                     <span className={styles.message}>{message}</span>
                   </div>
-                  <div className={styles.time}>{new Date(item.createdAt).toLocaleString()}</div>
+                  <div className={styles.time}>
+                    {new Date(item.createdAt).toLocaleString()}
+                  </div>
 
                   {item.type === "follow_request" && (
                     <div className={styles.button_group}>
                       <button
                         className={styles.accept_btn}
-                        onClick={() => handleFollowRequest(item.fromUid, "accept")}
+                        onClick={() =>
+                          handleFollowRequest(item.fromUid, "accept")
+                        }
                       >
                         Onayla
                       </button>
                       <button
                         className={styles.reject_btn}
-                        onClick={() => handleFollowRequest(item.fromUid, "reject")}
+                        onClick={() =>
+                          handleFollowRequest(item.fromUid, "reject")
+                        }
                       >
                         Reddet
                       </button>

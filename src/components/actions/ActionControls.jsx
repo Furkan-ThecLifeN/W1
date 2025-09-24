@@ -1,4 +1,3 @@
-// ActionsControls.js
 import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import {
@@ -19,12 +18,15 @@ import {
 } from "react-icons/fa";
 import CommentModal from "../CommentModal/CommentModal";
 import ShareModal from "../ShareModal/ShareModal";
+import eventBus from "../../utils/eventBus";
+import { useAuth } from "../../context/AuthProvider";
 
 export default function ActionControls({
   targetType,
   targetId,
   getAuthToken = defaultGetAuthToken,
-  commentsDisabled, // Yeni prop: Yorumların kapalı olup olmadığını belirtir
+  commentsDisabled,
+  postOwnerUid, // Post sahibinin UID'si için yeni prop
 }) {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -33,6 +35,7 @@ export default function ActionControls({
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [toast, setToast] = useState(null);
   const shareBtnRef = useRef(null);
+  const { currentUser } = useAuth(); // Mevcut kullanıcıyı alın
 
   const likeTimerRef = useRef(null);
   const saveTimerRef = useRef(null);
@@ -41,7 +44,6 @@ export default function ActionControls({
 
   const { enqueue } = useActionsQueue({ getAuthToken });
 
-  // 1️⃣ İstekleri sadece ilk render’da yap
   useEffect(() => {
     let mounted = true;
 
@@ -66,7 +68,7 @@ export default function ActionControls({
     return () => {
       mounted = false;
     };
-  }, [targetType, targetId]);
+  }, [targetType, targetId, getAuthToken]);
 
   async function commitActionNow(action) {
     try {
@@ -78,6 +80,22 @@ export default function ActionControls({
           finalState: action.finalState,
           token,
         });
+
+        // Eğer beğenme başarılıysa ve kullanıcı kendi gönderisini beğenmediyse event'i yayınla
+        if (action.finalState && currentUser.uid !== postOwnerUid) {
+          const newNotification = {
+            id: 'temp-' + Date.now(),
+            fromUsername: currentUser.displayName || 'Anonim',
+            fromUid: currentUser.uid,
+            toUid: postOwnerUid,
+            type: 'like',
+            content: null,
+            createdAt: new Date().toISOString(),
+            isRead: false,
+          };
+          eventBus.dispatchEvent(new CustomEvent('notificationCreated', { detail: newNotification }));
+        }
+
       } else if (action.type === "save") {
         await toggleSaveRemote({
           targetType: action.targetType,
@@ -87,6 +105,7 @@ export default function ActionControls({
         });
       }
     } catch (e) {
+      console.error("Action commit error:", e);
       enqueue({
         type: action.type,
         targetType: action.targetType,
@@ -96,7 +115,6 @@ export default function ActionControls({
     }
   }
 
-  // 2️⃣ Beğenme ve Kaydetme Optimistik UI
   function scheduleCommit(action, timerRef, pendingRef) {
     if (timerRef.current) clearTimeout(timerRef.current);
     pendingRef.current = action;
@@ -106,7 +124,7 @@ export default function ActionControls({
         pendingRef.current = null;
       }
       timerRef.current = null;
-    }, 15000);
+    }, 5000);
   }
 
   function toggleLike() {
@@ -145,21 +163,18 @@ export default function ActionControls({
     };
   }, []);
 
-  async function openComments() {
+  function openComments() {
     setCommentModalOpen(true);
   }
 
-  // Paylaşım başarılı olduğunda çağrılacak yeni fonksiyon
   const handleShareSuccess = () => {
     setStats((s) => ({ ...s, shares: (s.shares || 0) + 1 }));
   };
 
-  // Yeni handleShare fonksiyonu: Paylaş modalını açar
   async function handleShare() {
     setShareModalOpen(true);
   }
 
-  // Toast'ı artık kullanmıyoruz çünkü modal açılıyor, bu yüzden bu kod parçası kaldırılabilir.
   const showToast = (message, type = "success") => {
     if (!shareBtnRef.current) return;
     const rect = shareBtnRef.current.getBoundingClientRect();
@@ -190,7 +205,6 @@ export default function ActionControls({
           <span>{stats.likes}</span>
         </button>
 
-        {/* Yeni: Yorumları kapatma durumu kontrolü */}
         {!commentsDisabled && (
           <button onClick={openComments} className={styles.btnComment}>
             <FaComment size={18} /> <span>{stats.comments}</span>
@@ -223,10 +237,10 @@ export default function ActionControls({
             setStats((s) => ({ ...s, comments: s.comments + delta }))
           }
           getAuthToken={getAuthToken}
+          postOwnerUid={postOwnerUid} // CommentModal'a post sahibinin UID'sini geçin
         />
       )}
 
-      {/* Yeni: ShareModal'ı ekle */}
       {shareModalOpen && (
         <ShareModal
           postId={targetId}
