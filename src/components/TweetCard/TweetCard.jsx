@@ -1,11 +1,13 @@
-import React from "react"; // useState kaldırıldı
+import React from "react"; 
 import styles from "./TweetCard.module.css";
 import { FiMoreHorizontal } from "react-icons/fi";
-// Artık FaHeart/FaBookmark gibi ikonlara gerek yok, ActionControls kendi ikonlarını kullanır
-import ActionControls from "../actions/ActionControls"; // Yeni import
-import { defaultGetAuthToken } from "../actions/api"; // Token almak için gerekli
+import ActionControls from "../actions/ActionControls"; 
+import { defaultGetAuthToken } from "../actions/api"; 
+import FollowButton from "../FollowButton/FollowButton"; 
+import { useAuth } from "../../context/AuthProvider"; // AuthContext'ten geldiğini varsayıyoruz
 
-// PostCard'daki gibi token alma fonksiyonu
+
+// Token alma fonksiyonu aynı kalıyor
 const getToken = async () => {
   try {
     return await defaultGetAuthToken();
@@ -16,18 +18,28 @@ const getToken = async () => {
 };
 
 const TweetCard = ({ data }) => {
-  // Manuel beğenme/kaydetme state'leri KALDIRILDI
+  
+  // ⭐️ DÜZELTME: Bütün React Hook'ları (useAuth dahil) en üstte ve koşulsuz çağrılmalıdır.
+  const { currentUser } = useAuth(); // Koşulsuz Çağrı
+
+  // data'nın temel alanlarının kontrolünü burada yapabilirsiniz.
+  if (!data || !data.id || !data.uid) {
+      console.error("TweetCard: data veya data.id/uid eksik.");
+      return null; 
+  }
+  
+  // Tweet'in sahibinin oturum açmış kullanıcı olup olmadığını kontrol et
+  // Bu kontrol, hook çağrısı değildir, bu yüzden burada kalabilir.
+  const isOwnFeeling = currentUser?.uid === data.uid;
 
   const renderActionControls = () => {
-    if (!data?.id) return null;
+    // data.id'nin kontrolü yukarıda yapıldığı için burada tekrar if (!data.id) gerekmez
     return (
       <ActionControls
-        // KRİTİK: Target Type 'feeling' olarak ayarlandı
         targetType="feeling" 
         targetId={data.id}
         getAuthToken={getToken}
         postOwnerUid={data.uid} 
-        // data objenizdeki bir alana göre yorumları devre dışı bırakabilirsiniz
         commentsDisabled={data.commentsDisabled || false} 
       />
     );
@@ -39,23 +51,30 @@ const TweetCard = ({ data }) => {
         <div className={styles.user}>
           <div className={styles.avatar_widget}>
             <img
-              src={data?.photoURL}
+              src={data.photoURL}
               alt="avatar"
               className={styles.avatar}
             />
           </div>
-          <span className={styles.username}>{data?.displayName}</span>
+          <span className={styles.username}>{data.displayName}</span>
         </div>
         <div className={styles.actions}>
-          <button className={styles.follow}>Follow</button>
+          
+          {/* Sadece Kendi Tweet'imiz DEĞİLSE FollowButton'ı göster */}
+          {!isOwnFeeling && (
+            <FollowButton
+              targetUid={data.uid}
+              isTargetPrivate={data.isPrivate || false} 
+            />
+          )}
+
           <FiMoreHorizontal className={styles.more} />
         </div>
       </div>
 
-      <div className={styles.content}>{data?.text}</div>
+      <div className={styles.content}>{data.text}</div>
 
       <div className={styles.footer}>
-        {/* Tüm aksiyonlar için merkezi ActionControls bileşeni kullanıldı */}
         {renderActionControls()} 
       </div>
     </div>
