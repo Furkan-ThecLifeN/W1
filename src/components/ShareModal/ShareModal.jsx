@@ -11,7 +11,8 @@ import { FiX, FiLink, FiSend } from "react-icons/fi";
 import { FaTwitter, FaWhatsapp, FaInstagram, FaTiktok } from "react-icons/fa";
 
 export default function ShareModal({
-  postId,
+  targetType, // Güncelleme: postId yerine targetType
+  targetId,   // Güncelleme: postId yerine targetId
   onClose,
   onSuccess,
   getAuthToken = defaultGetAuthToken,
@@ -21,10 +22,9 @@ export default function ShareModal({
   const [sendingTo, setSendingTo] = useState(null);
   const [isExiting, setIsExiting] = useState(false);
 
-  // Modal kapanış animasyonunu tetikleme
   const handleClose = () => {
     setIsExiting(true);
-    setTimeout(() => onClose(), 300); // Animasyon süresinden sonra modalı kapat
+    setTimeout(() => onClose(), 300);
   };
 
   useEffect(() => {
@@ -47,44 +47,41 @@ export default function ShareModal({
   }, [getAuthToken]);
 
   async function handleSendTo(uid) {
-  if (!postId || !uid) {
-    console.error("Geçersiz postId veya uid.");
-    return;
+    if (!targetId || !uid || !targetType) {
+      console.error("Geçersiz targetId, targetType veya uid.");
+      return;
+    }
+    try {
+      setSendingTo(uid);
+      await sendShareRemote({
+        targetType,
+        targetId,
+        receiverUid: uid,
+        getAuthToken,
+      });
+      console.log("Paylaşım başarılı.");
+      handleClose();
+      if (onSuccess) onSuccess();
+    } catch (e) {
+      console.error("Gönderilemedi:", e);
+      alert(`Gönderme hatası: ${e.message}`);
+    } finally {
+      setSendingTo(null);
+    }
   }
-  try {
-    setSendingTo(uid);
-    // Yeni çağrı şekli: Parametreleri bir obje içinde gönder
-    await sendShareRemote({ 
-      targetType: 'post', 
-      targetId: postId, 
-      receiverUid: uid,
-      getAuthToken // getAuthToken fonksiyonunu da objeye ekleyin
-    });
-    console.log("Paylaşım başarılı.");
-    handleClose();
-    if (onSuccess) onSuccess();
-  } catch (e) {
-    console.error("Gönderilemedi:", e);
-    alert(`Gönderme hatası: ${e.message}`);
-  } finally {
-    setSendingTo(null);
-  }
-}
 
-  // Yeni fonksiyon: Sosyal medyada paylaşım yapıldığında API çağrısını tetikler.
   async function handleExternalShare() {
-  try {
-    const token = await getAuthToken();
-    // Bu fonksiyon sadece paylaşım istatistiğini artırmak için çağrılır.
-    await getShareLinkRemote({ targetType: 'post', targetId: postId, token });
-  } catch (e) {
-    console.error("Harici paylaşım API çağrısı başarısız oldu:", e);
+    try {
+      const token = await getAuthToken();
+      await getShareLinkRemote({ targetType, targetId, token });
+    } catch (e) {
+      console.error("Harici paylaşım API çağrısı başarısız oldu:", e);
+    }
   }
-}
 
   async function handleCopyLink() {
     try {
-      const link = `${window.location.origin}/post/${postId}`;
+      const link = `${window.location.origin}/${targetType}/${targetId}`;
       await navigator.clipboard.writeText(link);
       alert("Link kopyalandı!");
       handleExternalShare();
@@ -94,7 +91,6 @@ export default function ShareModal({
     }
   }
 
-  // Sosyal medya butonları ve fonksiyonları
   const socialButtons = [
     {
       name: "WhatsApp",
@@ -103,7 +99,7 @@ export default function ShareModal({
         handleExternalShare();
         window.open(
           `https://wa.me/?text=${encodeURIComponent(
-            `${window.location.origin}/feelings/${postId}`
+            `${window.location.origin}/${targetType}/${targetId}`
           )}`,
           "_blank"
         );
@@ -116,7 +112,7 @@ export default function ShareModal({
         handleExternalShare();
         window.open(
           `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-            `${window.location.origin}/feelings/${postId}`
+            `${window.location.origin}/${targetType}/${targetId}`
           )}`,
           "_blank"
         );

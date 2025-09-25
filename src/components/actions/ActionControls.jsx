@@ -243,7 +243,8 @@ export default function ActionControls({
 
       {shareModalOpen && (
         <ShareModal
-          postId={targetId}
+          targetType={targetType} 
+          targetId={targetId}  
           onClose={() => setShareModalOpen(false)}
           getAuthToken={getAuthToken}
           onSuccess={handleShareSuccess}

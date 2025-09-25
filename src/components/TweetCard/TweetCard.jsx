@@ -1,16 +1,37 @@
-import React, { useState } from "react";
+import React from "react"; // useState kaldırıldı
 import styles from "./TweetCard.module.css";
-import {
-  FiMoreHorizontal,
-  FiMessageCircle,
-  FiSend,
-  FiBookmark,
-} from "react-icons/fi";
-import { FaHeart, FaBookmark } from "react-icons/fa";
+import { FiMoreHorizontal } from "react-icons/fi";
+// Artık FaHeart/FaBookmark gibi ikonlara gerek yok, ActionControls kendi ikonlarını kullanır
+import ActionControls from "../actions/ActionControls"; // Yeni import
+import { defaultGetAuthToken } from "../actions/api"; // Token almak için gerekli
+
+// PostCard'daki gibi token alma fonksiyonu
+const getToken = async () => {
+  try {
+    return await defaultGetAuthToken();
+  } catch (e) {
+    console.error("TweetCard: Token alma hatası ->", e.message);
+    return null;
+  }
+};
 
 const TweetCard = ({ data }) => {
-  const [liked, setLiked] = useState(false);
-  const [saved, setSaved] = useState(false);
+  // Manuel beğenme/kaydetme state'leri KALDIRILDI
+
+  const renderActionControls = () => {
+    if (!data?.id) return null;
+    return (
+      <ActionControls
+        // KRİTİK: Target Type 'feeling' olarak ayarlandı
+        targetType="feeling" 
+        targetId={data.id}
+        getAuthToken={getToken}
+        postOwnerUid={data.uid} 
+        // data objenizdeki bir alana göre yorumları devre dışı bırakabilirsiniz
+        commentsDisabled={data.commentsDisabled || false} 
+      />
+    );
+  };
 
   return (
     <div className={styles.card}>
@@ -34,17 +55,8 @@ const TweetCard = ({ data }) => {
       <div className={styles.content}>{data?.text}</div>
 
       <div className={styles.footer}>
-        <FaHeart
-          className={`${styles.icon} ${styles.heart} ${liked ? styles.liked : ""}`}
-          onClick={() => setLiked(!liked)}
-        />
-        <FiMessageCircle className={styles.icon} />
-        <FiSend className={styles.icon} />
-        {saved ? (
-          <FaBookmark className={styles.icon} onClick={() => setSaved(false)} />
-        ) : (
-          <FiBookmark className={styles.icon} onClick={() => setSaved(true)} />
-        )}
+        {/* Tüm aksiyonlar için merkezi ActionControls bileşeni kullanıldı */}
+        {renderActionControls()} 
       </div>
     </div>
   );
