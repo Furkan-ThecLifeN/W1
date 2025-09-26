@@ -78,3 +78,99 @@
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+
+
+/* ------------------------------------- */
+/* ✅ DİKEY FEED KONTROLLERİ (Yeni Eklendi) */
+/* ------------------------------------- */
+.verticalFeedControls{
+  display:flex;
+  flex-direction:column; /* Dikey yapıyı sağlar */
+  gap:1.5rem;
+  background:none;
+  padding:0;
+}
+
+/* Feed kartındaki her bir aksiyon düğmesinin kapsayıcısı */
+.iconWrapper{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  transition:transform 0.2s ease-in-out;
+  width:44px; /* FeedVideoCard.module.css'den alındı */
+  height:44px;
+  background-color:rgba(255,255,255,0.1); /* FeedVideoCard.module.css'den alındı */
+  border-radius:50%;
+  backdrop-filter:blur(3px);
+  padding:0;
+  position:relative;
+}
+
+.iconWrapper:hover{
+  transform:scale(1.1);
+}
+
+/* İkonların stilini FeedVideoCard.module.css ile eşleştirdik */
+.iconItem{
+  font-size:1.6rem;
+  color:var(--color-white);
+  line-height:1; /* Sayıları etkilememesi için */
+}
+
+.likedIcon{
+  color:#ff0026;
+}
+
+.savedIcon{
+  color:var(--color-white);
+}
+
+.iconCount{
+  font-size:0.75rem;
+  font-weight:600;
+  color:var(--color-white);
+  margin-top:0.1rem;
+  position:absolute; /* İkonun altında değil, ortasında olmaması için */
+  bottom:-16px; 
+}
+/* ------------------------------------- */
+
+
+/* Toast Bildirim Stilleri */
+.toast{
+  position:fixed;
+  padding:8px 12px;
+  border-radius:4px;
+  font-size:0.9rem;
+  font-weight:500;
+  color:white;
+  box-shadow:0 2px 10px rgba(0,0,0,0.2);
+  pointer-events:none;
+  transition:opacity 0.2s;
+  animation:fadeInOut 2s ease-in-out;
+}
+
+.toast.success{
+  background-color:#4caf50;
+}
+
+.toast.error{
+  background-color:#f44336;
+}
+
+@keyframes fadeInOut{
+  0%,100%{opacity:0;}
+  10%,90%{opacity:1;}
+}
+
+@media (max-width: 1024px) {
+  .actionControls {
+    width: 100%;
+    max-width: 420px;
+    justify-content: space-between;
+    background-color: #121212;
+  }
+}

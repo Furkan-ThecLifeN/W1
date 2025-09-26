@@ -1,0 +1,113 @@
+/* DescriptionModal.module.css */
+
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85); /* Koyu, etkileyici arka plan */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Her şeyin üstünde olmalı */
+    backdrop-filter: blur(5px); /* Hafif blur efekti */
+    padding: 20px; /* Kenar boşluğu */
+}
+
+.modalContent {
+    background: #1e1e2e; /* Koyu, fütüristik arka plan rengi */
+    color: #f0f0f5; 
+    padding: 30px;
+    border-radius: 12px;
+    /* Neon/Glow Efekti */
+    box-shadow: 
+        0 0 15px rgba(0, 255, 255, 0.5), /* Cyan parlama */
+        0 0 30px rgba(70, 0, 255, 0.3); /* Mor parlama */
+    
+    position: relative;
+    max-width: 600px; /* Geniş bir modal */
+    width: 90%;
+    max-height: 80vh; /* Ekran yüksekliğini aşmasını önler */
+    overflow-y: auto; /* İçerik taşarsa kaydırma çubuğu ekler */
+    border: 1px solid #00ffff; /* Çerçeveye mavi bir çizgi */
+    animation: scaleIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.closeButton {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    color: #ff0077; /* Kontrast renk */
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: color 0.2s, background 0.2s;
+}
+
+.closeButton:hover {
+    color: #fff;
+    background: rgba(0, 110, 255, 0.2);
+}
+
+/* Kullanıcı Bilgisi Stilleri */
+.userInfo {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px dashed #3a3a5a; /* Ayırıcı çizgi */
+}
+
+.userAvatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.userInfoText {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.userName {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #ffffff;
+}
+
+/* Açıklama Metni Stilleri */
+.fullDescriptionContainer {
+    padding-top: 15px;
+    /* Alt kısımda boşluk bırak (FollowButton altındaki kısım) */
+    margin-bottom: 10px;
+}
+
+.fullDescriptionText {
+    line-height: 1.6;
+    font-size: 0.95em;
+    color: #f0f0f5;
+    white-space: pre-wrap; /* Satır atlamalarını korur */
+    word-break: break-word; /* Uzun kelimeleri keser */
+}
+
+/* FollowButton yerleşimi için */
+.followButton {
+    margin-left: 15px;
+    flex-shrink: 0;
+}

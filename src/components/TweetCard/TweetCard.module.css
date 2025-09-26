@@ -83,27 +83,20 @@
   word-break: break-word;
 }
 
+/* ✅ GÜNCELLENDİ: Feelings Text */
 .feelings_text {
-  max-height: 80px;
-  overflow-y: auto;
+  /* max-height ve overflow kısıtlamaları kaldırıldı */
   width: 100%;
   font-size: 14px;
   line-height: 1.4;
   color: var(--color-white);
-  scrollbar-width: thin;
-  scrollbar-color: #fff transparent;
   text-align: start;
 }
 
-.feelings_text::-webkit-scrollbar {
-  width: 6px;
+/* ✅ YENİ: Tıklanabilir stil */
+.clickableDescription {
+    cursor: pointer;
 }
-
-.feelings_text::-webkit-scrollbar-thumb {
-  background-color: #ffffffaa;
-  border-radius: 4px;
-}
-
 
 /* Footer */
 .footer {

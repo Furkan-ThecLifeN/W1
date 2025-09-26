@@ -163,6 +163,30 @@
   color: #ffffff;
 }
 
+.readMore {
+  color: #00ffff;
+  cursor: pointer;
+  font-weight: bold;
+  margin-left: 5px;
+  transition: color 0.2s;
+  user-select: none;
+}
+
+.readMore:hover {
+  color: #ff0077;
+}
+
+.description {
+  font-size: 0.9em;
+  color: #ccc;
+  line-height: 1.4;
+  display: inline;
+}
+
+/* ✅ YENİ: Metin tıklanabilir olduğunda işaretçi imleci (cursor) göster */
+.clickableDescription {
+    cursor: pointer;
+}
 
 /* 📌 Mobil için (max-width: 1024px) */
 @media (max-width: 1024px) {

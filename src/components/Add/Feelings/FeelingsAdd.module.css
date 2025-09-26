@@ -270,25 +270,6 @@
   justify-content: end;
 }
 
-.attachmentButtons {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.attachmentButton {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: #00f5ff;
-  padding: 0.6rem;
-  border-radius: 12px;
-  transition: all 0.3s ease;
-}
-.attachmentButton:hover {
-  background: rgba(0,245,255,0.1);
-  transform: translateY(-2px);
-  box-shadow: 0 0 10px rgba(0,245,255,0.6);
-}
-
 .characterCounter {
   font-size: 0.9rem;
   color: #888;

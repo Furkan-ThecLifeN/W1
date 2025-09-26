@@ -8,7 +8,7 @@
 .post_card {
   width: 100%;
   max-width: 700px;
-  aspect-ratio: 700 / 580;
+  aspect-ratio: 700 / 600;
   border-radius: 16px;
   overflow: hidden;
   background-color: var(--color-black);
@@ -135,6 +135,8 @@
   scrollbar-width: thin;
   scrollbar-color: #fff transparent;
   text-align: start;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .post_text::-webkit-scrollbar {
@@ -250,7 +252,7 @@
 
 .post_footer_mobile {
   font-size: 14px;
-  max-height: 80px;
+  max-height: 120px;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: #fff transparent;
@@ -266,6 +268,24 @@
   border-radius: 4px;
 }
 
+/* ✅ Tıklanabilir Açıklama Stili: Metnin üzerine gelindiğinde işaretçi imleci (cursor) göster */
+.clickableDescription {
+  cursor: pointer;
+}
+
+/* "Daha Fazla" linki stili */
+.readMore {
+  color: var(--color-blue); /* Canlı bir renk */
+  font-weight: bold;
+  margin-left: 5px;
+  transition: color 0.2s;
+  user-select: none;
+}
+
+.readMore:hover {
+  color: #ff0077;
+}
+
 /* Medya sorgusu */
 @media (max-width: 1024px) {
   .desktop {
@@ -276,5 +296,8 @@
   }
   .post_card_mobile {
     display: block;
+  }
+  .post_text {
+    margin-bottom: 10px;
   }
 }

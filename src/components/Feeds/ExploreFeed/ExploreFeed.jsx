@@ -8,7 +8,8 @@ import {
   getDoc,
   doc,
 } from "firebase/firestore";
-import PostVideoCard from "../FeedVideoCard/FeedVideoCard";
+// Dosya adınız FeedVideoCard olsa da, component adınız PostVideoCard.
+import PostVideoCard from "../FeedVideoCard/FeedVideoCard"; 
 import styles from "./ExploreFeed.module.css";
 import LoadingOverlay from "../../LoadingOverlay/LoadingOverlay";
 import { FiArrowDown, FiArrowUp } from "react-icons/fi";
@@ -43,16 +44,21 @@ export default function ExploreFeed() {
                 feedData.mediaUrl.includes("youtube.com/embed/")
               )
             ) {
+              // ... user data fetching logic ...
               if (feedData.ownerId) {
                 const userRef = doc(db, "users", feedData.ownerId);
                 const userSnap = await getDoc(userRef);
                 if (userSnap.exists()) {
                   const userData = userSnap.data();
+                  // ✅ UID'yi ekleyin, PostVideoCard içinde FollowButton için lazım.
+                  feedData.uid = feedData.ownerId; 
                   feedData.username =
                     feedData.username || userData.username || "Anonim Kullanıcı";
                   feedData.userProfileImage =
                     feedData.userProfileImage || userData.photoURL || "https://i.pravatar.cc/48";
+                  feedData.isPrivate = userData.isPrivate || false; // Gizlilik bilgisini ekleyin
                 } else {
+                  feedData.uid = feedData.ownerId; 
                   feedData.username = "Kullanıcı Bulunamadı";
                   feedData.userProfileImage = "https://i.pravatar.cc/48";
                 }
@@ -122,15 +128,14 @@ export default function ExploreFeed() {
   return (
     <div className={styles.feed} ref={feedRef}>
       {currentFeed && (
+        // ✅ KRİTİK DÜZELTME: Tüm nesneyi 'data' prop'u olarak gönderin.
         <PostVideoCard
           key={currentFeed.id}
-          videoSrc={currentFeed.mediaUrl}
-          description={currentFeed.content}
-          username={currentFeed.username}
-          userProfileImage={currentFeed.userProfileImage}
+          data={currentFeed}
         />
       )}
 
+      {/* Navigasyon Butonları */}
       {activeIndex > 0 && (
         <button
           className={`${styles.navButton} ${styles.prevButton}`}
