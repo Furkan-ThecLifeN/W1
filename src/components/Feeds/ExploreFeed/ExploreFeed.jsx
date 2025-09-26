@@ -8,18 +8,18 @@ import {
   getDoc,
   doc,
 } from "firebase/firestore";
-import PostVideoCard from "../PostVideoCard/PostVideoCard";
+import PostVideoCard from "../FeedVideoCard/FeedVideoCard";
 import styles from "./ExploreFeed.module.css";
 import LoadingOverlay from "../../LoadingOverlay/LoadingOverlay";
-import { FiArrowDown, FiArrowUp } from "react-icons/fi"; // <-- İki ikon da eklendi
+import { FiArrowDown, FiArrowUp } from "react-icons/fi";
 
 export default function ExploreFeed() {
   const [feeds, setFeeds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeIndex, setActiveIndex] = useState(0); 
-  
-  const feedRef = useRef(null); 
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const feedRef = useRef(null);
 
   useEffect(() => {
     const feedsCollection = collection(db, "globalFeeds");
@@ -30,26 +30,28 @@ export default function ExploreFeed() {
       async (snapshot) => {
         try {
           const feedsPromises = snapshot.docs.map(async (docRef) => {
-            const feedData = {
-              id: docRef.id,
-              ...docRef.data(),
-            };
+            const feedData = { id: docRef.id, ...docRef.data() };
 
-            // YouTube Shorts filtreleme
+            if (feedData.privacy && feedData.privacy !== "public") return null;
+
             if (
               feedData.mediaUrl &&
               typeof feedData.mediaUrl === "string" &&
-              (feedData.mediaUrl.includes("youtube.com/shorts/") ||
-                feedData.mediaUrl.includes("youtu.be/"))
+              (
+                feedData.mediaUrl.includes("youtube.com/shorts/") ||
+                feedData.mediaUrl.includes("youtu.be/") ||
+                feedData.mediaUrl.includes("youtube.com/embed/")
+              )
             ) {
               if (feedData.ownerId) {
                 const userRef = doc(db, "users", feedData.ownerId);
                 const userSnap = await getDoc(userRef);
                 if (userSnap.exists()) {
                   const userData = userSnap.data();
-                  feedData.username = userData.username || "Anonim Kullanıcı";
+                  feedData.username =
+                    feedData.username || userData.username || "Anonim Kullanıcı";
                   feedData.userProfileImage =
-                    userData.photoURL || "https://i.pravatar.cc/48";
+                    feedData.userProfileImage || userData.photoURL || "https://i.pravatar.cc/48";
                 } else {
                   feedData.username = "Kullanıcı Bulunamadı";
                   feedData.userProfileImage = "https://i.pravatar.cc/48";
@@ -83,7 +85,6 @@ export default function ExploreFeed() {
     return () => unsubscribe();
   }, []);
 
-  // Buton işlevleri
   const handleNextVideo = () => {
     if (activeIndex < feeds.length - 1) {
       setActiveIndex(activeIndex + 1);
@@ -96,11 +97,9 @@ export default function ExploreFeed() {
     }
   };
 
-  if (loading) {
-    return <LoadingOverlay />;
-  }
+  if (loading) return <LoadingOverlay />;
 
-  if (error) {
+  if (error)
     return (
       <div className={styles.feed}>
         <div className={styles.errorState}>
@@ -108,9 +107,8 @@ export default function ExploreFeed() {
         </div>
       </div>
     );
-  }
 
-  if (feeds.length === 0) {
+  if (feeds.length === 0)
     return (
       <div className={styles.feed}>
         <div className={styles.noFeedsState}>
@@ -118,24 +116,21 @@ export default function ExploreFeed() {
         </div>
       </div>
     );
-  }
 
-  // Sadece aktif olan videoyu render ediyoruz
   const currentFeed = feeds[activeIndex];
 
   return (
     <div className={styles.feed} ref={feedRef}>
       {currentFeed && (
         <PostVideoCard
-          key={currentFeed.id} 
+          key={currentFeed.id}
           videoSrc={currentFeed.mediaUrl}
           description={currentFeed.content}
           username={currentFeed.username}
           userProfileImage={currentFeed.userProfileImage}
         />
       )}
-      
-      {/* Yukarı kaydırma butonu */}
+
       {activeIndex > 0 && (
         <button
           className={`${styles.navButton} ${styles.prevButton}`}
@@ -145,7 +140,6 @@ export default function ExploreFeed() {
         </button>
       )}
 
-      {/* Aşağı kaydırma butonu */}
       {activeIndex < feeds.length - 1 && (
         <button
           className={`${styles.navButton} ${styles.nextButton}`}

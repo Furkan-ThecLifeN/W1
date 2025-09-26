@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styles from "./FeedsAdd.module.css";
-import { FiArrowLeft, FiSend, FiCheck, FiX } from "react-icons/fi";
+import { FiArrowLeft, FiSend, FiCheck, FiX, FiGlobe, FiUsers, FiEye, FiLock } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthProvider";
 import { useUser } from "../../../context/UserContext";
@@ -11,6 +11,7 @@ const FeedsAdd = ({ onClose }) => {
   const [mediaUrl, setMediaUrl] = useState("");
   const [description, setDescription] = useState("");
   const [ownershipAccepted, setOwnershipAccepted] = useState(false);
+  const [privacy, setPrivacy] = useState("public"); // ✅ yeni state
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -19,8 +20,37 @@ const FeedsAdd = ({ onClose }) => {
   const { currentUser } = useUser();
   const { showToast } = useAuth();
 
+  const getPrivacyIcon = () => {
+    switch (privacy) {
+      case "public":
+        return <FiGlobe size={16} />;
+      case "friends":
+        return <FiUsers size={16} />;
+      case "close_friendships":
+        return <FiEye size={16} />;
+      case "private":
+        return <FiLock size={16} />;
+      default:
+        return <FiGlobe size={16} />;
+    }
+  };
+
+  const getPrivacyText = () => {
+    switch (privacy) {
+      case "public":
+        return "Herkese Açık";
+      case "friends":
+        return "Sadece Arkadaşlar";
+      case "close_friendships":
+        return "Yakın Arkadaşlar";
+      case "private":
+        return "Sadece Ben";
+      default:
+        return "Herkese Açık";
+    }
+  };
+
   const handleShare = async () => {
-    // Önceki kontroller
     if (!mediaUrl.trim() || !description.trim()) {
       setError("Lütfen tüm alanları doldurun.");
       showToast("Tüm alanlar zorunludur.", "error");
@@ -63,9 +93,10 @@ const FeedsAdd = ({ onClose }) => {
             Authorization: `Bearer ${idToken}`,
           },
           body: JSON.stringify({
-            postText: description, // ✅ Burayı 'postText' olarak değiştirin
+            postText: description,
             mediaUrl: mediaUrl,
             ownershipAccepted: ownershipAccepted,
+            privacy: privacy, // ✅ backend'e gönderildi
           }),
         }
       );
@@ -89,6 +120,7 @@ const FeedsAdd = ({ onClose }) => {
       setMediaUrl("");
       setDescription("");
       setOwnershipAccepted(false);
+      setPrivacy("public");
       showToast("Feeds başarıyla paylaşıldı!", "success");
 
       setTimeout(() => {
@@ -147,6 +179,28 @@ const FeedsAdd = ({ onClose }) => {
               className={styles.textareaField}
             />
           </div>
+
+          {/* ✅ Yeni Gizlilik Ayarı */}
+          <div className={styles.inputGroup}>
+            <label>Gizlilik Ayarı</label>
+            <div className={styles.privacySelector}>
+              <div className={styles.privacyDisplay}>
+                {getPrivacyIcon()}
+                <span>{getPrivacyText()}</span>
+              </div>
+              <select
+                className={styles.hiddenSelect}
+                value={privacy}
+                onChange={(e) => setPrivacy(e.target.value)}
+              >
+                <option value="public">Herkese Açık</option>
+                <option value="friends">Sadece Arkadaşlar</option>
+                <option value="close_friendships">Yakın Arkadaşlar</option>
+                <option value="private">Sadece Ben</option>
+              </select>
+            </div>
+          </div>
+
           <div className={styles.checkboxGroup}>
             <input
               type="checkbox"

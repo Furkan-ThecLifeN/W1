@@ -1,4 +1,4 @@
-/* Masaüstü ve Genel Tasarım */
+/* 📌 Masaüstü ve Genel Tasarım */
 .container {
   display: flex;
   justify-content: center;
@@ -163,15 +163,16 @@
   color: #ffffff;
 }
 
-/* Mobil için */
+
+/* 📌 Mobil için (max-width: 1024px) */
 @media (max-width: 1024px) {
   .container {
     display: flex;
     flex-direction: column;
     border-radius: 0;
     box-shadow: none;
-    padding-bottom: 50px;
     padding-top: 0;
+    padding-bottom: 50px;
   }
 
   .videoCard {
@@ -205,16 +206,16 @@
     position: fixed;
     top: 0;
     left: 0;
+    z-index: 1000;
     width: 100%;
     height: 50px;
     display: flex;
     flex-direction: row;
     justify-content: space-around;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.9);
-    z-index: 1000;
-    padding: 0 1rem;
     gap: 0;
+    padding: 0 1rem;
+    background-color: rgba(0, 0, 0, 0.9);
     border-radius: 0;
   }
 

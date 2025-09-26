@@ -7,23 +7,39 @@ import {
   FiMoreVertical,
 } from "react-icons/fi";
 import { FaHeart, FaBookmark } from "react-icons/fa";
-import styles from "./PostVideoCard.module.css";
+import styles from "./FeedVideoCard.module.css";
 import { motion, AnimatePresence } from "framer-motion";
 
+/**
+ * Gelen URL'yi (short, youtu.be veya embed) alıp, oynatılabilir bir embed URL'ye dönüştürür.
+ */
 const getYouTubeEmbedUrl = (url) => {
-  const videoIdMatch = url.match(/(?:\/shorts\/|youtu\.be\/|v=)([^&?/]+)/);
-  if (videoIdMatch && videoIdMatch[1]) {
-    const params = new URLSearchParams({
-      autoplay: 1,
-      muted: 0,
-      loop: 1,
-      controls: 1,
-      playlist: videoIdMatch[1],
-      modestbranding: 1,
-    });
-    return `https://www.youtube.com/embed/${videoIdMatch[1]}?${params.toString()}`;
+  let videoId = null;
+
+  if (url.includes("youtube.com/embed/")) {
+    const embedMatch = url.match(/embed\/([^?]+)/);
+    if (embedMatch && embedMatch[1]) {
+      videoId = embedMatch[1].split("?")[0];
+    }
+  } else {
+    const videoIdMatch = url.match(/(?:\/shorts\/|youtu\.be\/|v=)([^&?/]+)/);
+    if (videoIdMatch && videoIdMatch[1]) {
+      videoId = videoIdMatch[1];
+    }
   }
-  return null;
+
+  if (!videoId) return null;
+
+  const params = new URLSearchParams({
+    autoplay: 1,
+    muted: 0,
+    loop: 1,
+    controls: 1,
+    playlist: videoId,
+    modestbranding: 1,
+  });
+
+  return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
 };
 
 export default function PostVideoCard({
@@ -96,10 +112,7 @@ export default function PostVideoCard({
               </span>
               <div className={styles.description}>{description}</div>
             </div>
-            <button
-              onClick={handleFollowClick}
-              className={styles.followButton}
-            >
+            <button onClick={handleFollowClick} className={styles.followButton}>
               {followed ? "Takibi Bırak" : "Takip Et"}
             </button>
           </div>
