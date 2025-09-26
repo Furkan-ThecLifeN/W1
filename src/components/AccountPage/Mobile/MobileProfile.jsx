@@ -1,3 +1,5 @@
+// MobileProfile.jsx
+
 import React, { useState, useEffect } from "react";
 import { IoIosSettings } from "react-icons/io";
 import styles from "./MobileProfile.module.css";
@@ -15,8 +17,11 @@ import {
   where,
 } from "firebase/firestore";
 
-import PostCard from "../Box/PostBox/PostBox";
-import TweetCard from "../Box/FeelingsBox/FeelingsBox";
+// ESKİ KART İMPORTLARI YERİNE YENİLERİ
+// PostCard'ın /components/Post/PostCard yolunda olduğunu varsayıyoruz.
+import PostCard from "../../Post/PostCard"; // Yeni PostCard importu
+import TweetCard from "../../TweetCard/TweetCard"; // Yeni TweetCard importu
+// Geri kalan importlar (VideoThumbnail, VideoFeedItem) yerinde kaldı
 import VideoThumbnail from "../Box/VideoFeedItem/VideoThumbnail/VideoThumbnail";
 import VideoFeedItem from "../Box/VideoFeedItem/VideoFeedItem";
 
@@ -100,6 +105,7 @@ const MobileProfile = () => {
         const processSnapshot = (snapshot, type, likedIds = [], savedIds = []) => {
           let data = snapshot.docs.map(doc => {
             const item = { id: doc.id, ...doc.data() };
+            // Yeni kartların beklediği initialLiked ve initialSaved prop'larını ekliyoruz.
             item.initialLiked = likedIds.includes(item.id);
             item.initialSaved = savedIds.includes(item.id);
             return item;
@@ -203,17 +209,28 @@ const MobileProfile = () => {
     setShowModal(true);
   };
 
+  // Yeni kart prop yapısına göre güncellendi
   const getCardComponent = (item) => {
-    const initialLiked = item?.initialLiked ?? false;
-    const initialSaved = item?.initialSaved ?? false;
+    // initialLiked ve initialSaved item objesi içinde mevcuttur.
+    // Yeni PostCard ve TweetCard bileşenleriniz bu bilgiyi 'data' prop'u içinden almalıdır.
 
     switch (activeTab) {
       case "posts":
       case "likes":
       case "tags":
-        return <PostCard key={item.id} post={item} initialLiked={initialLiked} initialSaved={initialSaved} />;
+        return (
+          <PostCard
+            key={item.id}
+            data={item} // Yeni PostCard'ın 'data' prop'una gönderi verisini iletiyoruz.
+          />
+        );
       case "feelings":
-        return <TweetCard key={item.id} feeling={item} initialLiked={initialLiked} initialSaved={initialSaved} />;
+        return (
+          <TweetCard
+            key={item.id}
+            data={item} // Yeni TweetCard'ın 'data' prop'una duygu verisini iletiyoruz.
+          />
+        );
       case "feeds":
         return (
           <VideoThumbnail

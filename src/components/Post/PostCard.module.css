@@ -125,7 +125,7 @@
   z-index: 2;
 }
 
-.footer_text {
+.post_text {
   max-height: 80px;
   overflow-y: auto;
   width: 100%;
@@ -134,13 +134,14 @@
   color: var(--color-white);
   scrollbar-width: thin;
   scrollbar-color: #fff transparent;
+  text-align: start;
 }
 
-.footer_text::-webkit-scrollbar {
+.post_text::-webkit-scrollbar {
   width: 6px;
 }
 
-.footer_text::-webkit-scrollbar-thumb {
+.post_text::-webkit-scrollbar-thumb {
   background-color: #ffffffaa;
   border-radius: 4px;
 }

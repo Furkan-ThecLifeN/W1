@@ -1,11 +1,10 @@
-import React from "react"; 
+import React from "react";
 import styles from "./TweetCard.module.css";
 import { FiMoreHorizontal } from "react-icons/fi";
-import ActionControls from "../actions/ActionControls"; 
-import { defaultGetAuthToken } from "../actions/api"; 
-import FollowButton from "../FollowButton/FollowButton"; 
+import ActionControls from "../actions/ActionControls";
+import { defaultGetAuthToken } from "../actions/api";
+import FollowButton from "../FollowButton/FollowButton";
 import { useAuth } from "../../context/AuthProvider"; // AuthContext'ten geldiğini varsayıyoruz
-
 
 // Token alma fonksiyonu aynı kalıyor
 const getToken = async () => {
@@ -18,16 +17,15 @@ const getToken = async () => {
 };
 
 const TweetCard = ({ data }) => {
-  
   // ⭐️ DÜZELTME: Bütün React Hook'ları (useAuth dahil) en üstte ve koşulsuz çağrılmalıdır.
   const { currentUser } = useAuth(); // Koşulsuz Çağrı
 
   // data'nın temel alanlarının kontrolünü burada yapabilirsiniz.
   if (!data || !data.id || !data.uid) {
-      console.error("TweetCard: data veya data.id/uid eksik.");
-      return null; 
+    console.error("TweetCard: data veya data.id/uid eksik.");
+    return null;
   }
-  
+
   // Tweet'in sahibinin oturum açmış kullanıcı olup olmadığını kontrol et
   // Bu kontrol, hook çağrısı değildir, bu yüzden burada kalabilir.
   const isOwnFeeling = currentUser?.uid === data.uid;
@@ -36,11 +34,11 @@ const TweetCard = ({ data }) => {
     // data.id'nin kontrolü yukarıda yapıldığı için burada tekrar if (!data.id) gerekmez
     return (
       <ActionControls
-        targetType="feeling" 
+        targetType="feeling"
         targetId={data.id}
         getAuthToken={getToken}
-        postOwnerUid={data.uid} 
-        commentsDisabled={data.commentsDisabled || false} 
+        postOwnerUid={data.uid}
+        commentsDisabled={data.commentsDisabled || false}
       />
     );
   };
@@ -50,21 +48,16 @@ const TweetCard = ({ data }) => {
       <div className={styles.header}>
         <div className={styles.user}>
           <div className={styles.avatar_widget}>
-            <img
-              src={data.photoURL}
-              alt="avatar"
-              className={styles.avatar}
-            />
+            <img src={data.photoURL} alt="avatar" className={styles.avatar} />
           </div>
           <span className={styles.username}>{data.displayName}</span>
         </div>
         <div className={styles.actions}>
-          
           {/* Sadece Kendi Tweet'imiz DEĞİLSE FollowButton'ı göster */}
           {!isOwnFeeling && (
             <FollowButton
               targetUid={data.uid}
-              isTargetPrivate={data.isPrivate || false} 
+              isTargetPrivate={data.isPrivate || false}
             />
           )}
 
@@ -72,11 +65,11 @@ const TweetCard = ({ data }) => {
         </div>
       </div>
 
-      <div className={styles.content}>{data.text}</div>
-
-      <div className={styles.footer}>
-        {renderActionControls()} 
+      <div className={`${styles.content} ${styles.feelings_text}`}>
+        {data.text}
       </div>
+
+      <div className={styles.footer}>{renderActionControls()}</div>
     </div>
   );
 };
