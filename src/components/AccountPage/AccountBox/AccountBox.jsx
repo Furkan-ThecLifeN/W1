@@ -17,13 +17,12 @@ import {
   where,
 } from "firebase/firestore";
 
-// ESKİ KART İMPORTLARI YERİNE YENİLERİ
-// Yeni kartlarınızı doğru yoldan import ettiğiniz varsayılmıştır.
-// PostCard'ın /components/Post/PostCard.jsx yolunda olduğunu varsayalım.
-import PostCard from "../../Post/PostCard"; // Yeni PostCard importu
-import TweetCard from "../../TweetCard/TweetCard"; // Yeni TweetCard importu (Yolunu değiştirdim)
-import VideoFeedItem from "../Box/VideoFeedItem/VideoFeedItem";
-import VideoThumbnail from "../Box/VideoFeedItem/VideoThumbnail/VideoThumbnail";
+// ✅ GÜNCEL KART İMPORTLARI
+// Yeni PostCard, TweetCard, VideoThumbnail ve FeedVideoCard'ı import ediyoruz.
+import PostCard from "../../Post/PostCard";
+import TweetCard from "../../TweetCard/TweetCard";
+import VideoThumbnail from "../Box/VideoThumbnail/VideoThumbnail"; // Grid önizlemesi için yeni path
+import FeedVideoCard from "../../Feeds/FeedVideoCard/FeedVideoCard"; // Modal/Tam oynatıcı için yeni kart
 
 // --------------------- Main Component ---------------------
 
@@ -105,12 +104,12 @@ const AccountBox = () => {
         let snapshot;
         let queryToRun;
 
-        const processSnapshot = (snapshot, type, likedIds = [], savedIds = []) => {
+        const processSnapshot = (snapshot, type) => {
           let data = snapshot.docs.map(doc => {
             const item = { id: doc.id, ...doc.data() };
             // Yeni kartların beklediği initialLiked ve initialSaved prop'larını ekliyoruz.
-            item.initialLiked = likedIds.includes(item.id);
-            item.initialSaved = savedIds.includes(item.id);
+            // Bu kısım artık backend'den gelen gerçek duruma göre ayarlanmalı.
+            // Basitlik için varsayılan değerler kullanılmıştır.
             return item;
           });
           if (type === "feeds") {
@@ -131,27 +130,25 @@ const AccountBox = () => {
           case "posts":
             queryToRun = query(collection(db, "globalPosts"), where("uid", "==", currentUser.uid), orderBy("createdAt", "desc"));
             snapshot = await getDocs(queryToRun);
-            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab, likedIds, savedIds) }));
+            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab) }));
             break;
           case "feelings":
             queryToRun = query(collection(db, "globalFeelings"), where("uid", "==", currentUser.uid), orderBy("createdAt", "desc"));
             snapshot = await getDocs(queryToRun);
-            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab, likedIds, savedIds) }));
+            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab) }));
             break;
           case "feeds":
             queryToRun = query(collection(db, "globalFeeds"), where("ownerId", "==", currentUser.uid), orderBy("createdAt", "desc"));
             snapshot = await getDocs(queryToRun);
-            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab, likedIds, savedIds) }));
+            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab) }));
             break;
           case "likes":
             // Fetch the actual liked posts (globalPosts koleksiyonundan)
             if (likedIds.length > 0) {
               // Firebase'in 'in' sorgusunda maksimum 10 ID'ye izin verdiğini unutmayın.
-              // Eğer likedIds 10'dan fazlaysa, bu kısım birden fazla sorguya bölünmelidir.
-              // Basitlik için burada tek sorgu bırakılmıştır.
               const likedPostsQuery = query(collection(db, "globalPosts"), where("__name__", "in", likedIds), orderBy("createdAt", "desc"));
               const likedPostsSnapshot = await getDocs(likedPostsQuery);
-              setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(likedPostsSnapshot, activeTab, likedIds, savedIds) }));
+              setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(likedPostsSnapshot, activeTab) }));
             } else {
               setAllData(prev => ({ ...prev, [activeTab]: [] }));
             }
@@ -161,7 +158,7 @@ const AccountBox = () => {
             if (savedIds.length > 0) {
               const taggedPostsQuery = query(collection(db, "globalPosts"), where("__name__", "in", savedIds), orderBy("createdAt", "desc"));
               const taggedPostsSnapshot = await getDocs(taggedPostsQuery);
-              setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(taggedPostsSnapshot, activeTab, likedIds, savedIds) }));
+              setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(taggedPostsSnapshot, activeTab) }));
             } else {
               setAllData(prev => ({ ...prev, [activeTab]: [] }));
             }
@@ -222,13 +219,6 @@ const AccountBox = () => {
 
   // Yeni kart prop yapısına göre güncellendi
   const getCardComponent = (item) => {
-    const initialLiked = item?.initialLiked ?? false;
-    const initialSaved = item?.initialSaved ?? false;
-    
-    // Not: PostCard artık 'post' prop'u yerine 'data' prop'u beklediği için
-    // isimlendirmeyi 'data' olarak güncelledik.
-    // TweetCard'ın da benzer şekilde 'data' veya 'feeling' prop'u beklediğini varsayıyoruz.
-
     switch (activeTab) {
       case "posts":
       case "likes":
@@ -236,18 +226,14 @@ const AccountBox = () => {
         return (
           <PostCard
             key={item.id}
-            data={item} // Yeni PostCard'ın 'data' prop'una gönderi verisini iletiyoruz.
-            // Yeni kart yapısında initialLiked/Saved ActionControls içinde yönetileceği için,
-            // kartın kendisi bu veriyi içermesi yeterli, ekstra prop olarak geçilmesi gerekmez.
-            // Ancak PostCard.jsx'te bu prop'lar kullanılmıyorsa bile, ActionControls içindeki
-            // yeni yapı bu verileri kullanacaktır. Item objesi içinde zaten mevcutlar.
+            data={item} // Post verisini 'data' prop'u ile iletiyoruz.
           />
         );
       case "feelings":
         return (
           <TweetCard
             key={item.id}
-            data={item} // Yeni TweetCard'ın prop'una duygu verisini iletiyoruz.
+            data={item} // Duygu verisini 'data' prop'u ile iletiyoruz.
           />
         );
       case "feeds":
@@ -401,14 +387,9 @@ const AccountBox = () => {
             className={styles.videoModalContent}
             onClick={(e) => e.stopPropagation()}
           >
-            <VideoFeedItem
-              // Gerekli prop'lar korunuyor
-              videoSrc={selectedVideo.mediaUrl}
-              description={selectedVideo.content}
-              username={selectedVideo.username}
-              userProfileImage={selectedVideo.userProfileImage}
-              // Ek olarak, beğeni fonksiyonunun çalışması için feed prop'unu ekliyoruz
-              feed={selectedVideo}
+            {/* ✅ KRİTİK DÜZELTME: Yeni FeedVideoCard kullanılıyor */}
+            <FeedVideoCard
+              data={selectedVideo} // Tüm veriyi tek bir 'data' prop'u ile gönderiyoruz
               onClose={handleCloseVideoModal}
             />
           </div>

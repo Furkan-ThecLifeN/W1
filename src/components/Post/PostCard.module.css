@@ -50,8 +50,6 @@
 .avatar_widget {
   width: 48px;
   height: 48px;
-  /*   border: 2px solid #00ff1e;
- */
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -268,14 +266,12 @@
   border-radius: 4px;
 }
 
-/* ✅ Tıklanabilir Açıklama Stili: Metnin üzerine gelindiğinde işaretçi imleci (cursor) göster */
 .clickableDescription {
   cursor: pointer;
 }
 
-/* "Daha Fazla" linki stili */
 .readMore {
-  color: var(--color-blue); /* Canlı bir renk */
+  color: var(--color-blue);
   font-weight: bold;
   margin-left: 5px;
   transition: color 0.2s;
@@ -286,7 +282,22 @@
   color: #ff0077;
 }
 
-/* Medya sorgusu */
+.mobile_modal_overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.mobile_modal_content {
+  width: 100%;
+  max-width: 600px;
+  padding: 10px;
+}
+
 @media (max-width: 1024px) {
   .desktop {
     display: none;

@@ -1,0 +1,44 @@
+/*
+ * PostThumbnail.module.css
+ * Bu stiller, Instagram veya TikTok'taki gibi profil gridi içindeki gönderi görsellerini hedefler.
+ */
+
+.thumbnail_container {
+  width: 100%;
+  padding-bottom: 100%; /* Yüksekliği genişliğe eşitlemek için kullanılır */
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  background-color: var(--color-background-secondary, #282828); /* Yüklenirken veya görsel yokken arka plan */
+  transition: transform 0.2s ease-in-out;
+  border-radius: 12px;
+  margin: 12px;
+}
+
+.thumbnail_container:hover {
+  transform: scale(0.98); /* Hafif küçülme efekti ile tıklanabilirliği vurgular */
+}
+
+.thumbnail_image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* Görselin kabı tamamen doldurmasını sağlar ve en-boy oranını korur */
+  object-fit: cover;
+}
+
+.multiple_indicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  /* İkonun okunabilirliği için hafif yarı saydam arka plan */
+  background-color: rgba(0, 0, 0, 0.4); 
+  border-radius: 4px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10; /* Diğer içeriğin üzerinde kalmasını sağlar */
+}

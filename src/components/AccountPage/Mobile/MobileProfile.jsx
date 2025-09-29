@@ -17,13 +17,12 @@ import {
   where,
 } from "firebase/firestore";
 
-// ESKİ KART İMPORTLARI YERİNE YENİLERİ
-// PostCard'ın /components/Post/PostCard yolunda olduğunu varsayıyoruz.
-import PostCard from "../../Post/PostCard"; // Yeni PostCard importu
-import TweetCard from "../../TweetCard/TweetCard"; // Yeni TweetCard importu
-// Geri kalan importlar (VideoThumbnail, VideoFeedItem) yerinde kaldı
-import VideoThumbnail from "../Box/VideoFeedItem/VideoThumbnail/VideoThumbnail";
-import VideoFeedItem from "../Box/VideoFeedItem/VideoFeedItem";
+// GÜNCEL KART İMPORTLARI
+import PostCard from "../../Post/PostCard"; // Tam gönderi kartı
+import TweetCard from "../../TweetCard/TweetCard"; // Duygu kartı
+import PostThumbnail from "../Box/PostThumbnail/PostThumbnail";
+import VideoThumbnail from "../Box/VideoThumbnail/VideoThumbnail";
+import FeedVideoCard from "../../Feeds/FeedVideoCard/FeedVideoCard"; // Tam ekran video kartı
 
 const MobileProfile = () => {
   const { currentUser, loading } = useUser();
@@ -41,13 +40,18 @@ const MobileProfile = () => {
   const [modalType, setModalType] = useState(null);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
+  
+  // ✅ YENİ: POST MODAL STATE'LERİ
+  const [showPostModal, setShowPostModal] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
+
   const [postCounts, setPostCounts] = useState({
     posts: 0,
     feelings: 0,
     feeds: 0,
   });
 
-  // ---------------- COUNT POSTS ----------------
+  // ---------------- COUNT POSTS ---------------- (Değişiklik yok)
   useEffect(() => {
     const fetchPostCounts = async () => {
       if (!currentUser?.uid) return;
@@ -86,7 +90,7 @@ const MobileProfile = () => {
     }
   }, [currentUser]);
 
-  // ---------------- FETCH DATA BASED ON ACTIVE TAB ----------------
+  // ---------------- FETCH DATA BASED ON ACTIVE TAB ---------------- (Değişiklik yok)
   useEffect(() => {
     const fetchTabData = async () => {
       if (!currentUser || !currentUser.uid) return;
@@ -198,6 +202,23 @@ const MobileProfile = () => {
     setSelectedVideo(null);
   };
 
+  // ✅ YENİ: POST MODAL HANDLER'LARI
+  const handlePostClick = (postData) => {
+    if (postData && postData.id) {
+      // Gerekirse burada PostCard'ın ihtiyaç duyacağı ek verileri ekleyebiliriz
+      setSelectedPost(postData);
+      setShowPostModal(true);
+    } else {
+      console.error("Geçersiz gönderi verisi:", postData);
+    }
+  };
+
+  const handleClosePostModal = () => {
+    setShowPostModal(false);
+    setSelectedPost(null);
+  };
+
+
   if (loading) return <LoadingOverlay />;
   if (!currentUser) return <div>Lütfen giriş yapın.</div>;
 
@@ -211,24 +232,23 @@ const MobileProfile = () => {
 
   // Yeni kart prop yapısına göre güncellendi
   const getCardComponent = (item) => {
-    // initialLiked ve initialSaved item objesi içinde mevcuttur.
-    // Yeni PostCard ve TweetCard bileşenleriniz bu bilgiyi 'data' prop'u içinden almalıdır.
-
     switch (activeTab) {
       case "posts":
       case "likes":
       case "tags":
+        // ✅ DÜZELTME: Artık PostCard yerine PostThumbnail kullanılıyor
         return (
-          <PostCard
+          <PostThumbnail
             key={item.id}
-            data={item} // Yeni PostCard'ın 'data' prop'una gönderi verisini iletiyoruz.
+            data={item} // Post verisini 'data' prop'u ile iletiyoruz.
+            onClick={handlePostClick} // Tıklama olayını PostModal'ı açacak şekilde ayarlıyoruz.
           />
         );
       case "feelings":
         return (
           <TweetCard
             key={item.id}
-            data={item} // Yeni TweetCard'ın 'data' prop'una duygu verisini iletiyoruz.
+            data={item} // Duygu verisini 'data' prop'u ile iletiyoruz.
           />
         );
       case "feeds":
@@ -359,12 +379,13 @@ const MobileProfile = () => {
           <LoadingOverlay />
         ) : currentData.length > 0 ? (
           <div
+            // posts, likes, tags için PostThumbnail'ın sığacağı bir grid yapısı gerekiyor.
             className={
               activeTab === "feelings"
                 ? styles.feelingsGrid
                 : activeTab === "feeds"
                 ? styles.feedsGrid
-                : styles.postsGrid
+                : styles.postsGrid // Artık burada PostThumbnail'lar gösterilecek.
             }
           >
             {currentData.map(getCardComponent)}
@@ -382,6 +403,7 @@ const MobileProfile = () => {
           currentUserId={uid}
         />
       )}
+      
       {showVideoModal && selectedVideo && (
         <div
           className={styles.videoModalOverlay}
@@ -391,15 +413,32 @@ const MobileProfile = () => {
             className={styles.videoModalContent}
             onClick={(e) => e.stopPropagation()}
           >
-            <VideoFeedItem
-              videoSrc={selectedVideo.mediaUrl}
-              description={selectedVideo.content}
-              username={selectedVideo.username}
-              userProfileImage={selectedVideo.userProfileImage}
-              feed={selectedVideo}
+            <FeedVideoCard
+              data={selectedVideo} 
               onClose={handleCloseVideoModal}
-              isMobile={true}
             />
+          </div>
+        </div>
+      )}
+
+      {/* ✅ YENİ: POST MODALI */}
+      {showPostModal && selectedPost && (
+        <div 
+          className={styles.videoModalOverlay} // Tam ekran arka plan karartması
+          onClick={handleClosePostModal} // Dışarı tıklama ile kapatma
+        >
+          <div 
+            // Modal içeriğini PostCard'ın sığabileceği şekilde ayarlayın
+            className={`${styles.videoModalContent} ${styles.postModalContent}`} 
+            onClick={(e) => e.stopPropagation()} // İçeriğe tıklamayı engelle
+          >
+            {/* PostCard'ı modal içeriği olarak göster */}
+            <PostCard 
+              data={selectedPost}
+              // Modal içinde gösterildiği için followStatus'u ekleyelim (mevcut data'da varsa)
+              followStatus={selectedPost.followStatus || "none"}
+            />
+            {/* Kullanıcı deneyimi için basit bir kapatma butonu */}
           </div>
         </div>
       )}

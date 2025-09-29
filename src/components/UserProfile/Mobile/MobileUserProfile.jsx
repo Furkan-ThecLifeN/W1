@@ -17,11 +17,16 @@ import {
   getDoc,
 } from "firebase/firestore";
 
-// Importing the content components
-import PostCard from "../../AccountPage/Box/PostBox/PostBox";
-import TweetCard from "../../AccountPage/Box/FeelingsBox/FeelingsBox";
-import VideoThumbnail from "../../AccountPage/Box/VideoFeedItem/VideoThumbnail/VideoThumbnail";
-import VideoFeedItem from "../../AccountPage/Box/VideoFeedItem/VideoFeedItem";
+// Yeni İçerik Bileşenlerini Import Etme (Box kartları ile değiştirildi)
+import PostCard from "../../Post/PostCard";
+import TweetCard from "../../TweetCard/TweetCard";
+// Grid için küçük önizleme kartı
+import VideoThumbnail from "../../AccountPage/Box/VideoThumbnail/VideoThumbnail";
+// Modal içindeki tam oynatıcı kartı
+import FeedVideoCard from "../../Feeds/FeedVideoCard/FeedVideoCard";
+// ✅ YENİ İMPORT: Post Thumbnail Bileşeni
+import PostThumbnail from "../../AccountPage/Box/PostThumbnail/PostThumbnail"; // Yolu kontrol ettim: "../Box/PostThumbnail/PostThumbnail"
+
 import {
   FaUserPlus,
   FaUserMinus,
@@ -58,6 +63,11 @@ const MobileUserProfile = () => {
   const [hasMore, setHasMore] = useState({});
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
+  
+  // ✅ YENİ: POST MODAL STATE'LERİ
+  const [showPostModal, setShowPostModal] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
+
   const [contentCounts, setContentCounts] = useState({
     posts: 0,
     feeds: 0,
@@ -413,19 +423,52 @@ const MobileUserProfile = () => {
     setShowVideoModal(false);
     setSelectedVideo(null);
   };
+  
+  // ✅ YENİ: POST MODAL HANDLER'LARI
+  const handlePostClick = (postData) => {
+    if (postData && postData.id) {
+      // Follow status'ü profil verisinden alarak PostCard'a iletmek üzere hazırlıyoruz.
+      // Dışarıdan bakılan bir profil olduğu için followStatus prop'u gerekli.
+      const postWithStatus = { ...postData, followStatus: followStatus }; 
+      setSelectedPost(postWithStatus);
+      setShowPostModal(true);
+    } else {
+      console.error("Geçersiz gönderi verisi:", postData);
+    }
+  };
 
+  const handleClosePostModal = () => {
+    setShowPostModal(false);
+    setSelectedPost(null);
+  };
+
+  /**
+   * Yeni kart bileşenlerini (PostThumbnail, TweetCard, VideoThumbnail) kullanarak içeriği render eder.
+   * Propları 'data={item}' şeklinde güncellenmiştir.
+   */
   const getCardComponent = (item) => {
     const type = item.originalType || activeTab;
 
     switch (type) {
       case "globalPosts":
       case "posts":
-        return <PostCard key={item.id} post={item} />;
+      case "likes":
+      case "tags":
+        // ✅ DÜZELTME: Artık PostCard yerine PostThumbnail kullanılıyor
+        return (
+          <PostThumbnail
+            key={item.id}
+            data={item} // Post verisini 'data' prop'u ile iletiyoruz.
+            onClick={handlePostClick} // Tıklama olayını PostModal'ı açacak şekilde ayarlıyoruz.
+          />
+        );
       case "globalFeelings":
       case "feelings":
-        return <TweetCard key={item.id} feeling={item} />;
+        // Yeni TweetCard'ı 'data' prop'u ile kullan
+        return <TweetCard key={item.id} data={item} />;
       case "globalFeeds":
       case "feeds":
+        // Grid için VideoThumbnail'ı kullan
         return (
           <VideoThumbnail
             key={item.id}
@@ -680,15 +723,36 @@ const MobileUserProfile = () => {
             className={styles.videoModalContent}
             onClick={(e) => e.stopPropagation()}
           >
-            <VideoFeedItem
-              videoSrc={selectedVideo.mediaUrl}
-              description={selectedVideo.content}
-              username={selectedVideo.username}
-              userProfileImage={selectedVideo.userProfileImage}
-              feed={selectedVideo}
+            {/* Yeni FeedVideoCard'ı 'data' prop'u ile kullan */}
+            <FeedVideoCard
+              data={selectedVideo} // Tüm video verisini tek bir prop ile gönder
               onClose={handleCloseVideoModal}
               isMobile={true}
             />
+          </div>
+        </div>
+      )}
+
+      {/* ✅ YENİ: POST MODALI */}
+      {showPostModal && selectedPost && (
+        <div 
+          className={styles.videoModalOverlay} // Video modalının overlay stilini tekrar kullanıyoruz.
+          onClick={handleClosePostModal} // Dışarı tıklama ile kapatma
+        >
+          <div 
+            // PostCard'ın sığabileceği bir modal içeriği stili gerekiyor
+            className={`${styles.videoModalContent} ${styles.postModalContent}`} 
+            onClick={(e) => e.stopPropagation()} // İçeriğe tıklamayı engelle
+          >
+            {/* PostCard'ı modal içeriği olarak göster */}
+            <PostCard 
+              data={selectedPost}
+              followStatus={selectedPost.followStatus || "none"}
+              // PostCard'ın içindeki aksiyonlar için followStatus'ü güncel tutmasını sağlamak için
+              // Gerekirse bu prop PostCard'ın içindeki FollowButton'a iletilmeli.
+            />
+            {/* Kullanıcı deneyimi için basit bir kapatma butonu */}
+            <button className={styles.closePostModalButton} onClick={handleClosePostModal}>X</button>
           </div>
         </div>
       )}

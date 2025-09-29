@@ -4,7 +4,7 @@
   background: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
-  z-index: 1000;
+  z-index: 2000;
 }
 
 .modal {
@@ -37,8 +37,9 @@
   position: relative;
   margin-bottom: 20px;
   padding-bottom: 8px;
-/*   border-bottom: 1px solid #202020;
- */}
+  /*   border-bottom: 1px solid #202020;
+ */
+}
 
 .header h3 {
   font-size: 1.25rem;
@@ -139,7 +140,7 @@
   transition: background-color 0.2s ease;
   flex-shrink: 0;
 
-/*   pointer-events: none; 
+  /*   pointer-events: none; 
   opacity: 0.6;  */
 }
 
@@ -157,8 +158,9 @@
   gap: 12px;
   justify-content: space-around;
   padding-top: 16px;
-/*   border-top: 1px solid #202020;
- */}
+  /*   border-top: 1px solid #202020;
+ */
+}
 
 .socialBtn {
   display: flex;
@@ -190,6 +192,12 @@
   margin-top: 20px;
 }
 
+@media (max-width: 1024px) {
+  .modal {
+    margin-bottom: 40px;
+  }
+}
+
 @media (max-width: 480px) {
   .modal {
     border-radius: 0;
@@ -203,7 +211,6 @@
     width: 100%;
     border-radius: 0;
     padding: 20px 14px;
-    bottom: 30px;
   }
 
   .header h3 {

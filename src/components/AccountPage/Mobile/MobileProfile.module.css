@@ -155,12 +155,12 @@
   display: inline-block;
   padding: 6px 12px;
   background: var(--special-color);
-  color: #14369a; /* Uyumlu lacivert ton */
+  color: #14369a;
   font-size: 12px;
   font-weight: 600;
   border-radius: 20px;
   margin-bottom: 8px;
-  box-shadow: 0 2px 8px rgba(124, 144, 255, 0.4); /* Hafif mavi/lavanta tonlu gölge */
+  box-shadow: 0 2px 8px rgba(124, 144, 255, 0.4);
 }
 
 .bioText {
@@ -231,9 +231,6 @@
 }
 
 /* Tabs */
-
-
-
 .tabs {
   display: flex;
   position: sticky;
@@ -270,7 +267,6 @@
 }
 
 /* Tab Content */
-
 .postsGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -353,7 +349,7 @@
     flex-direction: column;
     align-items: center;
     gap: 12px;
-    padding: 0 12px; /* Kenarlardan boşluk ver */
+    padding: 0 12px;
   }
 
   .stat_content {
@@ -407,9 +403,7 @@
   }
 }
 
-
 /* Mobile Post */
-
 .mobilePreviewBtn {
   display: block;
   margin: 16px auto;
@@ -455,9 +449,6 @@
   cursor: pointer;
 }
 
-
-/* ... existing styles ... */
-
 /* Feelings Grid container */
 .feelingsGrid {
   display: flex;
@@ -479,73 +470,95 @@
 /* Yalnızca mobil görünümdeki FeelingsBox kartları */
 @media (max-width: 768px) {
   .feelingsGrid {
-    padding: 8px; /* Mobil görünümde kenar boşluklarını azalt */
+    display: flex;
+    flex-wrap: wrap; /* Birden fazla satır olursa taşsın */
+    justify-content: space-between; /* Aralığı eşit dağıt */
+    gap: 10px; /* Kartlar arasında eşit boşluk */
+    padding: 8px;
   }
 
   /* FeelingsBox mobil kartını doğrudan hedefle */
   .feelingsGrid > :global(.FeelingsBox_mobile) {
-    display: flex; /* Display'i flex yapın ki yan yana dursunlar */
-    flex-direction: column; /* Dikey sıralama */
-    align-items: center; /* Ortaya hizala */
-    justify-content: flex-start; /* Başlangıca hizala */
-    width: 100%;
-    max-width: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    width: calc(50% - 5px); /* 2 kart yan yana, aralarında gap 10px */
     background-color: transparent;
-    border-radius: 0;
+    border-radius: 8px; /* hafif yumuşak köşeler */
     padding: 10px 0;
     margin: 0;
   }
 }
 
 /* Feeds Grid for Mobile */
-.feedsGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  padding: 10px;
+@media (max-width: 768px) {
+  .feedsGrid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between; /* Kartlar arasında eşit boşluk */
+    gap: 10px; /* Kartlar arasında eşit boşluk */
+    padding: 10px;
+  }
+
+  .feedsGrid > * {
+    flex: 0 0 calc(33.33% - 6.66px); /* 3 kart yan yana, aralarında gap 10px */
+    margin: 0;
+  }
 }
 
-/* Video Modal */
+
 .videoModalOverlay {
   position: fixed;
   top: 0;
   left: 0;
+  right: 0;
+  bottom: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.95); /* Arka planı daha koyu yaptık */
+  background-color: rgba(0, 0, 0, 0.95); 
+  
+  /* KRİTİK: Z-INDEX 2000 veya daha yüksek olmalı */
+  z-index: 2000; 
+  
+  /* İçeriği ortalama */
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 2000;
+  
+  overflow-y: auto; 
+  -webkit-overflow-scrolling: touch;
+  padding: 10px; 
 }
 
+/* 2. Video Modal İçeriği (FeedVideoCard için - Tam Ekran deneyimi) */
 .videoModalContent {
+  justify-content: center;
+  align-items: center;
   width: 100%;
   height: 100%;
   max-width: none;
   max-height: none;
-  background: transparent; /* İçerik rengi aradan kalksın */
-  border-radius: 0; /* Köşe yuvarlaklıkları kalksın */
-  overflow: hidden; /* Taşmayı engelle */
+  background: transparent; 
+  border-radius: 0; 
+  overflow: hidden; 
   position: relative;
   padding: 0;
   display: flex;
   flex-direction: column;
 }
 
-.closeButton {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  z-index: 2001; /* Modalın üstünde olsun */
-  font-size: 32px;
-  color: var(--color-white);
-  transition: transform 0.2s ease-in-out;
-}
-
-.closeButton:hover {
-  transform: scale(1.1);
+.postModalContent {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--color-black);
+  border-radius: 10px;
+  max-width: 100%; 
+  width: 100%;
+  height: auto;
+  max-height: 95vh;  
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
 }

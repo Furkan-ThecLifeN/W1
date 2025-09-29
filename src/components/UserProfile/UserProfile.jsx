@@ -17,12 +17,10 @@ import {
 import axios from "axios";
 import { db } from "../../config/firebase-client";
 import { collection, query, getDocs, orderBy, where } from "firebase/firestore";
-
-// Importing the content components
-import PostCard from "../AccountPage/Box/PostBox/PostBox";
-import TweetCard from "../AccountPage/Box/FeelingsBox/FeelingsBox";
-import VideoThumbnail from "../AccountPage/Box/VideoFeedItem/VideoThumbnail/VideoThumbnail";
-import VideoFeedItem from "../AccountPage/Box/VideoFeedItem/VideoFeedItem";
+import PostCard from "../Post/PostCard";
+import TweetCard from "../TweetCard/TweetCard";
+import PostVideoCard from "../Feeds/FeedVideoCard/FeedVideoCard"
+import VideoThumbnail from "../AccountPage/Box/VideoThumbnail/VideoThumbnail";
 
 const UserProfile = () => {
   const { username } = useParams();
@@ -93,7 +91,6 @@ const UserProfile = () => {
     };
   }, [currentUser]);
 
-  // Yeni ve daha sağlam profil çekme mantığı
   useEffect(() => {
     let mounted = true;
     console.log("API BASE URL:", apiBaseUrl);
@@ -101,8 +98,6 @@ const UserProfile = () => {
       setLoading(true);
       setError(null);
       try {
-        // 1. Her zaman herkese açık olan profil verilerini çek
-        // Bu çağrı artık stats verilerini de getirecek
         const profileRes = await dedupedFetch(`profile/${username}`, () =>
           axiosInstance.current.get(`/api/users/profile/${username}`)
         );
@@ -110,7 +105,6 @@ const UserProfile = () => {
         if (!mounted) return;
         const profile = profileRes.data.profile;
 
-        // 2. Eğer kullanıcı giriş yapmışsa, takip durumunu çek
         let currentFollowStatus = "none";
         if (currentUser) {
           const idToken = await currentUser.getIdToken();
@@ -132,7 +126,7 @@ const UserProfile = () => {
 
         if (mounted) {
           setFollowStatus(currentFollowStatus);
-          setProfileData(profile); // Tüm veriler zaten profile nesnesinin içinde
+          setProfileData(profile);
         }
       } catch (err) {
         console.error(
@@ -153,7 +147,6 @@ const UserProfile = () => {
     };
   }, [username, currentUser]);
 
-  // ---------------- FETCH AND CACHE LIKES/TAGS IDs ONCE ----------------
   useEffect(() => {
     let mounted = true;
     if (!profileData?.uid) return;
@@ -176,7 +169,6 @@ const UserProfile = () => {
     };
   }, [profileData?.uid]);
 
-  // Helper function to chunk large arrays for Firestore `in` queries (limit 10)
   const chunkArray = (arr, size) => {
     const result = [];
     for (let i = 0; i < arr.length; i += size) {
@@ -185,7 +177,6 @@ const UserProfile = () => {
     return result;
   };
 
-  // Helper function to fetch posts by IDs with chunking
   const fetchPostsByIds = async (ids) => {
     if (!ids || ids.length === 0) return [];
     const chunks = chunkArray(ids, 10);
@@ -202,7 +193,6 @@ const UserProfile = () => {
     return items;
   };
 
-  // ---------------- FETCH DATA BASED ON ACTIVE TAB ----------------
   useEffect(() => {
     let mounted = true;
     const fetchTabData = async () => {
@@ -223,12 +213,36 @@ const UserProfile = () => {
         const processSnapshot = (docs, type) => {
           const likedIds = cachedLikedIdsRef.current;
           const savedIds = cachedSavedIdsRef.current;
-          let data = docs.map((item) => ({
-            id: item.id,
-            ...item,
-            initialLiked: likedIds.includes(item.id),
-            initialSaved: savedIds.includes(item.id),
-          }));
+          
+          const commonUserData = {
+            displayName: profileData.displayName,
+            photoURL: profileData.photoURL,
+            username: profileData.username,
+            isPrivate: profileData.isPrivate,
+            uid: profileData.uid,
+          };
+          
+          let data = docs.map((item) => {
+            const itemId = item.id || item.__name__;
+            const isLiked = likedIds.includes(itemId);
+            const isSaved = savedIds.includes(itemId);
+            
+            const feedSpecificData = (type === "feeds" || item.mediaUrl) ? {
+              ownerId: item.uid || item.ownerId,
+              userProfileImage: commonUserData.photoURL,
+              username: commonUserData.username,
+            } : {};
+
+            return {
+              id: itemId,
+              ...item,
+              ...commonUserData,
+              ...feedSpecificData,
+              initialLiked: isLiked,
+              initialSaved: isSaved,
+            };
+          });
+          
           if (type === "feeds") {
             data = data.filter((item) => item.mediaUrl);
           }
@@ -376,7 +390,6 @@ const UserProfile = () => {
           return;
       }
 
-      // Optimistic UI update
       setFollowStatus((prev) => {
         if (prev === "none") return isPrivate ? "pending" : "following";
         return "none";
@@ -396,7 +409,6 @@ const UserProfile = () => {
         response = await axiosInstance.current.delete(endpoint, { headers });
       }
 
-      // API yanıtına göre güncelle
       setFollowStatus(response.data.status || "none");
 
       if (response.data.newStats) {
@@ -409,7 +421,7 @@ const UserProfile = () => {
       showToast(response.data.message, "success");
     } catch (err) {
       console.error("Takip işlemi hatası:", err.response?.data || err.message);
-      setFollowStatus(previousFollowStatus); // Hata durumunda eski durumu geri al
+      setFollowStatus(previousFollowStatus);
       const errorMsg = err.response?.data?.error || "Takip işlemi başarısız.";
       showToast(errorMsg, "error");
     } finally {
@@ -476,7 +488,15 @@ const UserProfile = () => {
 
   const handleVideoClick = (videoData) => {
     if (videoData && videoData.mediaUrl) {
-      setSelectedVideo(videoData);
+      const fullVideoData = {
+        ...videoData,
+        uid: videoData.ownerId,
+        username: profileData.username,
+        userProfileImage: profileData.photoURL,
+        isPrivate: profileData.isPrivate,
+        displayName: profileData.displayName,
+      };
+      setSelectedVideo(fullVideoData);
       setShowVideoModal(true);
     }
   };
@@ -515,22 +535,40 @@ const UserProfile = () => {
 
   const getCardComponent = (item) => {
     const type = item.originalType || activeTab;
+    
+    const cardData = {
+      ...item,
+      uid: profileData.uid,
+      displayName: profileData.displayName,
+      photoURL: profileData.photoURL,
+      isPrivate: profileData.isPrivate,
+      ownerId: profileData.uid,
+      userProfileImage: profileData.photoURL,
+    };
+
     switch (type) {
       case "globalPosts":
       case "posts":
       case "likes":
       case "tags":
-        return <PostCard key={item.id} post={item} />;
+        return (
+          <PostCard 
+            key={item.id} 
+            data={cardData} 
+            followStatus={followStatus}
+            onFollowStatusChange={(newStatus) => setFollowStatus(newStatus)}
+          />
+        );
       case "globalFeelings":
       case "feelings":
-        return <TweetCard key={item.id} feeling={item} />;
+        return <TweetCard key={item.id} data={cardData} />;
       case "globalFeeds":
       case "feeds":
         return (
           <VideoThumbnail
             key={item.id}
             mediaUrl={item.mediaUrl}
-            onClick={() => handleVideoClick(item)}
+            onClick={() => handleVideoClick(cardData)} 
           />
         );
       default:
@@ -759,13 +797,10 @@ const UserProfile = () => {
             className={styles.videoModalContent}
             onClick={(e) => e.stopPropagation()}
           >
-            <VideoFeedItem
-              videoSrc={selectedVideo.mediaUrl}
-              description={selectedVideo.content}
-              username={selectedVideo.username}
-              userProfileImage={selectedVideo.userProfileImage}
-              feed={selectedVideo}
-              onClose={handleCloseVideoModal}
+            <PostVideoCard
+              data={selectedVideo}
+              followStatus={followStatus}
+              onFollowStatusChange={(newStatus) => setFollowStatus(newStatus)}
             />
           </div>
         </div>

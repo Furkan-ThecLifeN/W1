@@ -11,7 +11,7 @@
     display: flex;
     justify-content: center;
     align-items: flex-end; /* Mobil cihazlar için alttan açılma efekti */
-    z-index: 1000;
+    z-index: 2000;
     backdrop-filter: blur(8px); /* Daha güçlü bulanıklık efekti */
 }
 
@@ -190,4 +190,10 @@
     to {
         transform: translateY(0);
     }
+}
+
+@media (max-width: 1024px) {
+  .modal {
+    margin-bottom: 40px;
+  }
 }

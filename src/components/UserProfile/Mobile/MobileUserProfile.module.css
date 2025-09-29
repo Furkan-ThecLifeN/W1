@@ -629,4 +629,57 @@
   margin-bottom: 10px;
 }
 
+.videoModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.95); 
+  
+  /* KRİTİK: Z-INDEX 2000 veya daha yüksek olmalı */
+  z-index: 2000; 
+  
+  /* İçeriği ortalama */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  overflow-y: auto; 
+  -webkit-overflow-scrolling: touch;
+  padding: 10px; 
+}
 
+/* 2. Video Modal İçeriği (FeedVideoCard için - Tam Ekran deneyimi) */
+.videoModalContent {
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  background: transparent; 
+  border-radius: 0; 
+  overflow: hidden; 
+  position: relative;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.postModalContent {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--color-black);
+  border-radius: 10px;
+  max-width: 100%; 
+  width: 100%;
+  height: auto;
+  max-height: 95vh;  
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+}
