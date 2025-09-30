@@ -125,6 +125,34 @@
   color: var(--busy);
 }
 
+.optionsContainer {
+  position: relative; /* butona göre konum alacak */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.more_icon {
+  color: var(--color-white);
+  font-size: 22px;
+  cursor: pointer;
+  transition: all 0.5s ease-in-out;
+}
+
+.more_icon:hover {
+  transform: scale(1.1);
+}
+
+/* Menü için */
+.optionsMenu {
+  position: absolute;
+  top: 100%;   /* butonun hemen altına */
+  right: 0;    /* sağa yaslı */
+  margin-top: 6px;
+  z-index: 10;
+}
+
+
 /* Responsive (mobil/tablet) */
 @media (max-width: 1024px) {
   .card {
