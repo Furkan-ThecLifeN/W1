@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../../config/firebase-client";
 import Sidebar from "../../components/LeftSideBar/Sidebar";
 import RightSidebar from "../../components/RightSideBar/RightSideBar";
@@ -13,53 +13,29 @@ const Home = () => {
   const [feed, setFeed] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // basit shuffle fonksiyonu
-  const shuffleArray = (arr) => {
-    return [...arr].sort(() => Math.random() - 0.5);
-  };
+  const shuffleArray = (arr) => [...arr].sort(() => Math.random() - 0.5);
 
   useEffect(() => {
-    const qPosts = query(collection(db, "globalPosts"), orderBy("createdAt", "desc"));
-    const qFeelings = query(collection(db, "globalFeelings"), orderBy("createdAt", "desc"));
+    async function fetchData() {
+      try {
+        const postsQuery = query(collection(db, "globalPosts"), orderBy("createdAt", "desc"));
+        const feelingsQuery = query(collection(db, "globalFeelings"), orderBy("createdAt", "desc"));
 
-    let postsLoaded = false;
-    let feelingsLoaded = false;
+        const postsSnap = await getDocs(postsQuery);
+        const feelingsSnap = await getDocs(feelingsQuery);
 
-    const handleChanges = (snapshot, type) => {
-      setFeed((prev) => {
-        let updated = [...prev];
-        snapshot.docChanges().forEach((change) => {
-          const item = { id: change.doc.id, type, ...change.doc.data() };
-          if (change.type === "added") {
-            updated.push(item);
-          }
-          if (change.type === "modified") {
-            updated = updated.map((f) => (f.id === item.id ? item : f));
-          }
-          if (change.type === "removed") {
-            updated = updated.filter((f) => f.id !== item.id);
-          }
-        });
-        return shuffleArray(updated); // 🔥 her güncellemeden sonra shuffle
-      });
-    };
+        const posts = postsSnap.docs.map((doc) => ({ id: doc.id, type: "post", ...doc.data() }));
+        const feelings = feelingsSnap.docs.map((doc) => ({ id: doc.id, type: "feeling", ...doc.data() }));
 
-    const unsubPosts = onSnapshot(qPosts, (snapshot) => {
-      handleChanges(snapshot, "post");
-      postsLoaded = true;
-      if (postsLoaded && feelingsLoaded) setLoading(false);
-    });
+        setFeed(shuffleArray([...posts, ...feelings]));
+      } catch (e) {
+        console.error("Feed yüklenemedi:", e);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-    const unsubFeelings = onSnapshot(qFeelings, (snapshot) => {
-      handleChanges(snapshot, "feeling");
-      feelingsLoaded = true;
-      if (postsLoaded && feelingsLoaded) setLoading(false);
-    });
-
-    return () => {
-      unsubPosts();
-      unsubFeelings();
-    };
+    fetchData();
   }, []);
 
   return (

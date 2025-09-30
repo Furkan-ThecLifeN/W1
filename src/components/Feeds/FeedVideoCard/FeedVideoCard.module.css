@@ -258,8 +258,8 @@
     width: 100%;
     height: 50px;
     display: flex;
-    flex-direction: row;
-    justify-content: space-around;
+    flex-direction: row !important;
+    justify-content: space-between !important;
     align-items: center;
     gap: 0;
     padding: 0 1rem;
@@ -306,6 +306,7 @@
     right: 0;
     height: 55px;
     display: flex;
+    flex-direction: row; /* ✅ eklendi */
     align-items: center;
     justify-content: space-between;
     padding: 0 0.75rem;
@@ -388,4 +389,3 @@
     font-size: 0.8rem;
   }
 }
-
