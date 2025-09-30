@@ -81,11 +81,11 @@
   line-height: 1.5;
   padding: 0 2px;
   word-break: break-word;
+  text-align: start;
 }
 
 /* ✅ GÜNCELLENDİ: Feelings Text */
 .feelings_text {
-  /* max-height ve overflow kısıtlamaları kaldırıldı */
   width: 100%;
   font-size: 14px;
   line-height: 1.4;
@@ -95,7 +95,8 @@
 
 /* ✅ YENİ: Tıklanabilir stil */
 .clickableDescription {
-    cursor: pointer;
+  cursor: pointer;
+  text-align: start;
 }
 
 /* Footer */
@@ -118,7 +119,7 @@
 }
 
 .heart:hover {
-  transform: scale(1.3); 
+  transform: scale(1.3);
 }
 
 .liked {
@@ -146,12 +147,11 @@
 /* Menü için */
 .optionsMenu {
   position: absolute;
-  top: 100%;   /* butonun hemen altına */
-  right: 0;    /* sağa yaslı */
+  top: 100%; /* butonun hemen altına */
+  right: 0; /* sağa yaslı */
   margin-top: 6px;
   z-index: 10;
 }
-
 
 /* Responsive (mobil/tablet) */
 @media (max-width: 1024px) {

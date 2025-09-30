@@ -1,21 +1,8 @@
 .feed {
   height: 100vh;
-  /* Scroll Snap mantığını kaldırarak butonlarla geçişi sağlamak için bu satırları yorum satırı yaptım. */
-  /* overflow-y: scroll;
-  scroll-snap-type: y mandatory;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;  */
+  width: 100%;
 }
 
-.feed > * {
-  /* Bu satırlar artık gerekli değil çünkü tek bir video render ediliyor. */
-  /* scroll-snap-align: start;
-  height: 100vh; */
-}
-
-/* Yükleme ve hata mesajları için eski stilleri koruyun. */
-
-/* Navigasyon Butonları için Ortak Stil */
 .navButton {
   position: fixed;
   z-index: 100;
@@ -28,12 +15,9 @@
   align-items: center;
   cursor: pointer;
   transition: transform 0.2s ease-in-out;
-
-  /* Videonun sağında ve biraz içeride konumlandırmak için */
   right: 20px;
 }
 
-/* Hover ve active durumları */
 .navButton:hover {
   transform: scale(1.1);
 }
@@ -42,14 +26,12 @@
   transform: scale(0.95);
 }
 
-/* Yukarı butonu için özel konum */
 .prevButton {
   top: 35%;
   right: 2rem;
   transform: translateY(25%);
 }
 
-/* Aşağı butonu için özel konum */
 .nextButton {
   top: 50%;
   right: 2rem;

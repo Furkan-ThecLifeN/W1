@@ -420,7 +420,7 @@
 .desktopModalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -455,7 +455,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 16px; 
+  gap: 16px;
   padding: 16px;
   margin-top: 16px;
 }
@@ -507,7 +507,6 @@
   }
 }
 
-
 .videoModalOverlay {
   position: fixed;
   top: 0;
@@ -516,19 +515,13 @@
   bottom: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.95); 
-  
-  /* KRİTİK: Z-INDEX 2000 veya daha yüksek olmalı */
-  z-index: 2000; 
-  
-  /* İçeriği ortalama */
+  background-color: rgba(0, 0, 0, 0.95);
+  z-index: 2000;
   display: flex;
   justify-content: center;
   align-items: center;
-  
-  overflow-y: auto; 
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 10px; 
 }
 
 /* 2. Video Modal İçeriği (FeedVideoCard için - Tam Ekran deneyimi) */
@@ -539,9 +532,9 @@
   height: 100%;
   max-width: none;
   max-height: none;
-  background: transparent; 
-  border-radius: 0; 
-  overflow: hidden; 
+  background: transparent;
+  border-radius: 0;
+  overflow: hidden;
   position: relative;
   padding: 0;
   display: flex;
@@ -554,10 +547,10 @@
   align-items: center;
   background-color: var(--color-black);
   border-radius: 10px;
-  max-width: 100%; 
+  max-width: 100%;
   width: 100%;
   height: auto;
-  max-height: 95vh;  
+  max-height: 95vh;
   overflow-y: auto;
   position: relative;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);

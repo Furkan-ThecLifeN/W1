@@ -183,9 +183,8 @@
 }
 
 .clickableDescription {
-    cursor: pointer;
+  cursor: pointer;
 }
-
 
 .optionsContainer {
   position: relative;
@@ -212,7 +211,6 @@
   padding: 10px;
   overflow: hidden;
 }
-
 
 /* 📌 Mobil için (max-width: 1024px) */
 @media (max-width: 1024px) {
@@ -286,3 +284,108 @@
     max-width: 160px;
   }
 }
+
+/* 📌 Küçük mobil cihazlar için (max-width: 450px) */
+@media (max-width: 460px) {
+  .container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+    border-radius: 0;
+  }
+
+  /* Action buttons her zaman en üstte */
+  .actionButtons {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0.75rem;
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(6px);
+    z-index: 10;
+  }
+
+  /* More butonu sağ üstte ayrı */
+  .optionsContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .moreIcon {
+    font-size: 1.6rem;
+    cursor: pointer;
+    color: #fff;
+    margin-left: 0.5rem;
+    margin-top: 0;
+  }
+
+  /* Video kısmı */
+  .videoCard {
+    flex: 1;
+    margin-top: 55px; /* actionButtons yüksekliği kadar boşluk bırakır */
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .videoWrapper {
+    flex: 1;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .videoFrame {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 9 / 16;
+    object-fit: cover;
+  }
+
+  /* Footer / içerik kısmı */
+  .infoCard {
+    padding: 0.8rem 1rem;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    min-height: 80px; /* biraz daha yüksek */
+  }
+
+  .userAvatar {
+    width: 34px;
+    height: 34px;
+  }
+
+  .userName {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .description {
+    font-size: 0.75rem;
+    line-height: 1.3;
+  }
+
+  .followButton {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.65rem;
+  }
+
+  /* Post options kartı mobilde biraz daha küçük */
+  .postOptionsCardCustom {
+    right: 5px;
+    top: 55px; /* actionButtons’un altında */
+    min-width: 140px;
+    max-width: 160px;
+    font-size: 0.8rem;
+  }
+}
+
