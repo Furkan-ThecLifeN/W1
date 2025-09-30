@@ -90,7 +90,6 @@
   padding:0;
 }
 
-/* Feed kartındaki her bir aksiyon düğmesinin kapsayıcısı */
 .iconWrapper{
   display:flex;
   flex-direction:column;
@@ -98,9 +97,8 @@
   justify-content:center;
   cursor:pointer;
   transition:transform 0.2s ease-in-out;
-  width:44px; /* FeedVideoCard.module.css'den alındı */
+  width:44px; 
   height:44px;
-  background-color:rgba(255,255,255,0.1); /* FeedVideoCard.module.css'den alındı */
   border-radius:50%;
   backdrop-filter:blur(3px);
   padding:0;
