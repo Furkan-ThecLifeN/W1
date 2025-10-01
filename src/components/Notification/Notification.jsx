@@ -1,4 +1,3 @@
-// Notification.jsx
 import React, { useState, useEffect } from "react";
 import styles from "./Notification.module.css";
 import {
@@ -28,11 +27,12 @@ const Notification = () => {
 
       const allNotifications = response.data.notifications;
 
+      // follow_request'leri birleştir, diğerlerini ayrı tut
       const uniqueFollowRequests = {};
       const otherNotifications = [];
 
       allNotifications.forEach(item => {
-        if (item.type === "follow_request") {
+        if (item.type === "follow_request" || item.type === "follow_accepted" || item.type === "follow_rejected") {
           if (!uniqueFollowRequests[item.fromUid]) {
             uniqueFollowRequests[item.fromUid] = item;
           }
@@ -66,13 +66,9 @@ const Notification = () => {
       const idToken = await currentUser.getIdToken();
       const endpoint = `${apiBaseUrl}/api/users/follow/${action}/${requesterUid}`;
 
-      const response = await axios.post(
-        endpoint,
-        {},
-        {
-          headers: { Authorization: `Bearer ${idToken}` },
-        }
-      );
+      const response = await axios.post(endpoint, {}, {
+        headers: { Authorization: `Bearer ${idToken}` },
+      });
 
       showToast(response.data.message, "success");
       await fetchNotifications();
@@ -94,15 +90,20 @@ const Notification = () => {
           message: "sana takip isteği gönderdi.",
           icon: <FaUserPlus size={20} color="var(--color-blue)" />,
         };
-      case "new_follower":
-        return {
-          message: "seni takip etmeye başladı.",
-          icon: <FaUserPlus size={20} color="var(--color-blue)" />,
-        };
       case "follow_accepted":
         return {
           message: "takip isteğini onayladı.",
           icon: <FaCheckCircle size={20} color="#27ae60" />,
+        };
+      case "follow_rejected":
+        return {
+          message: "takip isteğini reddetti.",
+          icon: <FaCheckCircle size={20} color="#e74c3c" />,
+        };
+      case "new_follower":
+        return {
+          message: "seni takip etmeye başladı.",
+          icon: <FaUserPlus size={20} color="var(--color-blue)" />,
         };
       case "like":
         return {
@@ -118,7 +119,7 @@ const Notification = () => {
             </>
           ),
           icon: <FaRegCommentDots size={20} color="#3498db" />,
-          link: `/post/${item.postId}`, // 👈 Yeni eklenen link
+          link: `/post/${item.postId}`,
         };
       default:
         return { message: "Yeni bildirim.", icon: null };
@@ -141,8 +142,7 @@ const Notification = () => {
             return (
               <li
                 key={item.id}
-                className={`${styles.notification_item} ${!item.isRead ? styles.unread : ""
-                  }`}
+                className={`${styles.notification_item} ${!item.isRead ? styles.unread : ""}`}
               >
                 <div className={styles.icon_wrapper}>{icon}</div>
                 <div className={styles.text_wrapper}>
