@@ -162,22 +162,21 @@ export default function PostVideoCard({
   const renderActionControls = () => {
     if (!data?.id || !data?.uid) return null;
 
-    const backendType = "feed"; 
+    const backendType = "feed";
 
     const isMobileLayout = isMobile;
 
     return (
-        <ActionControls
-            targetType={backendType}        
-            targetId={data.id}
-            postOwnerUid={data.uid}
-            commentsDisabled={data.commentsDisabled || false}
-            getAuthToken={defaultGetAuthToken}
-            forceLayout={isMobileLayout ? "horizontal" : "vertical"} // ✅ ekstra prop
-        />
+      <ActionControls
+        targetType={backendType}
+        targetId={data.id}
+        postOwnerUid={data.uid}
+        commentsDisabled={data.commentsDisabled || false}
+        getAuthToken={defaultGetAuthToken}
+        forceLayout={isMobileLayout ? "horizontal" : "vertical"} // ✅ ekstra prop
+      />
     );
-};
-
+  };
 
   const embedUrl = videoSrc ? getYouTubeEmbedUrl(videoSrc) : null;
   if (!embedUrl) return null;

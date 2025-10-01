@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import PostBox from "../../components/AccountPage/Box/FeelingsBox/FeelingsBox"; 
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../../config/firebase-client";
+import PostCard from "../../components/Post/PostCard";
+import TweetCard from "../../components/TweetCard/TweetCard";
+import FeedVideoCard from "../../components/Feeds/FeedVideoCard/FeedVideoCard";
 import LoadingOverlay from "../../components/LoadingOverlay/LoadingOverlay";
 import Sidebar from "../../components/LeftSideBar/Sidebar";
 import RightSidebar from "../../components/RightSideBar/RightSideBar";
 import BottomNav from "../../components/BottomNav/BottomNav";
 import styles from "./PostDetailPage.module.css";
-import { auth } from "../../config/firebase-client";
 
 const PostDetailPage = () => {
   const { postId } = useParams();
@@ -23,18 +26,21 @@ const PostDetailPage = () => {
 
     const fetchPost = async () => {
       try {
-        const token = await auth.currentUser?.getIdToken();
-        const res = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/feelings/${postId}`,
-          {
-            headers: {
-              Authorization: token ? `Bearer ${token}` : "",
-            },
-          }
+        const collections = ["globalPosts", "globalFeeds", "globalFeelings"];
+        const results = await Promise.all(
+          collections.map(async (col) => {
+            const ref = doc(db, col, postId);
+            const snap = await getDoc(ref);
+            if (snap.exists()) {
+              return { ...snap.data(), id: snap.id };
+            }
+            return null;
+          })
         );
-        if (!res.ok) throw new Error("Gönderi bulunamadı.");
-        const data = await res.json();
-        setPost(data.post);
+
+        const found = results.find((r) => r !== null);
+        if (!found) throw new Error("Gönderi bulunamadı.");
+        setPost(found);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -48,20 +54,28 @@ const PostDetailPage = () => {
   if (loading) return <LoadingOverlay />;
   if (error) return <div className={styles.errorContainer}>{error}</div>;
 
+  const renderPostCard = () => {
+    if (!post || !post.type) return <div className={styles.emptyContainer}>Gönderi tipi tanımsız.</div>;
+
+    const type = post.type.toLowerCase();
+    switch (type) {
+      case "feeling":
+        return <TweetCard data={post} />;
+      case "post":
+        return <PostCard data={post} />;
+      case "feed":
+        return <FeedVideoCard data={post} />;
+      default:
+        return <div className={styles.emptyContainer}>Gönderi tipi tanımsız.</div>;
+    }
+  };
+
   return (
     <div className={styles.postDetail}>
       <Sidebar />
       <main className={styles.mainContent}>
-        <header className={styles.header}>
-          <div className={styles.topCenterLogo}>W1</div>
-        </header>
-
         <section className={styles.postWrapper}>
-          {post ? (
-            <PostBox feeling={post} />
-          ) : (
-            <div className={styles.emptyContainer}>Gönderi bulunamadı.</div>
-          )}
+          {renderPostCard()}
         </section>
       </main>
       <RightSidebar />

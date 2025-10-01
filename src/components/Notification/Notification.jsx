@@ -10,12 +10,12 @@ import {
 import { useAuth } from "../../context/AuthProvider";
 import { Link } from "react-router-dom";
 import LoadingOverlay from "../LoadingOverlay/LoadingOverlay";
-import axios from "axios"; // Axios import edildi
+import axios from "axios"; 
 
 const Notification = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { currentUser, showToast } = useAuth(); // showToast eklendi
+  const { currentUser, showToast } = useAuth(); 
   const apiBaseUrl = process.env.REACT_APP_API_URL;
 
   const fetchNotifications = async () => {
@@ -28,13 +28,11 @@ const Notification = () => {
 
       const allNotifications = response.data.notifications;
 
-      // Aynı kullanıcıdan gelen birden fazla takip isteği bildirimini grupla
       const uniqueFollowRequests = {};
       const otherNotifications = [];
 
       allNotifications.forEach(item => {
         if (item.type === "follow_request") {
-          // fromUid'si aynı olan bildirimleri tek bir kartta topla
           if (!uniqueFollowRequests[item.fromUid]) {
             uniqueFollowRequests[item.fromUid] = item;
           }
@@ -64,20 +62,18 @@ const Notification = () => {
 
   const handleFollowRequest = async (requesterUid, action) => {
     setLoading(true);
-
     try {
       const idToken = await currentUser.getIdToken();
       const endpoint = `${apiBaseUrl}/api/users/follow/${action}/${requesterUid}`;
 
       const response = await axios.post(
         endpoint,
-        {}, // Boş bir body gönderiliyor
+        {},
         {
           headers: { Authorization: `Bearer ${idToken}` },
         }
       );
 
-      // Başarılı olursa, bildirimleri yeniden çek
       showToast(response.data.message, "success");
       await fetchNotifications();
     } catch (error) {
@@ -92,7 +88,6 @@ const Notification = () => {
   };
 
   const getNotificationContent = (item) => {
-    // İçerik mantığı aynı kalacak
     switch (item.type) {
       case "follow_request":
         return {
@@ -123,6 +118,7 @@ const Notification = () => {
             </>
           ),
           icon: <FaRegCommentDots size={20} color="#3498db" />,
+          link: `/post/${item.postId}`, // 👈 Yeni eklenen link
         };
       default:
         return { message: "Yeni bildirim.", icon: null };
@@ -141,7 +137,7 @@ const Notification = () => {
       ) : notifications.length > 0 ? (
         <ul className={styles.notification_list}>
           {notifications.map((item) => {
-            const { message, icon } = getNotificationContent(item);
+            const { message, icon, link } = getNotificationContent(item);
             return (
               <li
                 key={item.id}
@@ -157,7 +153,15 @@ const Notification = () => {
                     >
                       {item.fromUsername}
                     </Link>{" "}
-                    <span className={styles.message}>{message}</span>
+                    <span className={styles.message}>
+                      {link ? (
+                        <Link to={link} className={styles.comment_link}>
+                          {message}
+                        </Link>
+                      ) : (
+                        message
+                      )}
+                    </span>
                   </div>
                   <div className={styles.time}>
                     {item.createdAt && new Date(item.createdAt).toLocaleString()}
