@@ -7,15 +7,15 @@ import BottomNav from "../../components/BottomNav/BottomNav";
 const Discover = () => {
   return (
     <div className={styles.discover}>
-      <div className="sidebar">
+      <div className={styles.sidebar}>
         <Sidebar />
       </div>
 
-      <div className="exploreFeed">
+      <div className={styles.exploreFeed}>
         <ExploreFeed />
       </div>
 
-      <div className="bottomNav">
+      <div className={styles.bottomNav}>
         <BottomNav />
       </div>
     </div>

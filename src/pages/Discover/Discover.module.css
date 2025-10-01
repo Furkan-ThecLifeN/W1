@@ -3,44 +3,70 @@
   flex-direction: row;
   width: 100vw;
   height: 100vh;
-  overflow: hidden; /* scroll engelle */
+  overflow: hidden;
   background-color: var(--color-black);
   color: var(--color-white);
 }
 
 /* Sidebar yüksekliği */
-.discover > .sidebar {
+.sidebar {
   height: 100%;
   flex-shrink: 0;
 }
 
-/* ExploreFeed container */
-.discover > .exploreFeed {
+/* ExploreFeed container - masaüstünde tam yükseklik */
+.exploreFeed {
   flex: 1;
   height: 100%;
-  overflow: hidden; /* scroll engelle */
+  overflow: hidden;
   position: relative;
   display: flex;
   flex-direction: column;
 }
 
 /* BottomNav sabit ekran altı */
-.discover > .bottomNav {
-  position: absolute;
+.bottomNav {
+  position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
+  z-index: 100;
 }
 
 /* Responsive ayarlar */
 @media (max-width: 1024px) {
   .discover {
     flex-direction: column;
+    height: 100vh;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    flex-shrink: 0;
+  }
+
+  .exploreFeed {
+    width: 100%;
+    flex: 1;
+    height: calc(100vh - 56px); /* BottomNav yüksekliğini çıkart */
   }
 }
 
 @media (max-width: 600px) {
   .discover {
     flex-direction: column;
+    height: 100vh;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+  }
+
+  .exploreFeed {
+    width: 100%;
+    flex: 1;
+    height: calc(100vh - 50px); /* BottomNav yüksekliğini çıkart */
   }
 }
