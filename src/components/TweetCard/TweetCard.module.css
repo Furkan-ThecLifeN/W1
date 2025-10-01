@@ -28,7 +28,6 @@
 .avatar_widget {
   width: 44px;
   height: 44px;
-  border: 2px solid #00ff1e;
   border-radius: 50%;
   display: flex;
   align-items: center;

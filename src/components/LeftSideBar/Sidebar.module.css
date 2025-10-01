@@ -101,6 +101,38 @@
   margin-bottom: 20px;
 }
 
+/* Notifications */
+
+.notification_icon_wrapper {
+    position: relative; /* Badge'i bu elemana göre konumlandırmak için */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%; /* NavLink içinde genişliği kaplaması için */
+    height: 100%;
+}
+
+.notification_badge {
+    position: absolute;
+    top: 5px; /* Konum ayarı, ihtiyaca göre değiştirilebilir */
+    right: 5px; /* Konum ayarı, ihtiyaca göre değiştirilebilir */
+    background-color: #e74c3c; /* Kıpkırmızı canlı renk */
+    color: white; /* Beyaz yazı */
+    font-size: 0.7rem; /* Yazı boyutu */
+    font-weight: bold;
+    border-radius: 50%; /* Yuvarlak şekil */
+    padding: 2px 5px; /* İç boşluk, 1 haneli/2 haneli sayılar için ayarlandı */
+    min-width: 18px; /* Rozetin minimum genişliği */
+    height: 18px; /* Rozetin yüksekliği */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1; /* Yazının ortalanması için */
+    z-index: 10; /* Diğer elementlerin üstünde görünmesi için */
+    /* Opsiyonel: Hafif bir animasyon */
+    transition: transform 0.2s ease-out;
+}
+
 @media (max-width: 1024px) {
   .sidebar {
     display: none;

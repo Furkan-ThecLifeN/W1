@@ -1,3 +1,4 @@
+// Notification.jsx (GÜNCEL)
 import React, { useState, useEffect } from "react";
 import styles from "./Notification.module.css";
 import {
@@ -17,8 +18,33 @@ const Notification = () => {
   const { currentUser, showToast } = useAuth(); 
   const apiBaseUrl = process.env.REACT_APP_API_URL;
 
+  // Yeni fonksiyon: Tüm okunmamış bildirimleri okundu olarak işaretle
+  const markNotificationsRead = async () => {
+    if (!currentUser) return;
+    try {
+      const idToken = await currentUser.getIdToken();
+      // Backend'deki markNotificationsAsRead rotasını çağır
+      await axios.patch(`${apiBaseUrl}/api/users/notifications/read`, {}, {
+        headers: { Authorization: `Bearer ${idToken}` },
+      });
+      
+      // API çağrısı başarılıysa, mevcut listedeki okunmamış olanları da okundu olarak işaretle.
+      // Bu, sayfa yenilenene kadar rozetin görünmemesini sağlar.
+      setNotifications(prev => prev.map(item => ({...item, isRead: true})));
+
+    } catch (error) {
+      console.error("Bildirimleri okundu olarak işaretleme hatası:", error);
+    }
+  };
+
+
   const fetchNotifications = async () => {
     setLoading(true);
+    if (!currentUser) { // Kullanıcı yoksa yüklemeyi bitir.
+        setLoading(false);
+        return;
+    }
+    
     try {
       const idToken = await currentUser.getIdToken();
       const response = await axios.get(`${apiBaseUrl}/api/users/notifications`, {
@@ -27,13 +53,14 @@ const Notification = () => {
 
       const allNotifications = response.data.notifications;
 
-      // follow_request'leri birleştir, diğerlerini ayrı tut
+      // follow_request'leri grupla: aynı kullanıcıdan gelenleri tek bir bildirimde göster
       const uniqueFollowRequests = {};
       const otherNotifications = [];
 
       allNotifications.forEach(item => {
-        if (item.type === "follow_request" || item.type === "follow_accepted" || item.type === "follow_rejected") {
-          if (!uniqueFollowRequests[item.fromUid]) {
+        if (item.type === "follow_request") {
+          // Sadece en son takip isteğini göster
+          if (!uniqueFollowRequests[item.fromUid] || new Date(item.createdAt) > new Date(uniqueFollowRequests[item.fromUid].createdAt)) {
             uniqueFollowRequests[item.fromUid] = item;
           }
         } else {
@@ -43,7 +70,7 @@ const Notification = () => {
 
       const combinedNotifications = [
         ...Object.values(uniqueFollowRequests),
-        ...otherNotifications,
+        ...otherNotifications.filter(item => item.type !== "follow_accepted" && item.type !== "follow_rejected"), // Takip onayı/reddi artık bildirim listesinde ayrı gösterilir
       ];
 
       const sortedNotifications = combinedNotifications.sort((a, b) => {
@@ -64,14 +91,15 @@ const Notification = () => {
     setLoading(true);
     try {
       const idToken = await currentUser.getIdToken();
-      const endpoint = `${apiBaseUrl}/api/users/follow/${action}/${requesterUid}`;
+      // Takip isteğini onaylama/reddetme rotası
+      const endpoint = `${apiBaseUrl}/api/users/follow/${action}/${requesterUid}`; 
 
       const response = await axios.post(endpoint, {}, {
         headers: { Authorization: `Bearer ${idToken}` },
       });
 
       showToast(response.data.message, "success");
-      await fetchNotifications();
+      await fetchNotifications(); // İşlem sonrası listeyi yeniden çek
     } catch (error) {
       console.error("Takip isteği işlem hatası:", error);
       showToast(
@@ -109,6 +137,7 @@ const Notification = () => {
         return {
           message: "gönderini beğendi.",
           icon: <FaHeart size={20} color="var(--busy)" />,
+          link: `/post/${item.postId}`,
         };
       case "comment":
         return {
@@ -128,7 +157,8 @@ const Notification = () => {
 
   useEffect(() => {
     fetchNotifications();
-  }, [currentUser, apiBaseUrl]);
+    markNotificationsRead(); // Sayfaya girildiği anda okundu olarak işaretle
+  }, [currentUser, apiBaseUrl]); 
 
   return (
     <div className={styles.notification_page}>
@@ -142,6 +172,7 @@ const Notification = () => {
             return (
               <li
                 key={item.id}
+                // isRead=false ise "unread" sınıfını uygula
                 className={`${styles.notification_item} ${!item.isRead ? styles.unread : ""}`}
               >
                 <div className={styles.icon_wrapper}>{icon}</div>
