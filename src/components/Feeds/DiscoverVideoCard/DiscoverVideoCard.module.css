@@ -1,0 +1,502 @@
+/* 📌 Genel ve Mobil Tasarım (FeedVideoCard'dan kopyalandı) */
+
+/* 📌 Masaüstü ve Genel Tasarım (Mobil üzerine yazılır) */
+.mainWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 450px;
+  height: 100vh;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.videoUnit {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.playerArea {
+  width: 100%;
+  flex: 1;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.mediaFrame {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.likePulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 6rem;
+  color: var(--color-white);
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
+  pointer-events: none;
+  z-index: 20;
+}
+
+.bottomInfoBar {
+  width: 100%;
+  min-height: 60px;
+  max-height: 60px;
+  background-color: var(--color-black);
+  color: var(--color-white);
+  padding: 0.75rem 1rem;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+}
+
+.userDetails {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.userPic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--color-white);
+  flex-shrink: 0;
+}
+
+.userTextContent {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.displayName {
+  font-weight: 600;
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.postDesc {
+  font-size: 0.8rem;
+  color: #e0e0e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.followUserButton {
+  background-color: #ff0000;
+  color: var(--color-white);
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.followUserButton:hover {
+  background-color: #cc0000;
+}
+
+.sideControls {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding: 1.5rem;
+  background-color: #0d0d0d;
+  border-top-right-radius: 16px;
+  border-bottom-right-radius: 16px;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.readMoreText {
+  color: #00ffff;
+  cursor: pointer;
+  font-weight: bold;
+  margin-left: 5px;
+  transition: color 0.2s;
+  user-select: none;
+}
+
+.readMoreText:hover {
+  color: #ff0077;
+}
+
+.clickableDesc {
+  cursor: pointer;
+}
+
+.extraOptionsContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.optionsIcon {
+  cursor: pointer;
+  font-size: 1.5rem;
+  margin-top: 12px;
+}
+
+/* 📌 Mobil için (max-width: 1024px) */
+@media (max-width: 1024px) {
+  .mainWrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-radius: 0;
+    box-shadow: none;
+    padding-top: 0;
+    padding-bottom: 50px;
+  }
+
+  .videoUnit {
+    flex: 1;
+    width: 100%;
+    border-radius: 0;
+  }
+
+  .playerArea {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .mediaFrame {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .bottomInfoBar {
+    padding: 0.5rem 0.75rem;
+    min-height: 50px;
+    max-height: 50px;
+    border-radius: 0;
+  }
+
+  .sideControls {
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+    max-width: 450px;
+    height: 50px;
+    display: flex;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center;
+    gap: 0;
+    padding: 0 1rem;
+    background-color: rgb(0, 0, 0);
+    border-radius: 0;
+  }
+
+  /* KÜÇÜK MOBİL CİHAZ AYARLARI KORUNDU */
+  @media (max-width: 460px) {
+    .mainWrapper {
+      flex-direction: column;
+      width: 100%;
+      max-width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+      border-radius: 0;
+    }
+
+    .sideControls {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 55px;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 0.75rem;
+      background: rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(6px);
+      z-index: 10;
+    }
+
+    .optionsIcon {
+      font-size: 1.6rem;
+      color: #fff;
+      margin-left: 0.5rem;
+      margin-top: 0;
+    }
+
+    .videoUnit {
+      flex: 1;
+      margin-top: 55px;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .playerArea {
+      flex: 1;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .mediaFrame {
+      width: 100%;
+      height: 100%;
+      aspect-ratio: 9 / 16;
+      object-fit: cover;
+    }
+
+    .bottomInfoBar {
+      padding: 0.8rem 1rem;
+      background: rgba(0, 0, 0, 0.55);
+      color: #fff;
+      min-height: 80px;
+    }
+
+    .userPic {
+      width: 34px;
+      height: 34px;
+    }
+
+    .displayName {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .postDesc {
+      font-size: 0.75rem;
+      line-height: 1.3;
+    }
+
+    .followUserButton {
+      font-size: 0.75rem;
+      padding: 0.35rem 0.65rem;
+    }
+  }
+}
+
+/* ==========================================================
+   MASAÜSTÜ (DESKTOP) GÖRÜNÜM İÇİN YENİ STİLLER (isMobile: false)
+   ========================================================== */
+
+/* Ana Kapsayıcı */
+.mainWrapper {
+  height: 95vh;
+  min-height: 500px;
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #1a1a1a;
+  color: #f0f0f0;
+  max-width: none; /* Mobil max-width'i sıfırlar */
+  border-radius: 0; /* Mobil border-radius'u sıfırlar */
+  margin: 0; /* Mobil margin'i sıfırlar */
+}
+
+/* İçerik Sarmalayıcı: Sol ve Sağ Kutuyu Yan Yana Tutar */
+.contentLayout {
+  width: 100%;
+  height: 100%;
+  max-width: 1400px;
+  margin-left: 80px;
+
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: row;
+  background-color: #242424;
+}
+
+/* SOL KUTU: Video Alanı */
+.videoAndInfoBox {
+  flex-grow: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column; /* Video ve Info Kartını Dikey Tutar */
+  background-color: #000;
+  position: relative;
+  padding: 0;
+}
+
+/* SADECE Video Player'ın Bulunduğu Alan (VideoAndInfoBox'un içinde) */
+.videoPlayerOnly {
+  flex-grow: 1;
+  width: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mediaFrame {
+  width: 100%;
+  height: 100%;
+  /* object-fit: contain; Yerine cover kullanabiliriz, ama YouTube embedde contain daha iyi sonuç verebilir */
+  object-fit: contain;
+  border-radius: 0;
+}
+
+/* Eklenen BİLGİ KARTI: Video Kutusuyla Aynı Genişlikte */
+.detailsCard {
+  width: 100%;
+  min-height: 80px; /* Mobil min-height'tan biraz daha büyük */
+  max-height: 120px;
+  background-color: #1c1c1c; /* Koyu arka plan */
+  color: #f0f0f0;
+  padding: 1rem 1.5rem;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  border-top: 1px solid #333;
+}
+
+.userDetailsDesktop {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.userPicDesktop {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #00aaff; /* Vurgu çerçevesi */
+  flex-shrink: 0;
+}
+
+.followUserButtonDesktop {
+  background-color: #00aaff;
+  color: var(--color-white);
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.followUserButtonDesktop:hover {
+  background-color: #0088cc;
+}
+
+/* SAĞ KUTU: Kontroller Alanı (80px Sabit Genişlik) */
+.controlsBox {
+  width: 80px; /* Sabit genişlik: 80px */
+  height: 100%;
+  flex-shrink: 0;
+  background-color: #303030;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px 0;
+  box-sizing: border-box;
+  border-left: 2px solid #3c3c3c;
+  z-index: 20;
+}
+
+/* W1 Başlık */
+.appLogoText {
+  font-size: 28px;
+  font-weight: 900;
+  color: #00aaff;
+  text-shadow: 0 0 5px rgb(0, 152, 212);
+  margin-bottom: 30px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* Aksiyon Kontrolleri Sarmalayıcı */
+.actionZone {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: auto; /* Navigasyon ve logo arasına yerleşir */
+  margin-bottom: auto;
+  align-items: center;
+}
+
+/* Daha Fazla (Options) Butonu Sarmalayıcı */
+.optionsWrapper {
+  position: relative;
+}
+
+/* Yukarı/Aşağı Butonları Sarmalayıcı */
+.scrollControls {
+  margin-top: auto;
+  margin-bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex-shrink: 0;
+}
+
+/* Navigasyon Butonları */
+.arrowButton {
+  background-color: #444444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 55px;
+  height: 55px;
+  cursor: pointer;
+  font-size: 24px;
+  transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.arrowButton:hover {
+  background-color: #00bcd4;
+  transform: scale(1.1);
+  box-shadow: 0 6px 15px rgba(0, 188, 212, 0.4);
+}
+
+.arrowButton:active {
+  transform: scale(0.95);
+  background-color: #008ba3;
+}
+
+/* Ok simgesi stilizasyonu */
+.controlArrow {
+  display: block;
+  line-height: 1;
+}

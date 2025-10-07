@@ -1,0 +1,70 @@
+.feedWrapper {
+    /* Sayfayı kapla ve içeriği ortala */
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative; /* Nav butonlarını konumlandırmak için */
+    background-color: #1a1a1a;
+}
+
+/* Navigasyon Butonları Sarmalayıcı */
+.navButtons {
+    /* Varsayılan: Masaüstü (> 1024px). Butonları gizle. */
+    display: none; 
+    z-index: 50; 
+}
+
+/* Tek Tek Butonlar (Masaüstü görünümde gizli tutuluyor, sadece mobil medyada gösterilecek) */
+.navButton {
+    background-color: rgba(68, 68, 68, 0.8);
+    color: white;
+    border: none;
+    border-radius: 50%; 
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+}
+
+.navButton:hover {
+    background-color: #00bcd4; 
+    transform: scale(1.1);
+}
+
+.navButton:disabled {
+    background-color: rgba(68, 68, 68, 0.4);
+    color: #aaa;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* 📌 Mobil Görünümde GÖSTER (max-width: 1024px) */
+@media (max-width: 1024px) {
+    .feedWrapper {
+        /* Mobil: Sayfayı kaplar */
+        height: 100vh;
+        align-items: flex-start;
+        padding: 0;
+    }
+    
+    .navButtons {
+        display: flex; /* Mobil'de GÖSTER */
+        flex-direction: column;
+        gap: 30px;
+        
+        /* Mobil için ekranın sağ kenarında ortala */
+        position: fixed; 
+        top: 50%; 
+        right: 15px; 
+        left: auto;
+        transform: translateY(-50%); 
+    }
+}

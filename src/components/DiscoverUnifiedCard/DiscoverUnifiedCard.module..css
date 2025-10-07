@@ -1,0 +1,382 @@
+/* ================================
+   📦 DiscoverUnifiedCard.module.css
+   ================================ */
+
+/* === GENEL & MOBİL TASARIM === */
+.mainWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 450px;
+  height: 100vh;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.videoUnit {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.playerArea {
+  width: 100%;
+  flex: 1;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.mediaFrame {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.likePulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 6rem;
+  color: var(--color-white);
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
+  pointer-events: none;
+  z-index: 20;
+}
+
+.bottomInfoBar {
+  width: 100%;
+  min-height: 60px;
+  max-height: 60px;
+  background-color: var(--color-black);
+  color: var(--color-white);
+  padding: 0.75rem 1rem;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+}
+
+.userDetails {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.userPic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--color-white);
+  flex-shrink: 0;
+}
+
+.userTextContent {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.displayName {
+  font-weight: 600;
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.postDesc {
+  font-size: 0.8rem;
+  color: #e0e0e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.followUserButton {
+  background-color: #ff0000;
+  color: var(--color-white);
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.followUserButton:hover {
+  background-color: #cc0000;
+}
+
+.sideControls {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding: 1.5rem;
+  background-color: #0d0d0d;
+  border-top-right-radius: 16px;
+  border-bottom-right-radius: 16px;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.readMoreText {
+  color: #00ffff;
+  cursor: pointer;
+  font-weight: bold;
+  margin-left: 5px;
+  transition: color 0.2s;
+  user-select: none;
+}
+
+.readMoreText:hover {
+  color: #ff0077;
+}
+
+.clickableDesc {
+  cursor: pointer;
+}
+
+.extraOptionsContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.optionsIcon {
+  cursor: pointer;
+  font-size: 1.5rem;
+  margin-top: 12px;
+}
+
+/* === MOBİL EKRANLAR === */
+@media (max-width: 1024px) {
+  .mainWrapper {
+    flex-direction: column;
+    border-radius: 0;
+    box-shadow: none;
+    padding-bottom: 50px;
+  }
+
+  .videoUnit {
+    flex: 1;
+    width: 100%;
+    border-radius: 0;
+  }
+
+  .bottomInfoBar {
+    padding: 0.5rem 0.75rem;
+    min-height: 50px;
+    max-height: 50px;
+    border-radius: 0;
+  }
+
+  .sideControls {
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+    max-width: 450px;
+    height: 50px;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center;
+    padding: 0 1rem;
+    background-color: rgb(0, 0, 0);
+  }
+
+  @media (max-width: 460px) {
+    .mainWrapper {
+      flex-direction: column;
+      width: 100%;
+      max-width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      border-radius: 0;
+    }
+
+    .sideControls {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 55px;
+      flex-direction: row;
+      justify-content: space-between;
+      padding: 0 0.75rem;
+      background: rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(6px);
+      z-index: 10;
+    }
+
+    .optionsIcon {
+      font-size: 1.6rem;
+      color: #fff;
+      margin-left: 0.5rem;
+      margin-top: 0;
+    }
+
+    .videoUnit {
+      flex: 1;
+      margin-top: 55px;
+    }
+
+    .mediaFrame {
+      aspect-ratio: 9 / 16;
+      object-fit: cover;
+    }
+
+    .bottomInfoBar {
+      padding: 0.8rem 1rem;
+      background: rgba(0, 0, 0, 0.55);
+      color: #fff;
+      min-height: 80px;
+    }
+
+    .userPic {
+      width: 34px;
+      height: 34px;
+    }
+
+    .displayName {
+      font-size: 0.9rem;
+    }
+
+    .postDesc {
+      font-size: 0.75rem;
+      line-height: 1.3;
+    }
+
+    .followUserButton {
+      font-size: 0.75rem;
+      padding: 0.35rem 0.65rem;
+    }
+  }
+}
+
+/* === MASAÜSTÜ TASARIM === */
+.container {
+  height: 100vh;
+  min-height: 500px;
+  width: 100%;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #1a1a1a;
+  color: #f0f0f0;
+}
+
+.contentWrapper {
+  width: 100%;
+  height: 100%;
+  max-width: 1400px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+  display: flex;
+  padding: 5px;
+  gap: 5px;
+  background-color: #242424;
+}
+
+.videoBox {
+  flex-grow: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.videoPlayer {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 12px;
+}
+
+.controlsBox {
+  width: 80px;
+  height: 100%;
+  flex-shrink: 0;
+  background-color: #303030;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px 0;
+  border-left: 2px solid #3c3c3c;
+}
+
+.w1Title {
+  font-size: 28px;
+  font-weight: 900;
+  color: #00aaff;
+  text-shadow: 0 0 5px rgb(0, 152, 212);
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.navigationControls {
+  margin-top: auto;
+  margin-bottom: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.navButton {
+  background-color: #444444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 55px;
+  height: 55px;
+  cursor: pointer;
+  font-size: 24px;
+  transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.navButton:hover {
+  background-color: #00bcd4;
+  transform: scale(1.1);
+  box-shadow: 0 6px 15px rgba(0, 188, 212, 0.4);
+}
+
+.navButton:active {
+  transform: scale(0.95);
+  background-color: #008ba3;
+}
+
+.arrow {
+  display: block;
+  line-height: 1;
+}
+
+.errorText {
+  color: #ff5722;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  padding: 20px;
+}

@@ -13,6 +13,7 @@ import AuthPage from "./pages/AuthPage/AuthPage";
 import Notifications from "./pages/Notification/NotificationPage";
 import Messages from "./pages/MessagePage/MessagesPage";
 import Discover from "./pages/Discover/Discover";
+import DataDiscover from "./pages/DataTestPage/DataTestPage";
 import SavedPage from "./pages/SavedPage/SavedPage";
 import ProfilePage from "./pages/Account/ProfilePage";
 import SettingsPage from "./pages/Settings/SettingsPage";
@@ -71,6 +72,7 @@ const AppContent = () => {
       <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
       <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
       <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
+      <Route path="/data-discover" element={<ProtectedRoute><DataDiscover /></ProtectedRoute>} />
       <Route path="/saved" element={<ProtectedRoute><SavedPage /></ProtectedRoute>} />
       <Route path="/vocentra" element={<ProtectedRoute><VoCentra /></ProtectedRoute>} />
       <Route path="/server/:serverName" element={<ProtectedRoute><VocentraServerPage /></ProtectedRoute>} />
