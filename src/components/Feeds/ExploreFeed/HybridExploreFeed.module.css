@@ -1,12 +1,11 @@
 .feedWrapper {
-    /* Sayfayı kapla ve içeriği ortala */
     width: 100%;
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     position: relative; /* Nav butonlarını konumlandırmak için */
-    background-color: #1a1a1a;
+    background-color: #000000;
 }
 
 /* Navigasyon Butonları Sarmalayıcı */

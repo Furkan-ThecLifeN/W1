@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
-// ✅ Firebase backend bağlantıları
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+// ✅ Firebase bağlantıları
 import { db } from "../../../config/firebase-client";
 import {
     collection,
@@ -9,122 +9,170 @@ import {
     getDocs,
     startAfter,
 } from "firebase/firestore";
-// Yeni DiscoverVideoCard bileşenini içe aktar
-import DiscoverVideoCard from "../DiscoverVideoCard/DiscoverVideoCard";
+
+// ✅ Kart Bileşenleri
+import DiscoverVideoCard from "../DiscoverVideoCard/DiscoverVideoCard"; // Firebase için
+import DataDiscover from "../../data-discover/DataDiscover"; // JSON için
+
+// ✅ JSON verisi importu
+import allVideos from '../../../data/explore.json'; 
+
 import styles from "./HybridExploreFeed.module.css";
 import { FiArrowDown, FiArrowUp } from "react-icons/fi";
 
 // ==========================================================
-// LOCAL STORAGE YARDIMCI FONKSİYONLARI (DEĞİŞMEDİ)
+// SABİTLER
+// ==========================================================
+const EXPIRATION_DURATION = 14 * 24 * 60 * 60 * 1000; // 14 gün (2 hafta)
+const FIREBASE_SEEN_KEY = "seenPostIds_fb";
+const JSON_SEEN_KEY = "seenPostIds_json";
+const FIREBASE_BATCH_SIZE = 5; // Firebase'den her seferinde çekilecek post sayısı
+
+// ==========================================================
+// LOCAL STORAGE YARDIMCI FONKSİYONLARI (Birleştirilmiş ve Geliştirilmiş)
 // ==========================================================
 
-// 2 hafta (14 gün) milisaniye cinsinden
-const SEEN_EXPIRATION_MS = 14 * 24 * 60 * 60 * 1000;
-const STORAGE_KEY = "seenPostIds";
-
 /**
- * LocalStorage'dan görülen post ID'lerini okur ve süresi dolanları temizler.
- * @returns {Set<string>} Süresi dolmamış görülen post ID'leri.
+ * LocalStorage'dan görülen ID'leri okur, süresi dolanları ve geçersiz ID'leri temizler.
+ * @param {string} storageKey Hangi kaynağın (Firebase/JSON) ID'leri çekilecek.
+ * @param {Array<object>} [sourceList=null] JSON kaynağında sadece geçerli ID'leri tutmak için.
+ * @returns {Set<string>} Süresi dolmamış ve geçerli görülen ID'ler.
  */
-const getSeenPostIds = () => {
+const getAndCleanSeenIds = (storageKey, sourceList = null) => {
     try {
-        const stored = localStorage.getItem(STORAGE_KEY);
+        const stored = localStorage.getItem(storageKey);
         if (!stored) return new Set();
 
-        const seenPosts = JSON.parse(stored);
+        let seenPosts = JSON.parse(stored);
         const now = Date.now();
         const freshPosts = {};
+        
+        // Sadece JSON kaynağı için geçerli ID setini oluştur
+        const validIds = sourceList ? new Set(sourceList.map(item => String(item.id))) : null;
 
-        // Süresi dolanları filtrele
-        for (const [id, expiry] of Object.entries(seenPosts)) {
-            if (expiry > now) {
-                freshPosts[id] = expiry;
+        for (const id in seenPosts) {
+            const timestamp = seenPosts[id];
+            const isFresh = now - timestamp < EXPIRATION_DURATION;
+            // JSON ise, ID'nin hala JSON listesinde var olup olmadığını kontrol et
+            const isValid = !validIds || validIds.has(String(id)); 
+
+            if (isFresh && isValid) {
+                freshPosts[id] = timestamp;
             }
         }
 
-        // Temizlenmiş listeyi geri kaydet
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(freshPosts));
-
-        return new Set(Object.keys(freshPosts));
+        localStorage.setItem(storageKey, JSON.stringify(freshPosts));
+        // Her zaman string set olarak döndür (Firebase/JSON ID'lerini birleştirmeyi kolaylaştırır)
+        return new Set(Object.keys(freshPosts).map(String)); 
     } catch (e) {
-        console.error("LocalStorage okuma/temizleme hatası:", e);
+        console.error(`Local storage (${storageKey}) okuma/temizleme hatası:`, e);
         return new Set();
     }
 };
 
 /**
- * Belirtilen post ID'sini geçerli bir süre ile görülenlere ekler.
- * @param {string} postId Görüldü olarak işaretlenecek postun ID'si.
+ * Belirtilen öğe ID'sini görüldü olarak işaretler.
+ * @param {string} storageKey Hangi kaynağın ID'si işaretlenecek.
+ * @param {string|number} itemId Görüldü olarak işaretlenecek öğenin ID'si.
  */
-const markPostAsSeen = (postId) => {
+const markItemAsSeen = (storageKey, itemId) => {
     try {
-        const stored = localStorage.getItem(STORAGE_KEY);
+        const stored = localStorage.getItem(storageKey);
         const seenPosts = stored ? JSON.parse(stored) : {};
-        const now = Date.now();
         
-        // Yeni bitiş zamanını hesapla (şimdi + 2 hafta)
-        seenPosts[postId] = now + SEEN_EXPIRATION_MS;
+        // Yeni videonun ID'sini ve güncel zaman damgasını ekle/güncelle
+        seenPosts[String(itemId)] = Date.now(); 
 
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(seenPosts));
+        localStorage.setItem(storageKey, JSON.stringify(seenPosts));
     } catch (e) {
-        console.error("LocalStorage yazma hatası:", e);
+        console.error(`Local storage (${storageKey}) yazma hatası:`, e);
     }
 };
+
+// ==========================================================
+// RANDOM SEÇİM YARDIMCISI (JSON İÇİN)
+// ==========================================================
+
+/**
+ * Görülmemiş JSON videosunu seçer.
+ * @param {Array<object>} videoList Tüm JSON videoları.
+ * @param {Set<string>} allSeenIds LocalStorage ve mevcut oturumda görülen tüm ID'ler.
+ * @returns {object|null} Görülmemiş rastgele video nesnesi veya null.
+ */
+const getRandomUnseenJsonVideo = (videoList, allSeenIds) => {
+    // Görülmemiş videoları filtrele
+    const unseenVideos = videoList.filter(video => 
+        !allSeenIds.has(String(video.id))
+    );
+
+    if (unseenVideos.length === 0) {
+        return null;
+    }
+
+    const randomIndex = Math.floor(Math.random() * unseenVideos.length);
+    // Kaynak bilgisini ekle, ID'yi string yap
+    return { ...unseenVideos[randomIndex], id: String(unseenVideos[randomIndex].id), source: 'json' }; 
+};
+
 
 // ==========================================================
 // REACT BİLEŞENİ
 // ==========================================================
 
 export default function HybridExploreFeed() {
-    const [feed, setFeed] = useState([]);
-    const [activeIndex, setActiveIndex] = useState(0);
+    // 📌 Ana Akış Durumları
+    const [history, setHistory] = useState([]); // Görüntülenen tüm öğelerin ordered listesi (Session History)
+    const [currentIndex, setCurrentIndex] = useState(0); // Şu anki pozisyon
     const [loading, setLoading] = useState(true);
-    const [isFetchingMore, setIsFetchingMore] = useState(false);
-    // lastVisible: null (başlangıçta), undefined (tüm veriler çekildi), DocumentSnapshot (çekilecek bir sonraki sayfa)
-    const [lastVisible, setLastVisible] = useState(null); 
-    const FIREBASE_BATCH = 5;
+    const [isFetching, setIsFetching] = useState(false); // Yeni veri çekme durumu
 
-    // Firebase verilerini çekme fonksiyonu (useCallback ile optimize edildi)
-    const fetchFirebaseData = useCallback(async (initialLoad = false) => {
-        // Zaten veri çekiliyorsa veya tüm veriler çekilmişse çık
-        if (isFetchingMore || (!initialLoad && lastVisible === undefined)) {
-            if (lastVisible === undefined) {
-                // Bu logu kaldırarak gereksiz tekrarı önleyebiliriz
-                // console.log("Tüm içerikler zaten yüklendi.");
-            }
-            return;
-        }
+    // 📌 Firebase ve JSON Kaynak Durumları
+    const [lastVisible, setLastVisible] = useState(null); // Firebase pagination referansı (null: başlangıç, undefined: bitti)
+    const [firebaseExhausted, setFirebaseExhausted] = useState(false); // Firebase'de görülmemiş içerik bitti mi?
+    const [jsonExhausted, setJsonExhausted] = useState(false); // JSON'da görülmemiş içerik bitti mi?
 
-        setIsFetchingMore(true);
-        if (initialLoad) setLoading(true);
+    // 📌 Veri Kaynakları
+    const jsonVideoList = useMemo(() => allVideos, []);
+
+    // 📌 Mevcut oturumda zaten gösterilmiş olan tüm ID'lerin setini hesapla
+    const sessionSeenIds = useMemo(() => new Set(history.map(item => String(item.id))), [history]);
+
+    // ==========================================================
+    // HYBRID VERİ ÇEKME FONKSİYONLARI
+    // ==========================================================
+    
+    /**
+     * Firebase'den yeni bir parti görülmemiş veri çekmeye çalışır.
+     */
+    const getNextFirebaseItem = useCallback(async () => {
+        if (firebaseExhausted || lastVisible === undefined) return null;
 
         try {
-            const seenIds = getSeenPostIds(); 
-            let newFeedItems = [];
-            let currentLastVisible = lastVisible; // Döngü boyunca güncellediğimiz geçici DocumentSnapshot
-            let shouldContinueFetching = true;
-            let totalFetchAttempts = 0; // Çok fazla boş istek atmamak için say
-            let nextQueryStartDoc = currentLastVisible; // Bir sonraki sorgunun başlangıç noktası
+            const localSeenIds = getAndCleanSeenIds(FIREBASE_SEEN_KEY); 
+            let newItems = [];
+            let currentLastVisible = lastVisible; 
+            let totalFetchAttempts = 0;
 
-            // ⭐️ Düzeltme: Yeni, görülmemiş içerik bulana kadar döngü yap (max 4 deneme)
-            while (newFeedItems.length < FIREBASE_BATCH && shouldContinueFetching && totalFetchAttempts < 4) {
+            // Görülmemiş postları bulana kadar sayfalamaya devam et (max 5 deneme)
+            while (newItems.length === 0 && totalFetchAttempts < 5) {
                 totalFetchAttempts++;
+                
                 const feedsCollection = collection(db, "globalFeeds");
                 let q;
-
+                
                 // Pagination sorgusu oluştur
-                if (nextQueryStartDoc && nextQueryStartDoc !== true) {
+                if (currentLastVisible && currentLastVisible !== true) {
                     q = query(
                         feedsCollection,
                         orderBy("createdAt", "desc"),
-                        startAfter(nextQueryStartDoc),
-                        limit(FIREBASE_BATCH)
+                        startAfter(currentLastVisible),
+                        limit(FIREBASE_BATCH_SIZE)
                     );
-                } else {
+                } else { // İlk yükleme veya bir önceki sorgu bittiğinde (lastVisible = null/true)
                     q = query(
                         feedsCollection,
                         orderBy("createdAt", "desc"),
-                        limit(FIREBASE_BATCH)
+                        limit(FIREBASE_BATCH_SIZE)
                     );
                 }
 
@@ -132,181 +180,291 @@ export default function HybridExploreFeed() {
 
                 // Veri yoksa (Veritabanının sonuna ulaşıldı)
                 if (snapshot.empty) {
-                    console.log("Firebase'den çekilecek daha fazla içerik yok. (Döngü Bitti)");
-                    shouldContinueFetching = false;
-                    currentLastVisible = undefined; // Sonsuz döngüden çıkmak için kesin olarak undefined yap
-                    break;
+                    setFirebaseExhausted(true);
+                    setLastVisible(undefined);
+                    return null;
                 }
 
-                // Bir sonraki sorgu için son dökümanı güncelle (Bu, bir sonraki batch'in başlangıç noktası olacak)
-                nextQueryStartDoc = snapshot.docs[snapshot.docs.length - 1]; 
+                // Bir sonraki sorgu için son dökümanı güncelle
+                currentLastVisible = snapshot.docs[snapshot.docs.length - 1]; 
                 
                 const fetchedData = snapshot.docs.map((doc) => ({
-                    id: doc.id,
-                    type: "video",
+                    id: String(doc.id), 
+                    source: "firebase", 
                     ...doc.data(),
                 }));
 
-                // Görülen postları filtrele
-                const filteredData = fetchedData.filter(item => !seenIds.has(item.id));
-                newFeedItems = [...newFeedItems, ...filteredData];
-
-                // Eğer çekilen batch tam FIREBASE_BATCH'ten az ise son sayfadayız demektir.
-                if (snapshot.docs.length < FIREBASE_BATCH) {
-                    shouldContinueFetching = false;
-                    currentLastVisible = undefined; // Sonsuz döngüden çıkmak için kesin olarak undefined yap
-                    break;
-                } 
+                // LocalStorage'da veya mevcut oturumda görülmemiş postları filtrele
+                newItems = fetchedData.filter(item => 
+                    !localSeenIds.has(item.id) && !sessionSeenIds.has(item.id)
+                );
                 
-                // Yeterli yeni içeriği bulduk.
-                if (newFeedItems.length >= FIREBASE_BATCH) {
-                    // Bulduk, bir sonraki query için nextQueryStartDoc geçerli DocumentSnapshot'ı tutuyor.
-                    currentLastVisible = nextQueryStartDoc;
-                    break;
+                // Eğer çekilen batch tam FIREBASE_BATCH_SIZE'dan az ise son sayfadayız demektir.
+                if (snapshot.docs.length < FIREBASE_BATCH_SIZE) {
+                     // Firebase tükendi, nextLastVisible undefined olacak
+                     setLastVisible(undefined);
+                } else {
+                     // Bir sonraki sorgu için yeni döküman referansını kaydet
+                     setLastVisible(currentLastVisible);
                 }
-                
-                // Eğer yeterli içerik bulamadıysak (newFeedItems.length < FIREBASE_BATCH) ve döngü limitine ulaşmadıysak
-                // döngü devam edecek ve bir sonraki sorgu için nextQueryStartDoc kullanılacak.
             }
             
-            // ⭐️ Düzeltme: lastVisible durumunu döngü bittikten sonra bir kez güncelle
-            // Sonsuz döngülerin asıl nedeni budur.
-            setLastVisible(currentLastVisible);
-
-            // Eğer yeni içerik bulunduysa feed'e ekle
-            if (newFeedItems.length > 0) {
-                // Sadece ilk FIREBASE_BATCH kadarını al 
-                const itemsToAdd = newFeedItems.slice(0, FIREBASE_BATCH);
-                setFeed((prev) => [...prev, ...itemsToAdd]);
-                console.log(`Firebase'den ${itemsToAdd.length} yeni (görülmemiş) veri başarıyla çekildi.`);
-            } else if (currentLastVisible === undefined) {
-                 // Eğer içerik bulunamadıysa (newFeedItems.length === 0) ve lastVisible artık undefined ise, 
-                 // tüm verilerin çekildiği anlamına gelir. Bu durumda log yazılabilir.
-                 console.log("Listenin sonu. Çekilecek yeni görülmemiş içerik yok.");
+            // Eğer newItems.length > 0 ise, ilkini döndür (kalabalık yapmamak için)
+            if (newItems.length > 0) {
+                 return newItems[0];
+            } else {
+                 // 5 denemeye rağmen yeni item bulunamadıysa (hepsi görülmüş), bitti olarak işaretlemiyoruz,
+                 // ancak bir sonraki denemeye kadar ilerliyoruz.
+                 // Eğer son sayfadaysak zaten setLastVisible(undefined) çağrıldı.
+                 return null;
             }
 
 
         } catch (error) {
             console.error("Firebase veri çekme hatası:", error);
-        } finally {
-            if (initialLoad) setLoading(false);
-            setIsFetchingMore(false);
+            setFirebaseExhausted(true);
+            return null;
         }
-    }, [isFetchingMore, lastVisible]); // feed.length'i bağımlılıktan kaldırdım, activeIndex yeterli
+    }, [lastVisible, firebaseExhausted, sessionSeenIds]);
+    
+    /**
+     * JSON'dan rastgele bir görülmemiş öğe seçer.
+     * @returns {object|null} Seçilen öğe veya null.
+     */
+    const getNextJsonItem = useCallback(() => {
+        if (jsonExhausted) return null;
+        
+        const localSeenIds = getAndCleanSeenIds(JSON_SEEN_KEY, jsonVideoList);
+        
+        // JSON videosunu seçmek için LocalStorage ve mevcut oturumdaki tüm görülen ID'leri kullan
+        const allSeenIds = new Set([...localSeenIds, ...sessionSeenIds]);
+        
+        const item = getRandomUnseenJsonVideo(jsonVideoList, allSeenIds);
 
-    // 1️⃣ İlk yükleme: useEffect içinde Firebase verilerini çek
+        if (item) {
+            return item;
+        } else {
+            setJsonExhausted(true);
+            return null;
+        }
+    }, [jsonExhausted, jsonVideoList, sessionSeenIds]);
+
+    
+    /**
+     * Hibrid mantıkla sıradaki tek bir öğeyi (Firebase veya JSON) getirir.
+     * Bu fonksiyon, eşit karma yapısını korumak için sırayla kaynakları dener.
+     * @returns {Promise<object|null>} Bir sonraki öğe veya null.
+     */
+    const getNextHybridItem = useCallback(async () => {
+        let isJsonTurn = history.length % 2 !== 0; // 0:FB, 1:JSON, 2:FB...
+
+        // 1. Eşit Karma Mantığı
+        if (!firebaseExhausted && !jsonExhausted) {
+            if (isJsonTurn) {
+                // Önce JSON'u dene
+                const jsonItem = getNextJsonItem();
+                if (jsonItem) return jsonItem;
+                
+                // JSON bulunamazsa, Firebase'i dene
+                const firebaseItem = await getNextFirebaseItem();
+                if (firebaseItem) return firebaseItem;
+            } else { // Firebase sırası
+                // Önce Firebase'i dene
+                const firebaseItem = await getNextFirebaseItem();
+                if (firebaseItem) return firebaseItem;
+
+                // Firebase bulunamazsa, JSON'u dene
+                const jsonItem = getNextJsonItem();
+                if (jsonItem) return jsonItem;
+            }
+        }
+        
+        // 2. Tükenme Mantığı (Bir kaynak bittiyse, diğerinden devam et)
+        if (!firebaseExhausted) {
+             const firebaseItem = await getNextFirebaseItem();
+             if (firebaseItem) return firebaseItem;
+        }
+
+        if (!jsonExhausted) {
+            const jsonItem = getNextJsonItem();
+            if (jsonItem) return jsonItem;
+        }
+        
+        // Tüm kaynaklar tükendi
+        return null; 
+        
+    }, [history.length, firebaseExhausted, jsonExhausted, getNextFirebaseItem, getNextJsonItem]);
+
+
+    // ==========================================================
+    // EFEKTLER VE NAVİGASYON
+    // ==========================================================
+
+    // 📌 1. İlk Yükleme: Sadece ilk öğeyi getir.
     useEffect(() => {
-        // lastVisible undefined ise (tüm içerik yüklendiyse) ilk yüklemeyi tekrar deneme
-        if (lastVisible === undefined) return; 
-        
-        fetchFirebaseData(true);
-    }, [fetchFirebaseData, lastVisible]); // lastVisible durumunu da kontrol et
+        const initialLoad = async () => {
+            if (history.length > 0 || isFetching) return; 
 
-    // 2️⃣ Sonraki İçeriğe Gitme Fonksiyonu (DEĞİŞMEDİ)
-    const handleNext = useCallback(() => {
-        // Mevcut postu görüldü olarak işaretle
-        if (feed[activeIndex]) {
-            markPostAsSeen(feed[activeIndex].id);
-        }
-
-        if (activeIndex < feed.length - 1) {
-            // Listenin içinde bir sonraki elemana geç
-            setActiveIndex(activeIndex + 1);
-        } else if (lastVisible !== undefined && !isFetchingMore) {
-             // ⭐️ Listenin sonuna gelindi VE daha fazla veri ÇEKİLEBİLİR.
-             // Butona basıldığında yeni veri çekmeyi tetikle.
-            fetchFirebaseData(); 
+            setLoading(true);
+            setIsFetching(true);
             
-        } else if (activeIndex === feed.length - 1 && lastVisible === undefined) {
-            // Listenin sonuna gelindi ve çekilecek daha fazla veri yok.
-            console.log("Listenin sonu, daha fazla içerik yok.");
-        }
-    }, [activeIndex, feed, fetchFirebaseData, lastVisible, isFetchingMore]);
+            const initialItem = await getNextHybridItem(); // Hibrid yolla ilk öğeyi getir
 
-    // 3️⃣ Önceki İçeriğe Gitme Fonksiyonu (DEĞİŞMEDİ)
-    const handlePrev = useCallback(() => {
-        // Geri giderken de mevcut postu görüldü olarak işaretle
-        if (feed[activeIndex]) {
-            markPostAsSeen(feed[activeIndex].id);
+            if (initialItem) {
+                setHistory([initialItem]);
+                setCurrentIndex(0);
+                // İlk gösterilen öğeyi hemen seen olarak işaretle
+                markItemAsSeen(
+                    initialItem.source === 'firebase' ? FIREBASE_SEEN_KEY : JSON_SEEN_KEY,
+                    initialItem.id
+                );
+            }
+            
+            setLoading(false);
+            setIsFetching(false);
+        };
+        
+        initialLoad();
+        
+    }, []); // Sadece bileşen yüklendiğinde çalışır
+
+    
+    // 📌 Aşağı (Sonraki) Butonu: Geçmişi ilerletir veya yeni veri çeker
+    const handleNext = useCallback(async () => {
+        if (isFetching) return;
+
+        // 1. Eğer geçmişte geri gelinmişse, ileri git (mevcut history'deki bir sonraki item'a).
+        if (currentIndex < history.length - 1) {
+            setCurrentIndex(prev => prev + 1);
+            return;
+        }
+
+        // 2. Geçmişin sonundaysak, yeni item getir.
+        if (firebaseExhausted && jsonExhausted) {
+            console.log("Tüm içerikler tükendi.");
+            return;
         }
         
-        if (activeIndex > 0) setActiveIndex(activeIndex - 1);
-    }, [activeIndex, feed]);
+        setIsFetching(true);
+        const nextItem = await getNextHybridItem();
+        setIsFetching(false);
 
-    // Yükleniyor ve Boş İçerik Durumları 
+        if (nextItem) {
+            setHistory(prev => [...prev, nextItem]);
+            setCurrentIndex(prev => prev + 1);
+            // Yeni gösterilen öğeyi seen olarak işaretle
+            markItemAsSeen(
+                nextItem.source === 'firebase' ? FIREBASE_SEEN_KEY : JSON_SEEN_KEY,
+                nextItem.id
+            );
+        } else {
+            console.log("Daha fazla yeni içerik bulunamadı.");
+        }
+
+    }, [currentIndex, history.length, firebaseExhausted, jsonExhausted, getNextHybridItem, isFetching]);
+
+    // 📌 Yukarı (Önceki) Butonu: Geçmişte geri gider
+    const handlePrev = useCallback(() => {
+        if (currentIndex > 0) {
+            setCurrentIndex(prev => prev - 1);
+        }
+    }, [currentIndex]);
+    
+    // 📌 Render Edilecek Veri
+    const currentItem = history[currentIndex] || null;
+
+    // ==========================================================
+    // RENDER VE KART SEÇİMİ
+    // ==========================================================
+
+    const isFirstItem = currentIndex === 0;
+    const isLastItemAndExhausted = currentIndex === history.length - 1 && firebaseExhausted && jsonExhausted;
+    const isNextLoading = currentIndex === history.length - 1 && isFetching;
+
     if (loading)
         return (
             <div className={styles.feedWrapper}>
-                <p>İçerikler Yükleniyor...</p>
+                <p>Karma İçerikler Yükleniyor...</p>
             </div>
         ); 
         
-    if (feed.length === 0)
+    // Tüm içerikler tükendi ve history boşsa veya son itemdaysa
+    if (!currentItem && firebaseExhausted && jsonExhausted)
         return (
-            <div className={styles.feedWrapper} style={{justifyContent: 'center', alignItems: 'center'}}>
-                <p>Henüz içerik yok veya tüm içerikler görüldü.</p>
+            <div className={styles.feedWrapper} style={{justifyContent: 'center', alignItems: 'center', height: '100vh', padding: '20px'}}>
+                <p>Tebrikler! Şu an için gösterilebilecek **tüm** Firebase ve Yerel içerikleri gördünüz.</p>
                 <button 
                     onClick={() => {
-                        // Tamamen sıfırlayıp tekrar dene
-                        setFeed([]);
-                        setActiveIndex(0);
-                        setLastVisible(null); 
-                        fetchFirebaseData(true);
+                        // Görülenleri temizleyip sıfırdan başlama seçeneği
+                        localStorage.removeItem(FIREBASE_SEEN_KEY);
+                        localStorage.removeItem(JSON_SEEN_KEY);
+                        window.location.reload(); 
                     }} 
-                    disabled={isFetchingMore}
-                    style={{padding: '10px 20px', cursor: 'pointer', background: '#00aaff', color: 'white', border: 'none', borderRadius: '8px'}}
+                    style={{marginTop: '20px', padding: '10px 20px', cursor: 'pointer', background: '#ff0000', color: 'white', border: 'none', borderRadius: '8px'}}
                 >
-                    {isFetchingMore ? "Yükleniyor..." : "Tekrar Dene"}
+                    Tüm Görülenleri Sıfırla ve Yeniden Başlat
                 </button>
             </div>
         );
 
-    const currentItem = feed[activeIndex];
-
-    // Durum değişkenleri DiscoverVideoCard için hazırlanır
-    const isFirstItem = activeIndex === 0;
-    // lastVisible === undefined demek, Firebase'den çekilebilecek tüm verinin çekildiği anlamına gelir.
-    const isLastItem = activeIndex === feed.length - 1 && lastVisible === undefined;
-
-    return (
-        <div className={styles.feedWrapper}>
-            {/* Tek Video Player yerine yeni bileşen kullanıldı */}
-            {currentItem && (
-                // ⭐️ DiscoverVideoCard'a navigasyon handler'ları ve durumları geçirildi
+    if (!currentItem) return <div className={styles.feedWrapper}><p>İçerik yüklenemedi.</p></div>;
+    
+    // 🔥 Kart Seçimi: Gelen verinin kaynağına göre doğru bileşeni çağır
+    
+    // DiscoverVideoCard (Firebase) ve DataDiscover (JSON) prop isimleri farklı olduğu için ayrı ayrı render ediliyor.
+    if (currentItem.source === 'firebase') {
+        return (
+            <div className={styles.feedWrapper}>
+                {/* DiscoverVideoCard onNextPost/onPrevPost kullanır */}
                 <DiscoverVideoCard 
                     key={currentItem.id} 
                     data={currentItem} 
                     onNextPost={handleNext} 
                     onPrevPost={handlePrev} 
                     isFirstItem={isFirstItem}
-                    isLastItem={isLastItem}
+                    isLastItem={isLastItemAndExhausted} // Son butonu devre dışı bırakmak için
                 />
-            )}
-            
-            {/* Navigasyon Butonları (Mobile de gözüken) */}
-            <div className={styles.navButtons}>
-                <button
-                    onClick={handlePrev}
-                    disabled={isFirstItem} // İlk elemansa devre dışı
-                    className={styles.navButton}
-                    aria-label="Önceki İçerik"
-                >
-                    <FiArrowUp size={32} />
-                </button>
-                <button
-                    onClick={handleNext}
-                    // Son elemandaysak ve çekilecek başka veri yoksa devre dışı.
-                    disabled={activeIndex === feed.length - 1 && lastVisible === undefined} 
-                    className={styles.navButton}
-                    aria-label="Sonraki İçerik"
-                >
-                    {activeIndex === feed.length - 1 && isFetchingMore ? (
-                        <span style={{ fontSize: '12px' }}>Yükleniyor...</span>
-                    ) : (
-                        <FiArrowDown size={32} />
-                    )}
-                </button>
+                 {/* DiscoverVideoCard'ın kendi butonları yoksa, bu dış butonları kullanırız */}
+                <div className={styles.navButtons}>
+                    <button
+                        onClick={handlePrev}
+                        disabled={isFirstItem} 
+                        className={styles.navButton}
+                        aria-label="Önceki İçerik"
+                    >
+                        <FiArrowUp size={32} />
+                    </button>
+                    <button
+                        onClick={handleNext}
+                        disabled={isLastItemAndExhausted || isNextLoading} 
+                        className={styles.navButton}
+                        aria-label="Sonraki İçerik"
+                    >
+                        {isNextLoading ? (
+                            <span style={{ fontSize: '12px' }}>Yükleniyor...</span>
+                        ) : (
+                            <FiArrowDown size={32} />
+                        )}
+                    </button>
+                </div>
             </div>
-        </div>
-    );
+        );
+    } 
+    
+    if (currentItem.source === 'json') {
+        return (
+             <div className={styles.feedWrapper}>
+                {/* DataDiscover onNext/onPrev kullanır ve kendi içinde navigasyon butonlarını render eder */}
+                <DataDiscover
+                    key={currentItem.id}
+                    data={currentItem}
+                    onNext={handleNext}
+                    onPrev={handlePrev}
+                    isPrevDisabled={isFirstItem}
+                    isNextDisabled={isLastItemAndExhausted}
+                    isNextLoading={isNextLoading} // Yeni loading prop'u
+                />
+            </div>
+        );
+    }
 }

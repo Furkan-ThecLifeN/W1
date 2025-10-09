@@ -25,33 +25,37 @@ const getEmbedUrl = (url) => {
     );
 
     if (videoIdMatch && videoIdMatch[1]) {
-      // Oynatıcı kontrolleri ile embed URL'si
-      return `https://www.youtube.com/embed/${videoIdMatch[1]}?autoplay=0&controls=1`;
+      // Shorts'lar için rel=0 eklenebilir, ancak burada sadece temel embed linkini oluşturuyoruz.
+      // Shorts videoları için 'embed/' yerine 'shorts/' da kullanılabilir, ancak iframe genellikle 'embed' ister.
+      return `https://www.youtube.com/embed/${videoIdMatch[1]}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoIdMatch[1]}`;
     }
+    return null;
   } catch (e) {
-    console.error("Invalid URL", e);
+    console.error("URL dönüştürme hatası:", e);
+    return null;
   }
-  return null;
 };
 
-// Component Adı Güncellendi: VideoPlayerPage yerine DataDiscover
-const DataDiscover = ({ 
+export default function DataDiscover({ 
     data = defaultData, 
-    onNext, // DataTestPage'den gelecek
-    onPrev, // DataTestPage'den gelecek
-    isPrevDisabled, // DataTestPage'den gelecek
-    isNextDisabled // DataTestPage'den gelecek
-}) => {
+    onNext, 
+    onPrev, 
+    isPrevDisabled, 
+    isNextDisabled,
+    isNextLoading // ✅ YENİ PROP EKLENDİ
+}) {
+  // Veriden embed linkini al
   const embedUrl = getEmbedUrl(data.url);
 
   return (
     <div className={styles.container}>
       <div className={styles.contentWrapper}>
+        
+        {/* SOL KUTU: Video Alanı */}
         <div className={styles.videoBox}>
           {embedUrl ? (
             <iframe
-              key={data.id} // Key ekleyerek iframe'in data değiştiğinde yeniden yüklenmesini sağla
-              className={styles.videoPlayer}
+              className={styles.mediaFrame}
               src={embedUrl}
               title={data.title}
               frameBorder="0"
@@ -66,6 +70,7 @@ const DataDiscover = ({
           )}
         </div>
 
+        {/* SAĞ KUTU: Kontroller Alanı */}
         <div className={styles.controlsBox}>
           <div className={styles.w1Title}>W1</div>
           
@@ -83,16 +88,19 @@ const DataDiscover = ({
             <button 
                 className={styles.navButton} 
                 onClick={onNext}
-                disabled={isNextDisabled}
+                // ✅ isNextLoading kontrolü eklendi
+                disabled={isNextDisabled || isNextLoading} 
                 aria-label="Sonraki İçerik"
             >
-              <FiArrowDown size={24} className={styles.arrow} />
+              {isNextLoading ? ( // ✅ Yükleme durumu kontrolü
+                  <span style={{ fontSize: '12px', color: 'white' }}>Yükleniyor...</span>
+              ) : (
+                  <FiArrowDown size={24} className={styles.arrow} />
+              )}
             </button>
           </div>
         </div>
       </div>
     </div>
   );
-};
-
-export default DataDiscover;
+}
