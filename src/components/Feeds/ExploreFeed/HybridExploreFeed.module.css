@@ -5,7 +5,7 @@
     justify-content: center;
     align-items: center;
     position: relative; /* Nav butonlarını konumlandırmak için */
-    background-color: #000000;
+    background-color: var(--bg-main);
 }
 
 /* Navigasyon Butonları Sarmalayıcı */

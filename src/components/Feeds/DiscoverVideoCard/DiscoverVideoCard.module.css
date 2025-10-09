@@ -444,8 +444,8 @@
   .appLogoText {
     font-size: 28px;
     font-weight: 900;
-    color: #00aaff;
-    text-shadow: 0 0 5px rgb(0, 152, 212);
+    color: #ffffff;
+    text-shadow: 0 0 5px rgb(0, 183, 255);
     margin-bottom: 30px;
     text-align: center;
     flex-shrink: 0;
@@ -494,9 +494,9 @@
   }
 
   .arrowButton:hover {
-    background-color: #00bcd4;
+    background-color: #00bbff;
     transform: scale(1.1);
-    box-shadow: 0 6px 15px rgba(0, 188, 212, 0.4);
+    box-shadow: 0 6px 15px rgba(0, 152, 212, 0.768);
   }
 
   .arrowButton:active {

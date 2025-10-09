@@ -19,15 +19,15 @@ const defaultData = {
 // YouTube URL'sini embed edilebilir formata dönüştürme (SHORTS DESTEĞİ EKLENDİ)
 const getEmbedUrl = (url) => {
   try {
-    // Hem standart URL'leri (v=) hem de Shorts URL'lerini (/shorts/) yakalamak için güncellenmiş regex
     const videoIdMatch = url.match(
       /(?:youtu\.be\/|v=|\/embed\/|\/v\/|\/watch\?v=|\/shorts\/)([a-zA-Z0-9_-]{11})/
     );
 
     if (videoIdMatch && videoIdMatch[1]) {
-      // Shorts'lar için rel=0 eklenebilir, ancak burada sadece temel embed linkini oluşturuyoruz.
-      // Shorts videoları için 'embed/' yerine 'shorts/' da kullanılabilir, ancak iframe genellikle 'embed' ister.
-      return `https://www.youtube.com/embed/${videoIdMatch[1]}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoIdMatch[1]}`;
+      // ✅ DÜZELTME: `autoplay=1` ve `mute=1` parametreleri kaldırıldı.
+      // Bu sayede video otomatik başlamaz, kullanıcı tıkladığında sesli başlar.
+      // `controls=1` parametresi oynatıcı kontrollerinin görünür kalmasını sağlar.
+      return `https://www.youtube.com/embed/${videoIdMatch[1]}?controls=1&loop=1&playlist=${videoIdMatch[1]}`;
     }
     return null;
   } catch (e) {
@@ -42,9 +42,8 @@ export default function DataDiscover({
     onPrev, 
     isPrevDisabled, 
     isNextDisabled,
-    isNextLoading // ✅ YENİ PROP EKLENDİ
+    isNextLoading 
 }) {
-  // Veriden embed linkini al
   const embedUrl = getEmbedUrl(data.url);
 
   return (
@@ -59,7 +58,6 @@ export default function DataDiscover({
               src={embedUrl}
               title={data.title}
               frameBorder="0"
-              // Shorts videolarında (dikey format) tam ekran izleme deneyimi için önerilen izinler:
               allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
               allowFullScreen
             ></iframe>
@@ -88,11 +86,10 @@ export default function DataDiscover({
             <button 
                 className={styles.navButton} 
                 onClick={onNext}
-                // ✅ isNextLoading kontrolü eklendi
                 disabled={isNextDisabled || isNextLoading} 
                 aria-label="Sonraki İçerik"
             >
-              {isNextLoading ? ( // ✅ Yükleme durumu kontrolü
+              {isNextLoading ? (
                   <span style={{ fontSize: '12px', color: 'white' }}>Yükleniyor...</span>
               ) : (
                   <FiArrowDown size={24} className={styles.arrow} />

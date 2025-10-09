@@ -21,23 +21,24 @@ import styles from "./HybridExploreFeed.module.css";
 import { FiArrowDown, FiArrowUp } from "react-icons/fi";
 
 // ==========================================================
-// SABİTLER
+// SABİTLER ve KARMA YAPI AYARLARI
 // ==========================================================
 const EXPIRATION_DURATION = 14 * 24 * 60 * 60 * 1000; // 14 gün (2 hafta)
 const FIREBASE_SEEN_KEY = "seenPostIds_fb";
 const JSON_SEEN_KEY = "seenPostIds_json";
 const FIREBASE_BATCH_SIZE = 5; // Firebase'den her seferinde çekilecek post sayısı
 
+// ✅ KULLANICI İÇİN KOLAY AYARLANABİLİR KARMA ORANI
+// Örn: 5 JSON postu göster, sonra 1 Firebase postu göster.
+const MIX_RATIO = {
+    json: 5,
+    firebase: 1
+};
+
 // ==========================================================
 // LOCAL STORAGE YARDIMCI FONKSİYONLARI (Birleştirilmiş ve Geliştirilmiş)
 // ==========================================================
 
-/**
- * LocalStorage'dan görülen ID'leri okur, süresi dolanları ve geçersiz ID'leri temizler.
- * @param {string} storageKey Hangi kaynağın (Firebase/JSON) ID'leri çekilecek.
- * @param {Array<object>} [sourceList=null] JSON kaynağında sadece geçerli ID'leri tutmak için.
- * @returns {Set<string>} Süresi dolmamış ve geçerli görülen ID'ler.
- */
 const getAndCleanSeenIds = (storageKey, sourceList = null) => {
     try {
         const stored = localStorage.getItem(storageKey);
@@ -47,13 +48,11 @@ const getAndCleanSeenIds = (storageKey, sourceList = null) => {
         const now = Date.now();
         const freshPosts = {};
         
-        // Sadece JSON kaynağı için geçerli ID setini oluştur
         const validIds = sourceList ? new Set(sourceList.map(item => String(item.id))) : null;
 
         for (const id in seenPosts) {
             const timestamp = seenPosts[id];
             const isFresh = now - timestamp < EXPIRATION_DURATION;
-            // JSON ise, ID'nin hala JSON listesinde var olup olmadığını kontrol et
             const isValid = !validIds || validIds.has(String(id)); 
 
             if (isFresh && isValid) {
@@ -62,7 +61,6 @@ const getAndCleanSeenIds = (storageKey, sourceList = null) => {
         }
 
         localStorage.setItem(storageKey, JSON.stringify(freshPosts));
-        // Her zaman string set olarak döndür (Firebase/JSON ID'lerini birleştirmeyi kolaylaştırır)
         return new Set(Object.keys(freshPosts).map(String)); 
     } catch (e) {
         console.error(`Local storage (${storageKey}) okuma/temizleme hatası:`, e);
@@ -70,50 +68,25 @@ const getAndCleanSeenIds = (storageKey, sourceList = null) => {
     }
 };
 
-/**
- * Belirtilen öğe ID'sini görüldü olarak işaretler.
- * @param {string} storageKey Hangi kaynağın ID'si işaretlenecek.
- * @param {string|number} itemId Görüldü olarak işaretlenecek öğenin ID'si.
- */
 const markItemAsSeen = (storageKey, itemId) => {
     try {
         const stored = localStorage.getItem(storageKey);
         const seenPosts = stored ? JSON.parse(stored) : {};
-        
-        // Yeni videonun ID'sini ve güncel zaman damgasını ekle/güncelle
         seenPosts[String(itemId)] = Date.now(); 
-
         localStorage.setItem(storageKey, JSON.stringify(seenPosts));
     } catch (e) {
         console.error(`Local storage (${storageKey}) yazma hatası:`, e);
     }
 };
 
-// ==========================================================
-// RANDOM SEÇİM YARDIMCISI (JSON İÇİN)
-// ==========================================================
-
-/**
- * Görülmemiş JSON videosunu seçer.
- * @param {Array<object>} videoList Tüm JSON videoları.
- * @param {Set<string>} allSeenIds LocalStorage ve mevcut oturumda görülen tüm ID'ler.
- * @returns {object|null} Görülmemiş rastgele video nesnesi veya null.
- */
 const getRandomUnseenJsonVideo = (videoList, allSeenIds) => {
-    // Görülmemiş videoları filtrele
     const unseenVideos = videoList.filter(video => 
         !allSeenIds.has(String(video.id))
     );
-
-    if (unseenVideos.length === 0) {
-        return null;
-    }
-
+    if (unseenVideos.length === 0) return null;
     const randomIndex = Math.floor(Math.random() * unseenVideos.length);
-    // Kaynak bilgisini ekle, ID'yi string yap
     return { ...unseenVideos[randomIndex], id: String(unseenVideos[randomIndex].id), source: 'json' }; 
 };
-
 
 // ==========================================================
 // REACT BİLEŞENİ
@@ -121,29 +94,27 @@ const getRandomUnseenJsonVideo = (videoList, allSeenIds) => {
 
 export default function HybridExploreFeed() {
     // 📌 Ana Akış Durumları
-    const [history, setHistory] = useState([]); // Görüntülenen tüm öğelerin ordered listesi (Session History)
-    const [currentIndex, setCurrentIndex] = useState(0); // Şu anki pozisyon
+    const [history, setHistory] = useState([]); 
+    const [currentIndex, setCurrentIndex] = useState(0); 
     const [loading, setLoading] = useState(true);
-    const [isFetching, setIsFetching] = useState(false); // Yeni veri çekme durumu
+    const [isFetching, setIsFetching] = useState(false); 
 
     // 📌 Firebase ve JSON Kaynak Durumları
-    const [lastVisible, setLastVisible] = useState(null); // Firebase pagination referansı (null: başlangıç, undefined: bitti)
-    const [firebaseExhausted, setFirebaseExhausted] = useState(false); // Firebase'de görülmemiş içerik bitti mi?
-    const [jsonExhausted, setJsonExhausted] = useState(false); // JSON'da görülmemiş içerik bitti mi?
+    const [lastVisible, setLastVisible] = useState(null); 
+    const [firebaseExhausted, setFirebaseExhausted] = useState(false); 
+    const [jsonExhausted, setJsonExhausted] = useState(false); 
 
     // 📌 Veri Kaynakları
     const jsonVideoList = useMemo(() => allVideos, []);
 
-    // 📌 Mevcut oturumda zaten gösterilmiş olan tüm ID'lerin setini hesapla
+    // 📌 Mevcut oturumda gösterilmiş tüm ID'lerin setini hesapla
     const sessionSeenIds = useMemo(() => new Set(history.map(item => String(item.id))), [history]);
 
     // ==========================================================
     // HYBRID VERİ ÇEKME FONKSİYONLARI
     // ==========================================================
     
-    /**
-     * Firebase'den yeni bir parti görülmemiş veri çekmeye çalışır.
-     */
+    // ✅ Firebase'den yeni bir parti görülmemiş veri çekmeye çalışır.
     const getNextFirebaseItem = useCallback(async () => {
         if (firebaseExhausted || lastVisible === undefined) return null;
 
@@ -153,14 +124,11 @@ export default function HybridExploreFeed() {
             let currentLastVisible = lastVisible; 
             let totalFetchAttempts = 0;
 
-            // Görülmemiş postları bulana kadar sayfalamaya devam et (max 5 deneme)
             while (newItems.length === 0 && totalFetchAttempts < 5) {
                 totalFetchAttempts++;
-                
                 const feedsCollection = collection(db, "globalFeeds");
                 let q;
                 
-                // Pagination sorgusu oluştur
                 if (currentLastVisible && currentLastVisible !== true) {
                     q = query(
                         feedsCollection,
@@ -168,7 +136,7 @@ export default function HybridExploreFeed() {
                         startAfter(currentLastVisible),
                         limit(FIREBASE_BATCH_SIZE)
                     );
-                } else { // İlk yükleme veya bir önceki sorgu bittiğinde (lastVisible = null/true)
+                } else {
                     q = query(
                         feedsCollection,
                         orderBy("createdAt", "desc"),
@@ -177,48 +145,24 @@ export default function HybridExploreFeed() {
                 }
 
                 const snapshot = await getDocs(q);
-
-                // Veri yoksa (Veritabanının sonuna ulaşıldı)
                 if (snapshot.empty) {
                     setFirebaseExhausted(true);
                     setLastVisible(undefined);
                     return null;
                 }
-
-                // Bir sonraki sorgu için son dökümanı güncelle
                 currentLastVisible = snapshot.docs[snapshot.docs.length - 1]; 
-                
-                const fetchedData = snapshot.docs.map((doc) => ({
-                    id: String(doc.id), 
-                    source: "firebase", 
-                    ...doc.data(),
-                }));
-
-                // LocalStorage'da veya mevcut oturumda görülmemiş postları filtrele
+                const fetchedData = snapshot.docs.map((doc) => ({ id: String(doc.id), source: "firebase", ...doc.data() }));
                 newItems = fetchedData.filter(item => 
                     !localSeenIds.has(item.id) && !sessionSeenIds.has(item.id)
                 );
-                
-                // Eğer çekilen batch tam FIREBASE_BATCH_SIZE'dan az ise son sayfadayız demektir.
                 if (snapshot.docs.length < FIREBASE_BATCH_SIZE) {
-                     // Firebase tükendi, nextLastVisible undefined olacak
                      setLastVisible(undefined);
                 } else {
-                     // Bir sonraki sorgu için yeni döküman referansını kaydet
                      setLastVisible(currentLastVisible);
                 }
             }
-            
-            // Eğer newItems.length > 0 ise, ilkini döndür (kalabalık yapmamak için)
-            if (newItems.length > 0) {
-                 return newItems[0];
-            } else {
-                 // 5 denemeye rağmen yeni item bulunamadıysa (hepsi görülmüş), bitti olarak işaretlemiyoruz,
-                 // ancak bir sonraki denemeye kadar ilerliyoruz.
-                 // Eğer son sayfadaysak zaten setLastVisible(undefined) çağrıldı.
-                 return null;
-            }
-
+            if (newItems.length > 0) return newItems[0];
+            return null;
 
         } catch (error) {
             console.error("Firebase veri çekme hatası:", error);
@@ -227,72 +171,53 @@ export default function HybridExploreFeed() {
         }
     }, [lastVisible, firebaseExhausted, sessionSeenIds]);
     
-    /**
-     * JSON'dan rastgele bir görülmemiş öğe seçer.
-     * @returns {object|null} Seçilen öğe veya null.
-     */
+    // ✅ JSON'dan rastgele bir görülmemiş öğe seçer.
     const getNextJsonItem = useCallback(() => {
         if (jsonExhausted) return null;
-        
         const localSeenIds = getAndCleanSeenIds(JSON_SEEN_KEY, jsonVideoList);
-        
-        // JSON videosunu seçmek için LocalStorage ve mevcut oturumdaki tüm görülen ID'leri kullan
         const allSeenIds = new Set([...localSeenIds, ...sessionSeenIds]);
-        
         const item = getRandomUnseenJsonVideo(jsonVideoList, allSeenIds);
-
-        if (item) {
-            return item;
-        } else {
-            setJsonExhausted(true);
-            return null;
-        }
+        if (item) return item;
+        setJsonExhausted(true);
+        return null;
     }, [jsonExhausted, jsonVideoList, sessionSeenIds]);
 
     
     /**
-     * Hibrid mantıkla sıradaki tek bir öğeyi (Firebase veya JSON) getirir.
-     * Bu fonksiyon, eşit karma yapısını korumak için sırayla kaynakları dener.
+     * ✅ Hibrid mantıkla sıradaki tek bir öğeyi (Firebase veya JSON) getirir.
+     * Bu fonksiyon, ayarlanmış karıştırma oranını (MIX_RATIO) kullanır.
      * @returns {Promise<object|null>} Bir sonraki öğe veya null.
      */
     const getNextHybridItem = useCallback(async () => {
-        let isJsonTurn = history.length % 2 !== 0; // 0:FB, 1:JSON, 2:FB...
+        const totalRatio = MIX_RATIO.json + MIX_RATIO.firebase;
+        const ratioPosition = history.length % totalRatio;
 
-        // 1. Eşit Karma Mantığı
-        if (!firebaseExhausted && !jsonExhausted) {
-            if (isJsonTurn) {
-                // Önce JSON'u dene
-                const jsonItem = getNextJsonItem();
-                if (jsonItem) return jsonItem;
-                
-                // JSON bulunamazsa, Firebase'i dene
-                const firebaseItem = await getNextFirebaseItem();
-                if (firebaseItem) return firebaseItem;
-            } else { // Firebase sırası
-                // Önce Firebase'i dene
-                const firebaseItem = await getNextFirebaseItem();
-                if (firebaseItem) return firebaseItem;
-
-                // Firebase bulunamazsa, JSON'u dene
-                const jsonItem = getNextJsonItem();
-                if (jsonItem) return jsonItem;
+        let nextItem = null;
+        const isJsonTurn = ratioPosition < MIX_RATIO.json; 
+        
+        // 1. Belirlenen sıraya göre deneme
+        if (isJsonTurn) {
+            nextItem = getNextJsonItem();
+            if (!nextItem && !firebaseExhausted) { // JSON bittiyse, diğer kaynağı dene
+                 nextItem = await getNextFirebaseItem();
+            }
+        } else { // Firebase sırası
+            nextItem = await getNextFirebaseItem();
+            if (!nextItem && !jsonExhausted) { // Firebase bittiyse, diğer kaynağı dene
+                 nextItem = getNextJsonItem();
             }
         }
         
-        // 2. Tükenme Mantığı (Bir kaynak bittiyse, diğerinden devam et)
-        if (!firebaseExhausted) {
-             const firebaseItem = await getNextFirebaseItem();
-             if (firebaseItem) return firebaseItem;
+        // 2. Eğer ilk denemede bir şey bulunamadıysa (örneğin kaynaklardan biri bittiği için)
+        // Kalan diğer kaynağı zorla dene
+        if (!nextItem && !firebaseExhausted) {
+             nextItem = await getNextFirebaseItem();
         }
-
-        if (!jsonExhausted) {
-            const jsonItem = getNextJsonItem();
-            if (jsonItem) return jsonItem;
+        if (!nextItem && !jsonExhausted) {
+            nextItem = getNextJsonItem();
         }
         
-        // Tüm kaynaklar tükendi
-        return null; 
-        
+        return nextItem; 
     }, [history.length, firebaseExhausted, jsonExhausted, getNextFirebaseItem, getNextJsonItem]);
 
 
@@ -300,59 +225,44 @@ export default function HybridExploreFeed() {
     // EFEKTLER VE NAVİGASYON
     // ==========================================================
 
-    // 📌 1. İlk Yükleme: Sadece ilk öğeyi getir.
     useEffect(() => {
         const initialLoad = async () => {
             if (history.length > 0 || isFetching) return; 
-
             setLoading(true);
             setIsFetching(true);
-            
-            const initialItem = await getNextHybridItem(); // Hibrid yolla ilk öğeyi getir
-
+            const initialItem = await getNextHybridItem(); 
             if (initialItem) {
                 setHistory([initialItem]);
                 setCurrentIndex(0);
-                // İlk gösterilen öğeyi hemen seen olarak işaretle
                 markItemAsSeen(
                     initialItem.source === 'firebase' ? FIREBASE_SEEN_KEY : JSON_SEEN_KEY,
                     initialItem.id
                 );
+            } else {
+                 console.log("Başlangıçta yüklenecek içerik bulunamadı.");
             }
-            
             setLoading(false);
             setIsFetching(false);
         };
-        
         initialLoad();
-        
-    }, []); // Sadece bileşen yüklendiğinde çalışır
+    }, []);
 
-    
-    // 📌 Aşağı (Sonraki) Butonu: Geçmişi ilerletir veya yeni veri çeker
     const handleNext = useCallback(async () => {
         if (isFetching) return;
-
-        // 1. Eğer geçmişte geri gelinmişse, ileri git (mevcut history'deki bir sonraki item'a).
         if (currentIndex < history.length - 1) {
             setCurrentIndex(prev => prev + 1);
             return;
         }
-
-        // 2. Geçmişin sonundaysak, yeni item getir.
         if (firebaseExhausted && jsonExhausted) {
             console.log("Tüm içerikler tükendi.");
             return;
         }
-        
         setIsFetching(true);
         const nextItem = await getNextHybridItem();
         setIsFetching(false);
-
         if (nextItem) {
             setHistory(prev => [...prev, nextItem]);
             setCurrentIndex(prev => prev + 1);
-            // Yeni gösterilen öğeyi seen olarak işaretle
             markItemAsSeen(
                 nextItem.source === 'firebase' ? FIREBASE_SEEN_KEY : JSON_SEEN_KEY,
                 nextItem.id
@@ -360,10 +270,8 @@ export default function HybridExploreFeed() {
         } else {
             console.log("Daha fazla yeni içerik bulunamadı.");
         }
-
     }, [currentIndex, history.length, firebaseExhausted, jsonExhausted, getNextHybridItem, isFetching]);
 
-    // 📌 Yukarı (Önceki) Butonu: Geçmişte geri gider
     const handlePrev = useCallback(() => {
         if (currentIndex > 0) {
             setCurrentIndex(prev => prev - 1);
@@ -388,14 +296,12 @@ export default function HybridExploreFeed() {
             </div>
         ); 
         
-    // Tüm içerikler tükendi ve history boşsa veya son itemdaysa
-    if (!currentItem && firebaseExhausted && jsonExhausted)
+    if (!currentItem && (firebaseExhausted && jsonExhausted))
         return (
             <div className={styles.feedWrapper} style={{justifyContent: 'center', alignItems: 'center', height: '100vh', padding: '20px'}}>
-                <p>Tebrikler! Şu an için gösterilebilecek **tüm** Firebase ve Yerel içerikleri gördünüz.</p>
+                <p>Tebrikler! Şu an için gösterilebilecek **tüm** içerikleri gördünüz.</p>
                 <button 
                     onClick={() => {
-                        // Görülenleri temizleyip sıfırdan başlama seçeneği
                         localStorage.removeItem(FIREBASE_SEEN_KEY);
                         localStorage.removeItem(JSON_SEEN_KEY);
                         window.location.reload(); 
@@ -409,62 +315,52 @@ export default function HybridExploreFeed() {
 
     if (!currentItem) return <div className={styles.feedWrapper}><p>İçerik yüklenemedi.</p></div>;
     
-    // 🔥 Kart Seçimi: Gelen verinin kaynağına göre doğru bileşeni çağır
+    // ✅ Kart Seçimi: Gelen verinin kaynağına göre doğru bileşeni çağır
     
-    // DiscoverVideoCard (Firebase) ve DataDiscover (JSON) prop isimleri farklı olduğu için ayrı ayrı render ediliyor.
-    if (currentItem.source === 'firebase') {
-        return (
-            <div className={styles.feedWrapper}>
-                {/* DiscoverVideoCard onNextPost/onPrevPost kullanır */}
-                <DiscoverVideoCard 
-                    key={currentItem.id} 
-                    data={currentItem} 
-                    onNextPost={handleNext} 
-                    onPrevPost={handlePrev} 
-                    isFirstItem={isFirstItem}
-                    isLastItem={isLastItemAndExhausted} // Son butonu devre dışı bırakmak için
-                />
-                 {/* DiscoverVideoCard'ın kendi butonları yoksa, bu dış butonları kullanırız */}
-                <div className={styles.navButtons}>
-                    <button
-                        onClick={handlePrev}
-                        disabled={isFirstItem} 
-                        className={styles.navButton}
-                        aria-label="Önceki İçerik"
-                    >
-                        <FiArrowUp size={32} />
-                    </button>
-                    <button
-                        onClick={handleNext}
-                        disabled={isLastItemAndExhausted || isNextLoading} 
-                        className={styles.navButton}
-                        aria-label="Sonraki İçerik"
-                    >
-                        {isNextLoading ? (
-                            <span style={{ fontSize: '12px' }}>Yükleniyor...</span>
-                        ) : (
-                            <FiArrowDown size={32} />
-                        )}
-                    </button>
-                </div>
-            </div>
-        );
-    } 
+    const renderCard = (Component, data) => (
+        <Component 
+            key={data.id} 
+            data={data} 
+            // DiscoverVideoCard ve DataDiscover için ortak proplar
+            onNextPost={handleNext} // DiscoverVideoCard için
+            onNext={handleNext}    // DataDiscover için
+            onPrevPost={handlePrev} // DiscoverVideoCard için
+            onPrev={handlePrev}    // DataDiscover için
+            isFirstItem={isFirstItem}
+            isLastItem={isLastItemAndExhausted}
+            isNextDisabled={isLastItemAndExhausted}
+            isNextLoading={isNextLoading}
+        />
+    );
     
-    if (currentItem.source === 'json') {
-        return (
-             <div className={styles.feedWrapper}>
-                {/* DataDiscover onNext/onPrev kullanır ve kendi içinde navigasyon butonlarını render eder */}
-                <DataDiscover
-                    key={currentItem.id}
-                    data={currentItem}
-                    onNext={handleNext}
-                    onPrev={handlePrev}
-                    isPrevDisabled={isFirstItem}
-                    isNextDisabled={isLastItemAndExhausted}
-                    isNextLoading={isNextLoading} // Yeni loading prop'u
-                />
+    return (
+        <div className={styles.feedWrapper}>
+            {currentItem.source === 'firebase' && renderCard(DiscoverVideoCard, currentItem)}
+            {currentItem.source === 'json' && renderCard(DataDiscover, currentItem)}
+            
+            {/* Navigasyon Butonları (Mobile de gözüken) */}
+            <div className={styles.navButtons}>
+                <button
+                    onClick={handlePrev}
+                    disabled={isFirstItem} 
+                    className={styles.navButton}
+                    aria-label="Önceki İçerik"
+                >
+                    <FiArrowUp size={32} />
+                </button>
+                <button
+                    onClick={handleNext}
+                    disabled={isLastItemAndExhausted || isNextLoading} 
+                    className={styles.navButton}
+                    aria-label="Sonraki İçerik"
+                >
+                    {isNextLoading ? (
+                        <span style={{ fontSize: '12px' }}>Yükleniyor...</span>
+                    ) : (
+                        <FiArrowDown size={32} />
+                    )}
+                </button>
             </div>
-        );
-    }
+        </div>
+    );
 }
