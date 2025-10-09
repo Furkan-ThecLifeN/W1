@@ -1,6 +1,6 @@
 import React from "react";
 import Sidebar from "../../components/LeftSideBar/Sidebar";
-import ExploreFeed from "../../components/Feeds/ExploreFeed/ExploreFeed";
+import ExploreFeed from "../../components/Feeds/ExploreFeed/HybridExploreFeed";
 import styles from "./Discover.module.css";
 import BottomNav from "../../components/BottomNav/BottomNav";
 

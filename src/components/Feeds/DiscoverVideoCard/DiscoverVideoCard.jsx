@@ -1,47 +1,20 @@
 import React, { useState, useEffect } from "react";
-// Sadece tasarım amaçlı ikonlar korundu
-import { FaEllipsisV, FaHeart, FaCommentAlt, FaShare } from "react-icons/fa"; 
-// Harici bileşenler ve hook'lar devre dışı bırakıldı:
-// import ActionControls from "../../actions/ActionControls"; 
-// import { defaultGetAuthToken } from "../../actions/api";
-// import FollowButton from "../../FollowButton/FollowButton";
-// import { useAuth } from "../../../context/AuthProvider";
+import { MdMore } from "react-icons/md"; // Seçenekler ikonu için
+import { FaHeart, FaEllipsisV } from "react-icons/fa"; // Beğeni ve diğer ikonlar için
+// ✅ Backend bağlantılarını ve bileşenlerini içe aktar
+import ActionControls from "../../actions/ActionControls";
+import { defaultGetAuthToken } from "../../actions/api";
+import FollowButton from "../../FollowButton/FollowButton";
+import { useAuth } from "../../../context/AuthProvider";
 import styles from "./DiscoverVideoCard.module.css";
 import { motion, AnimatePresence } from "framer-motion";
-// import DescriptionModal from "../../DescriptionModal/DescriptionModal";
-// import PostOptionsCard from "../../PostOptionsCard/PostOptionsCard";
+import DescriptionModal from "../../DescriptionModal/DescriptionModal";
+import PostOptionsCard from "../../PostOptionsCard/PostOptionsCard";
 
-// Mock Data - Tasarımı görebilmek için zorunlu mock veri
-const mockVideoData = {
-    id: "2",
-    type: "video",
-    title: "SCARECAM Pranks Reaction 2025 #33 | Funny Scare Pranks",
-    // Test için bir YouTube URL'si
-    mediaUrl: "https://www.youtube.com/watch?v=O07prvg0o3E", 
-    thumbnail: "https://img.youtube.com/vi/O07prvg0o3E/0.jpg",
-    caption: "Bu yeni video formatı ile çok eğleneceksiniz! Korku ve komedinin birleştiği anlar. Uzun bir açıklama metni deniyoruz. Bakalım ne kadar uzun olabilir? Bu bir test açıklamasıdır. Bu bir test açıklamasıdır. Bu bir test açıklamasıdır. Bu bir test açıklamasıdır. #prank #komik #shorts #2025",
-    duration: "0:45",
-    tags: ["prank", "komik", "shorts", "2025"],
-    seen: false,
-    date: "2025-06-15T14:00:00Z",
-    uid: "post_owner_123", 
-    username: "DenemeKullanici98",
-    userProfileImage: "https://i.pravatar.cc/150?img=1",
-    isPrivate: false,
-    commentsDisabled: false,
-};
-
-// Mock Auth - Kullanıcı bilgilerini simüle etmek için
-const mockCurrentUser = {
-    uid: "current_user_456", 
-    username: "MevcutKullanici",
-    photoURL: "https://i.pravatar.cc/150?img=3",
-};
-
-// BASE_URL korundu
+// Mock Data tamamen kaldırıldı, sadece structure korundu
 const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
 
-// YouTube URL'sini embed edilebilir formata dönüştürme fonksiyonu korundu
+// YouTube URL'sini embed edilebilir formata dönüştürme fonksiyonu
 const getYouTubeEmbedLink = (url) => {
     let videoId = null;
     if (url.includes("youtube.com/embed/")) {
@@ -60,22 +33,28 @@ const getYouTubeEmbedLink = (url) => {
         playlist: videoId,
         modestbranding: 1,
     });
+    // Video her yüklendiğinde autoplay'i etkinleştirmek için bir parametre ekleyebiliriz.
+    // Ancak iframe içinde autoplay her zaman garanti edilmez.
     return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
 };
 
 const DESCRIPTION_CHAR_LIMIT = 150;
 
 export default function DiscoverVideoCard({
-    data = mockVideoData, // Mock veri kullanıldı
+    data, // Artık mock veri yok, Firebase'den gelen 'data' kullanılır
     followStatus = "none",
     onFollowStatusChange,
+    // ⭐️ Üst bileşenden (HybridExploreFeed) gelen navigasyon fonksiyonları ve durumları
+    onNextPost, 
+    onPrevPost,
+    isFirstItem, // İlk eleman mı? (Geri gitme butonunu devre dışı bırakmak için)
+    isLastItem, // Son eleman mı? (İleri gitme butonunu devre dışı bırakmak/yükleniyor göstermek için)
 }) {
     const [doubleTapEffect, setDoubleTapEffect] = useState(false);
-    // const { currentUser } = useAuth(); // Devre dışı bırakıldı
-    const currentUser = mockCurrentUser; // Mock kullanıcı atandı
+    const { currentUser } = useAuth(); // ✅ useAuth hook'u etkinleştirildi
     const [isMobileView, setIsMobileView] = useState(window.innerWidth <= 1024);
-    const [isModalVisible, setIsModalVisible] = useState(false); // Modal state'i korundu
-    const [showMenu, setShowMenu] = useState(false); // Menü state'i korundu
+    const [isModalVisible, setIsModalVisible] = useState(false); // DescriptionModal state'i
+    const [showMenu, setShowMenu] = useState(false); // PostOptionsCard state'i
 
     const mediaSourceUrl = data?.mediaUrl;
     const postDescription = data?.caption || data?.content || "Açıklama yok.";
@@ -98,58 +77,113 @@ export default function DiscoverVideoCard({
     const handleMediaDoubleClick = () => {
         setDoubleTapEffect(true);
         setTimeout(() => setDoubleTapEffect(false), 1000);
+        // Burada ayrıca beğeni aksiyonu tetiklenmelidir. (ActionControls içinde yönetilir)
     };
 
-    // Backend fonksiyonları korundu (ancak çağrılmayacaklar)
-    const fetchAuthToken = async () => { /* ... */ };
-    const handleRemovePost = async () => { /* ... */ };
-    const handleRestrictComments = async () => { /* ... */ };
-    const handleAllowComments = async () => { /* ... */ };
-    const handleReportPost = async (reason = "Uygunsuz içerik") => { /* ... */ };
+    // PostOptionsCard için gerekli backend fonksiyonları (Değiştirilmedi)
+    const getToken = async () => {
+        try {
+          return await defaultGetAuthToken();
+        } catch (e) {
+          console.error("Token alma hatası ->", e);
+          return null;
+        }
+    };
 
-    // Placeholder: ActionControls yerine basit butonlar render edildi
+    const handleDeletePost = async () => {
+        if (!window.confirm("Bu gönderiyi silmek istediğinize emin misiniz?")) return;
+        try {
+            const token = await getToken();
+            const res = await fetch(`${BASE_URL}/api/feeds/${data.id}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) throw new Error("Silme işlemi başarısız");
+            alert("Gönderi silindi.");
+            window.location.reload();
+        } catch (e) {
+            console.error(e);
+            alert("Silme işlemi başarısız");
+        }
+    };
+
+    const handleDisableComments = async () => {
+        try {
+            const token = await getToken();
+            const res = await fetch(
+                `${BASE_URL}/api/feeds/${data.id}/disable-comments`,
+                { method: "PATCH", headers: { Authorization: `Bearer ${token}` } }
+            );
+            if (!res.ok) throw new Error("Yorumlar kapatılamadı");
+            alert("Yorumlar kapatıldı");
+            setShowMenu(false);
+        } catch (e) {
+            console.error(e);
+            alert("Yorumlar kapatılamadı");
+        }
+    };
+
+    const handleEnableComments = async () => {
+        try {
+            const token = await getToken();
+            const res = await fetch(
+                `${BASE_URL}/api/feeds/${data.id}/enable-comments`,
+                { method: "PATCH", headers: { Authorization: `Bearer ${token}` } }
+            );
+            if (!res.ok) throw new Error("Yorumlar açılamadı");
+            alert("Yorumlar açıldı");
+            setShowMenu(false);
+        } catch (e) {
+            console.error(e);
+            alert("Yorumlar açılamadı");
+        }
+    };
+
+    const handleReportPost = async (reason = "Uygunsuz içerik") => {
+        try {
+            const token = await getToken();
+            const res = await fetch(`${BASE_URL}/api/reports`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                body: JSON.stringify({
+                    postId: data.id,
+                    reportedUserId: data.uid,
+                    reason,
+                }),
+            });
+            if (!res.ok) throw new Error("Rapor gönderilemedi");
+            alert("Rapor gönderildi");
+            setShowMenu(false);
+        } catch (e) {
+            console.error(e);
+            alert("Rapor gönderilemedi");
+        }
+    };
+
+    // Placeholder'ların yerine ActionControls render edilir (Değiştirilmedi)
     const renderVideoActionControls = (isDesktopLayout) => {
-        const buttonSize = isDesktopLayout ? '55px' : '40px';
-        const iconSize = isDesktopLayout ? 24 : 18;
-        const fontSize = isDesktopLayout ? '12px' : '10px';
+        if (!data?.id || !data?.uid) return null;
+        const backendType = "feed";
 
         return (
-            <>
-                <div style={{textAlign: 'center'}}>
-                    <button className={styles.arrowButton} style={{width: buttonSize, height: buttonSize, backgroundColor: '#FF5733'}}
-                        onClick={() => alert("Beğenme aksiyonu çalışacak.")}
-                    >
-                        <FaHeart size={iconSize} />
-                    </button>
-                    <div style={{fontSize: fontSize, marginTop: '5px', color: '#fff'}}>12.5K</div>
-                </div>
-                <div style={{textAlign: 'center'}}>
-                    <button className={styles.arrowButton} style={{width: buttonSize, height: buttonSize, backgroundColor: '#337AFF'}}
-                        onClick={() => alert("Yorum aksiyonu çalışacak.")}
-                    >
-                        <FaCommentAlt size={iconSize} />
-                    </button>
-                    <div style={{fontSize: fontSize, marginTop: '5px', color: '#fff'}}>456</div>
-                </div>
-                <div style={{textAlign: 'center'}}>
-                    <button className={styles.arrowButton} style={{width: buttonSize, height: buttonSize, backgroundColor: '#17A2B8'}}
-                        onClick={() => alert("Paylaşma aksiyonu çalışacak.")}
-                    >
-                        <FaShare size={iconSize} />
-                    </button>
-                    <div style={{fontSize: fontSize, marginTop: '5px', color: '#fff'}}>1.2K</div>
-                </div>
-            </>
+            <ActionControls
+                targetType={backendType}
+                targetId={data.id}
+                postOwnerUid={data.uid}
+                commentsDisabled={data.commentsDisabled || false}
+                getAuthToken={defaultGetAuthToken}
+                forceLayout={isDesktopLayout ? "vertical" : "vertical"} 
+            />
         );
     };
 
     const embedLink = mediaSourceUrl ? getYouTubeEmbedLink(mediaSourceUrl) : null;
     
-    if (!embedLink) return (
+    if (!data || !embedLink) return (
         <div className={styles.mainWrapper}>
             <div className={styles.contentLayout} style={{justifyContent: 'center', alignItems: 'center'}}>
                 <div className={styles.errorText}>
-                    Video linki geçersiz veya bulunamadı.
+                    Video linki geçersiz veya veri bulunamadı.
                 </div>
             </div>
         </div>
@@ -157,9 +191,8 @@ export default function DiscoverVideoCard({
 
 
     /* ==========================================================
-       RENDER KISMI: Masaüstü GÖRÜNÜM
-       ========================================================== */
-
+      RENDER KISMI: Masaüstü GÖRÜNÜM
+      ========================================================== */
     if (!isMobileView) {
         return (
             <div className={styles.mainWrapper}>
@@ -207,7 +240,7 @@ export default function DiscoverVideoCard({
                                         }`}
                                         onClick={
                                             needsToTruncate
-                                                ? () => { /* setIsModalVisible(true) */ alert("Daha Fazla Açıklama Modalı açılacak") }
+                                                ? () => setIsModalVisible(true) // Modal açıldı
                                                 : undefined
                                         }
                                     >
@@ -217,14 +250,15 @@ export default function DiscoverVideoCard({
                                         )}
                                     </div>
                                 </div>
-                                {/* FollowButton Yer Tutucu */}
+                                {/* FollowButton bileşeni entegre edildi */}
                                 {!isOwnerPost && (
-                                    <button 
+                                    <FollowButton 
+                                        targetUid={data.uid}
+                                        isTargetPrivate={data.isPrivate || false}
+                                        initialFollowStatus={followStatus}
+                                        onFollowStatusChange={(newStatus) => onFollowStatusChange?.(newStatus, data.uid)}
                                         className={styles.followUserButtonDesktop}
-                                        onClick={() => alert(`@${profileUsername} takip ediliyor/takip isteği gönderiliyor...`)}
-                                    >
-                                        Takip Et
-                                    </button>
+                                    />
                                 )}
                             </div>
                         </div>
@@ -234,40 +268,69 @@ export default function DiscoverVideoCard({
                     <div className={styles.controlsBox}>
                         <div className={styles.appLogoText}>W1</div>
 
-                        {/* Aksiyon Kontrolleri Yer Tutucu */}
+                        {/* Aksiyon Kontrolleri */}
                         <div className={styles.actionZone}>
-                            {renderVideoActionControls(true)}
+                            {renderVideoActionControls(true)} 
                             
-                            {/* Seçenekler Butonu Yer Tutucu */}
+                            {/* Seçenekler Butonu */}
                             <div className={styles.optionsWrapper}>
                                 <FaEllipsisV
                                     className={styles.optionsIcon}
-                                    onClick={() => { setShowMenu(!showMenu); alert("PostOptionsCard menüsü açılacak.") }}
+                                    onClick={() => setShowMenu(!showMenu)} // State ile PostOptionsCard açıldı
                                 />
-                                {/** showMenu && <PostOptionsCard ... /> */}
+                                {showMenu && (
+                                    <PostOptionsCard
+                                        isOwner={isOwnerPost}
+                                        postId={data.id}
+                                        postOwnerId={data.uid}
+                                        commentsDisabled={data.commentsDisabled || false}
+                                        onDelete={handleDeletePost}
+                                        onDisableComments={handleDisableComments}
+                                        onEnableComments={handleEnableComments}
+                                        onReport={handleReportPost}
+                                        position="right"
+                                    />
+                                )}
                             </div>
                         </div>
 
-                        {/* Navigasyon Butonları */}
+                        {/* ⭐️ Navigasyon Butonları (Butona Tıklama Mantığı Doğru) ⭐️ */}
                         <div className={styles.scrollControls}>
-                            <button className={styles.arrowButton} aria-label="Scroll Up" onClick={() => console.log('Yukarı kaydır')}>
+                            <button 
+                                className={styles.arrowButton} 
+                                aria-label="Önceki İçerik" 
+                                onClick={onPrevPost} // Üst bileşenden gelen Prev handler
+                                disabled={isFirstItem} // İlk elemansa devre dışı
+                            >
                                 <span className={styles.controlArrow}>&#9650;</span>
                             </button>
-                            <button className={styles.arrowButton} aria-label="Scroll Down" onClick={() => console.log('Aşağı kaydır')}>
+                            <button 
+                                className={styles.arrowButton} 
+                                aria-label="Sonraki İçerik" 
+                                onClick={onNextPost} // Üst bileşenden gelen Next handler
+                                disabled={isLastItem} // Son elemansa devre dışı (Yeni içerik yükleme mantığı HybridExploreFeed'de)
+                            >
                                 <span className={styles.controlArrow}>&#9660;</span>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                {/** isModalVisible && <DescriptionModal ... /> */}
+                {isModalVisible && (
+                    <DescriptionModal
+                        data={{ ...data, currentUser }}
+                        onClose={() => setIsModalVisible(false)}
+                        followStatus={followStatus}
+                        onFollowStatusChange={onFollowStatusChange}
+                    />
+                )}
             </div>
         );
     }
 
     /* ==========================================================
-       RENDER KISMI: MOBİL GÖRÜNÜM (Kaynak bileşen ile aynı yapı)
-       ========================================================== */
+      RENDER KISMI: MOBİL GÖRÜNÜM (Değiştirilmedi)
+      ========================================================== */
     return (
         <div className={styles.mainWrapper} style={{maxWidth: '450px', padding: 0}}>
             <div className={styles.videoUnit}>
@@ -310,7 +373,7 @@ export default function DiscoverVideoCard({
                                 }`}
                                 onClick={
                                     needsToTruncate
-                                        ? () => { /* setIsModalVisible(true) */ alert("Daha Fazla Açıklama Modalı açılacak") }
+                                        ? () => setIsModalVisible(true)
                                         : undefined
                                 }
                             >
@@ -320,34 +383,54 @@ export default function DiscoverVideoCard({
                                 )}
                             </div>
                         </div>
-                        {/* FollowButton Yer Tutucu */}
+                        {/* FollowButton bileşeni entegre edildi */}
                         {!isOwnerPost && (
-                            <button 
+                            <FollowButton 
+                                targetUid={data.uid}
+                                isTargetPrivate={data.isPrivate || false}
+                                initialFollowStatus={followStatus}
+                                onFollowStatusChange={(newStatus) => onFollowStatusChange?.(newStatus, data.uid)}
                                 className={styles.followUserButton}
-                                onClick={() => alert(`@${profileUsername} takip ediliyor/takip isteği gönderiliyor...`)}
-                            >
-                                Takip Et
-                            </button>
+                            />
                         )}
                     </div>
                 </div>
             </div>
 
-            {/* Side Controls (Mobil Üst Navigasyon) */}
+            {/* Side Controls (Mobil Aksiyon Butonları) */}
             <div className={styles.sideControls}>
                 {renderVideoActionControls(false)}
 
                 <div className={styles.extraOptionsContainer}>
-                    <FaEllipsisV
+                    <MdMore 
                         className={styles.optionsIcon}
-                        onClick={() => { setShowMenu(!showMenu); alert("PostOptionsCard menüsü açılacak.") }}
+                        onClick={() => setShowMenu(!showMenu)}
                         style={{marginTop: 0, color: '#fff'}}
                     />
-                    {/** showMenu && <PostOptionsCard ... /> */}
+                    {showMenu && (
+                        <PostOptionsCard
+                            isOwner={isOwnerPost}
+                            postId={data.id}
+                            postOwnerId={data.uid}
+                            commentsDisabled={data.commentsDisabled || false}
+                            onDelete={handleDeletePost}
+                            onDisableComments={handleDisableComments}
+                            onEnableComments={handleEnableComments}
+                            onReport={handleReportPost}
+                            position="left"
+                        />
+                    )}
                 </div>
             </div>
 
-            {/** isModalVisible && <DescriptionModal ... /> */}
+            {isModalVisible && (
+                <DescriptionModal
+                    data={{ ...data, currentUser }}
+                    onClose={() => setIsModalVisible(false)}
+                    followStatus={followStatus}
+                    onFollowStatusChange={onFollowStatusChange}
+                />
+            )}
         </div>
     );
 }
