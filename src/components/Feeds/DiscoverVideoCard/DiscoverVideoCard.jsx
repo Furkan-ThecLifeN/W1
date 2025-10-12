@@ -160,7 +160,7 @@ export default function DiscoverVideoCard({
         }
     };
 
-    // Placeholder'ların yerine ActionControls render edilir (Değiştirilmedi)
+    // ✅ Düzeltme: Mobil görünümde forceLayout'u 'horizontal' yap
     const renderVideoActionControls = (isDesktopLayout) => {
         if (!data?.id || !data?.uid) return null;
         const backendType = "feed";
@@ -172,7 +172,8 @@ export default function DiscoverVideoCard({
                 postOwnerUid={data.uid}
                 commentsDisabled={data.commentsDisabled || false}
                 getAuthToken={defaultGetAuthToken}
-                forceLayout={isDesktopLayout ? "vertical" : "vertical"} 
+                // ✅ forceLayout prop'u şimdi masaüstü için dikey, mobil için yatay olacak
+                forceLayout={isDesktopLayout ? "vertical" : "horizontal"} 
             />
         );
     };
@@ -329,7 +330,7 @@ export default function DiscoverVideoCard({
     }
 
     /* ==========================================================
-      RENDER KISMI: MOBİL GÖRÜNÜM (Değiştirilmedi)
+      RENDER KISMI: MOBİL GÖRÜNÜM (Düzeltme: Action Controls yatay)
       ========================================================== */
     return (
         <div className={styles.mainWrapper} style={{maxWidth: '450px', padding: 0}}>
@@ -399,8 +400,8 @@ export default function DiscoverVideoCard({
 
             {/* Side Controls (Mobil Aksiyon Butonları) */}
             <div className={styles.sideControls}>
+                {/* ✅ forceLayout='horizontal' prop'u ile ActionControls yatay render edilir */}
                 {renderVideoActionControls(false)}
-
                 <div className={styles.extraOptionsContainer}>
                     <MdMore 
                         className={styles.optionsIcon}

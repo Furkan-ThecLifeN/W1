@@ -225,3 +225,9 @@
     background-color: #008ba3;
   }
 }
+
+@media (max-width: 1024px) {
+  .controlsBox {
+    display: none;
+  }
+}
