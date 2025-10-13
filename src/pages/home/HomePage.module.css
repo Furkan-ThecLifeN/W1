@@ -1,140 +1,226 @@
+/* ----------------- Genel Sayfa Düzeni ----------------- */
+.home {
+  background-color: var(--color-black);
+  color: var(--color-white);
+  height: 100vh;
+  overflow: hidden;
+}
 
+/* Main içerik alanı sabit sol ve sağ sidebar arasında */
+.mainContent {
+  position: relative;
+  margin-left: var(--sidebar-left-width);
+  margin-right: var(--sidebar-right-width);
+  height: 100vh;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  scrollbar-width: none; /* Firefox için gizle */
+  -ms-overflow-style: none; /* IE/Edge için gizle */
+}
 
-  /* Tüm sayfa düzeni */
-  .home {
-    background-color: var(--color-black);
-    color: var(--color-white);
-    height: 100vh;
-    overflow: hidden;
-  }
+.mainContent::-webkit-scrollbar {
+  width: 8px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
 
-  /* Main içerik alanı sabit sol ve sağ sidebar arasında */
-  .mainContent {
-    position: relative;
-    margin-left: var(--sidebar-left-width);
-    margin-right: var(--sidebar-right-width);
-    height: 100vh;
-    overflow-y: auto;
-    padding: 20px 24px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
+.mainContent:hover::-webkit-scrollbar {
+  opacity: 1;
+}
 
-  /* Üst alan */
+.mainContent::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 10px;
+}
 
+.mainContent::-webkit-scrollbar-track {
+  background: transparent;
+}
 
-  /* Top Center Logo */
+/* ----------------- Header & Logo ----------------- */
+.header {
+  width: 100%;
+  display: flex;
+  flex-direction: column; /* Dikey hizalama için */
+  justify-content: center;
+  align-items: center;
+  padding: 12px 0;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 10;
+  gap: 40px; /* Logo ve switch arası boşluk */
+}
 
-  .header {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 12px 0;
-    padding-bottom: 12px;
-    margin-bottom: 20px;
-    position: relative;
-    z-index: 10;
-  }
+.topCenterLogo {
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--color-white);
+  position: relative;
+  user-select: none;
+  pointer-events: none;
+  text-align: center;
+  z-index: 2;
+}
 
-  .topCenterLogo {
-    font-size: 32px;
-    font-weight: 900;
-    color: var(--color-white);
-    position: relative;
-    user-select: none;
-    pointer-events: none;
-    text-align: center;
-    z-index: 2;
-  }
+/* Neon efekt */
+.topCenterLogo::before,
+.topCenterLogo::after {
+  content: "W1";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  color: transparent;
+  -webkit-text-stroke: 2px var(--color-blue);
+  text-stroke: 2px var(--color-blue);
+  filter: blur(12px);
+  opacity: 0.5;
+  z-index: -1;
+  pointer-events: none;
+  animation: pulseGlow 8s infinite ease-in-out alternate;
+}
 
-  /* Neon efekt */
-  .topCenterLogo::before,
-  .topCenterLogo::after {
-    content: "W1";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    color: transparent;
-    -webkit-text-stroke: 2px var(--color-blue);
-    text-stroke: 2px var(--color-blue);
-    filter: blur(12px);
-    opacity: 0.5;
-    z-index: -1;
-    pointer-events: none;
-    animation: pulseGlow 8s infinite ease-in-out alternate;
-  }
+.topCenterLogo::after {
+  filter: blur(24px);
+  animation-delay: 3s;
+  opacity: 0.3;
+}
 
-  .topCenterLogo::after {
-    filter: blur(24px);
-    animation-delay: 3s;
+@keyframes pulseGlow {
+  0%,
+  100% {
     opacity: 0.3;
+    text-shadow: 0 0 10px var(--color-blue), 0 0 20px var(--color-blue),
+      0 0 30px #81d4fa;
   }
-
-  @keyframes pulseGlow {
-    0%,
-    100% {
-      opacity: 0.3;
-      text-shadow: 0 0 10px var(--color-blue), 0 0 20px var(--color-blue),
-        0 0 30px #81d4fa;
-    }
-    50% {
-      opacity: 0.8;
-      text-shadow: 0 0 30px #81d4fa, 0 0 60px #4fc3f7, 0 0 90px #b3e5fc;
-    }
+  50% {
+    opacity: 0.8;
+    text-shadow: 0 0 30px #81d4fa, 0 0 60px #4fc3f7, 0 0 90px #b3e5fc;
   }
+}
 
-  /* İçerik akışı */
-  .feed {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 24px;
-    width: 100%;
-    max-width: 900px;
+/* ----------------- Feed Switch ----------------- */
+.feedSwitchContainer {
+  width: 320px;
+  height: 44px;
+  background-color: #2c2c2e; /* Koyu arka plan */
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  position: relative;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.switchButton {
+  flex: 1;
+  height: 100%;
+  background-color: transparent;
+  border: none;
+  border-radius: 18px;
+  color: #a0a0a5;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 2;
+  transition: color 0.3s ease;
+  outline: none;
+}
+
+.switchButton.active {
+  color: #000000; /* Aktif yazı rengi */
+}
+
+.switchSlider {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  height: 36px;
+  background-color: #ffffff; /* Beyaz kayan arka plan */
+  border-radius: 18px;
+  z-index: 1;
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 0 10px rgba(129, 212, 250, 0.5), 
+              0 0 20px rgba(79, 195, 247, 0.3);
+}
+
+.sliderRight {
+  transform: translateX(100%);
+}
+
+/* ----------------- Feed ----------------- */
+.feed {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  max-width: 900px;
+}
+
+/* ----------------- Footer ----------------- */
+.feedFooter {
+  padding: 20px 0;
+  text-align: center;
+  width: 100%;
+  height: 80px; /* Yükleme animasyonu için sabit yükseklik */
+}
+
+.loadMoreButton {
+  padding: 12px 30px;
+  font-size: 16px;
+  font-weight: bold;
+  background-color: #ffffff;
+  color: black;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.loadMoreButton:hover {
+  background-color: #ffffffe1;
+  transform: translateY(-2px);
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #007aff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+.exhaustedMessage {
+  color: #818384;
+  font-size: 16px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
+}
 
+/* ----------------- Medya Sorguları ----------------- */
+@media (max-width: 1024px) {
   .mainContent {
+    margin-left: 0;
+    margin-right: 0;
+    height: 100vh;
+    padding: 10px;
     overflow-y: auto;
-    scrollbar-width: none; /* Firefox için gizle */
-    -ms-overflow-style: none; /* IE/Edge için gizle */
   }
 
-  /* Webkit (Chrome/Safari) için */
-  .mainContent::-webkit-scrollbar {
-    width: 8px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+  .feed {
+    margin-bottom: 40px;
   }
-
-  .mainContent:hover::-webkit-scrollbar {
-    opacity: 1;
-  }
-
-  .mainContent::-webkit-scrollbar-thumb {
-    background-color: var(--scrollbar-thumb);
-    border-radius: 10px;
-  }
-
-  .mainContent::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-
-  @media (max-width: 1024px) {
-    .mainContent {
-      margin-left: 0;
-      margin-right: 0;
-      height: 100vh;
-      padding: 10px;
-      overflow-y: auto;
-    }
-
-    .feed {
-      margin-bottom: 40px;
-    }
-  }
+}
