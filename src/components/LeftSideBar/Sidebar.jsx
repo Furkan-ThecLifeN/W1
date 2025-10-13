@@ -107,7 +107,7 @@ const Sidebar = () => {
           <span className={LeftSideBarStyles.tooltip}>Keşfet</span>
         </NavLink>
 
-        <NavLink
+       {/*  <NavLink
           to="/vocentra"
           className={({ isActive }) =>
             isActive ? LeftSideBarStyles.active : LeftSideBarStyles.link
@@ -115,7 +115,7 @@ const Sidebar = () => {
         >
           <SiHearthisdotat className={LeftSideBarStyles.icon} />
           <span className={LeftSideBarStyles.tooltip}>VoCentra</span>
-        </NavLink>
+        </NavLink> */}
 
         <NavLink
           to="/account"
