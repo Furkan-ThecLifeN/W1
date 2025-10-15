@@ -1,0 +1,114 @@
+/* Ana Kart Stili */
+.photoCard {
+  width: 100%;
+  max-width: 700px; /* Orijinal boyut korundu */
+  margin: 25px auto;
+  border-radius: 20px; /* Daha yumuşak köşeler */
+  background-color: #1c1c1e; /* Biraz daha açık bir koyu ton */
+  border: 1px solid #2d2d2f; /* Daha ince ve modern bir çerçeve */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Fotoğrafın ve üzerindeki katmanların ana kapsayıcısı */
+.photoContainer {
+  position: relative;
+  width: 100%;
+  height: auto;
+  overflow: hidden;
+  /* Fotoğrafın alt köşelerini de yuvarlak yapmak için */
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+
+.photoImage {
+  width: 100%;
+  height: auto;
+  display: block;
+  background-color: #000;
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.photoCard:hover .photoImage {
+  transform: scale(1.03); /* Daha yumuşak bir hover efekti */
+}
+
+/* Alt Bilgi Katmanı (Overlay) */
+.infoOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px;
+  color: #fff;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.4) 30%,
+    rgba(0, 0, 0, 0.8) 100%
+  );
+  z-index: 2;
+}
+
+.title {
+  margin: 0 0 8px 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 16px; /* Meta veriler arasına boşluk */
+  font-size: 0.9rem;
+}
+
+/* Telif/Fotoğrafçı Bilgisi */
+.attributionLink,
+.attributionText {
+  display: flex;
+  align-items: center;
+  color: #e0e0e0;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.attributionLink:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.civitaiScore {
+  margin: 0;
+  color: #e0e0e0;
+}
+
+/* Reklam Alanı */
+.adBanner {
+  display: none;
+  width: 100%;
+  padding: 10px;
+  background-color: #161618;
+  color: #777;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Mobil Uyum */
+@media (max-width: 768px) {
+  .photoCard {
+    max-width: 95%;
+  }
+  .title {
+    font-size: 1.2rem;
+  }
+  .meta {
+    font-size: 0.85rem;
+  }
+}
