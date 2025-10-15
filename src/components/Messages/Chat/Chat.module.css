@@ -4,11 +4,13 @@
 .Chat {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100%;
   overflow: hidden;
   width: 100%;
   color: var(--color-white);
   position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.137);
+  border-radius: 12px;
 }
 
 .chatHeader {
@@ -21,6 +23,7 @@
   color: white;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   z-index: 10;
+  border-bottom: 1px solid rgba(39, 39, 39, 0.192);
 }
 
 .chatHeader h2 {
@@ -58,6 +61,35 @@
   font-weight: bold;
   transition: transform 0.2s ease, color 0.2s ease;
 }
+
+/* Header Profile */
+.userInfo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+}
+
+.userAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.userAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.userNameWrapper h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #f8f9fb;
+  letter-spacing: 0.5px;
+}
+
 
 .chatBox {
   flex: 1;
@@ -109,7 +141,6 @@
   align-self: flex-end;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: relative;
-  top: -35px;
 }
 
 .messageRow.right .userAvatar {
@@ -201,20 +232,12 @@
   font-size: 0.8rem;
   color: #aaa;
 }
-/* Message Image (Kaldırıldı, artık dosya tipi olarak yönetiliyor) */
-/* .messageImage {
-  max-width: 150px;
-  border-radius: 12px;
-  margin-top: 0.5rem;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-} */
 
 /* ========== Message Input ========== */
 .messageInputWrapper {
   display: flex;
   padding: 0.5rem;
-  background: var(--color-black);
+  background: transparent; /* var(--bg-dark) */
   margin-bottom: 12px;
   box-sizing: border-box;
   position: relative; /* Emoji picker için */
@@ -224,12 +247,18 @@
   flex: 1;
   display: flex;
   align-items: center;
-  background-color: var(--color-white);
+  background-color: rgba(17, 17, 17, 0.6); /* var(--bg-card) */
   border-radius: 12px;
   padding: 0.6rem 1rem;
   position: relative;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   max-width: 100%;
+}
+
+.messageInputContainer:focus-within {
+  border-color: #ffffffe1; /* neon mavi */
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.39); /* gönder butonundaki glow efekti */
+  transition: all 0.8s ease;
 }
 
 .textInput {
@@ -240,17 +269,18 @@
   font-size: 1rem;
   padding: 0 1rem;
   min-width: 0;
-  color: var(--color-black);
+  color: #f8f9fb; /* var(--white) */
 }
 
 .inputIconLeft {
   font-size: 1.4rem;
-  color: var(--color-black);
+  color: #a6b0be; /* var(--gray) */
   cursor: pointer;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, color 0.3s ease;
 }
 
 .inputIconLeft:hover {
+  color: #ffffff; /* var(--neon-blue) */
   transform: scale(1.1);
 }
 
@@ -262,12 +292,17 @@
 }
 
 .rightIconHeart {
-  background-color: var(--busy); /* Kırmızı tonu */
-  color: var(--color-white);
+  color: #f8f9fb; /* var(--white) */
   width: 30px;
   height: 30px;
   padding: 7px;
   border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.5s ease;
+}
+
+.rightIconHeart:hover {
+  transform: scale(1.1);
 }
 
 .rightIcon,
@@ -277,27 +312,21 @@
   transition: all 0.3s ease;
 }
 
-.rightIcon:hover,
-.rightIconHeart:hover {
-  transform: scale(1.1);
-}
-
-.rightIconHeart:active {
-  color: var(--busy);
-  background-color: var(--color-white);
-}
-
 .rightIcon {
-  color: var(--color-black);
+  color: #a6b0be; /* var(--gray) */
+}
+
+.rightIcon:hover {
+  color: #ffffff; /* var(--neon-blue) */
 }
 
 .iconButtonMic {
   background: transparent;
   border: none;
-  color: var(--color-black);
+  color: #a6b0be; /* var(--gray) */
   font-size: 1.3rem;
   cursor: pointer;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, color 0.3s ease;
   padding: 4px;
   display: flex;
   align-items: center;
@@ -305,11 +334,12 @@
 }
 
 .iconButtonMic:hover {
+  color: #ffffff; /* var(--neon-blue) */
   transform: scale(1.1);
 }
 
 .sendButton {
-  background-color: var(--color-blue);
+  background: linear-gradient(135deg, #00eaff, #007bff); /* neon mavi degrade */
   border: none;
   width: 36px;
   height: 36px;
@@ -317,21 +347,24 @@
   justify-content: center;
   align-items: center;
   border-radius: 50%;
-  color: white;
+  color: #f8f9fb; /* var(--white) */
   font-size: 1.1rem;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px rgba(0, 234, 255, 0.8);
 }
 
 .sendButton:disabled {
-  background-color: #b0c4de;
+  opacity: 0.4;
+  box-shadow: none;
   cursor: default;
 }
 
 .sendButton:not(:disabled):hover {
-  background-color: #1e90ff;
+  box-shadow: 0 0 25px rgba(0, 234, 255, 0.8);
   transform: scale(1.05);
 }
+
 /* ========== Durum Mesajları ========== */
 .loadingMessage,
 .noMessages {
@@ -451,6 +484,8 @@
   color: #00d4ff;
   transform: rotate(90deg) scale(1.2);
 }
+
+/* Burdan sonrası ekstra tasarımlar sayfadan ayrı */
 
 /* === Body === */
 .modalBody {

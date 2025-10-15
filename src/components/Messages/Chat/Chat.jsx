@@ -143,29 +143,29 @@ const Chat = ({ user, onBack }) => {
           audioChunksRef.current.push(event.data);
         });
 
-       const handleSendFile = async (file, fileName, messageType) => {
-    setIsModalOpen(false);
-    try {
-      const idToken = await firebaseUser.getIdToken();
-      const formData = new FormData();
-      
-      // ✅ GÜNCELLEME: Sunucunun ihtiyaç duyduğu tüm verileri ekliyoruz
-      formData.append("conversationId", conversationId);
-      formData.append("fromId", appUser.uid);
-      formData.append("toId", user.uid);
-      formData.append("messageType", messageType);
-      formData.append("fileName", fileName);
-      formData.append("file", file, fileName);
+        const handleSendFile = async (file, fileName, messageType) => {
+          setIsModalOpen(false);
+          try {
+            const idToken = await firebaseUser.getIdToken();
+            const formData = new FormData();
 
-      await fetch(`${process.env.REACT_APP_API_URL}/api/messages/file`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${idToken}` },
-        body: formData,
-      });
-    } catch (error) {
-      console.error("Dosya gönderme hatası:", error);
-    }
-  };
+            // ✅ GÜNCELLEME: Sunucunun ihtiyaç duyduğu tüm verileri ekliyoruz
+            formData.append("conversationId", conversationId);
+            formData.append("fromId", appUser.uid);
+            formData.append("toId", user.uid);
+            formData.append("messageType", messageType);
+            formData.append("fileName", fileName);
+            formData.append("file", file, fileName);
+
+            await fetch(`${process.env.REACT_APP_API_URL}/api/messages/file`, {
+              method: "POST",
+              headers: { Authorization: `Bearer ${idToken}` },
+              body: formData,
+            });
+          } catch (error) {
+            console.error("Dosya gönderme hatası:", error);
+          }
+        };
 
         mediaRecorderRef.current.start();
         setIsRecording(true);
@@ -182,7 +182,7 @@ const Chat = ({ user, onBack }) => {
     try {
       const idToken = await firebaseUser.getIdToken();
       const formData = new FormData();
-      
+
       // ✅ GÜNCELLEME: Sunucunun ihtiyaç duyduğu tüm verileri ekliyoruz
       formData.append("conversationId", conversationId);
       formData.append("fromId", appUser.uid);
@@ -209,10 +209,10 @@ const Chat = ({ user, onBack }) => {
   return (
     <div className={styles.Chat}>
       {isModalOpen && (
-         <FileUploadModal
-        onClose={() => setIsModalOpen(false)}
-        onUpload={(file, fileName) => handleSendFile(file, fileName, "file")}
-      />
+        <FileUploadModal
+          onClose={() => setIsModalOpen(false)}
+          onUpload={(file, fileName) => handleSendFile(file, fileName, "file")}
+        />
       )}
       {isImageModalOpen && (
         <ImageModal
@@ -239,7 +239,18 @@ const Chat = ({ user, onBack }) => {
           </svg>
           <span className={styles.backBtnSpan}>Geri</span>
         </button>
-        <h2>{user?.displayName || user?.username}</h2>
+
+        <div className={styles.userInfo}>
+          <div className={styles.userAvatar}>
+            <img
+              src={user?.photoURL || "/default-profile.png"}
+              alt={user?.displayName}
+            />
+          </div>
+          <div className={styles.userNameWrapper}>
+            <h2>{user?.displayName || user?.username}</h2>
+          </div>
+        </div>
       </div>
 
       <div className={styles.chatBox}>
