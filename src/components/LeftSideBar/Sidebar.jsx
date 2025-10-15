@@ -1,4 +1,3 @@
-// Sidebar.jsx (GÜNCEL ve DÜZENLİ)
 import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import LeftSideBarStyles from "./Sidebar.module.css";
@@ -14,7 +13,7 @@ import axios from "axios";
 import { useAuth } from "../../context/AuthProvider";
 
 const Sidebar = () => {
-  const [unreadCount, setUnreadCount] = useState(0); 
+  const [unreadCount, setUnreadCount] = useState(0);
   const { currentUser } = useAuth();
   const apiBaseUrl = process.env.REACT_APP_API_URL;
 
@@ -23,24 +22,28 @@ const Sidebar = () => {
       setUnreadCount(0);
       return;
     }
-
     try {
       const idToken = await currentUser.getIdToken();
-      const response = await axios.get(`${apiBaseUrl}/api/users/notifications/unread-count`, {
-        headers: { Authorization: `Bearer ${idToken}` },
-      });
+      const response = await axios.get(
+        `${apiBaseUrl}/api/users/notifications/unread-count`,
+        {
+          headers: { Authorization: `Bearer ${idToken}` },
+        }
+      );
       setUnreadCount(response.data.unreadCount);
     } catch (error) {
-      console.error("Okunmamış bildirim sayısını çekme hatası:", error.response?.data?.error || error.message);
+      console.error(
+        "Okunmamış bildirim sayısını çekme hatası:",
+        error.response?.data?.error || error.message
+      );
       setUnreadCount(0);
     }
   };
-  
-  // Polling (5 saniye)
+
   useEffect(() => {
     fetchUnreadCount();
-    const intervalId = setInterval(fetchUnreadCount, 1000);
-
+    // Öneri: Sunucuyu yormamak için bu aralığı 5000ms (5 saniye) gibi bir değere çekebilirsiniz.
+    const intervalId = setInterval(fetchUnreadCount, 5000);
     return () => clearInterval(intervalId);
   }, [currentUser, apiBaseUrl]);
 
@@ -61,23 +64,19 @@ const Sidebar = () => {
           <span className={LeftSideBarStyles.tooltip}>Home</span>
         </NavLink>
 
-        {/* BİLDİRİMLER NAVLINK (ROZETLİ) */}
         <NavLink
           to="/notifications"
           className={({ isActive }) =>
             isActive ? LeftSideBarStyles.active : LeftSideBarStyles.link
           }
-          // Tıklanınca sayacı anında sıfırla (görsel rahatlama)
           onClick={() => unreadCount > 0 && setUnreadCount(0)}
         >
           <div className={LeftSideBarStyles.notification_icon_wrapper}>
             <BiSolidNotification className={LeftSideBarStyles.icon} />
             <span className={LeftSideBarStyles.tooltip}>Bildirimler</span>
-
-            {/* Kırmızı Rozet (Badge) - Sadece okunmamış bildirim varsa görünür */}
             {unreadCount > 0 && (
               <span className={LeftSideBarStyles.notification_badge}>
-                {unreadCount > 99 ? '99+' : unreadCount}
+                {unreadCount > 99 ? "99+" : unreadCount}
               </span>
             )}
           </div>
@@ -107,15 +106,16 @@ const Sidebar = () => {
           <span className={LeftSideBarStyles.tooltip}>Keşfet</span>
         </NavLink>
 
-       {/*  <NavLink
-          to="/vocentra"
-          className={({ isActive }) =>
-            isActive ? LeftSideBarStyles.active : LeftSideBarStyles.link
-          }
+        {/* "Yakında Gelecek" Butonu - Parlama Efektli Tasarım */}
+        <div
+          className={`${LeftSideBarStyles.link} ${LeftSideBarStyles.disabled_link}`}
         >
-          <SiHearthisdotat className={LeftSideBarStyles.icon} />
-          <span className={LeftSideBarStyles.tooltip}>VoCentra</span>
-        </NavLink> */}
+          <div className={LeftSideBarStyles.icon_wrapper}>
+            <SiHearthisdotat className={LeftSideBarStyles.icon} />
+            <span className={LeftSideBarStyles.glow_effect}></span>
+          </div>
+          <span className={LeftSideBarStyles.tooltip}>VoCentra (Yakında)</span>
+        </div>
 
         <NavLink
           to="/account"

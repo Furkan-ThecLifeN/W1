@@ -1,33 +1,44 @@
 .search_overlay_container {
-  top: 80px; 
+  top: 80px;
   left: 0;
-  width: 100%; 
+  width: 100%;
   height: calc(100% - 80px);
-  background-color: #1a1a1a; 
+  background: linear-gradient(145deg, #181818, #202020);
   border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-  z-index: 999; 
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6);
+  z-index: 999;
   display: flex;
   flex-direction: column;
-  padding: 10px;
+  padding: 16px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
 }
 
 .close_button {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  color: var(--color-white);
+  top: 12px;
+  right: 12px;
+  color: #979797;
   cursor: pointer;
-  font-size: 24px;
+  font-size: 26px;
   z-index: 1000;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.close_button:hover {
+  color: #ffffff;
+  transform: rotate(90deg);
 }
 
 .search_results_content {
-  flex-grow: 1; 
-  overflow-y: auto; 
-  padding-top: 20px; 
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-top: 40px;
   display: flex;
   justify-content: center;
+  align-items: flex-start;
+  transition: all 0.3s ease;
 }
 
 .user_list {
@@ -38,11 +49,14 @@
   flex-direction: column;
   justify-content: start;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+  width: 100%;
+  max-width: 600px;
 }
 
+/* Scrollbar */
 .search_results_content::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 
 .search_results_content::-webkit-scrollbar-track {
@@ -50,23 +64,53 @@
 }
 
 .search_results_content::-webkit-scrollbar-thumb {
-  background-color: #4a4a4a; /* Koyu gri */
-  border-radius: 4px;
+  background: linear-gradient(180deg, #3c3c3c, #5c5c5c);
+  border-radius: 6px;
+  transition: background 0.3s ease;
 }
 
 .search_results_content::-webkit-scrollbar-thumb:hover {
-  background-color: #5a5a5a;
+  background: linear-gradient(180deg, #5e5e5e, #7c7c7c);
 }
 
+/* Messages */
 .error_message,
 .no_results,
 .initial_message {
-  color: #f0f0f0; /* Beyaz renk */
+  color: #f5f5f5;
   text-align: center;
   padding: 20px;
   font-size: 1.1em;
+  opacity: 0.9;
+  animation: fadeIn 0.4s ease-in-out;
 }
 
 .initial_message {
-    color: #ffffff; /* Açık mavi */
+  color: #00d9ff;
+  font-weight: 500;
+  text-shadow: 0 0 8px #00b4d3a3;
+}
+
+.no_results {
+  color: #ff8484;
+  font-weight: 500;
+  text-shadow: 0 0 6px rgba(255, 132, 132, 0.3);
+}
+
+.error_message {
+  color: #ff6b6b;
+  font-weight: 500;
+  text-shadow: 0 0 6px rgba(255, 107, 107, 0.4);
+}
+
+/* Fade animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
