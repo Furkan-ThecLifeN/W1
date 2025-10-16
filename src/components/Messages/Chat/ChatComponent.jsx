@@ -1,18 +1,9 @@
 import React, { useRef } from "react";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import styles from "./ChatComponent.module.css";
 import StoryBar from "../../StoryBar/StoryBar";
 
 const ChatComponent = () => {
   const storyRef = useRef(null);
-
-  const scrollLeft = () => {
-    storyRef.current.scrollBy({ left: -200, behavior: "smooth" });
-  };
-
-  const scrollRight = () => {
-    storyRef.current.scrollBy({ left: 200, behavior: "smooth" });
-  };
 
   const currentUser = {
     id: 1,
@@ -27,29 +18,14 @@ const ChatComponent = () => {
       </div>
 
       <div className={styles.storyAreaWrapper}>
-        <button
-          className={styles.scrollButton + " " + styles.left}
-          onClick={scrollLeft}
-        >
-          <FaChevronLeft />
-        </button>
-
         <div className={styles.storyArea} ref={storyRef}>
-          <StoryBar currentUser={currentUser} />{" "}
+          <StoryBar currentUser={currentUser} />
         </div>
-
-        <button
-          className={styles.scrollButton + " " + styles.right}
-          onClick={scrollRight}
-        >
-          <FaChevronRight />
-        </button>
       </div>
 
       <div className={styles.messageArea}>
         <div className={styles.placeholder}>
-          <p>Henüz bir sohbet seçilmedi</p>
-          <p>Lütfen bir sohbete tıklayın</p>
+          <p>Ready to connect ? Pick a conversation and start engaging.</p>
         </div>
       </div>
     </div>

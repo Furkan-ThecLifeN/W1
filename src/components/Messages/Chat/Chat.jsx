@@ -303,7 +303,8 @@ const Chat = ({ user, onBack }) => {
               className={styles.rightIcon}
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
             />
-            <button
+            {/* Mikrofon ilerde eklenecek */}
+            {/*             <button
               type="button"
               className={
                 isRecording
@@ -314,7 +315,7 @@ const Chat = ({ user, onBack }) => {
               onClick={handleVoiceRecord}
             >
               <FaMicrophone />
-            </button>
+            </button> */}
             <button
               type="submit"
               className={styles.sendButton}
@@ -324,7 +325,14 @@ const Chat = ({ user, onBack }) => {
             </button>
           </div>
         </div>
-        {showEmojiPicker && <EmojiPicker onSelect={handleEmojiSelect} />}
+        <div className={styles.emojiPickerWrapper}>
+          {showEmojiPicker && (
+            <EmojiPicker
+              onSelect={handleEmojiSelect}
+              isVisible={showEmojiPicker}
+            />
+          )}
+        </div>
       </form>
     </div>
   );

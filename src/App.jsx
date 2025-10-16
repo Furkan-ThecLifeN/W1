@@ -4,6 +4,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthProvider';
 import Toast from './Toast';
 import { UserProvider } from './context/UserContext';
+import { useUserStatus } from './hooks/useUserStatus'; // ✅ Kullanıcı aktiflik hook’u
 
 // Sayfa bileşenleriniz
 import SplashScreen from "./components/SplashScreen/SplashScreen";
@@ -30,19 +31,12 @@ import DraftsAdd from "./components/Add/Drafts/Drafts";
 import UserProfile from './pages/UserProfilePage/UserProfilePage';
 import PostDetailPage from "./pages/PostDetailPage/PostDetailPage";
 
-
-
 // 🔒 Korumalı rota
 const ProtectedRoute = ({ children }) => {
   const { currentUser, loading } = useAuth();
 
-  if (loading) {
-    return <div>Yükleniyor...</div>;
-  }
-
-  if (!currentUser) {
-    return <Navigate to="/auth" replace />;
-  }
+  if (loading) return <div>Yükleniyor...</div>;
+  if (!currentUser) return <Navigate to="/auth" replace />;
 
   return children;
 };
@@ -51,13 +45,8 @@ const ProtectedRoute = ({ children }) => {
 const AuthRedirect = ({ children }) => {
   const { currentUser, loading } = useAuth();
 
-  if (loading) {
-    return <div>Yükleniyor...</div>;
-  }
-
-  if (currentUser) {
-    return <Navigate to="/home" replace />;
-  }
+  if (loading) return <div>Yükleniyor...</div>;
+  if (currentUser) return <Navigate to="/home" replace />;
 
   return children;
 };
@@ -94,13 +83,17 @@ const AppContent = () => {
 };
 
 // 🛠 Provider’ları en dışta sarmaladık
-const App = () => (
-  <UserProvider>
-    <AuthProvider>
-      <Toast />
-      <AppContent />
-    </AuthProvider>
-  </UserProvider>
-);
+const App = () => {
+  useUserStatus(); // ✅ Login olan kullanıcıyı online/away/offline/dnd olarak Firestore'da takip et
+
+  return (
+    <UserProvider>
+      <AuthProvider>
+        <Toast />
+        <AppContent />
+      </AuthProvider>
+    </UserProvider>
+  );
+};
 
 export default App;

@@ -23,7 +23,7 @@
   color: white;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   z-index: 10;
-  border-bottom: 1px solid rgba(39, 39, 39, 0.192);
+  border-bottom: 1px solid rgba(92, 92, 92, 0.192);
 }
 
 .chatHeader h2 {
@@ -274,7 +274,7 @@
 
 .inputIconLeft {
   font-size: 1.4rem;
-  color: #a6b0be; /* var(--gray) */
+  color: #bebebe; /* var(--gray) */
   cursor: pointer;
   transition: transform 0.3s ease, color 0.3s ease;
 }
@@ -313,7 +313,7 @@
 }
 
 .rightIcon {
-  color: #a6b0be; /* var(--gray) */
+  color: #c2c2c2; /* var(--gray) */
 }
 
 .rightIcon:hover {
@@ -732,29 +732,88 @@
 }
 
 /* Emoji Picker */
-.emojiPicker {
+.emojiPickerPopup {
   position: absolute;
-  bottom: 60px; /* Input'un üzerinde kalması için */
-  right: 10px;
-  background: var(--color-white);
-  border-radius: 12px;
-  padding: 10px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  bottom: 60px; /* butonun biraz üstünde görünmesi için */
+  right: 0;
+  width: 250px;
+  height: 320px;
+  background: #1c1c1e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  z-index: 9999;
+  overflow: hidden;
+  animation: popupSlide 0.2s ease;
+}
+
+@keyframes popupSlide {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.emojiGrid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
-  z-index: 500;
+  grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+  gap: 8px;
+  padding: 12px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #555 #1c1c1e;
 }
 
-.emojiPicker span {
-  font-size: 1.5rem;
+.emojiGrid::-webkit-scrollbar {
+  width: 6px;
+}
+.emojiGrid::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 3px;
+}
+
+.emojiItem {
+  font-size: 1.4rem;
+  text-align: center;
   cursor: pointer;
-  transition: transform 0.2s;
+  border-radius: 8px;
+  transition: transform 0.15s ease, background 0.15s ease;
+  padding: 4px;
 }
 
-.emojiPicker span:hover {
+.emojiItem:hover {
+  background: rgba(255, 255, 255, 0.1);
   transform: scale(1.2);
 }
+
+.emojiToggle {
+  background: #2c2c2e;
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  padding: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.emojiToggle:hover {
+  background: #3a3a3d;
+}
+
+.emojiPickerWrapper {
+  position: absolute;
+  bottom: 10px; /* Mesaj giriş alanının biraz üstünde */
+  right: 90px; /* Emoji ikonunun hemen sol yanında açılacak */
+  z-index: 999;
+}
+
 
 /* Kayıt durumu */
 .iconButtonMicRecording {
