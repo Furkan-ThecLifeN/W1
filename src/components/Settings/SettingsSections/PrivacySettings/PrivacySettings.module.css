@@ -1,23 +1,14 @@
-:root {
-  --bg-dark: #000000;
-  --bg-light: #111111;
-  --text: #ffffff;
-  --muted: #cccccc;
-  --accent: #00bfff;
-  --glow: 0 0 12px #00bfff, 0 0 24px #00bfff;
-}
-
 .wrapper {
-  background: var(--special-background03);
+  background: #0a0a0a; /* var(--special-background03) yerine koyulacak uygun koyu ton */
   padding: 2rem;
   border-radius: 1.5rem;
   box-shadow: 0 0 20px rgba(0, 170, 255, 0.15);
-  backdrop-filter: var(--backdrop-filter);
-  color: var(--text-white);
+  backdrop-filter: blur(12px);
+  color: #ffffff;
   max-width: 600px;
   margin: auto;
   margin-top: 3rem;
-  font-family: var(--font-main);
+  font-family: "Poppins", sans-serif;
   transition: all 0.3s ease;
 }
 
@@ -32,13 +23,13 @@
 
 .subtext {
   font-size: 14px;
-  color: var(--muted);
+  color: #cccccc;
   margin-bottom: 24px;
 }
 
 .privacyBox {
-  background: var(--bg-light);
-  border: 1px solid var(--accent);
+  background: #111111;
+  border: 1px solid #00bfff;
   border-radius: 12px;
   padding: 20px;
   display: flex;
@@ -54,12 +45,12 @@
 
 .privacyText strong {
   font-size: 16px;
-  color: var(--text);
+  color: #ffffff;
 }
 
 .privacyText span {
   font-size: 13px;
-  color: var(--muted);
+  color: #cccccc;
 }
 
 .switch {
@@ -73,14 +64,14 @@
 }
 
 .switch.active {
-  background-color: var(--accent);
-  box-shadow: var(--glow);
+  background-color: #00bfff;
+  box-shadow: 0 0 12px #00bfff, 0 0 24px #00bfff;
 }
 
 .slider {
   width: 22px;
   height: 22px;
-  background: var(--text);
+  background: #ffffff;
   border-radius: 50%;
   position: absolute;
   top: 2px;
@@ -102,7 +93,7 @@
   border-radius: 12px;
   font-size: 14px;
   z-index: 9999;
-  box-shadow: var(--glow);
+  box-shadow: 0 0 12px #00bfff, 0 0 24px #00bfff;
   display: flex;
   align-items: center;
   gap: 8px;

@@ -1,5 +1,3 @@
-// MobileProfile.jsx
-
 import React, { useState, useEffect } from "react";
 import { IoIosSettings } from "react-icons/io";
 import styles from "./MobileProfile.module.css";
@@ -41,7 +39,6 @@ const MobileProfile = () => {
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
   
-  // ✅ YENİ: POST MODAL STATE'LERİ
   const [showPostModal, setShowPostModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
 
@@ -56,25 +53,14 @@ const MobileProfile = () => {
     const fetchPostCounts = async () => {
       if (!currentUser?.uid) return;
       try {
-        const postsQuery = query(
-          collection(db, "globalPosts"),
-          where("uid", "==", currentUser.uid)
-        );
-        const feelingsQuery = query(
-          collection(db, "globalFeelings"),
-          where("uid", "==", currentUser.uid)
-        );
-        const feedsQuery = query(
-          collection(db, "globalFeeds"),
-          where("ownerId", "==", currentUser.uid)
-        );
-
+        const postsQuery = query(collection(db, "globalPosts"), where("uid", "==", currentUser.uid));
+        const feelingsQuery = query(collection(db, "globalFeelings"), where("uid", "==", currentUser.uid));
+        const feedsQuery = query(collection(db, "globalFeeds"), where("ownerId", "==", currentUser.uid));
         const [postsSnapshot, feelingsSnapshot, feedsSnapshot] = await Promise.all([
           getDocs(postsQuery),
           getDocs(feelingsQuery),
           getDocs(feedsQuery),
         ]);
-
         setPostCounts({
           posts: postsSnapshot.size,
           feelings: feelingsSnapshot.size,
@@ -90,37 +76,45 @@ const MobileProfile = () => {
     }
   }, [currentUser]);
 
-  // ---------------- FETCH DATA BASED ON ACTIVE TAB ---------------- (Değişiklik yok)
+  // ---------------- FETCH DATA BASED ON ACTIVE TAB ---------------- (✅ GÜNCELLENDİ)
   useEffect(() => {
     const fetchTabData = async () => {
       if (!currentUser || !currentUser.uid) return;
-
-      // Check if data for the active tab already exists
-      if (allData[activeTab]?.length > 0 && activeTab !== "likes" && activeTab !== "tags") {
-        return; // Use cached data, no need to fetch again
-      }
-
+      
       setLoadingContent(prev => ({ ...prev, [activeTab]: true }));
 
       try {
         let snapshot;
         let queryToRun;
 
-        const processSnapshot = (snapshot, type, likedIds = [], savedIds = []) => {
-          let data = snapshot.docs.map(doc => {
-            const item = { id: doc.id, ...doc.data() };
-            // Yeni kartların beklediği initialLiked ve initialSaved prop'larını ekliyoruz.
-            item.initialLiked = likedIds.includes(item.id);
-            item.initialSaved = savedIds.includes(item.id);
-            return item;
+        const processSnapshot = (snapshot, type) => {
+          return snapshot.docs.map(doc => {
+            const itemData = { id: doc.id, ...doc.data() };
+            // Kendi gönderilerimiz için (posts, feelings, feeds), her zaman en güncel profil bilgisini ekle.
+            if (['posts', 'feelings'].includes(type)) {
+              return {
+                ...itemData,
+                displayName: currentUser.displayName,
+                username: currentUser.username,
+                photoURL: currentUser.photoURL,
+              };
+            }
+            // ✅ FeedVideoCard için özel prop ekleniyor
+            if (type === 'feeds') {
+                return {
+                    ...itemData,
+                    displayName: currentUser.displayName,
+                    username: currentUser.username,
+                    photoURL: currentUser.photoURL,
+                    userProfileImage: currentUser.photoURL, // FeedVideoCard bu prop'u bekliyor olabilir.
+                }
+            }
+            // Beğenilenler/etiketlenenler için (başkalarının gönderileri),
+            // gönderinin kendi içindeki yazar bilgisini korur.
+            return itemData;
           });
-          if (type === "feeds") {
-            data = data.filter(item => item.mediaUrl);
-          }
-          return data;
         };
 
-        // Fetch likes and tags data first for all tabs
         const [likesSnapshot, tagsSnapshot] = await Promise.all([
           getDocs(collection(db, "users", currentUser.uid, "likes")),
           getDocs(collection(db, "users", currentUser.uid, "tags")),
@@ -132,34 +126,32 @@ const MobileProfile = () => {
           case "posts":
             queryToRun = query(collection(db, "globalPosts"), where("uid", "==", currentUser.uid), orderBy("createdAt", "desc"));
             snapshot = await getDocs(queryToRun);
-            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab, likedIds, savedIds) }));
+            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab) }));
             break;
           case "feelings":
             queryToRun = query(collection(db, "globalFeelings"), where("uid", "==", currentUser.uid), orderBy("createdAt", "desc"));
             snapshot = await getDocs(queryToRun);
-            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab, likedIds, savedIds) }));
+            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab) }));
             break;
           case "feeds":
             queryToRun = query(collection(db, "globalFeeds"), where("ownerId", "==", currentUser.uid), orderBy("createdAt", "desc"));
             snapshot = await getDocs(queryToRun);
-            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab, likedIds, savedIds) }));
+            setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(snapshot, activeTab) }));
             break;
           case "likes":
-            // Fetch the actual liked posts
             if (likedIds.length > 0) {
-              const likedPostsQuery = query(collection(db, "globalPosts"), where("__name__", "in", likedIds), orderBy("createdAt", "desc"));
+              const likedPostsQuery = query(collection(db, "globalPosts"), where("__name__", "in", likedIds.slice(0,10)));
               const likedPostsSnapshot = await getDocs(likedPostsQuery);
-              setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(likedPostsSnapshot, activeTab, likedIds, savedIds) }));
+              setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(likedPostsSnapshot, activeTab) }));
             } else {
               setAllData(prev => ({ ...prev, [activeTab]: [] }));
             }
             break;
           case "tags":
-            // Fetch the actual tagged posts
             if (savedIds.length > 0) {
-              const taggedPostsQuery = query(collection(db, "globalPosts"), where("__name__", "in", savedIds), orderBy("createdAt", "desc"));
+              const taggedPostsQuery = query(collection(db, "globalPosts"), where("__name__", "in", savedIds.slice(0,10)));
               const taggedPostsSnapshot = await getDocs(taggedPostsQuery);
-              setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(taggedPostsSnapshot, activeTab, likedIds, savedIds) }));
+              setAllData(prev => ({ ...prev, [activeTab]: processSnapshot(taggedPostsSnapshot, activeTab) }));
             } else {
               setAllData(prev => ({ ...prev, [activeTab]: [] }));
             }
@@ -170,31 +162,31 @@ const MobileProfile = () => {
         }
       } catch (error) {
         console.error(`🔥 Veri çekilirken hata oluştu (${activeTab}):`, error);
-        const errorMessage = error.code === 'failed-precondition'
-          ? "Dizin hatası: İçerikleri görüntülemek için Firebase'de gerekli dizinlerin oluşturulması gerekiyor. Lütfen konsolu kontrol edin."
-          : "Veriler yüklenirken bir sorun oluştu. Lütfen tekrar deneyin.";
-        showToast(errorMessage, "error");
+        showToast("Veriler yüklenirken bir sorun oluştu.", "error");
       } finally {
         setLoadingContent(prev => ({ ...prev, [activeTab]: false }));
       }
     };
 
-    if (currentUser) {
-      fetchTabData();
-    }
-  }, [activeTab, currentUser, showToast]);
+    fetchTabData();
+    
+  }, [activeTab, currentUser]);
 
   const handleTabChange = (tabName) => {
     setActiveTab(tabName);
   };
 
   const handleVideoClick = (videoData) => {
-    if (videoData && videoData.mediaUrl) {
-      setSelectedVideo(videoData);
-      setShowVideoModal(true);
-    } else {
-      console.error("Geçersiz video verisi:", videoData);
-    }
+    // ✅ DÜZELTME: Modal'a gönderilen veriye `userProfileImage` ekleniyor.
+    const fullData = { 
+        ...videoData, 
+        displayName: currentUser.displayName,
+        username: currentUser.username,
+        photoURL: currentUser.photoURL,
+        userProfileImage: currentUser.photoURL // Bu satır eklendi
+    };
+    setSelectedVideo(fullData);
+    setShowVideoModal(true);
   };
 
   const handleCloseVideoModal = () => {
@@ -202,15 +194,15 @@ const MobileProfile = () => {
     setSelectedVideo(null);
   };
 
-  // ✅ YENİ: POST MODAL HANDLER'LARI
   const handlePostClick = (postData) => {
-    if (postData && postData.id) {
-      // Gerekirse burada PostCard'ın ihtiyaç duyacağı ek verileri ekleyebiliriz
-      setSelectedPost(postData);
-      setShowPostModal(true);
-    } else {
-      console.error("Geçersiz gönderi verisi:", postData);
-    }
+    const fullData = { 
+        ...postData, 
+        displayName: currentUser.displayName,
+        username: currentUser.username,
+        photoURL: currentUser.photoURL
+    };
+    setSelectedPost(fullData);
+    setShowPostModal(true);
   };
 
   const handleClosePostModal = () => {
@@ -222,35 +214,27 @@ const MobileProfile = () => {
   if (loading) return <LoadingOverlay />;
   if (!currentUser) return <div>Lütfen giriş yapın.</div>;
 
-  const { username, displayName, photoURL, bio, familySystem, uid } =
-    currentUser;
+  const { username, displayName, photoURL, bio, familySystem, uid } = currentUser;
 
   const handleStatClick = (type) => {
     setModalType(type);
     setShowModal(true);
   };
 
-  // Yeni kart prop yapısına göre güncellendi
   const getCardComponent = (item) => {
     switch (activeTab) {
       case "posts":
       case "likes":
       case "tags":
-        // ✅ DÜZELTME: Artık PostCard yerine PostThumbnail kullanılıyor
         return (
           <PostThumbnail
             key={item.id}
-            data={item} // Post verisini 'data' prop'u ile iletiyoruz.
-            onClick={handlePostClick} // Tıklama olayını PostModal'ı açacak şekilde ayarlıyoruz.
+            data={item}
+            onClick={() => handlePostClick(item)} 
           />
         );
       case "feelings":
-        return (
-          <TweetCard
-            key={item.id}
-            data={item} // Duygu verisini 'data' prop'u ile iletiyoruz.
-          />
-        );
+        return <TweetCard key={item.id} data={item} />;
       case "feeds":
         return (
           <VideoThumbnail
@@ -266,22 +250,12 @@ const MobileProfile = () => {
 
   const emptyMessage = () => {
     switch (activeTab) {
-      case "posts":
-        return `${displayName || username}, henüz bir gönderi paylaşmadınız.`;
-      case "feelings":
-        return `${displayName || username}, henüz bir duygu paylaşmadınız.`;
-      case "feeds":
-        return `${
-          displayName || username
-        }, henüz feed'leriniz bulunmamaktadır.`;
-      case "likes":
-        return `${displayName || username}, henüz bir gönderiyi beğenmediniz.`;
-      case "tags":
-        return `${
-          displayName || username
-        }, henüz etiketlendiğiniz bir gönderi bulunmamaktadır.`;
-      default:
-        return `Henüz bir içerik bulunmamaktadır.`;
+      case "posts": return `${displayName || username}, henüz bir gönderi paylaşmadınız.`;
+      case "feelings": return `${displayName || username}, henüz bir duygu paylaşmadınız.`;
+      case "feeds": return `${displayName || username}, henüz feed'leriniz bulunmamaktadır.`;
+      case "likes": return `${displayName || username}, henüz bir gönderiyi beğenmediniz.`;
+      case "tags": return `${displayName || username}, henüz etiketlendiğiniz bir gönderi bulunmamaktadır.`;
+      default: return `Henüz bir içerik bulunmamaktadır.`;
     }
   };
 
@@ -314,7 +288,6 @@ const MobileProfile = () => {
             <img src={photoURL} alt="Profile" className={styles.avatar} />
           </div>
         </div>
-
         <div className={styles.stats}>
           <div className={styles.stat_content}>
             <div className={styles.stat}>
@@ -327,19 +300,11 @@ const MobileProfile = () => {
             </div>
           </div>
           <div className={styles.stat_content}>
-            <div
-              className={styles.stat}
-              onClick={() => handleStatClick("followers")}
-              style={{ cursor: "pointer" }}
-            >
+            <div className={styles.stat} onClick={() => handleStatClick("followers")} style={{ cursor: "pointer" }}>
               <span className={styles.statNumber}>{currentUser.stats?.followers || 0}</span>
               <span className={styles.statLabel}>Followers</span>
             </div>
-            <div
-              className={styles.stat}
-              onClick={() => handleStatClick("following")}
-              style={{ cursor: "pointer" }}
-            >
+            <div className={styles.stat} onClick={() => handleStatClick("following")} style={{ cursor: "pointer" }}>
               <span className={styles.statNumber}>{currentUser.stats?.following || 0}</span>
               <span className={styles.statLabel}>Following</span>
             </div>
@@ -350,9 +315,7 @@ const MobileProfile = () => {
       <div className={styles.bioSection}>
         <h1 className={styles.name}>{displayName}</h1>
         {familySystem && <div className={styles.tag}>{familySystem}</div>}
-        <p className={styles.bioText}>
-          {bio || "Henüz bir biyografi eklemediniz."}
-        </p>
+        <p className={styles.bioText}>{bio || "Henüz bir biyografi eklemediniz."}</p>
       </div>
 
       <div className={styles.actionButtons}>
@@ -364,9 +327,7 @@ const MobileProfile = () => {
         {tabs.map(({ key, label }) => (
           <button
             key={key}
-            className={`${styles.tab} ${
-              activeTab === key ? styles.activeTab : ""
-            }`}
+            className={`${styles.tab} ${activeTab === key ? styles.activeTab : ""}`}
             onClick={() => handleTabChange(key)}
           >
             {label}
@@ -378,16 +339,7 @@ const MobileProfile = () => {
         {loadingContent[activeTab] ? (
           <LoadingOverlay />
         ) : currentData.length > 0 ? (
-          <div
-            // posts, likes, tags için PostThumbnail'ın sığacağı bir grid yapısı gerekiyor.
-            className={
-              activeTab === "feelings"
-                ? styles.feelingsGrid
-                : activeTab === "feeds"
-                ? styles.feedsGrid
-                : styles.postsGrid // Artık burada PostThumbnail'lar gösterilecek.
-            }
-          >
+          <div className={ activeTab === "feelings" ? styles.feelingsGrid : activeTab === "feeds" ? styles.feedsGrid : styles.postsGrid }>
             {currentData.map(getCardComponent)}
           </div>
         ) : (
@@ -405,40 +357,20 @@ const MobileProfile = () => {
       )}
       
       {showVideoModal && selectedVideo && (
-        <div
-          className={styles.videoModalOverlay}
-          onClick={handleCloseVideoModal}
-        >
-          <div
-            className={styles.videoModalContent}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <FeedVideoCard
-              data={selectedVideo} 
-              onClose={handleCloseVideoModal}
-            />
+        <div className={styles.videoModalOverlay} onClick={handleCloseVideoModal}>
+          <div className={styles.videoModalContent} onClick={(e) => e.stopPropagation()}>
+            <FeedVideoCard data={selectedVideo} onClose={handleCloseVideoModal} />
           </div>
         </div>
       )}
 
-      {/* ✅ YENİ: POST MODALI */}
       {showPostModal && selectedPost && (
-        <div 
-          className={styles.videoModalOverlay} // Tam ekran arka plan karartması
-          onClick={handleClosePostModal} // Dışarı tıklama ile kapatma
-        >
-          <div 
-            // Modal içeriğini PostCard'ın sığabileceği şekilde ayarlayın
-            className={`${styles.videoModalContent} ${styles.postModalContent}`} 
-            onClick={(e) => e.stopPropagation()} // İçeriğe tıklamayı engelle
-          >
-            {/* PostCard'ı modal içeriği olarak göster */}
+        <div className={styles.videoModalOverlay} onClick={handleClosePostModal}>
+          <div className={`${styles.videoModalContent} ${styles.postModalContent}`} onClick={(e) => e.stopPropagation()}>
             <PostCard 
               data={selectedPost}
-              // Modal içinde gösterildiği için followStatus'u ekleyelim (mevcut data'da varsa)
               followStatus={selectedPost.followStatus || "none"}
             />
-            {/* Kullanıcı deneyimi için basit bir kapatma butonu */}
           </div>
         </div>
       )}
@@ -447,3 +379,4 @@ const MobileProfile = () => {
 };
 
 export default MobileProfile;
+

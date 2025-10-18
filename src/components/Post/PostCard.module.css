@@ -61,6 +61,7 @@
   height: 40px;
   background-color: var(--color-white);
   border-radius: 50%;
+  object-fit: cover; 
 }
 
 .username {
