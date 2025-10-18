@@ -601,6 +601,68 @@
   transform: translateY(-2px);
 }
 
+/* Block */
+/* Engelleme butonu için (kırmızı) */
+.blockBtn {
+  background-color: #ff1900;
+  color: white;
+}
+
+.blockBtn:hover {
+  background-color: #fffffffd;
+  color: black;
+}
+
+/* Zaten takip edilmeyen buton (gri) - 'unfollowBtn' stilini kullanıyoruz */
+.unfollowBtn {
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ddd;
+}
+.unfollowBtn:hover {
+  background-color: #e0e0e0;
+}
+
+
+/* Gizli/Engelli hesap mesajları için stiller (Zaten var, ama emin olun) */
+.private_message {
+  text-align: center;
+  padding: 40px 20px;
+  color: #555;
+}
+
+.privateAccountIcon {
+  font-size: 48px;
+  margin-bottom: 20px;
+  color: #888;
+}
+
+/* Post modalı için stiller (Zaten var, ama emin olun) */
+.postModalContent {
+  width: 90%;
+  max-width: 500px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 0; /* PostCard kendi padding'ine sahip olabilir */
+  overflow: hidden;
+}
+
+.closePostModalButton {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 10;
+}
+
 .pendingBtn {
   background-color: #626262;
   color: var(--color-white);

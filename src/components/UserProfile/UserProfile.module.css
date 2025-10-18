@@ -311,16 +311,36 @@
   border: none;
 }
 
-.messageBtn {
-  background-color: #00fb2a;
-  color: var(--color-white);
-  gap: 6px;
+.blockBtn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #ff1900; 
+  color: white;
+  gap: 5px;
+}
+
+.blockBtn:hover {
+  background-color: #ffffff; 
+  color: black;
+}
+
+/* Engellenen veya bulunamayan hesaplar için ekranı ortala */
+.private_message {
+  text-align: center;
+  padding: 40px 20px;
+  color: #555;
+}
+
+.privateAccountIcon {
+  font-size: 48px;
+  margin-bottom: 20px;
+  color: #888;
 }
 
 .followBtn:hover,
 .unfollowBtn:hover,
-.pendingBtn:hover,
-.messageBtn:hover {
+.pendingBtn:hover {
   background-color: var(--color-white);
   color: var(--color-black);
 }

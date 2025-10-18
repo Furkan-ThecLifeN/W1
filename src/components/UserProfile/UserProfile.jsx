@@ -8,10 +8,7 @@ import {
   FaUserPlus,
   FaUserMinus,
   FaUserTimes,
-  FaEllipsisV,
-  FaBan,
-  FaFlag,
-  FaCommentDots,
+  FaBan, // FaEllipsisV, FaFlag, FaCommentDots kaldırıldı, FaBan zaten var
   FaLock,
 } from "react-icons/fa";
 import axios from "axios";
@@ -19,7 +16,7 @@ import { db } from "../../config/firebase-client";
 import { collection, query, getDocs, orderBy, where } from "firebase/firestore";
 import PostCard from "../Post/PostCard";
 import TweetCard from "../TweetCard/TweetCard";
-import PostVideoCard from "../Feeds/FeedVideoCard/FeedVideoCard"
+import PostVideoCard from "../Feeds/FeedVideoCard/FeedVideoCard";
 import VideoThumbnail from "../AccountPage/Box/VideoThumbnail/VideoThumbnail";
 
 const UserProfile = () => {
@@ -30,7 +27,7 @@ const UserProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("posts");
-  const [showDropdown, setShowDropdown] = useState(false);
+  // const [showDropdown, setShowDropdown] = useState(false); // KALDIRILDI
   const [followStatus, setFollowStatus] = useState("none");
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState(null);
@@ -45,6 +42,7 @@ const UserProfile = () => {
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [isFollowProcessing, setIsFollowProcessing] = useState(false);
+  const [isBlockProcessing, setIsBlockProcessing] = useState(false); // YENİ EKLENDİ
 
   const apiBaseUrl = process.env.REACT_APP_API_URL;
   const idTokenRef = useRef(null);
@@ -97,6 +95,9 @@ const UserProfile = () => {
     const fetchProfileAndStatus = async () => {
       setLoading(true);
       setError(null);
+      setProfileData(null); // YENİ: Kullanıcı değiştirirken eski veriyi temizle
+      setFollowStatus("none"); // YENİ: Durumu sıfırla
+      
       try {
         const profileRes = await dedupedFetch(`profile/${username}`, () =>
           axiosInstance.current.get(`/api/users/profile/${username}`)
@@ -120,6 +121,7 @@ const UserProfile = () => {
               )
             );
             if (!mounted) return;
+            // GÜNCELLENDİ: 'blocking' ve 'blocked_by' durumları eklendi
             currentFollowStatus = statusRes.data.followStatus;
           }
         }
@@ -133,7 +135,12 @@ const UserProfile = () => {
           "Profil veya takip durumu çekme hatası:",
           err.response?.data || err.message
         );
-        setError("Profil bilgileri yüklenemedi.");
+        // GÜNCELLENDİ: Engellenen veya bulunamayan kullanıcıyı ayır
+        if (err.response && err.response.status === 404) {
+          setError("Kullanıcı bulunamadı.");
+        } else {
+          setError("Profil bilgileri yüklenemedi.");
+        }
       } finally {
         if (mounted) setLoading(false);
       }
@@ -147,6 +154,8 @@ const UserProfile = () => {
     };
   }, [username, currentUser]);
 
+  // ... (useEffect [profileData?.uid] ve chunkArray, fetchPostsByIds aynı)
+  
   useEffect(() => {
     let mounted = true;
     if (!profileData?.uid) return;
@@ -192,20 +201,31 @@ const UserProfile = () => {
     );
     return items;
   };
+  
 
   useEffect(() => {
     let mounted = true;
     const fetchTabData = async () => {
       if (!profileData || !profileData.uid) return;
+      
+      // GÜNCELLENDİ: Engelleme durumlarını kontrol et
       const canViewContent =
         !profileData.isPrivate ||
         followStatus === "following" ||
         followStatus === "self";
+      
+      // Engelleme durumunda veya gizli hesapta içerik çekme
       if (
-        !canViewContent &&
-        !["posts", "feelings", "feeds"].includes(activeTab)
-      )
-        return;
+        followStatus === "blocking" || 
+        followStatus === "blocked_by" ||
+        (!canViewContent && ["likes", "tags"].includes(activeTab)) ||
+        (!canViewContent && profileData.isPrivate)
+      ) {
+         setLoadingContent((prev) => ({ ...prev, [activeTab]: false }));
+         setAllData((prev) => ({ ...prev, [activeTab]: [] }));
+         return;
+      }
+      
       if (allData[activeTab]?.length > 0) return;
 
       setLoadingContent((prev) => ({ ...prev, [activeTab]: true }));
@@ -342,7 +362,9 @@ const UserProfile = () => {
       profileData &&
       (followStatus === "following" ||
         followStatus === "self" ||
-        !profileData.isPrivate)
+        !profileData.isPrivate) &&
+      followStatus !== "blocking" && // YENİ: Engelleme durumunda çekme
+      followStatus !== "blocked_by"
     ) {
       fetchTabData();
     }
@@ -429,51 +451,83 @@ const UserProfile = () => {
     }
   };
 
-  const handleMessageAction = async () => {
-    const messageContent = prompt("Göndermek istediğiniz mesajı yazın:");
-    if (!messageContent) return;
+  // YENİ: Engelleme/Engeli Kaldırma Fonksiyonu
+  const handleBlockAction = async () => {
+    if (!profileData?.uid || isBlockProcessing) return;
+    setIsBlockProcessing(true);
+    
+    const previousFollowStatus = followStatus;
+    const targetUid = profileData.uid;
+
     try {
       const idToken = idTokenRef.current;
-      const headers = idToken
-        ? {
-            Authorization: `Bearer ${idToken}`,
-            "Content-Type": "application/json",
-          }
-        : { "Content-Type": "application/json" };
-      const response = await axiosInstance.current.post(
-        `/api/users/message`,
-        { targetUid: profileData.uid, messageContent },
-        { headers }
-      );
-      showToast(response.data.message, "success");
+      if (!idToken) throw new Error("Kimlik doğrulama belirteci mevcut değil.");
+      const headers = { Authorization: `Bearer ${idToken}` };
+
+      let response;
+      let newStatus;
+
+      if (followStatus === "blocking") {
+        // Engeli Kaldır
+        response = await axiosInstance.current.delete(
+          `/api/users/unblock/${targetUid}`,
+          { headers }
+        );
+        newStatus = "none"; // Engel kalkınca 'none' durumuna döner
+        showToast("Kullanıcının engeli kaldırıldı.", "success");
+      } else {
+        // Engelle
+        const confirmBlock = window.confirm(
+          "Bu kullanıcıyı engellemek istediğinizden emin misiniz? Engellenen kullanıcılar profilinizi göremez, sizi takip edemez veya size mesaj gönderemez."
+        );
+        if (!confirmBlock) {
+          setIsBlockProcessing(false);
+          return;
+        }
+        
+        response = await axiosInstance.current.post(
+          `/api/users/block/${targetUid}`,
+          {},
+          { headers }
+        );
+        newStatus = "blocking";
+        showToast("Kullanıcı engellendi.", "success");
+      }
+      
+      setFollowStatus(response.data.status || newStatus);
+
+      // Engelleme/takibi bırakma sonrası istatistikler değişebilir
+      if (response.data.newStats) {
+        setProfileData((prev) => ({
+          ...prev,
+          stats: response.data.newStats,
+        }));
+      }
+
     } catch (err) {
-      console.error(
-        "Mesaj gönderme hatası:",
-        err.response?.data || err.message
-      );
-      const errorMsg = err.response?.data?.error || "Mesaj gönderme başarısız.";
+      console.error("Engelleme işlemi hatası:", err.response?.data || err.message);
+      setFollowStatus(previousFollowStatus);
+      const errorMsg = err.response?.data?.error || "İşlem başarısız.";
       showToast(errorMsg, "error");
+    } finally {
+      setIsBlockProcessing(false);
     }
   };
 
-  const handleBlockUser = () => {
-    showToast("Kullanıcı engellendi.", "success");
-    setShowDropdown(false);
-  };
 
-  const handleReportUser = () => {
-    showToast("Kullanıcı şikayet edildi.", "success");
-    setShowDropdown(false);
-  };
-
-  const handleFeedback = () => {
-    showToast("Geri bildirim sayfanız açıldı.", "info");
-    setShowDropdown(false);
-  };
-
-  const toggleDropdown = () => setShowDropdown(!showDropdown);
+  // handleMessageAction KALDIRILDI
+  // handleBlockUser, handleReportUser, handleFeedback KALDIRILDI
+  // toggleDropdown KALDIRILDI
 
   const handleStatClick = (type) => {
+    // GÜNCELLENDİ: Engelleme durumunda modal açılmasın
+    if (
+      followStatus === "blocking" || 
+      followStatus === "blocked_by"
+    ) {
+      return;
+    }
+    
     if (
       profileData.isPrivate &&
       followStatus !== "following" &&
@@ -486,6 +540,7 @@ const UserProfile = () => {
     }
   };
 
+  // ... (handleVideoClick, handleCloseVideoModal, emptyMessage, getCardComponent fonksiyonları aynı)
   const handleVideoClick = (videoData) => {
     if (videoData && videoData.mediaUrl) {
       const fullVideoData = {
@@ -576,22 +631,52 @@ const UserProfile = () => {
     }
   };
 
+
   if (loading) {
     return <LoadingOverlay />;
   }
 
+  // GÜNCELLENDİ: Hata durumunda da kullanıcı adını göster
   if (error) {
-    return <div>{error}</div>;
+    return (
+       <div className={styles.pageWrapper}>
+        <div className={styles.fixedTopBox}>{username}</div>
+         <div className={styles.private_message}>
+            <FaBan className={styles.privateAccountIcon} />
+            <h3>{error}</h3>
+            <p>Lütfen daha sonra tekrar deneyin veya ana sayfaya dönün.</p>
+          </div>
+       </div>
+    );
   }
 
+  // YENİ: Engellenen (blocked_by) kullanıcı ekranı
+  // Bu durum, profil verisi yüklendikten SONRA ama içerikten ÖNCE kontrol edilmeli.
+  if (followStatus === "blocked_by") {
+     return (
+        <div className={styles.pageWrapper}>
+          <div className={styles.fixedTopBox}>{username}</div>
+          <div className={styles.private_message} style={{paddingTop: '50px'}}>
+            <FaLock className={styles.privateAccountIcon} />
+            <h3>Kullanıcı bulunamadı</h3>
+            <p>Bu hesabı görme yetkiniz bulunmamaktadır.</p>
+          </div>
+        </div>
+      );
+  }
+  
   if (!profileData) {
-    return <div>Kullanıcı profili bulunamadı.</div>;
+    // Bu durum normalde error veya blocked_by tarafından yakalanmalı
+    return <LoadingOverlay />;
   }
 
+
+  // GÜNCELLENDİ: Engelleme durumunu da kontrol et
   const canViewContent =
     !profileData.isPrivate ||
     followStatus === "following" ||
     followStatus === "self";
+    
   const { displayName, photoURL, bio, familySystem } = profileData;
   const currentContent = allData[activeTab] || [];
   const totalContentCount =
@@ -602,6 +687,8 @@ const UserProfile = () => {
   const renderFollowButton = () => {
     switch (followStatus) {
       case "self":
+      case "blocking": // YENİ: Engelliyorsan takip butonu gösterme
+      case "blocked_by": // YENİ: Engellendiysen takip butonu gösterme
         return null;
       case "following":
         return (
@@ -636,148 +723,185 @@ const UserProfile = () => {
         );
     }
   };
+  
+  // YENİ: Engelleme Butonunu Render Etme Fonksiyonu
+  const renderBlockButton = () => {
+     switch (followStatus) {
+      case "self":
+      case "blocked_by": // Engellendiysen engelleme butonu gösterme
+        return null;
+      case "blocking":
+         return (
+          <button
+            onClick={handleBlockAction}
+            className={`${styles.unfollowBtn} ${styles.actionButton}`} // 'unfollow' stili (gri)
+            disabled={isBlockProcessing}
+          >
+            <FaUserPlus /> Engeli Kaldır
+          </button>
+        );
+      case "none":
+      case "pending":
+      case "following":
+      default:
+         return (
+          <button
+            onClick={handleBlockAction}
+            className={`${styles.blockBtn} ${styles.actionButton}`} // YENİ CSS SINIFI GEREKEBİLİR
+            disabled={isBlockProcessing}
+          >
+            <FaBan /> Engelle
+          </button>
+        );
+     }
+  }
 
   return (
     <div className={styles.pageWrapper}>
       <div className={styles.account_top}>
         <div className={styles.fixedTopBox}>{username}</div>
-        {followStatus !== "self" && (
-          <div className={styles.fixedSettingsBtn}>
-            <button className={styles.actionBtn} onClick={toggleDropdown}>
-              <FaEllipsisV className={styles.icon} />
-            </button>
-            {showDropdown && (
-              <div className={styles.dropdownMenu}>
-                <button
-                  className={styles.dropdownItem}
-                  onClick={handleBlockUser}
-                >
-                  <FaBan /> Engelle
-                </button>
-                <button
-                  className={styles.dropdownItem}
-                  onClick={handleReportUser}
-                >
-                  <FaFlag /> Şikayet Et
-                </button>
-                <button
-                  className={styles.dropdownItem}
-                  onClick={handleFeedback}
-                >
-                  <FaCommentDots /> Geri Bildirim Ver
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+        {/* Dropdown menü ve butonu KALDIRILDI */}
       </div>
 
+      {/* GÜNCELLENDİ: Buton konteyneri */}
       {followStatus !== "self" && (
         <div className={styles.buttonsContainer}>
           {renderFollowButton()}
-          <button
-            onClick={handleMessageAction}
-            className={`${styles.messageBtn} ${styles.actionButton}`}
-          >
-            <FaCommentDots /> Mesaj
-          </button>
+          {renderBlockButton()} 
+          {/* Mesaj butonu KALDIRILDI */}
         </div>
       )}
 
-      <div className={styles.mainProfileBox}>
-        <div className={styles.profileImageSection}>
-          <div className={styles.profileImageWrapper}>
-            <img src={photoURL} alt="Profile" className={styles.profileImage} />
-          </div>
-          <div className={styles.imageBackground}></div>
+      {/* ✅✅✅ DEĞİŞİKLİK BURADA ✅✅✅ */}
+      {/* YENİ: Engellenen (blocking) kullanıcı ekranı (Mobile stiliyle güncellendi) */}
+      {followStatus === "blocking" ? (
+        <div 
+          // CSS dosyanıza güvenmek yerine stili doğrudan uyguluyoruz
+          // Bu, MobileUserProfile.jsx'teki .private_message stilidir
+          style={{
+            textAlign: 'center',
+            padding: '40px 20px',
+            color: '#555'
+          }}
+        >
+           <FaBan 
+              // className={styles.privateAccountIcon} 
+              // Bu da MobileUserProfile.jsx'teki .privateAccountIcon stilidir
+              style={{
+                fontSize: '48px',
+                color: '#888',
+                display: 'block',
+                margin: '0 auto 20px auto' // İkonu ortalamak için
+              }}
+           />
+           <h3 style={{ margin: '10px 0', fontSize: '22px', fontWeight: '600' }}>
+             Bu hesabı engellediniz.
+           </h3>
+           <p style={{ fontSize: '16px', color: '#666' }}>
+             Bu kullanıcının gönderilerini veya profilini göremezsiniz. 
+             Engeli kaldırmak için yukarıdaki butonu kullanın.
+           </p>
         </div>
+      ) : (
+        <>
+          {/* Profilin geri kalanı (eğer engellenmediyse) */}
+          <div className={styles.mainProfileBox}>
+            <div className={styles.profileImageSection}>
+              <div className={styles.profileImageWrapper}>
+                <img src={photoURL} alt="Profile" className={styles.profileImage} />
+              </div>
+              <div className={styles.imageBackground}></div>
+            </div>
 
-        <div className={styles.profileInfoSection}>
-          <h2 className={styles.profileName}>{displayName}</h2>
-          {familySystem && <div className={styles.tagBox}>{familySystem}</div>}
-          <div className={styles.bio}>
-            {bio || "Henüz bir biyografi eklenmedi."}
-          </div>
-        </div>
+            <div className={styles.profileInfoSection}>
+              <h2 className={styles.profileName}>{displayName}</h2>
+              {familySystem && <div className={styles.tagBox}>{familySystem}</div>}
+              <div className={styles.bio}>
+                {bio || "Henüz bir biyografi eklenmedi."}
+              </div>
+            </div>
 
-        <div className={styles.statsSection}>
-          <div className={styles.statBox}>
-            <strong>{totalContentCount}</strong>
-            <span className={styles.statLabel}>Post</span>
+            <div className={styles.statsSection}>
+              <div className={styles.statBox}>
+                <strong>{totalContentCount}</strong>
+                <span className={styles.statLabel}>Post</span>
+              </div>
+              <div
+                className={styles.statBox}
+                onClick={() => handleStatClick("followers")}
+              >
+                <strong>{profileData.stats?.followers || 0}</strong>
+                <span className={styles.statLabel}>Followers</span>
+              </div>
+              <div
+                className={styles.statBox}
+                onClick={() => handleStatClick("following")}
+              >
+                <strong>{profileData.stats?.following || 0}</strong>
+                <span className={styles.statLabel}>Following</span>
+              </div>
+            </div>
           </div>
-          <div
-            className={styles.statBox}
-            onClick={() => handleStatClick("followers")}
-          >
-            <strong>{profileData.stats?.followers || 0}</strong>
-            <span className={styles.statLabel}>Followers</span>
-          </div>
-          <div
-            className={styles.statBox}
-            onClick={() => handleStatClick("following")}
-          >
-            <strong>{profileData.stats?.following || 0}</strong>
-            <span className={styles.statLabel}>Following</span>
-          </div>
-        </div>
-      </div>
 
-      <div className={styles.tabBar}>
-        <button
-          className={activeTab === "posts" ? styles.active : ""}
-          onClick={() => handleTabChange("posts")}
-        >
-          Posts
-        </button>
-        <button
-          className={activeTab === "feeds" ? styles.active : ""}
-          onClick={() => handleTabChange("feeds")}
-        >
-          Feeds
-        </button>
-        <button
-          className={activeTab === "feelings" ? styles.active : ""}
-          onClick={() => handleTabChange("feelings")}
-        >
-          Feelings
-        </button>
-        <button
-          className={activeTab === "likes" ? styles.active : ""}
-          onClick={() => handleTabChange("likes")}
-          disabled={!canViewContent}
-        >
-          Beğenilenler
-        </button>
-        <button
-          className={activeTab === "tags" ? styles.active : ""}
-          onClick={() => handleTabChange("tags")}
-          disabled={!canViewContent}
-        >
-          Etiketliler
-        </button>
-      </div>
+          <div className={styles.tabBar}>
+            <button
+              className={activeTab === "posts" ? styles.active : ""}
+              onClick={() => handleTabChange("posts")}
+            >
+              Posts
+            </button>
+            <button
+              className={activeTab === "feeds" ? styles.active : ""}
+              onClick={() => handleTabChange("feeds")}
+            >
+              Feeds
+            </button>
+            <button
+              className={activeTab === "feelings" ? styles.active : ""}
+              onClick={() => handleTabChange("feelings")}
+            >
+              Feelings
+            </button>
+            <button
+              className={activeTab === "likes" ? styles.active : ""}
+              onClick={() => handleTabChange("likes")}
+              disabled={!canViewContent}
+            >
+              Beğenilenler
+            </button>
+            <button
+              className={activeTab === "tags" ? styles.active : ""}
+              onClick={() => handleTabChange("tags")}
+              disabled={!canViewContent}
+            >
+              Etiketliler
+            </button>
+          </div>
 
-      <div className={styles.tabContent}>
-        {!canViewContent ? (
-          <div className={styles.private_message}>
-            <FaLock className={styles.privateAccountIcon} />
-            <h3>Bu hesap gizlidir.</h3>
-            <p>İçeriği görmek için takip etmelisiniz.</p>
+          <div className={styles.tabContent}>
+            {!canViewContent ? (
+              <div className={styles.private_message}>
+                <FaLock className={styles.privateAccountIcon} />
+                <h3>Bu hesap gizlidir.</h3>
+                <p>İçeriği görmek için takip etmelisiniz.</p>
+              </div>
+            ) : loadingContent[activeTab] ? (
+              <LoadingOverlay />
+            ) : currentContent.length > 0 ? (
+              <div
+                className={`${styles.section} ${
+                  activeTab === "feeds" ? styles.feedsGrid : ""
+                }`}
+              >
+                {currentContent.map(getCardComponent)}
+              </div>
+            ) : (
+              <div className={styles.emptyState}>{emptyMessage()}</div>
+            )}
           </div>
-        ) : loadingContent[activeTab] ? (
-          <LoadingOverlay />
-        ) : currentContent.length > 0 ? (
-          <div
-            className={`${styles.section} ${
-              activeTab === "feeds" ? styles.feedsGrid : ""
-            }`}
-          >
-            {currentContent.map(getCardComponent)}
-          </div>
-        ) : (
-          <div className={styles.emptyState}>{emptyMessage()}</div>
-        )}
-      </div>
+        </>
+      )}
+
 
       {showModal && profileData && (
         <ConnectionsModal
