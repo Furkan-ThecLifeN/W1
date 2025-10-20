@@ -843,6 +843,18 @@
   }
 }
 
+.permissionDenied {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  background-color: var(--special-background02); /* Veya uygun bir arka plan rengi */
+  color: var(--muted); /* Veya uygun bir metin rengi */
+  font-size: 0.9em;
+  border-top: 1px solid var(--border-color); /* Veya uygun bir sınır rengi */
+  gap: 8px; /* İkon ve metin arası boşluk */
+}
+
 /* ========== Responsive ========== */
 @media (max-width: 1024px) {
   .Chat {

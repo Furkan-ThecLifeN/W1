@@ -26,7 +26,6 @@
   font-size: 26px;
   font-weight: bold;
   margin-bottom: 8px;
-  
 }
 
 .subtext {
@@ -41,13 +40,21 @@
   gap: 20px;
 }
 
+/* --- ✅ KART TASARIMI GÜNCELLENDİ --- */
+
 .card {
   background: var(--bg-light);
   border: 2px solid transparent;
   border-radius: 16px;
   padding: 16px;
-  text-align: center;
   transition: all 0.3s ease-in-out;
+  
+  /* ✅ YENİ: Flexbox ile dikey düzen */
+  display: flex;
+  flex-direction: column;
+  /* Kart içeriğini (başlık ve buton) ayırır */
+  justify-content: space-between; 
+  height: 100%; /* Kartların aynı yükseklikte olmasını sağlar */
 }
 
 .card:hover {
@@ -59,17 +66,44 @@
   box-shadow: 0 0 12px var(--green);
 }
 
+/* ✅ YENİ: Kart başlığı (avatar + info) için dikey ve ortalı düzen */
+.cardHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* İçeriği yatayda ortala */
+  width: 100%;
+}
+
 .avatar {
   width: 64px;
   height: 64px;
   border-radius: 50%;
   object-fit: cover;
-  margin-bottom: 12px;
+  /* margin-bottom kaldırıldı, gap ile yönetilecek */
+}
+
+/* ✅ YENİ: İsim ve kullanıcı adını saran info kutusu */
+.info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px; /* İsim ve kullanıcı adı arası boşluk */
+  margin-top: 12px;
+  width: 100%;
+  word-wrap: break-word; /* Uzun isimler için */
 }
 
 .name {
   font-size: 16px;
-  margin-bottom: 10px;
+  font-weight: 600; /* Biraz daha belirgin */
+  margin: 0; /* margin-bottom kaldırıldı */
+}
+
+/* ✅ YENİ: Kullanıcı adı için özel stil */
+.username {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
 }
 
 .action {
@@ -81,9 +115,14 @@
   font-size: 13px;
   display: flex;
   align-items: center;
+  justify-content: center; /* İkon ve metni ortala */
   gap: 6px;
   cursor: pointer;
   transition: all 0.3s;
+  
+  /* ✅ YENİ: Butonun tam genişlik kaplaması ve üst boşluk */
+  width: 100%;
+  margin-top: 16px; /* Başlık ile buton arası boşluk */
 }
 
 .card.close .action {
@@ -101,6 +140,8 @@
   color: #000;
 }
 
+/* --- ✅ MOBİL TASARIM GÜNCELLENDİ --- */
+
 @media (max-width: 768px) {
   .wrapper {
     padding: 20px;
@@ -112,32 +153,45 @@
   }
 
   .card {
-    padding: 20px;
-    border-radius: 12px;
-    text-align: left;
+    /* Dikey düzenden tekrar sütun düzenine (aynı kalır) */
+    flex-direction: column;
+    align-items: normal; /* Ortalamayı kaldır */
+    padding: 16px; /* Padding'i eşitle */
+  }
+
+  /* ✅ GÜNCELLENDİ: Mobil cardHeader yatay (flex-row) olur */
+  .cardHeader {
+    flex-direction: row; /* Avatar ve info yan yana */
+    align-items: center;
+    margin-bottom: 12px; /* Butonla arasına boşluk koyar */
   }
 
   .avatar {
     width: 50px;
     height: 50px;
-    margin-bottom: 0;
-    margin-right: 12px;
+    margin-right: 12px; /* Avatar ve info arası boşluk */
+    /* margin-top: 0; (flex-direction row olunca gerek kalmaz) */
+  }
+
+  /* ✅ GÜNCELLENDİ: Mobil info sola hizalanır */
+  .info {
+    align-items: flex-start; /* Metni sola hizala */
+    gap: 2px;
+    margin-top: 0;
   }
 
   .name {
     font-size: 15px;
-    margin: 0;
   }
 
-  .cardHeader {
-    display: flex;
-    align-items: center;
-    margin-bottom: 12px;
+  .username {
+    font-size: 12px;
   }
-
+  
   .action {
     font-size: 13px;
     padding: 8px 12px;
     width: 100%;
+    margin-top: 0; /* Boşluk cardHeader'dan gelir */
   }
 }
