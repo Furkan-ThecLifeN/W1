@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { 
-  FiAlertTriangle, 
-  FiMessageSquare, 
-  FiSend, 
-  FiPaperclip,
+import emailjs from '@emailjs/browser'; // EmailJS import edildi
+import {
+  FiAlertTriangle,
+  FiMessageSquare,
+  FiSend,
+  // FiPaperclip, // Kaldırıldı (İkon)
   FiCheckCircle,
   FiX,
-  FiUser,
+  // FiUser, // Kaldırıldı (İkon)
   FiMail,
-  FiSmartphone,
+  // FiSmartphone, // Kaldırıldı (İkon)
   FiChevronDown
 } from 'react-icons/fi';
 import styles from './BugFeedback.module.css';
@@ -20,12 +21,13 @@ const BugFeedback = () => {
     title: '',
     description: '',
     email: '',
-    contactMethod: 'email',
-    phone: '',
-    attachments: [],
+    // contactMethod: 'email', // Kaldırıldı
+    // phone: '', // Kaldırıldı
+    // attachments: [], // Kaldırıldı
     termsAgreed: false
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // Yüklenme durumu eklendi
   const [isTermsOpen, setIsTermsOpen] = useState(false);
 
   // Feedback types
@@ -38,14 +40,10 @@ const BugFeedback = () => {
 
   // Handle form input changes
   const handleInputChange = (e) => {
-    const { name, value, type, checked, files } = e.target;
-    
-    if (type === 'file') {
-      setFormData(prev => ({
-        ...prev,
-        attachments: [...prev.attachments, ...Array.from(files)]
-      }));
-    } else if (type === 'checkbox') {
+    const { name, value, type, checked } = e.target; // 'files' kaldırıldı
+
+    // 'file' tipi kaldırıldı
+    if (type === 'checkbox') {
       setFormData(prev => ({
         ...prev,
         [name]: checked
@@ -61,18 +59,41 @@ const BugFeedback = () => {
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    // In a real app, you would send this data to your backend
-    console.log('Form submitted:', formData);
-    setIsSubmitted(true);
+    if (isSubmitting) return; // Zaten gönderiliyorsa tekrar göndermeyi engelle
+
+    setIsSubmitting(true); // Gönderim başladı
+
+    // EmailJS için gönderilecek parametreler (template'iniz ile eşleşmeli)
+    const templateParams = {
+      type: formData.type,
+      title: formData.title,
+      description: formData.description,
+      email: formData.email,
+    };
+
+    // -----------------------------------------------------------------
+    // BURAYI DOLDURUN!
+    // EmailJS bilgilerinizi buraya girin
+    // https://dashboard.emailjs.com/admin
+    // -----------------------------------------------------------------
+    const SERVICE_ID = 'service_nqmg9j9';   // EmailJS > Email Services > Servisinizin ID'si
+    const TEMPLATE_ID = 'template_5097syp'; // EmailJS > Email Templates > Şablonunuzun ID'si
+    const PUBLIC_KEY = 'fHkjhIDonBDvyfGYs';  // EmailJS > Account > Public Key
+
+    emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY)
+      .then((response) => {
+        console.log('E-POSTA GÖNDERİLDİ (SUCCESS!)', response.status, response.text);
+        setIsSubmitted(true); // Başarılı formu göster
+        setIsSubmitting(false); // Gönderim bitti
+      }, (err) => {
+        console.error('E-POSTA HATASI (FAILED...)', err);
+        alert('Form gönderilirken bir hata oluştu. Lütfen tekrar deneyin.');
+        setIsSubmitting(false); // Gönderim bitti (hata)
+      });
   };
 
-  // Remove attachment
-  const removeAttachment = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      attachments: prev.attachments.filter((_, i) => i !== index)
-    }));
-  };
+  // Attachment kaldırma fonksiyonu kaldırıldı
+  // const removeAttachment = (index) => { ... };
 
   // Terms and Conditions content
   const termsContent = `
@@ -83,10 +104,9 @@ Bu sözleşme, kullanıcıların [Uygulama Adı] uygulamasına gönderecekleri g
 
 ### 2. Veri Toplama
 Gönderdiğiniz geri bildirimlerde aşağıdaki veriler toplanabilir:
-- İletişim bilgileriniz (e-posta, telefon)
+- İletişim bilgileriniz (e-posta)
 - Cihaz bilgileri (model, işletim sistemi)
 - Uygulama kullanım detayları
-- Eklediğiniz dosya ve ekran görüntüleri
 
 ### 3. Veri Kullanımı
 Toplanan veriler şu amaçlarla kullanılabilir:
@@ -127,18 +147,16 @@ Bu sözleşme [Tarih] itibarıyla geçerlidir.
           <p className={styles.successMessage}>
             Değerli geri bildiriminiz için teşekkür ederiz. Ekibimiz en kısa sürede inceleyecektir.
           </p>
-          <button 
+          <button
             className={styles.successButton}
             onClick={() => {
               setIsSubmitted(false);
+              // Formu sıfırla
               setFormData({
                 type: 'bug',
                 title: '',
                 description: '',
                 email: '',
-                contactMethod: 'email',
-                phone: '',
-                attachments: [],
                 termsAgreed: false
               });
             }}
@@ -173,9 +191,9 @@ Bu sözleşme [Tarih] itibarıyla geçerlidir.
           {/* Title */}
           <div className={styles.formGroup}>
             <label htmlFor="title" className={styles.label}>
-              {formData.type === 'bug' ? 'Hata Başlığı' : 
-               formData.type === 'suggestion' ? 'Öneri Başlığı' :
-               formData.type === 'complaint' ? 'Şikayet Başlığı' : 'Konu'}
+              {formData.type === 'bug' ? 'Hata Başlığı' :
+                formData.type === 'suggestion' ? 'Öneri Başlığı' :
+                  formData.type === 'complaint' ? 'Şikayet Başlığı' : 'Konu'}
             </label>
             <input
               type="text"
@@ -186,9 +204,9 @@ Bu sözleşme [Tarih] itibarıyla geçerlidir.
               className={styles.input}
               placeholder={
                 formData.type === 'bug' ? 'Örneğin: Profil sayfasında görüntüleme hatası' :
-                formData.type === 'suggestion' ? 'Örneğin: Yeni bir özellik önerisi' :
-                formData.type === 'complaint' ? 'Örneğin: Uygulama performansı ile ilgili şikayet' :
-                'Örneğin: Mükemmel kullanıcı deneyimi'
+                  formData.type === 'suggestion' ? 'Örneğin: Yeni bir özellik önerisi' :
+                    formData.type === 'complaint' ? 'Örneğin: Uygulama performansı ile ilgili şikayet' :
+                      'Örneğin: Mükemmel kullanıcı deneyimi'
               }
               required
             />
@@ -206,116 +224,39 @@ Bu sözleşme [Tarih] itibarıyla geçerlidir.
               onChange={handleInputChange}
               className={styles.textarea}
               placeholder={
-                formData.type === 'bug' ? 
-                'Lütfen hatayı mümkün olduğunca detaylı açıklayın. Hangi adımları izlediğiniz, ne beklediğiniz ve ne olduğu önemli.' :
-                'Lütfen öneri, şikayet veya takdirinizi detaylı şekilde açıklayın.'
+                formData.type === 'bug' ?
+                  'Lütfen hatayı mümkün olduğunca detaylı açıklayın. Hangi adımları izlediğiniz, ne beklediğiniz ve ne olduğu önemli.' :
+                  'Lütfen öneri, şikayet veya takdirinizi detaylı şekilde açıklayın.'
               }
-              rows="6"
+rows="6"
               required
             />
           </div>
 
-          {/* Attachments */}
+          {/* Attachments (KALDIRILDI) */}
+
+          {/* Contact Information (SADELEŞTİRİLDİ) */}
           <div className={styles.formGroup}>
-            <label className={styles.label}>Ekler (Ekran Görüntüsü, Log Dosyası vb.)</label>
-            <div className={styles.attachmentContainer}>
-              <label htmlFor="attachments" className={styles.attachmentLabel}>
-                <FiPaperclip className={styles.attachmentIcon} />
-                <span>Dosya Ekle</span>
-                <input
-                  type="file"
-                  id="attachments"
-                  name="attachments"
-                  onChange={handleInputChange}
-                  className={styles.fileInput}
-                  multiple
-                  accept="image/*,.pdf,.txt,.log"
-                />
-              </label>
-              
-              {formData.attachments.length > 0 && (
-                <div className={styles.attachmentList}>
-                  {formData.attachments.map((file, index) => (
-                    <div key={index} className={styles.attachmentItem}>
-                      <span className={styles.attachmentName}>
-                        {file.name.length > 20 
-                          ? `${file.name.substring(0, 15)}...${file.name.split('.').pop()}` 
-                          : file.name}
-                      </span>
-                      <button
-                        type="button"
-                        className={styles.attachmentRemove}
-                        onClick={() => removeAttachment(index)}
-                      >
-                        <FiX />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+            <label className={styles.label} htmlFor="email">İletişim E-postanız</label>
+            <p className={styles.subtitle} style={{marginTop: '-8px', marginBottom: '12px'}}>
+              Bildiriminizle ilgili size geri dönebilmemiz için gereklidir.
+            </p>
+            <div className={styles.inputWithIcon}>
+              <FiMail className={styles.inputIcon} />
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className={styles.input}
+                placeholder="E-posta adresiniz"
+                required
+              />
             </div>
           </div>
-
-          {/* Contact Information */}
-          <div className={styles.formGroup}>
-            <label className={styles.label}>İletişim Bilgileri</label>
-            <div className={styles.contactMethod}>
-              <div className={styles.radioGroup}>
-                <label className={styles.radioLabel}>
-                  <input
-                    type="radio"
-                    name="contactMethod"
-                    value="email"
-                    checked={formData.contactMethod === 'email'}
-                    onChange={handleInputChange}
-                    className={styles.radioInput}
-                  />
-                  <span className={styles.radioCustom}></span>
-                  <span className={styles.radioText}>E-posta</span>
-                </label>
-                <label className={styles.radioLabel}>
-                  <input
-                    type="radio"
-                    name="contactMethod"
-                    value="phone"
-                    checked={formData.contactMethod === 'phone'}
-                    onChange={handleInputChange}
-                    className={styles.radioInput}
-                  />
-                  <span className={styles.radioCustom}></span>
-                  <span className={styles.radioText}>Telefon</span>
-                </label>
-              </div>
-
-              {formData.contactMethod === 'email' ? (
-                <div className={styles.inputWithIcon}>
-                  <FiMail className={styles.inputIcon} />
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className={styles.input}
-                    placeholder="E-posta adresiniz"
-                    required
-                  />
-                </div>
-              ) : (
-                <div className={styles.inputWithIcon}>
-                  <FiSmartphone className={styles.inputIcon} />
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className={styles.input}
-                    placeholder="Telefon numaranız"
-                    required
-                  />
-                </div>
-              )}
-            </div>
-          </div>
+          
+          {/* Contact Method (KALDIRILDI) */}
 
           {/* Terms and Conditions */}
           <div className={styles.formGroup}>
@@ -331,8 +272,8 @@ Bu sözleşme [Tarih] itibarıyla geçerlidir.
                 />
                 <span className={styles.checkboxCustom}></span>
                 <span className={styles.termsText}>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className={styles.termsLink}
                     onClick={() => setIsTermsOpen(!isTermsOpen)}
                   >
@@ -341,8 +282,8 @@ Bu sözleşme [Tarih] itibarıyla geçerlidir.
                 </span>
               </label>
               
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className={styles.termsToggle}
                 onClick={() => setIsTermsOpen(!isTermsOpen)}
               >
@@ -359,9 +300,13 @@ Bu sözleşme [Tarih] itibarıyla geçerlidir.
 
           {/* Submit Button */}
           <div className={styles.submitContainer}>
-            <button type="submit" className={styles.submitButton}>
+            <button 
+              type="submit" 
+              className={styles.submitButton} 
+              disabled={isSubmitting} // Gönderim sırasında butonu kilitle
+            >
               <FiSend className={styles.submitIcon} />
-              Gönder
+              {isSubmitting ? 'Gönderiliyor...' : 'Gönder'}
             </button>
           </div>
         </form>

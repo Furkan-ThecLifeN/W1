@@ -75,7 +75,7 @@ const componentMap = {
   Sözleşme: <TermsAndConditions />,
   "Uygulama Hakkında": <AboutApp />,
   "Hata Bildirimi ve Geri Bildirim Gönder": <BugFeedback />,
-  // İçerik Üreticisi Ayarları
+  // İçerik Üreticisi Ayarları (componentMap'te kalabilir, sorun olmaz)
   "Account linking": <Accounts />,
   "İstatistikler ve İçgörüler": <CreatorInsights />,
   "Gelir ve Ödemeler": <EarningsPayments />,
@@ -90,38 +90,39 @@ export default function SettingsScreen() {
   const navigate = useNavigate();
   const { currentUser, setCurrentUser } = useUser();
 
+  // ✅ İstenen ayarlar gizlendi (yorum satırına alındı)
   const baseSections = {
     "Account Settings": [
       "Profile Settings",
       "Hesap Türü (Bireysel / İşletme)",
       "Giriş ve Cihaz Geçmişi",
-      { name: "İki Faktörlü Kimlik Doğrulama (2FA)", isComingSoon: true },
+      /* { name: "İki Faktörlü Kimlik Doğrulama (2FA)", isComingSoon: true }, */ // Gizlendi
       "Hesap Dondurma / Geçici Olarak Devre Dışı Bırakma",
       "Hesabı Kalıcı Olarak Sil",
-      { name: "Hesap Güvenlik Uyarıları", isComingSoon: true },
+      /* { name: "Hesap Güvenlik Uyarıları", isComingSoon: true }, */ // Gizlendi
       "Oturumu Tüm Cihazlardan Kapat",
     ],
     "Kullanıcı Bazlı Ayarlar": [
       "Hesap Gizliliği",
       "Yakın Arkadaşlıklar",
-      "Bildirimler",
+      /* "Bildirimler", */ // Gizlendi
       "Engellenenler",
-      "Zaman Yönetimi",
-      {
-        name: "Hareketler (Beğenmeler, Yorumlar, Etiketler, Zaman Geçirme Süresi)",
-        isComingSoon: true,
-      },
-      { name: "Gizlenenler / Kısıtlananlar", isComingSoon: true },
+      /* "Zaman Yönetimi", */ // Gizlendi
+      /* {
+         name: "Hareketler (Beğenmeler, Yorumlar, Etiketler, Zaman Geçirme Süresi)",
+         isComingSoon: true,
+       }, */ // Gizlendi
+      /* { name: "Gizlenenler / Kısıtlananlar", isComingSoon: true }, */ // Gizlendi
       "Mesajlar ve Hikaye Yanıtları",
-      "Etiketler ve Bahsetmeler",
-      { name: "Gizlenen Sözcükler", isComingSoon: true },
-      "Beğenmeleri Gizle",
-      { name: "İçerik Hassasiyet Filtresi", isComingSoon: true },
-      "Yorum Kontrolleri",
+      /* "Etiketler ve Bahsetmeler", */ // Gizlendi
+      /* { name: "Gizlenen Sözcükler", isComingSoon: true }, */ // Gizlendi
+      /* "Beğenmeleri Gizle", */ // Gizlendi
+      /* { name: "İçerik Hassasiyet Filtresi", isComingSoon: true }, */ // Gizlendi
+      /* "Yorum Kontrolleri", */ // Gizlendi
     ],
     "Uygulama Bazlı Ayarlar": [
-      { name: "Tema ve Görünüm", isComingSoon: true },
-      { name: "Diller", isComingSoon: true },
+      /* { name: "Tema ve Görünüm", isComingSoon: true }, */ // Gizlendi
+      /* { name: "Diller", isComingSoon: true }, */ // Gizlendi
       "Lisanslar",
       "Sözleşme",
       "Uygulama Hakkında",
@@ -129,6 +130,8 @@ export default function SettingsScreen() {
     ],
   };
 
+  // Bu bölüm (creatorSections) artık kullanılmıyor ama ileride
+  // kolayca aktif edebilmek için burada durabilir.
   const creatorSections = {
     "İçerik Üreticisi Ayarları": [
       "Account linking",
@@ -140,10 +143,17 @@ export default function SettingsScreen() {
     ],
   };
 
+  // ✅ "İçerik Üreticisi Ayarları" bölümünü tamamen gizlemek için
+  // sections değişkenini direkt baseSections'a eşitliyoruz.
+  const sections = baseSections;
+
+  // ESKİ KOD (İçerik üreticisi ayarlarını gösteriyordu):
+  /*
   const sections =
     currentUser?.accountType === "business"
       ? { ...baseSections, ...creatorSections }
       : baseSections;
+  */
 
   const handleLogout = async () => {
     try {

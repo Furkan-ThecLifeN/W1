@@ -1,16 +1,22 @@
+// src/components/Auth/RegisterForm.jsx
+
 import React, { useState } from "react";
 import axios from "axios";
 import { useAuth } from "../../context/AuthProvider";
-import styles from "./AuthForms.module.css";
+import styles from "./AuthForms.module.css"; // Yeni form stilleri
 import LoadingOverlay from "../LoadingOverlay/LoadingOverlay";
+import { FiMail, FiUser, FiLock, FiType } from "react-icons/fi"; // İkonlar eklendi
 
-// Client-side validasyon regex'leri
+// Client-side validasyon regex'leri (Aynı)
 const isValidEmailFormat = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const isValidUsernameFormat = (username) => /^[a-z0-9_.]{3,15}$/.test(username);
 const isValidPasswordFormat = (password) =>
-  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\-]).{8,}$/.test(password);
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\-]).{8,}$/.test(
+    password
+  );
 
-const RegisterForm = ({ onRegisterSuccess }) => {
+// onRegisterSuccess ve onShowLogin prop'ları eklendi
+const RegisterForm = ({ onRegisterSuccess, onShowLogin }) => {
   const { showToast } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -39,10 +45,10 @@ const RegisterForm = ({ onRegisterSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
+    // ... (Mevcut handleSubmit fonksiyonunuzun başı) ...
+    // ... (Validasyon mantığı aynı kalacak) ...
     const { email, username, displayName, password, confirmPassword } = formData;
-
-    // Validation
     let valid = true;
     const newErrors = { email: "", username: "", password: "", confirmPassword: "", general: "" };
 
@@ -68,9 +74,10 @@ const RegisterForm = ({ onRegisterSuccess }) => {
       setErrors(newErrors);
       return;
     }
-
+    
+    // ... (Mevcut handleSubmit fonksiyonunuzun geri kalanı) ...
+    // ... (API isteği mantığı aynı kalacak) ...
     setLoading(true);
-
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/auth/register`,
@@ -78,17 +85,17 @@ const RegisterForm = ({ onRegisterSuccess }) => {
       );
 
       console.log("Kayıt başarılı:", response.data);
-
       showToast("Kayıt başarılı! Şimdi giriş yapabilirsiniz.", "success");
       setFormData({ email: "", username: "", displayName: "", password: "", confirmPassword: "" });
       setErrors({ email: "", username: "", password: "", confirmPassword: "", general: "" });
 
-      if (onRegisterSuccess) onRegisterSuccess();
+      if (onRegisterSuccess) onRegisterSuccess(); // Giriş formuna geçişi tetikle
+    
     } catch (error) {
       console.error("Kayıt hatası:", error);
       if (error.response?.data?.error) {
         if (error.response.data.error.includes("already in use")) {
-          setErrors((prev) => ({ ...prev, general: "Bu e-posta adresi zaten kullanılıyor. Lütfen başka bir e-posta adresi deneyin." }));
+          setErrors((prev) => ({ ...prev, general: "Bu e-posta adresi veya kullanıcı adı zaten kullanılıyor." }));
         } else {
           setErrors((prev) => ({ ...prev, general: error.response.data.error }));
         }
@@ -104,64 +111,98 @@ const RegisterForm = ({ onRegisterSuccess }) => {
     <>
       {loading && <LoadingOverlay />}
       <form onSubmit={handleSubmit} className={styles.auth_form_container}>
-        <h2>Kayıt Ol</h2>
+        <h2>Hesap Oluştur</h2>
+        <p className={styles.form_description}>
+          Topluluğumuza katılmak için bilgilerinizi girin.
+        </p>
+        
+        {errors.general && (
+          <span className={styles.error_text_general}>{errors.general}</span>
+        )}
 
-        {errors.general && <span className={styles.error_text}>{errors.general}</span>}
+        <div className={styles.input_group}>
+          <FiMail className={styles.input_icon} />
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="E-posta adresi"
+            required
+          />
+        </div>
+        {errors.email && (
+          <span className={styles.error_text_field}>{errors.email}</span>
+        )}
 
-        <label>Email</label>
-        <input
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          placeholder="email@example.com"
-          required
-        />
-        {errors.email && <span className={styles.error_text}>{errors.email}</span>}
+        <div className={styles.input_group}>
+          <FiUser className={styles.input_icon} />
+          <input
+            type="text"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            placeholder="Kullanıcı Adı"
+            required
+          />
+        </div>
+        {errors.username && (
+          <span className={styles.error_text_field}>{errors.username}</span>
+        )}
 
-        <label>Kullanıcı Adı</label>
-        <input
-          type="text"
-          name="username"
-          value={formData.username}
-          onChange={handleChange}
-          placeholder="benzersiz_kullanici"
-          required
-        />
-        {errors.username && <span className={styles.error_text}>{errors.username}</span>}
+        <div className={styles.input_group}>
+          <FiType className={styles.input_icon} />
+          <input
+            type="text"
+            name="displayName"
+            value={formData.displayName}
+            onChange={handleChange}
+            placeholder="Görünen İsim (Opsiyonel)"
+          />
+        </div>
 
-        <label>Görünen İsim (Opsiyonel)</label>
-        <input
-          type="text"
-          name="displayName"
-          value={formData.displayName}
-          onChange={handleChange}
-          placeholder="Furkan Yılmaz"
-        />
+        <div className={styles.input_group}>
+          <FiLock className={styles.input_icon} />
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            placeholder="Şifre"
+            required
+          />
+        </div>
+        {errors.password && (
+          <span className={styles.error_text_field}>{errors.password}</span>
+        )}
 
-        <label>Şifre</label>
-        <input
-          type="password"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-          placeholder="********"
-          required
-        />
-        {errors.password && <span className={styles.error_text}>{errors.password}</span>}
+        <div className={styles.input_group}>
+          <FiLock className={styles.input_icon} />
+          <input
+            type="password"
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            placeholder="Şifreyi Onayla"
+            required
+          />
+        </div>
+        {errors.confirmPassword && (
+          <span className={styles.error_text_field}>
+            {errors.confirmPassword}
+          </span>
+        )}
 
-        <label>Şifreyi Onayla</label>
-        <input
-          type="password"
-          name="confirmPassword"
-          value={formData.confirmPassword}
-          onChange={handleChange}
-          placeholder="********"
-          required
-        />
-        {errors.confirmPassword && <span className={styles.error_text}>{errors.confirmPassword}</span>}
+        <button type="submit" className={styles.submit_button}>
+          Kayıt Ol
+        </button>
 
-        <button type="submit">Kayıt Ol</button>
+        <p className={styles.toggle_text}>
+          Zaten hesabın var mı?{" "}
+          <span onClick={onShowLogin} className={styles.toggle_link}>
+            Giriş Yap
+          </span>
+        </p>
       </form>
     </>
   );

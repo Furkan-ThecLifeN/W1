@@ -154,10 +154,10 @@
   width: calc(100% - 32px);
   margin: 16px;
   padding: 10px;
-  background-color: rgba(248, 81, 73, 0.1);
-  border: 1px solid rgba(248, 81, 73, 0.3);
+  background-color: rgb(206, 22, 12);
+  border-color: #eb1818;
   border-radius: var(--border-radius);
-  color: var(--color-danger);
+  color: #ffffff;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -165,8 +165,8 @@
 }
 
 .logoutButton:hover {
-  background-color: rgba(248, 81, 73, 0.2);
-  border-color: var(--color-danger);
+  background-color: rgb(255, 13, 0);
+  border-color: #e60000;
 }
 
 .logoutIcon {
