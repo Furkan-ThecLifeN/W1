@@ -123,9 +123,11 @@
   cursor: not-allowed;
 }
 
+/* or_separator and google_signin_button Display none */
+
 /* "VEYA" Ayırıcı */
 .or_separator {
-  display: flex;
+  display: none;
   align-items: center;
   text-align: center;
   margin: 25px 0;
@@ -144,7 +146,7 @@
 
 /* Google Butonu */
 .google_signin_button {
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   gap: 12px;

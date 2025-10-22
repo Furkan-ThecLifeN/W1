@@ -62,7 +62,7 @@ const usersStories = [
   },
   {
     user: { id: 6, name: 'Can', img: 'https://i.pravatar.cc/150?u=can' },
-    stories: [ { id: 7, media: 'https://picsum.photos/500/900?random=7', duration: 7 } ]
+    stories: [ { id: 7, media: 'https://picsum.photos/500/9G00?random=7', duration: 7 } ]
   },
   {
     user: { id: 7, name: 'Selin', img: 'https://i.pravatar.cc/150?u=selin' },
@@ -205,7 +205,7 @@ const StoryBar = () => {
           {/* Other Stories */}
           {usersStories.slice(1).map((userStory, index) => (
             <div 
-              key={userStory.user.id} 
+              key={`${userStory.user.id}-${index}`} // ✅ Hata burada düzeltildi
               className={styles.storyItem}
               onClick={() => handleStoryClick(index + 1)}
             >
@@ -234,4 +234,3 @@ const StoryBar = () => {
 };
 
 export default StoryBar;
-

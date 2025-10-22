@@ -15,49 +15,46 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { getApp } from "firebase/app";
-
 import ActiveUsersBar from "../../ActiveUsersBar/ActiveUsersBar";
 
 const MessagesLeftBar = ({ onSelectUser }) => {
   const { currentUser } = useUser();
   const { currentUser: firebaseUser } = useAuth();
-  const [followingUsers, setFollowingUsers] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchConversations = async () => {
-      if (!currentUser?.uid || !firebaseUser) {
-        setLoading(false);
-        return;
-      }
+    const fetchAllData = async () => {
+      if (!currentUser?.uid) return;
 
       setLoading(true);
       setError(null);
 
       try {
         const db = getFirestore(getApp());
+
+        // 1️⃣ Backend'den takip edilen kullanıcıları çek
+        const res = await fetch(`http://localhost:3001/api/users/${currentUser.uid}/following`, {
+          headers: {
+            Authorization: `Bearer ${firebaseUser?.accessToken}`,
+          },
+        });
+
+        const data = await res.json();
+        const followingList = Array.isArray(data.following) ? data.following : [];
+
+        // 2️⃣ Firebase'den mesajlaşılmış kullanıcıları çek
         const conversationsRef = collection(db, "conversations");
-        const q = query(
-          conversationsRef,
-          where("members", "array-contains", currentUser.uid)
-        );
+        const q = query(conversationsRef, where("members", "array-contains", currentUser.uid));
         const snapshot = await getDocs(q);
 
-        if (snapshot.empty) {
-          setFollowingUsers([]);
-          setLoading(false);
-          return;
-        }
-
-        const conversations = await Promise.all(
+        const messageUsers = await Promise.all(
           snapshot.docs.map(async (docSnap) => {
             const data = docSnap.data();
             const otherUserId = data.members.find((m) => m !== currentUser.uid);
-
             const userDoc = await getDoc(doc(db, "users", otherUserId));
             const userData = userDoc.exists() ? userDoc.data() : {};
-
             return {
               uid: otherUserId,
               conversationId: docSnap.id,
@@ -65,43 +62,54 @@ const MessagesLeftBar = ({ onSelectUser }) => {
               displayName: userData.displayName || userData.username || otherUserId,
               username: userData.username || otherUserId,
               photoURL: userData.photoURL || "/default-profile.png",
-              status: userData.status || "offline", // ✅ Status eklendi
+              status: userData.status || "offline",
             };
           })
         );
 
-        conversations.sort((a, b) => {
+        // 3️⃣ Takip edilenler + mesajlaşılmış kişileri birleştir
+        const merged = [...followingList, ...messageUsers];
+
+        // 4️⃣ Aynı kişileri UID bazlı tekilleştir
+        const uniqueMerged = Array.from(
+          new Map(merged.map((u) => [u.uid, u])).values()
+        );
+
+        // 5️⃣ Son mesaj zamanına göre sırala
+        uniqueMerged.sort((a, b) => {
           const aTime = a.lastMessage?.updatedAt?.seconds || 0;
           const bTime = b.lastMessage?.updatedAt?.seconds || 0;
           return bTime - aTime;
         });
 
-        setFollowingUsers(conversations);
+        setAllUsers(uniqueMerged);
       } catch (err) {
-        console.error("Konuşmaları çekme hatası:", err);
-        setError("Konuşmalar yüklenemedi.");
+        console.error("Veri yükleme hatası:", err);
+        setError("Kullanıcılar yüklenemedi.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchConversations();
+    fetchAllData();
   }, [currentUser?.uid, firebaseUser]);
 
   return (
     <div className={styles.MessagesLeftBar}>
-      <ActiveUsersBar users={followingUsers} /> {/* ✅ Status ile gelen ActiveUsers */}
+      <ActiveUsersBar users={allUsers} />
       {loading && <LoadingOverlay />}
+
       <div className={styles.left_SearchInputBox}>
         <IoSearchSharp className={styles.searchInputIcon} />
         <input type="text" placeholder="Search messages..." />
         <FaMicrophone className={styles.searchInputIcon} />
       </div>
+
       <ul className={styles.usersMessagesBox}>
         {error ? (
           <li className={styles.statusMessage}>{error}</li>
-        ) : followingUsers.length > 0 ? (
-          followingUsers.map((user) => (
+        ) : allUsers.length > 0 ? (
+          allUsers.map((user) => (
             <li
               key={user.uid}
               className={styles.userCard}
@@ -133,9 +141,7 @@ const MessagesLeftBar = ({ onSelectUser }) => {
           ))
         ) : (
           !loading && (
-            <li className={styles.statusMessage}>
-              Henüz konuşmanız bulunmamaktadır.
-            </li>
+            <li className={styles.statusMessage}>Henüz konuşmanız yok.</li>
           )
         )}
       </ul>

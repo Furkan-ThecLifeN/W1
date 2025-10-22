@@ -4,32 +4,20 @@ import styles from "./ActiveUsersBar.module.css";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useUser } from "../../context/UserContext";
 import { db } from "../../config/firebase-client";
-import { collection, onSnapshot, doc, onSnapshot as onUserSnapshot } from "firebase/firestore";
+// ✅ Sadece kendi durumumuzu dinlemek için 'doc' ve 'onUserSnapshot' kaldı.
+import { doc, onSnapshot as onUserSnapshot } from "firebase/firestore";
 
-const ActiveUsersBar = () => {
+// ✅ 1. 'users' prop'unu al. Varsayılan olarak boş bir dizi ata.
+const ActiveUsersBar = ({ users = [] }) => {
   const { currentUser } = useUser();
   const scrollRef = useRef(null);
   const [myStatus, setMyStatus] = useState("online");
-  const [activeUsers, setActiveUsers] = useState([]);
 
-  // 🔹 Realtime tüm kullanıcıları dinle
-  useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, "users"), (snapshot) => {
-      const usersData = snapshot.docs.map((docSnap) => {
-        const data = docSnap.data();
-        return {
-          uid: docSnap.id,
-          displayName: data.displayName || data.username || "Kullanıcı",
-          photoURL: data.photoURL || "/default-profile.png",
-          status: data.status || "offline",
-        };
-      });
-      setActiveUsers(usersData);
-    });
-    return () => unsubscribe();
-  }, []);
+  // ✅ 2. BÜYÜK DEĞİŞİKLİK:
+  // 'activeUsers' state'i ve tüm kullanıcıları dinleyen useEffect kaldırıldı.
+  // Bileşen artık 'users' prop'una bağımlı.
 
-  // 🔹 Sadece kendi durumunu dinle (görünür olması için)
+  // 🔹 Sadece kendi durumunu dinle (Bu kısım aynı kalır)
   useEffect(() => {
     if (!currentUser?.uid) return;
     const userRef = doc(db, "users", currentUser.uid);
@@ -51,9 +39,10 @@ const ActiveUsersBar = () => {
     });
   };
 
-  // 🔹 invisible olanları hariç tut
-  const otherUsers = activeUsers.filter(
-    (u) => u.uid !== currentUser?.uid && u.status !== "invisible"
+  // ✅ 3. Filtreleme mantığı 'activeUsers' state'i yerine 'users' prop'unu kullanır.
+  // 'followingUsers' listesi zaten 'currentUser'ı içermediği için UID kontrolüne gerek yok.
+  const otherUsers = users.filter(
+    (u) => u.status !== "invisible"
   );
 
   return (
@@ -97,7 +86,7 @@ const ActiveUsersBar = () => {
           </div>
         )}
 
-        {/* 🔹 Diğer kullanıcılar */}
+        {/* ✅ 4. Diğer kullanıcılar (Artık prop'tan gelen 'followingUsers' listesi) */}
         {otherUsers.map((user) => (
           <div key={user.uid} className={styles.userCard}>
             <div className={styles.profileWrapper}>
