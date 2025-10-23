@@ -1,13 +1,13 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useCallback, useRef } from "react";
 import { collection, getDocs, query, orderBy, limit, startAfter } from "firebase/firestore";
 import { db } from "../../config/firebase-client";
+import { useHomeStore } from "../../Store/useHomeStore";
 
 import Sidebar from "../../components/LeftSideBar/Sidebar";
 import RightSidebar from "../../components/RightSideBar/RightSideBar";
 import BottomNav from "../../components/BottomNav/BottomNav";
 import LoadingOverlay from "../../components/LoadingOverlay/LoadingOverlay";
 
-// Kart bileşenlerini import et
 import PostCard from "../../components/Post/PostCard";
 import VideoPostCard from "../../components/VideoPostCard/VideoPostCard";
 import TweetCard from "../../components/TweetCard/TweetCard";
@@ -15,33 +15,34 @@ import QuoteCard from "../../components/QuoteCard/QuoteCard";
 import MemePostCard from "../../components/MemePostCard/MemePostCard";
 import PhotoCard from "../../components/AIPhotoCard/AIPhotoCard";
 
-// JSON veri kaynaklarını import et
 import allVideos from "../../data/explore.json";
 import allTweets from "../../data/tweets.json";
 import allMemes from "../../data/memes.json";
-import allPhotos from "../../data/ai-images.json"; 
+import allPhotos from "../../data/ai-images.json";
 
 import styles from "./HomePage.module.css";
 
-// Ayarlar
 const FIFTEEN_DAYS_MS = 15 * 24 * 60 * 60 * 1000;
 const FIREBASE_BATCH_SIZE = 10;
 const JSON_BATCH_SIZE = 18;
 
 const Home = () => {
-  const [activeView, setActiveView] = useState("json");
-  const [firebaseFeed, setFirebaseFeed] = useState([]);
-  const [jsonFeed, setJsonFeed] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const {
+    activeView,
+    firebaseFeed,
+    jsonFeed,
+    loading,
+    postsExhausted,
+    feelingsExhausted,
+    jsonExhausted,
+    initialLoadDone,
+    setState,
+  } = useHomeStore();
 
   const lastPostDocRef = useRef(null);
   const lastFeelingDocRef = useRef(null);
-  const [postsExhausted, setPostsExhausted] = useState(false);
-  const [feelingsExhausted, setFeelingsExhausted] = useState(false);
-  const [jsonExhausted, setJsonExhausted] = useState(false);
 
-  const initialLoadDone = useRef({ json: false, firebase: false });
-
+  // =============== Yardımcı Fonksiyonlar ===============
   const getSeenIds = (key) => {
     const stored = JSON.parse(localStorage.getItem(key) || "{}");
     const now = Date.now();
@@ -67,14 +68,15 @@ const Home = () => {
     return array;
   };
 
+  // =============== Firebase Yükleme ===============
   const loadNextFirebaseBatch = useCallback(async () => {
     if (loading || (postsExhausted && feelingsExhausted)) return;
-    setLoading(true);
+    setState({ loading: true });
 
     try {
-      const fetchFS = async (ref, lastDocRef, exhausted, setExhausted, key, type) => {
+      const fetchFS = async (ref, lastDocRef, exhausted, exhaustedKey, seenKey, type) => {
         if (exhausted) return [];
-        const seenIds = getSeenIds(key);
+        const seenIds = getSeenIds(seenKey);
         let q;
         if (lastDocRef.current) {
           q = query(ref, orderBy("createdAt", "desc"), startAfter(lastDocRef.current), limit(FIREBASE_BATCH_SIZE));
@@ -83,33 +85,36 @@ const Home = () => {
         }
 
         const snap = await getDocs(q);
-        if (snap.empty || snap.docs.length < FIREBASE_BATCH_SIZE) setExhausted(true);
+        if (snap.empty || snap.docs.length < FIREBASE_BATCH_SIZE) setState({ [exhaustedKey]: true });
         if (!snap.empty) lastDocRef.current = snap.docs[snap.docs.length - 1];
 
         const unseenDocs = snap.docs
           .map(doc => ({ id: doc.id, ...doc.data(), type, source: "firebase" }))
           .filter(doc => !seenIds.has(doc.id));
 
-        unseenDocs.forEach(doc => markAsSeen(key, doc.id));
+        unseenDocs.forEach(doc => markAsSeen(seenKey, doc.id));
         return unseenDocs;
       };
 
-      const posts = await fetchFS(collection(db, "globalPosts"), lastPostDocRef, postsExhausted, setPostsExhausted, "seenFirebasePosts", "post");
-      const feelings = await fetchFS(collection(db, "globalFeelings"), lastFeelingDocRef, feelingsExhausted, setFeelingsExhausted, "seenFirebaseFeelings", "feeling");
+      const posts = await fetchFS(collection(db, "globalPosts"), lastPostDocRef, postsExhausted, "postsExhausted", "seenFirebasePosts", "post");
+      const feelings = await fetchFS(collection(db, "globalFeelings"), lastFeelingDocRef, feelingsExhausted, "feelingsExhausted", "seenFirebaseFeelings", "feeling");
 
       const newBatch = shuffleArray([...posts, ...feelings]);
-      setFirebaseFeed(prev => [...prev, ...newBatch]);
-      initialLoadDone.current.firebase = true;
+      setState({
+        firebaseFeed: [...firebaseFeed, ...newBatch],
+        initialLoadDone: { ...initialLoadDone, firebase: true },
+      });
     } catch (err) {
       console.error("Firebase batch yükleme hatası:", err);
     } finally {
-      setLoading(false);
+      setState({ loading: false });
     }
-  }, [loading, postsExhausted, feelingsExhausted]);
+  }, [loading, postsExhausted, feelingsExhausted, firebaseFeed, initialLoadDone, setState]);
 
+  // =============== JSON Yükleme ===============
   const loadNextJsonBatch = useCallback(async () => {
     if (loading || jsonExhausted) return;
-    setLoading(true);
+    setState({ loading: true });
 
     const pickRandomly = (pool, count, seenKey, typeOverride = null) => {
       const seenIds = getSeenIds(seenKey);
@@ -122,51 +127,54 @@ const Home = () => {
         const index = Math.floor(Math.random() * available.length);
         const item = available.splice(index, 1)[0];
         markAsSeen(seenKey, item.id.toString());
-        selected.push({ ...item, id: item.id.toString(), type: typeOverride || (seenKey === 'seenMemes' ? 'image' : (seenKey === 'seenVideos' ? 'video' : 'quote')), source: "json" });
+        selected.push({
+          ...item,
+          id: item.id.toString(),
+          type: typeOverride || (seenKey === "seenMemes" ? "image" : seenKey === "seenVideos" ? "video" : "quote"),
+          source: "json",
+        });
       }
       return selected;
     };
 
     let newBatch = [];
     const numSets = JSON_BATCH_SIZE / 6;
-
     for (let i = 0; i < numSets; i++) {
       let set = [];
       set.push(...pickRandomly(allVideos, 2, "seenVideos"));
       set.push(...pickRandomly(allTweets, 2, "seenTweets"));
       set.push(...pickRandomly(allMemes, 2, "seenMemes"));
-      set.push(...pickRandomly(allPhotos, 2, "seenPhotos", "photo")); // Foto kartlar eklendi
-
+      set.push(...pickRandomly(allPhotos, 2, "seenPhotos", "photo"));
       newBatch.push(...shuffleArray(set));
     }
 
-    if (newBatch.length < JSON_BATCH_SIZE) setJsonExhausted(true);
-    setJsonFeed(prev => [...prev, ...newBatch]);
-    initialLoadDone.current.json = true;
-    setLoading(false);
-  }, [loading, jsonExhausted]);
+    if (newBatch.length < JSON_BATCH_SIZE) setState({ jsonExhausted: true });
+    setState({
+      jsonFeed: [...jsonFeed, ...newBatch],
+      initialLoadDone: { ...initialLoadDone, json: true },
+      loading: false,
+    });
+  }, [loading, jsonExhausted, jsonFeed, initialLoadDone, setState]);
+
+  // =============== useEffect’ler ===============
+  useEffect(() => {
+    if (!initialLoadDone.json) loadNextJsonBatch();
+  }, [loadNextJsonBatch, initialLoadDone.json]);
 
   useEffect(() => {
-    if (!initialLoadDone.current.json) loadNextJsonBatch();
-  }, [loadNextJsonBatch]);
-
-  useEffect(() => {
-    if (activeView === 'firebase' && !initialLoadDone.current.firebase) {
+    if (activeView === "firebase" && !initialLoadDone.firebase) {
       loadNextFirebaseBatch();
     }
-  }, [activeView, loadNextFirebaseBatch]);
+  }, [activeView, initialLoadDone.firebase, loadNextFirebaseBatch]);
 
-  const currentFeed = activeView === 'firebase' ? firebaseFeed : jsonFeed;
-  const isExhausted = activeView === 'firebase' ? (postsExhausted && feelingsExhausted) : jsonExhausted;
-  const loadMore = activeView === 'firebase' ? loadNextFirebaseBatch : loadNextJsonBatch;
+  // =============== Görünüm ===============
+  const currentFeed = activeView === "firebase" ? firebaseFeed : jsonFeed;
+  const isExhausted = activeView === "firebase" ? (postsExhausted && feelingsExhausted) : jsonExhausted;
+  const loadMore = activeView === "firebase" ? loadNextFirebaseBatch : loadNextJsonBatch;
 
   const renderItem = (item) => {
     const uniqueKey = `${item.source}-${item.type}-${item.id}`;
-
-    if (activeView === "json" && item.type === "photo") {
-      return <PhotoCard key={uniqueKey} photo={item} />;
-    }
-
+    if (activeView === "json" && item.type === "photo") return <PhotoCard key={uniqueKey} photo={item} />;
     switch (item.type) {
       case "video": return <VideoPostCard key={uniqueKey} data={item} />;
       case "quote": return <QuoteCard key={uniqueKey} data={item} />;
@@ -179,6 +187,7 @@ const Home = () => {
 
   const showLoadingOverlay = loading && currentFeed.length === 0;
 
+  // =============== Render ===============
   return (
     <div className={styles.home}>
       {showLoadingOverlay && <LoadingOverlay />}
@@ -187,25 +196,23 @@ const Home = () => {
         <header className={styles.header}>
           <div className={styles.topCenterLogo}>W1</div>
           <div className={styles.feedSwitchContainer}>
-            <div className={`${styles.switchSlider} ${activeView === 'firebase' ? styles.sliderRight : ''}`}></div>
-            <button 
-              className={`${styles.switchButton} ${activeView === 'json' ? styles.active : ''}`}
-              onClick={() => setActiveView('json')}
+            <div className={`${styles.switchSlider} ${activeView === "firebase" ? styles.sliderRight : ""}`}></div>
+            <button
+              className={`${styles.switchButton} ${activeView === "json" ? styles.active : ""}`}
+              onClick={() => setState({ activeView: "json" })}
             >
               Eğlence
             </button>
-            <button 
-              className={`${styles.switchButton} ${activeView === 'firebase' ? styles.active : ''}`}
-              onClick={() => setActiveView('firebase')}
+            <button
+              className={`${styles.switchButton} ${activeView === "firebase" ? styles.active : ""}`}
+              onClick={() => setState({ activeView: "firebase" })}
             >
               Keşfet
             </button>
           </div>
         </header>
 
-        <section className={styles.feed}>
-          {currentFeed.map(item => renderItem(item))}
-        </section>
+        <section className={styles.feed}>{currentFeed.map(item => renderItem(item))}</section>
 
         <footer className={styles.feedFooter}>
           {!loading && !isExhausted && currentFeed.length > 0 && (

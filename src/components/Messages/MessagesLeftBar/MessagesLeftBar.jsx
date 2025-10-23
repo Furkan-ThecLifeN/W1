@@ -1,50 +1,42 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import styles from "./MessagesLeftBar.module.css";
 import { IoSearchSharp } from "react-icons/io5";
 import { FaMicrophone } from "react-icons/fa";
 import { useUser } from "../../../context/UserContext";
 import { useAuth } from "../../../context/AuthProvider";
 import LoadingOverlay from "../../LoadingOverlay/LoadingOverlay";
-import {
-  getFirestore,
-  collection,
-  query,
-  where,
-  getDocs,
-  doc,
-  getDoc,
-} from "firebase/firestore";
+import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { getApp } from "firebase/app";
 import ActiveUsersBar from "../../ActiveUsersBar/ActiveUsersBar";
+import { useMessagesStore } from "../../../Store/useMessagesStore";
 
 const MessagesLeftBar = ({ onSelectUser }) => {
   const { currentUser } = useUser();
   const { currentUser: firebaseUser } = useAuth();
-  const [allUsers, setAllUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const {
+    users,
+    loadingUsers,
+    errorUsers,
+    setState
+  } = useMessagesStore();
 
   useEffect(() => {
-    const fetchAllData = async () => {
-      if (!currentUser?.uid) return;
+    if (!currentUser?.uid || users.length > 0) return; // ✅ Eğer kullanıcılar zaten yüklüyse tekrar fetch etme
 
-      setLoading(true);
-      setError(null);
+    const fetchAllData = async () => {
+      setState({ loadingUsers: true, errorUsers: null });
 
       try {
         const db = getFirestore(getApp());
 
-        // 1️⃣ Backend'den takip edilen kullanıcıları çek
+        // 1️⃣ Backend'den takip edilen kullanıcılar
         const res = await fetch(`http://localhost:3001/api/users/${currentUser.uid}/following`, {
-          headers: {
-            Authorization: `Bearer ${firebaseUser?.accessToken}`,
-          },
+          headers: { Authorization: `Bearer ${firebaseUser?.accessToken}` },
         });
-
         const data = await res.json();
         const followingList = Array.isArray(data.following) ? data.following : [];
 
-        // 2️⃣ Firebase'den mesajlaşılmış kullanıcıları çek
+        // 2️⃣ Firebase’den mesajlaşılmış kullanıcılar
         const conversationsRef = collection(db, "conversations");
         const q = query(conversationsRef, where("members", "array-contains", currentUser.uid));
         const snapshot = await getDocs(q);
@@ -67,37 +59,28 @@ const MessagesLeftBar = ({ onSelectUser }) => {
           })
         );
 
-        // 3️⃣ Takip edilenler + mesajlaşılmış kişileri birleştir
+        // 3️⃣ Takip edilenler + mesajlaşılmış kişiler birleşir ve UID bazlı tekilleşir
         const merged = [...followingList, ...messageUsers];
+        const uniqueMerged = Array.from(new Map(merged.map(u => [u.uid, u])).values());
 
-        // 4️⃣ Aynı kişileri UID bazlı tekilleştir
-        const uniqueMerged = Array.from(
-          new Map(merged.map((u) => [u.uid, u])).values()
-        );
+        // 4️⃣ Son mesaj zamanına göre sırala
+        uniqueMerged.sort((a, b) => (b.lastMessage?.updatedAt?.seconds || 0) - (a.lastMessage?.updatedAt?.seconds || 0));
 
-        // 5️⃣ Son mesaj zamanına göre sırala
-        uniqueMerged.sort((a, b) => {
-          const aTime = a.lastMessage?.updatedAt?.seconds || 0;
-          const bTime = b.lastMessage?.updatedAt?.seconds || 0;
-          return bTime - aTime;
-        });
-
-        setAllUsers(uniqueMerged);
+        setState({ users: uniqueMerged, loadingUsers: false });
       } catch (err) {
         console.error("Veri yükleme hatası:", err);
-        setError("Kullanıcılar yüklenemedi.");
-      } finally {
-        setLoading(false);
+        setState({ errorUsers: "Kullanıcılar yüklenemedi.", loadingUsers: false });
       }
     };
 
     fetchAllData();
-  }, [currentUser?.uid, firebaseUser]);
+  }, [currentUser?.uid, firebaseUser, users.length, setState]);
 
   return (
     <div className={styles.MessagesLeftBar}>
-      <ActiveUsersBar users={allUsers} />
-      {loading && <LoadingOverlay />}
+      <ActiveUsersBar users={users} />
+
+      {loadingUsers && <LoadingOverlay />}
 
       <div className={styles.left_SearchInputBox}>
         <IoSearchSharp className={styles.searchInputIcon} />
@@ -106,10 +89,10 @@ const MessagesLeftBar = ({ onSelectUser }) => {
       </div>
 
       <ul className={styles.usersMessagesBox}>
-        {error ? (
-          <li className={styles.statusMessage}>{error}</li>
-        ) : allUsers.length > 0 ? (
-          allUsers.map((user) => (
+        {errorUsers ? (
+          <li className={styles.statusMessage}>{errorUsers}</li>
+        ) : users.length > 0 ? (
+          users.map(user => (
             <li
               key={user.uid}
               className={styles.userCard}
@@ -140,9 +123,7 @@ const MessagesLeftBar = ({ onSelectUser }) => {
             </li>
           ))
         ) : (
-          !loading && (
-            <li className={styles.statusMessage}>Henüz konuşmanız yok.</li>
-          )
+          !loadingUsers && <li className={styles.statusMessage}>Henüz konuşmanız yok.</li>
         )}
       </ul>
     </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./MessagesPage.module.css";
 import MessagesLeftBar from "../../components/Messages/MessagesLeftBar/MessagesLeftBar";
 import Chat from "../../components/Messages/Chat/Chat";
@@ -8,18 +8,21 @@ import RightBar from "../../components/Messages/MessagesRightBar/RightBar";
 import Sidebar from "../../components/LeftSideBar/Sidebar";
 import MessagesMobile from "../../components/Messages/MessagesMobile/MessagesMobile";
 import BottomNav from "../../components/BottomNav/BottomNav";
+import { useMessagesStore } from "../../Store/useMessagesStore";
+import axios from "axios";
 
 const MessagesPage = () => {
-  const [selectedUser, setSelectedUser] = useState(null);
+  const { selectedUser, conversations, isLoaded, loading, setState } = useMessagesStore();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
+  // ekran boyutunu takip et
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 1024);
-    };
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+
 
   if (isMobile) {
     return (
@@ -35,14 +38,14 @@ const MessagesPage = () => {
       <Sidebar />
       <div className={styles.page}>
         <aside className={styles.leftBar}>
-          <MessagesLeftBar onSelectUser={setSelectedUser} />
+          <MessagesLeftBar onSelectUser={(user) => setState({ selectedUser: user })} />
         </aside>
 
         <main className={styles.chat}>
           {selectedUser ? (
-            <Chat user={selectedUser} onBack={() => setSelectedUser(null)} />
+            <Chat user={selectedUser} onBack={() => setState({ selectedUser: null })} />
           ) : (
-            <ChatComponent />
+            <ChatComponent conversations={conversations} />
           )}
         </main>
 

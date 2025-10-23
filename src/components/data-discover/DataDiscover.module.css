@@ -11,7 +11,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #1a1a1a; 
+  background-color: #050505; 
   color: #f0f0f0;
   overflow: hidden; /* Taşmayı engeller */
 }
@@ -132,7 +132,7 @@
     display: flex;
     justify-content: center; /* İçindeki contentWrapper'ı merkezle */
     align-items: center;
-    background-color: #1a1a1a;
+    background-color: var(--color-black);
     max-width: none;
   }
 

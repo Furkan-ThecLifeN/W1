@@ -1,5 +1,5 @@
-// Notification.jsx (GÜNCEL)
-import React, { useState, useEffect } from "react";
+// Notification.jsx
+import React, { useEffect } from "react";
 import styles from "./Notification.module.css";
 import {
   FaUserPlus,
@@ -10,41 +10,46 @@ import {
 import { useAuth } from "../../context/AuthProvider";
 import { Link } from "react-router-dom";
 import LoadingOverlay from "../LoadingOverlay/LoadingOverlay";
-import axios from "axios"; 
+import axios from "axios";
+import { useNotificationStore } from "../../Store/useNotificationStore";
 
 const Notification = () => {
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const { currentUser, showToast } = useAuth(); 
+  const {
+    notifications,
+    loading,
+    isLoaded,
+    setState,
+  } = useNotificationStore();
+  const { currentUser, showToast } = useAuth();
   const apiBaseUrl = process.env.REACT_APP_API_URL;
 
-  // Yeni fonksiyon: Tüm okunmamış bildirimleri okundu olarak işaretle
+  // ========== Bildirimleri okundu yap ==========
   const markNotificationsRead = async () => {
     if (!currentUser) return;
     try {
       const idToken = await currentUser.getIdToken();
-      // Backend'deki markNotificationsAsRead rotasını çağır
       await axios.patch(`${apiBaseUrl}/api/users/notifications/read`, {}, {
         headers: { Authorization: `Bearer ${idToken}` },
       });
-      
-      // API çağrısı başarılıysa, mevcut listedeki okunmamış olanları da okundu olarak işaretle.
-      // Bu, sayfa yenilenene kadar rozetin görünmemesini sağlar.
-      setNotifications(prev => prev.map(item => ({...item, isRead: true})));
 
+      setState({
+        notifications: notifications.map((n) => ({ ...n, isRead: true })),
+      });
     } catch (error) {
       console.error("Bildirimleri okundu olarak işaretleme hatası:", error);
     }
   };
 
-
+  // ========== Bildirimleri çek ==========
   const fetchNotifications = async () => {
-    setLoading(true);
-    if (!currentUser) { // Kullanıcı yoksa yüklemeyi bitir.
-        setLoading(false);
-        return;
+    if (loading) return;
+    setState({ loading: true });
+
+    if (!currentUser) {
+      setState({ loading: false });
+      return;
     }
-    
+
     try {
       const idToken = await currentUser.getIdToken();
       const response = await axios.get(`${apiBaseUrl}/api/users/notifications`, {
@@ -53,14 +58,16 @@ const Notification = () => {
 
       const allNotifications = response.data.notifications;
 
-      // follow_request'leri grupla: aynı kullanıcıdan gelenleri tek bir bildirimde göster
       const uniqueFollowRequests = {};
       const otherNotifications = [];
 
-      allNotifications.forEach(item => {
+      allNotifications.forEach((item) => {
         if (item.type === "follow_request") {
-          // Sadece en son takip isteğini göster
-          if (!uniqueFollowRequests[item.fromUid] || new Date(item.createdAt) > new Date(uniqueFollowRequests[item.fromUid].createdAt)) {
+          if (
+            !uniqueFollowRequests[item.fromUid] ||
+            new Date(item.createdAt) >
+              new Date(uniqueFollowRequests[item.fromUid].createdAt)
+          ) {
             uniqueFollowRequests[item.fromUid] = item;
           }
         } else {
@@ -70,44 +77,45 @@ const Notification = () => {
 
       const combinedNotifications = [
         ...Object.values(uniqueFollowRequests),
-        ...otherNotifications.filter(item => item.type !== "follow_accepted" && item.type !== "follow_rejected"), // Takip onayı/reddi artık bildirim listesinde ayrı gösterilir
+        ...otherNotifications.filter(
+          (item) =>
+            item.type !== "follow_accepted" && item.type !== "follow_rejected"
+        ),
       ];
 
-      const sortedNotifications = combinedNotifications.sort((a, b) => {
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      });
+      const sortedNotifications = combinedNotifications.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
 
-      setNotifications(sortedNotifications);
+      setState({
+        notifications: sortedNotifications,
+        isLoaded: true,
+        loading: false,
+      });
     } catch (error) {
       console.error("Bildirimler getirilirken hata oluştu:", error);
       showToast("Bildirimler yüklenirken bir sorun oluştu.", "error");
-      setNotifications([]);
-    } finally {
-      setLoading(false);
+      setState({ notifications: [], loading: false });
     }
   };
 
   const handleFollowRequest = async (requesterUid, action) => {
-    setLoading(true);
+    setState({ loading: true });
     try {
       const idToken = await currentUser.getIdToken();
-      // Takip isteğini onaylama/reddetme rotası
-      const endpoint = `${apiBaseUrl}/api/users/follow/${action}/${requesterUid}`; 
+      const endpoint = `${apiBaseUrl}/api/users/follow/${action}/${requesterUid}`;
 
       const response = await axios.post(endpoint, {}, {
         headers: { Authorization: `Bearer ${idToken}` },
       });
 
       showToast(response.data.message, "success");
-      await fetchNotifications(); // İşlem sonrası listeyi yeniden çek
+      await fetchNotifications();
     } catch (error) {
       console.error("Takip isteği işlem hatası:", error);
-      showToast(
-        error.response?.data?.error || "İşlem başarısız oldu.",
-        "error"
-      );
+      showToast(error.response?.data?.error || "İşlem başarısız oldu.", "error");
     } finally {
-      setLoading(false);
+      setState({ loading: false });
     }
   };
 
@@ -156,9 +164,9 @@ const Notification = () => {
   };
 
   useEffect(() => {
-    fetchNotifications();
-    markNotificationsRead(); // Sayfaya girildiği anda okundu olarak işaretle
-  }, [currentUser, apiBaseUrl]); 
+    if (!isLoaded) fetchNotifications();
+    markNotificationsRead();
+  }, [currentUser]);
 
   return (
     <div className={styles.notification_page}>
@@ -172,8 +180,9 @@ const Notification = () => {
             return (
               <li
                 key={item.id}
-                // isRead=false ise "unread" sınıfını uygula
-                className={`${styles.notification_item} ${!item.isRead ? styles.unread : ""}`}
+                className={`${styles.notification_item} ${
+                  !item.isRead ? styles.unread : ""
+                }`}
               >
                 <div className={styles.icon_wrapper}>{icon}</div>
                 <div className={styles.text_wrapper}>
@@ -195,7 +204,8 @@ const Notification = () => {
                     </span>
                   </div>
                   <div className={styles.time}>
-                    {item.createdAt && new Date(item.createdAt).toLocaleString()}
+                    {item.createdAt &&
+                      new Date(item.createdAt).toLocaleString()}
                   </div>
                   {item.type === "follow_request" && (
                     <div className={styles.button_group}>
