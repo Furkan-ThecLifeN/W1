@@ -1,0 +1,153 @@
+.page_container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+  background: #000000;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+/* Üst Arama Alanı */
+.search_header {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding: 10px 15px;
+  flex-shrink: 0;
+  gap: 20px;
+  border-bottom: 1px solid #1f1f1f5d;
+}
+
+.search_bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: #27272a;
+  border-radius: 12px;
+  padding: 10px 14px;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+  width: 100%;
+}
+
+.search_bar:focus-within {
+  border-color: var(--color-blue);
+  box-shadow: 0 0 10px rgba(58, 165, 237, 0.3);
+}
+
+.search_icon {
+  margin-right: 12px;
+  color: #ffffff;
+  font-size: 1.1rem;
+}
+
+.search_input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  outline: none;
+}
+
+.search_input::placeholder {
+  color: #ffffff;
+}
+
+/* Sonuç Alanı */
+.results_content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 15px 80px 15px;
+}
+
+/* Ortadaki Mesaj Kutusu */
+.message_box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.message_inner {
+  background: rgba(39, 39, 42, 0.6);
+  border: 1px solid #141414;
+  border-radius: 14px;
+  padding: 25px 20px;
+  max-width: 280px;
+  text-align: center;
+  backdrop-filter: blur(6px);
+  margin: 0 auto;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.message_inner p {
+  font-size: 1rem;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Kullanıcı Listesi */
+.user_list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Yükleme Animasyonu */
+.loader_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+  gap: 10px;
+  color: #94a3b8;
+}
+
+.loader {
+  border: 4px solid rgba(255, 255, 255, 0.2);
+  border-left-color: #ffffff;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Görünürlük sadece mobil ve 1024px altı cihazlar için */
+@media (min-width: 1025px) {
+  .page_container {
+    display: none;
+  }
+}
+
+
+.topCenterLogo {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--color-white);
+  position: relative;
+  user-select: none;
+  pointer-events: none;
+  text-align: center;
+  z-index: 2;
+}
+
+

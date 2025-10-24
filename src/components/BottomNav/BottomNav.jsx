@@ -10,6 +10,7 @@ import { SiHearthisdotat } from "react-icons/si";
 import { BiSolidMessageSquareDots } from "react-icons/bi";
 import { PiVideoFill } from "react-icons/pi";
 import { FaLocationArrow } from "react-icons/fa";
+import { IoSearch } from "react-icons/io5";
 
 const BottomNav = () => {
   return (
@@ -56,12 +57,12 @@ const BottomNav = () => {
         </NavLink>
 
         <NavLink
-          to="/vocentra"
+          to="/search"
           className={({ isActive }) =>
             isActive ? styles.activeLink : styles.navLink
           }
         >
-          <SiHearthisdotat className={styles.icon} />
+          <IoSearch className={styles.icon} />
         </NavLink>
 
         <NavLink

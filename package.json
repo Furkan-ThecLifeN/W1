@@ -6,6 +6,8 @@
     "@emailjs/browser": "^4.4.1",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@giphy/js-fetch-api": "^5.7.0",
+    "@giphy/react-components": "^10.1.0",
     "@mui/icons-material": "^7.2.0",
     "@mui/material": "^7.2.0",
     "@next/font": "^14.2.15",

@@ -12,7 +12,6 @@
   background-color: var(--color-background-secondary, #282828); /* Yüklenirken veya görsel yokken arka plan */
   transition: transform 0.2s ease-in-out;
   border-radius: 12px;
-  margin: 12px;
 }
 
 .thumbnail_container:hover {

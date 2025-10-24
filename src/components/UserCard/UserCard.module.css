@@ -37,11 +37,11 @@
 
 /* Avatar */
 .user_avatar {
-  width: clamp(30px, 12%, 50px);
-  height: clamp(30px, 12%, 50px);
+  width: 40px;
+  height: 40px;
+  background-color: var(--color-white);
   border-radius: 50%;
   object-fit: cover;
-  flex-shrink: 0;
 }
 
 /* Kullanıcı bilgisi */

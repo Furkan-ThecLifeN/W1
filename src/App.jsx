@@ -30,6 +30,7 @@ import LiveStreamAdd from "./components/Add/LiveStream/LiveStream";
 import DraftsAdd from "./components/Add/Drafts/Drafts";
 import UserProfile from './pages/UserProfilePage/UserProfilePage';
 import PostDetailPage from "./pages/PostDetailPage/PostDetailPage";
+import MobileSearchPage from './pages/MobileSearchPage/MobileSearchPage';
 
 // 🔒 Korumalı rota
 const ProtectedRoute = ({ children }) => {
@@ -64,6 +65,7 @@ const AppContent = () => {
       <Route path="/data-discover" element={<ProtectedRoute><DataDiscover /></ProtectedRoute>} />
       <Route path="/saved" element={<ProtectedRoute><SavedPage /></ProtectedRoute>} />
       <Route path="/vocentra" element={<ProtectedRoute><VoCentra /></ProtectedRoute>} />
+      <Route path="/search" element={<ProtectedRoute><MobileSearchPage /></ProtectedRoute>} />
       <Route path="/server/:serverName" element={<ProtectedRoute><VocentraServerPage /></ProtectedRoute>} />
       <Route path="/vosettings" element={<ProtectedRoute><VoCentraSettingsPage /></ProtectedRoute>} />
       <Route path="/account" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
