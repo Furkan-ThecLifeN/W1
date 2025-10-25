@@ -5,13 +5,54 @@ dotenv.config();
 
 const CATEGORIES = {
   turkish: [
+    // Orijinaller
     "Turkey", "Turkiye", "elraenn", "twitchclips",
-    "burdurland", "hort", "ZargoryanGalaksisi"
+    "burdurland", "hort", "ZargoryanGalaksisi",
+    
+    // Yeni Eklenen Popüler Türkçe Subreddit'ler
+    "KGBTR", // (Not: Popülerliği yüksek, filtrelerden geçebilen içerik olabilir)
+    "TurkeyJerky", // Meme
+    "akagas", // Genel
+    "Jaharia", // Yayıncı
+    "PqueeN", // Yayıncı
+    "veYakinEvren", // Nerd kültürü, oyun
+    "SorReddite", // Metin tabanlı gönderiler için harika
+    "trgamers", // Oyuncu
+    "gecekeyfi", // Genel
+    "Ankara", // Resim/Metin
+    "istanbul", // Resim/Metin
+    "Izmir", // Resim/Metin
+    "Galatasaray", // Spor/Resim
+    "FenerbahceSK", // Spor/Resim
+    "besiktas" // Spor/Resim
   ],
   english: [
+    // Orijinaller
     "memes", "funny", "gaming", "dankmemes", "wholesomememes",
     "VALORANT", "cs2", "leagueoflegends", "gtaonline",
-    "pics", "gifs", "Unexpected", "me_irl"
+    "pics", "gifs", "Unexpected", "me_irl",
+    
+    // Yeni Eklenen Popüler İngilizce Subreddit'ler
+    "aww", // Sevimli hayvanlar (Resim/Video)
+    "MadeMeSmile", // Mutlu edici (Resim/Video)
+    "interestingasfuck", // (Resim/Video)
+    "Damnthatsinteresting", // (Resim/Video)
+    "nextfuckinglevel", // (Video)
+    "BeAmazed", // (Resim/Video)
+    "mildlyinteresting", // (Resim)
+    "oddlysatisfying", // (Video/Gif)
+    "dataisbeautiful", // (Resim)
+    "Art", // (Resim)
+    "food", // (Resim)
+    "pUbG", // Oyun
+    "pcmasterrace", // (Resim/Meme)
+    "Minecraft", // Oyun (Resim/Video)
+    "Whatcouldgowrong", // (Video/Gif)
+    "therewasanattempt", // (Video/Gif)
+    "IdiotsInCars", // (Video/Gif)
+    "AnimalsBeingDerps", // (Resim/Video)
+    "EldenRing", // Oyun
+    "Overwatch" // Oyun
   ]
 };
 
@@ -96,7 +137,7 @@ async function fetchRedditPosts(subreddit, min_upvotes) {
             url: postData.preview.reddit_video_preview.fallback_url,
             audio_url: null, // Bunlar genellikle sessizdir
             is_reddit_video: false,
-        };
+         };
       }
 
       // TÜR 4: Metin Gönderisi (self-post)
