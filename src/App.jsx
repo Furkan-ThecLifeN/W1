@@ -1,5 +1,4 @@
-// App.js
-import React from 'react';
+import React, { useState, useEffect } from 'react'; // <-- useState ve useEffect'i import edin
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthProvider';
 import Toast from './Toast';
@@ -54,9 +53,33 @@ const AuthRedirect = ({ children }) => {
 
 // 📌 Tüm route’lar
 const AppContent = () => {
+  // YENİ: Splash ekranı durumunu burada yönet
+  const [isSplashing, setIsSplashing] = useState(true);
+
+  useEffect(() => {
+    // SplashScreen'in orijinal süresiyle (6sn) eşleşen bir zamanlayıcı kur
+    const timer = setTimeout(() => {
+      setIsSplashing(false);
+    }, 6000); // 6 saniye
+
+    // Bileşen unmount olursa (pek olası değil ama iyi pratiktir) zamanlayıcıyı temizle
+    return () => clearTimeout(timer);
+  }, []); // Bu, bileşen her yüklendiğinde (sayfa yenileme) bir kez çalışır
+
+  // YENİ: Eğer 'isSplashing' true ise, router'ı DEĞİL, splash ekranını göster
+  if (isSplashing) {
+    // 1. Adımda navigasyon kodunu SplashScreen'den kaldırdığınızdan emin olun
+    return <SplashScreen />;
+  }
+
+  // YENİ: Splash bittiyse (isSplashing false ise), normal router'ı göster
+  // Kullanıcı hangi sayfada (URL'de) ise, React Router onu otomatik olarak yükleyecektir.
   return (
     <Routes>
-      <Route path="/" element={<SplashScreen />} />
+      {/* DEĞİŞİKLİK: "/" rotası artık SplashScreen DEĞİL, /home'a yönlendirme yapar */}
+      <Route path="/" element={<Navigate to="/home" replace />} />
+      
+      {/* Diğer tüm rotalarınız AYNEN kalır */}
       <Route path="/auth" element={<AuthRedirect><AuthPage /></AuthRedirect>} />
       <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
       <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />

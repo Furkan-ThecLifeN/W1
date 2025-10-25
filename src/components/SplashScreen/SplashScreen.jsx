@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom"; // <-- BU SATIRI SİLİN VEYA YORUMA ALIN
 import Styles from "./SplashScreen.module.css";
 
 const SplashScreen = () => {
   const [expandText, setExpandText] = useState(false);
-  const navigate = useNavigate();
+  // const navigate = useNavigate(); // <-- BU SATIRI SİLİN VEYA YORUMA ALIN
 
   useEffect(() => {
     const timer1 = setTimeout(() => setExpandText(true), 2500); // Yazı büyümeye başlar
-    const timer2 = setTimeout(() => navigate("/home"), 6000); // Home sayfasına yönlendir
+    // const timer2 = setTimeout(() => navigate("/home"), 6000); // <-- BU SATIRI SİLİN
 
     return () => {
       clearTimeout(timer1);
-      clearTimeout(timer2);
+      // clearTimeout(timer2); // <-- BU SATIRI SİLİN
     };
-  }, [navigate]);
+  }, []); // <-- BAĞIMLILIĞI (navigate) BURADAN KALDIRIN
 
   return (
     <div className={Styles.SplashScreen}>
@@ -28,7 +28,9 @@ const SplashScreen = () => {
             y="50%"
             textAnchor="middle"
             dominantBaseline="middle"
-            className={`${Styles.writingText} ${expandText ? Styles.fillWhite : ""}`}
+            className={`${Styles.writingText} ${
+              expandText ? Styles.fillWhite : ""
+            }`}
           >
             W1
           </text>
