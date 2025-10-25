@@ -249,6 +249,7 @@
     min-height: 50px;
     max-height: 50px;
     border-radius: 0;
+    margin-bottom: 50px;
   }
 
   .actionButtons {

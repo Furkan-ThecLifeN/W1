@@ -692,8 +692,8 @@ const MobileUserProfile = () => {
     { key: "posts", label: "Posts" },
     { key: "feelings", label: "Feelings" },
     { key: "feeds", label: "Feeds" },
-    { key: "likes", label: "Beğenilenler", disabled: !canViewContent || followStatus === 'blocking' },
-    { key: "tags", label: "Etiketliler", disabled: !canViewContent || followStatus === 'blocking' },
+   /*  { key: "likes", label: "Beğenilenler", disabled: !canViewContent || followStatus === 'blocking' },
+    { key: "tags", label: "Etiketliler", disabled: !canViewContent || followStatus === 'blocking' }, */
   ];
 
   // RTA ve toplam post sayısını hesapla

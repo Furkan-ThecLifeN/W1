@@ -240,8 +240,8 @@ const AccountBox = () => {
         <button className={activeTab === "posts" ? styles.active : ""} onClick={() => handleTabChange("posts")}>Posts</button>
         <button className={activeTab === "feelings" ? styles.active : ""} onClick={() => handleTabChange("feelings")}>Feelings</button>
         <button className={activeTab === "feeds" ? styles.active : ""} onClick={() => handleTabChange("feeds")}>Feeds</button>
-        <button className={activeTab === "likes" ? styles.active : ""} onClick={() => handleTabChange("likes")}>Beğenilenler</button>
-        <button className={activeTab === "tags" ? styles.active : ""} onClick={() => handleTabChange("tags")}>Etiketliler</button>
+        {/* <button className={activeTab === "likes" ? styles.active : ""} onClick={() => handleTabChange("likes")}>Beğenilenler</button>
+        <button className={activeTab === "tags" ? styles.active : ""} onClick={() => handleTabChange("tags")}>Etiketliler</button> */}
       </div>
 
       {/* TAB CONTENT */}

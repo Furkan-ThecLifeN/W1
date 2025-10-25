@@ -65,7 +65,6 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
         },
       });
       if (!res.ok) throw new Error("Silme işlemi başarısız");
-      alert("Gönderi başarıyla silindi.");
       window.location.reload();
     } catch (e) {
       console.error("Gönderi silme hatası:", e);
@@ -90,7 +89,6 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
 
       setCommentsDisabled(true);
       setShowOptions(false);
-      alert("Yorumlar kapatıldı.");
     } catch (e) {
       console.error("Yorumları kapatma hatası:", e);
       alert("Yorumlar kapatılamadı.");
@@ -114,7 +112,6 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
 
       setCommentsDisabled(false);
       setShowOptions(false);
-      alert("Yorumlar açıldı.");
     } catch (e) {
       console.error("Yorumları açma hatası:", e);
       alert("Yorumlar açılamadı.");

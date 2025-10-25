@@ -1,0 +1,135 @@
+/* components/ConfirmationModal/ConfirmationModal.module.css */
+
+/* === Overlay ===
+   Daha iddialı bir odaklanma için arka planı koyulaştırdık.
+   Animasyon "klasik" bir fade-in olarak kaldı. */
+.overlay {
+  position: fixed;
+  inset: 0;
+  /* Daha güçlü bir odak için biraz daha koyu bir arka plan */
+  background-color: rgba(5, 16, 20, 0.7);
+  backdrop-filter: blur(4px); /* Modern ve şık bir etki */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* === Modal ===
+   Daha yumuşak gölgeler, daha geniş iç boşluklar ve
+   daha şık bir giriş animasyonu (aşağıdan kayarak) eklendi. */
+.modal {
+  background: #ffffff;
+  padding: 32px; /* Daha ferah ve premium bir his için padding artırıldı */
+  border-radius: 16px; /* Daha modern ve yumuşak köşeler */
+  /* Daha şık, katmanlı bir gölge */
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.1), 0 8px 15px rgba(0, 0, 0, 0.07);
+  width: 90%;
+  max-width: 420px; /* Genişliği hafifçe artırdık */
+  text-align: left;
+  transform-origin: center;
+  /* Eski zoomIn yerine daha profesyonel bir "slide-up" animasyonu */
+  animation: modalSlideUp 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+/* === Tipografi ===
+   Hiyerarşiyi netleştirmek için başlık daha "iddialı" hale getirildi. */
+.modal h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 1.5rem; /* 24px - Daha güçlü, iddialı bir başlık */
+  font-weight: 700;
+  color: #1a202c; /* Koyu, net bir renk */
+}
+
+.modal p {
+  font-size: 1rem; /* 16px - Okunaklı */
+  color: #4a5568; /* Siyah yerine daha yumuşak, modern bir metin rengi */
+  line-height: 1.6;
+  margin-bottom: 32px; /* Butonlarla arayı açtık */
+}
+
+/* === Butonlar ===
+   Daha net, modern ve "canlıya alınabilir" butonlar.
+   Aktif ve hover durumları daha belirgin. */
+.buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.buttons button {
+  padding: 12px 20px; /* Daha iyi bir tıklama alanı */
+  border: none;
+  border-radius: 8px; /* Modern standart */
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  /* Daha yumuşak ve kapsamlı bir geçiş */
+  transition: all 0.2s ease-in-out;
+}
+
+.buttons button:active {
+  transform: scale(0.97); /* Daha belirgin bir tıklama efekti */
+}
+
+/* Klasik "İptal" butonu - dikkat dağıtmaz */
+.cancelButton {
+  background-color: #f1f5f9; /* Modern açık gri */
+  color: #1a202c;
+  border: 1px solid #e2e8f0;
+}
+
+.cancelButton:hover {
+  background-color: #e2e8f0;
+  border-color: #cbd5e1;
+}
+
+/* Modern ve "varsayılan" onay butonu */
+.confirmButton {
+  background-color: #29bdeb; /* Modern, güçlü bir indigo */
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);
+}
+
+.confirmButton:hover {
+  background-color: #46c0e5;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.3);
+}
+
+/* "İddialı" ve net tehlike butonu */
+.confirmButtonDanger {
+  background-color: #dc2626; /* Canlı ve net bir kırmızı */
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.25);
+}
+
+.confirmButtonDanger:hover {
+  background-color: #b91c1c;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.3);
+}
+
+/* === Animasyonlar === */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Yeni, daha şık modal giriş animasyonu */
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

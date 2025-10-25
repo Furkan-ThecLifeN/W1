@@ -862,7 +862,7 @@ const UserProfile = () => {
             >
               Feelings
             </button>
-            <button
+           {/*  <button
               className={activeTab === "likes" ? styles.active : ""}
               onClick={() => handleTabChange("likes")}
               disabled={!canViewContent}
@@ -875,7 +875,7 @@ const UserProfile = () => {
               disabled={!canViewContent}
             >
               Etiketliler
-            </button>
+            </button> */}
           </div>
 
           <div className={styles.tabContent}>

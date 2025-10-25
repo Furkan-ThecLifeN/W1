@@ -1,22 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./AddComponents.module.css";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { useEffect } from "react";
+import { PiVideoFill } from "react-icons/pi";
+import { FaFeatherAlt } from "react-icons/fa";
+import { BsImageFill } from "react-icons/bs";
+import { SiStreamlabs } from "react-icons/si";
+import { MdFolderCopy } from "react-icons/md";
+import { TbNumber24Small } from "react-icons/tb";
 
 const AddPage = () => {
   const navigate = useNavigate();
   const [hoveredCard, setHoveredCard] = useState(null);
   const [user, setUser] = useState(null);
+  const [activeSoonId, setActiveSoonId] = useState(null); // tıklama sonrası badge gösterimi
   const auth = getAuth();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        setUser(firebaseUser);
-      } else {
-        setUser(null);
-      }
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser || null);
     });
     return () => unsubscribe();
   }, [auth]);
@@ -25,55 +27,56 @@ const AddPage = () => {
     {
       id: 1,
       title: "Story",
-      icon: "📸",
+      icon: <TbNumber24Small />,
       description: "24 saatlik hikaye paylaş",
-      color: "#f59e0b",
       route: "story",
+      comingSoon: true,
     },
     {
       id: 2,
       title: "Feeds",
-      icon: "📰",
+      icon: <PiVideoFill />,
       description: "Haber akışına içerik ekle",
-      color: "#ec4899",
       route: "feedadd",
     },
     {
       id: 3,
       title: "Feeling",
-      icon: "😊",
+      icon: <FaFeatherAlt />,
       description: "Duygularını ifade et",
-      color: "#10b981",
-      route: "feelingadd", 
+      route: "feelingadd",
     },
     {
       id: 4,
       title: "Post",
-      icon: "✏️",
+      icon: <BsImageFill />,
       description: "Yeni bir gönderi paylaş",
-      color: "#ff00e1ff",
       route: "post",
     },
     {
       id: 5,
       title: "Live Stream",
-      icon: "🔴",
+      icon: <SiStreamlabs />,
       description: "Canlı yayın başlat",
-      color: "#ef4444",
       route: "livestream",
+      comingSoon: true,
     },
     {
       id: 6,
       title: "Taslaklar",
-      icon: "📂",
+      icon: <MdFolderCopy />,
       description: "Kaydedilmiş içerikler",
-      color: "#8b5cf6",
       route: "drafts",
+      comingSoon: true,
     },
   ];
 
   const handleCardClick = (card) => {
-    // Tüm kartlar için doğrudan yönlendirme kullanıyoruz
+    if (card.comingSoon) {
+      setActiveSoonId(card.id);
+      setTimeout(() => setActiveSoonId(null), 1600);
+      return;
+    }
     navigate(`/create/${card.route}`);
   };
 
@@ -83,26 +86,34 @@ const AddPage = () => {
         {cards.map((card) => (
           <div
             key={card.id}
-            className={`${styles.card} ${hoveredCard === card.id ? styles.cardHover : ""}`}
+            className={`${styles.card} ${
+              hoveredCard === card.id ? styles.cardHover : ""
+            } ${card.comingSoon ? styles.disabledCard : ""} ${
+              activeSoonId === card.id ? styles.soonActive : ""
+            }`}
             onMouseEnter={() => setHoveredCard(card.id)}
             onMouseLeave={() => setHoveredCard(null)}
-            style={{
-              "--card-color-rgb": card.color
-                .slice(1)
-                .match(/.{2}/g)
-                .map((h) => parseInt(h, 16))
-                .join(","),
-            }}
             onClick={() => handleCardClick(card)}
           >
-            <div
-              className={styles.cardBorder}
-              style={{ borderColor: card.color }}
-            ></div>
+            <div className={styles.cardBorder} />
+            <div className={styles.cardGlow} />
             <div className={styles.cardContent}>
-              <div className={styles.icon}>{card.icon}</div>
+              <div className={styles.iconWrapper}>
+                <div className={styles.icon}>{card.icon}</div>
+              </div>
+
               <h3>{card.title}</h3>
               <p>{card.description}</p>
+
+              {card.comingSoon && (
+                <span
+                  className={`${styles.comingSoon} ${
+                    activeSoonId === card.id ? styles.comingSoonActive : ""
+                  }`}
+                >
+                  Yakında
+                </span>
+              )}
             </div>
           </div>
         ))}

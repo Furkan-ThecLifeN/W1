@@ -23,7 +23,7 @@ import allPhotos from "../../data/ai-images.json";
 import styles from "./HomePage.module.css";
 
 const FIFTEEN_DAYS_MS = 15 * 24 * 60 * 60 * 1000;
-const FIREBASE_BATCH_SIZE = 10;
+const FIREBASE_BATCH_SIZE = 5;
 const JSON_BATCH_SIZE = 18;
 
 const Home = () => {
@@ -68,34 +68,73 @@ const Home = () => {
     return array;
   };
 
-  // =============== Firebase Yükleme ===============
+  // =============== Firebase Yükleme (GÜNCELLENDİ) ===============
   const loadNextFirebaseBatch = useCallback(async () => {
     if (loading || (postsExhausted && feelingsExhausted)) return;
     setState({ loading: true });
 
     try {
+      /**
+       * YENİ fetchFS FONKSİYONU:
+       * Bu fonksiyon artık "görülmemiş" doküman bulana kadar veya
+       * koleksiyon gerçekten bitene kadar sorgu yapmaya devam eder.
+       */
       const fetchFS = async (ref, lastDocRef, exhausted, exhaustedKey, seenKey, type) => {
-        if (exhausted) return [];
+        if (exhausted) return []; // Zaten tükenmişse, hiç sorgu atma.
+
         const seenIds = getSeenIds(seenKey);
-        let q;
-        if (lastDocRef.current) {
-          q = query(ref, orderBy("createdAt", "desc"), startAfter(lastDocRef.current), limit(FIREBASE_BATCH_SIZE));
-        } else {
-          q = query(ref, orderBy("createdAt", "desc"), limit(FIREBASE_BATCH_SIZE));
+        let unseenDocs = [];
+        let continueFetching = true;
+        let localExhausted = false;
+
+        // Görülmemiş doküman bulana VEYA koleksiyon bitene kadar döngüye gir
+        while (unseenDocs.length === 0 && continueFetching && !localExhausted) {
+          let q;
+          if (lastDocRef.current) {
+            q = query(ref, orderBy("createdAt", "desc"), startAfter(lastDocRef.current), limit(FIREBASE_BATCH_SIZE));
+          } else {
+            q = query(ref, orderBy("createdAt", "desc"), limit(FIREBASE_BATCH_SIZE));
+          }
+
+          const snap = await getDocs(q);
+
+          if (snap.empty || snap.docs.length < FIREBASE_BATCH_SIZE) {
+            // Koleksiyonun gerçekten sonuna geldik.
+            localExhausted = true;
+            continueFetching = false;
+          }
+
+          if (!snap.empty) {
+            // Son dokümanı referans olarak al
+            lastDocRef.current = snap.docs[snap.docs.length - 1];
+
+            // Gelen veriyi filtrele
+            const filteredDocs = snap.docs
+              .map(doc => ({ id: doc.id, ...doc.data(), type, source: "firebase" }))
+              .filter(doc => !seenIds.has(doc.id));
+
+            if (filteredDocs.length > 0) {
+              // Görülmemiş doküman bulduk!
+              unseenDocs = filteredDocs;
+              continueFetching = false; // Döngüden çık
+            }
+            // EĞER filteredDocs.length === 0 ise (yani 5 doküman geldi ama hepsi görülmüştü),
+            // döngü devam edecek ve bir sonraki 5'li grubu çekecek.
+          }
         }
 
-        const snap = await getDocs(q);
-        if (snap.empty || snap.docs.length < FIREBASE_BATCH_SIZE) setState({ [exhaustedKey]: true });
-        if (!snap.empty) lastDocRef.current = snap.docs[snap.docs.length - 1];
+        // Döngü bittiğinde, eğer koleksiyonun sonuna geldiysek,
+        // global state'i (Zustand) güncelle.
+        if (localExhausted) {
+          setState({ [exhaustedKey]: true });
+        }
 
-        const unseenDocs = snap.docs
-          .map(doc => ({ id: doc.id, ...doc.data(), type, source: "firebase" }))
-          .filter(doc => !seenIds.has(doc.id));
-
+        // Sadece bulunan görülmemiş dokümanları işaretle ve döndür
         unseenDocs.forEach(doc => markAsSeen(seenKey, doc.id));
         return unseenDocs;
       };
 
+      // Bu kısım aynı kaldı, ancak artık akıllı fetchFS'i çağırıyor.
       const posts = await fetchFS(collection(db, "globalPosts"), lastPostDocRef, postsExhausted, "postsExhausted", "seenFirebasePosts", "post");
       const feelings = await fetchFS(collection(db, "globalFeelings"), lastFeelingDocRef, feelingsExhausted, "feelingsExhausted", "seenFirebaseFeelings", "feeling");
 
@@ -111,7 +150,8 @@ const Home = () => {
     }
   }, [loading, postsExhausted, feelingsExhausted, firebaseFeed, initialLoadDone, setState]);
 
-  // =============== JSON Yükleme ===============
+
+  // =============== JSON Yükleme (DOKUNULMADI) ===============
   const loadNextJsonBatch = useCallback(async () => {
     if (loading || jsonExhausted) return;
     setState({ loading: true });
@@ -214,6 +254,10 @@ const Home = () => {
 
         <section className={styles.feed}>{currentFeed.map(item => renderItem(item))}</section>
 
+        {/* Footer'da değişiklik yok, çünkü render mantığı zaten doğruydu.
+            Sorun, 'isExhausted' state'inin yanlış ayarlanmasındaydı.
+            Yeni 'loadNextFirebaseBatch' fonksiyonu bunu düzeltti.
+        */}
         <footer className={styles.feedFooter}>
           {!loading && !isExhausted && currentFeed.length > 0 && (
             <button onClick={loadMore} className={styles.loadMoreButton}>

@@ -229,8 +229,8 @@ const MobileProfile = () => {
     { key: "posts", label: "Posts" },
     { key: "feelings", label: "Feelings" },
     { key: "feeds", label: "Feeds" },
-    { key: "likes", label: "Beğenilenler" },
-    { key: "tags", label: "Etiketliler" },
+    /* { key: "likes", label: "Beğenilenler" },
+    { key: "tags", label: "Etiketliler" }, */
   ];
 
   const currentData = allData[activeTab] || [];
