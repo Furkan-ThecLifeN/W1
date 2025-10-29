@@ -135,20 +135,19 @@
     max-width: none;
   }
 
-  /* İçerik Sarmalayıcı: Sol (Video) ve Sağ (Kontroller) Kutuyu Yan Yana Tutar */
-  .contentWrapper {
-    width: 95%; /* Container'ın %95'i, kenarlarda boşluk bırakır */
-    height: 95vh; /* Dikeyde bir miktar boşluk bırakır */
-    max-width: 1400px; /* Maksimum genişliği korur */
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
-    display: flex;
-    flex-direction: row;
-    background-color: #242424;
-    padding: 0; /* Padding kaldırıldı, kutular tamamen yapışık */
-    gap: 0;
-  }
+.contentWrapper {
+  width: 95%;
+  height: clamp(70vh, 80vh, 85vh);
+  max-width: 1400px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: row;
+  background-color: #242424;
+  padding: 0;
+  gap: 0;
+}
   
   /* Video Alanı: Sol kutu (Büyük kısmı kaplar) */
   .videoBox {

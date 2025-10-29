@@ -12,32 +12,30 @@ const FollowButton = ({
   isTargetPrivate,
   initialFollowStatus,
   onFollowStatusChange,
+  stats, // Bu eklenmeli, giriş yapmayanlar için sayıyı göstereceğiz
 }) => {
   const { currentUser, showToast } = useAuth();
-  const [followStatus, setFollowStatus] = useState("none");
+  const [followStatus, setFollowStatus] = useState(
+    initialFollowStatus || "none"
+  );
   const [isLoading, setIsLoading] = useState(false);
 
-  // İlk render ve initialFollowStatus değiştiğinde senkronize et
   useEffect(() => {
     setFollowStatus(initialFollowStatus || "none");
   }, [initialFollowStatus]);
 
-  // Sayfa yüklendiğinde backend’den gerçek durumu çek
+  // Eğer giriş yoksa backend’e request atma, sadece initial stat göster
   useEffect(() => {
+    if (!currentUser || !targetUid) return;
     const fetchFollowStatus = async () => {
-      if (!currentUser || !targetUid) return;
       try {
         const idToken = await currentUser.getIdToken();
         const res = await axios.get(
           `${apiBaseUrl}/api/users/profile/${targetUid}/status`,
-          {
-            headers: { Authorization: `Bearer ${idToken}` },
-          }
+          { headers: { Authorization: `Bearer ${idToken}` } }
         );
-        // Backend'den gelen statüye göre butonu ayarla
         setFollowStatus(res.data.followStatus || "none");
-        if (onFollowStatusChange)
-          onFollowStatusChange(res.data.followStatus, res.data.stats);
+        onFollowStatusChange?.(res.data.followStatus, res.data.stats);
       } catch (err) {
         console.error("FollowButton: Durum fetch hatası ->", err);
       }
@@ -46,6 +44,10 @@ const FollowButton = ({
   }, [currentUser, targetUid, onFollowStatusChange]);
 
   const handleFollowAction = async () => {
+    if (!currentUser) {
+      showToast("Takip etmek için giriş yapın!", "error");
+      return;
+    }
     if (isLoading) return;
     setIsLoading(true);
     const previousStatus = followStatus;
@@ -56,7 +58,6 @@ const FollowButton = ({
       let data = { targetUid };
       let optimisticStatus = previousStatus;
 
-      // Duruma göre doğru endpoint ve metodu belirle
       if (previousStatus === "none") {
         endpoint = `${apiBaseUrl}/api/users/follow`;
         method = "POST";
@@ -73,7 +74,6 @@ const FollowButton = ({
         optimisticStatus = "none";
       }
 
-      // UI'yi hemen değiştir (optimistic update)
       setFollowStatus(optimisticStatus);
 
       const idToken = await currentUser.getIdToken();
@@ -83,15 +83,12 @@ const FollowButton = ({
         headers: { Authorization: `Bearer ${idToken}` },
         data,
       });
-
-      // API yanıtına göre UI'yi tekrar güncelle
       setFollowStatus(res.data.status || "none");
-      if (onFollowStatusChange)
-        onFollowStatusChange(res.data.status, res.data.newStats);
+      onFollowStatusChange?.(res.data.status, res.data.newStats);
       showToast(res.data.message, "success");
     } catch (err) {
       console.error("Follow action error:", err);
-      setFollowStatus(previousStatus); // Hata durumunda eski duruma dön
+      setFollowStatus(previousStatus);
       showToast(
         err.response?.data?.error || "Takip işlemi başarısız.",
         "error"
@@ -102,6 +99,18 @@ const FollowButton = ({
   };
 
   const renderButton = () => {
+    if (!currentUser) {
+      // Giriş yapmamış kullanıcılar için buton göster, tıklayınca uyarı
+      return (
+        <button
+          onClick={() => showToast("Takip etmek için giriş yapın!", "error")}
+          className={`${styles.followBtn} ${styles.actionButton}`}
+        >
+          Follow
+        </button>
+      );
+    }
+
     switch (followStatus) {
       case "following":
         return (

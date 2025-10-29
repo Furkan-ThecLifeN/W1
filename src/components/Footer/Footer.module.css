@@ -1,0 +1,32 @@
+.footerContainer {
+  width: 100%;
+  padding: 20px 0;
+  text-align: center;
+  background-color: transparent; 
+}
+
+.footerNav {
+  display: flex;
+  flex-wrap: wrap; /* Küçük ekranlarda linkler alt satıra kayar */
+  justify-content: center;
+  gap: 16px; /* Linkler arası boşluk */
+  margin-bottom: 12px;
+}
+
+.footerLink {
+  font-size: 13px;
+  color: #8e8e8e; /* Instagram benzeri soluk gri renk */
+  text-decoration: none;
+}
+
+.footerLink:hover {
+  text-decoration: underline;
+}
+
+.copyright {
+  font-size: 13px;
+  color: #8e8e8e;
+  margin: 0;
+}
+
+

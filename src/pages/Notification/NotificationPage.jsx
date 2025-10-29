@@ -5,6 +5,7 @@ import BottomNav from "../../components/BottomNav/BottomNav";
 import Styles from "./NotificationPage.module.css";
 import { useNotificationStore } from "../../Store/useNotificationStore";
 import axios from "axios";
+import PublicAccessWrapper from "../../components/PublicAccessWrapper/PublicAccessWrapper";
 
 const NotificationsPage = () => {
   const { notifications, isLoaded, loading, setState } = useNotificationStore();
@@ -33,11 +34,13 @@ const NotificationsPage = () => {
   }, [isLoaded]);
 
   return (
-    <div className={Styles.notification_container}>
-      <Sidebar />
-      {loading && !isLoaded ? <p>Yükleniyor...</p> : <Notification data={notifications} />}
-      <BottomNav />
-    </div>
+    <PublicAccessWrapper loginMessage="Bildirimleri görmek için giriş yapın.">
+      <div className={Styles.notification_container}>
+        <Sidebar />
+        {loading && !isLoaded ? <p>Yükleniyor...</p> : <Notification data={notifications} />}
+        <BottomNav />
+      </div>
+    </PublicAccessWrapper>
   );
 };
 

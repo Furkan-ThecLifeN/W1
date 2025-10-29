@@ -36,7 +36,7 @@ export default function ActionControls({
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [toast, setToast] = useState(null);
   const shareBtnRef = useRef(null);
-  const { currentUser } = useAuth();
+  const { currentUser, showToast } = useAuth();
 
   const likeTimerRef = useRef(null);
   const saveTimerRef = useRef(null);
@@ -45,31 +45,48 @@ export default function ActionControls({
 
   const { enqueue } = useActionsQueue({ getAuthToken });
 
+  // --- DEĞİŞİKLİK BURADA ---
+  // Bu useEffect bloğu, giriş yapılmamış olsa bile
+  // istatistikleri çekecek şekilde güncellendi.
   useEffect(() => {
     let mounted = true;
 
     async function fetchStats() {
       try {
-        const token = await getAuthToken();
-        if (!token || !mounted) return;
-
-        const res = await getPostStats({ targetType, targetId, token });
-
+        // Token almayı dene, başarısız olursa (giriş yoksa) null döner.
+        const token = await getAuthToken().catch(() => null);
+        
         if (!mounted) return;
-        setStats(res.stats);
-        setLiked(res.liked);
-        setSaved(res.saved);
+
+        // API'ye token ile (giriş yapmışsa) veya token'sız (giriş yapmamışsa) istek at.
+        // getPostStats fonksiyonunun (ve backend'in) "token: null" durumunu
+        // herkese açık bir istek olarak işlemesi gerekir.
+        const res = await getPostStats({ targetType, targetId, token });
+        
+        if (!mounted) return;
+
+        // İstatistikler varsa ayarla
+        if (res.stats) {
+          setStats(res.stats);
+        }
+        
+        // Kullanıcıya özel 'liked' ve 'saved' bilgisi varsa ayarla,
+        // yoksa (giriş yapılmamışsa) false olarak ayarla.
+        setLiked(res.liked || false);
+        setSaved(res.saved || false);
+
       } catch (e) {
         console.error("İstatistikler alınamadı: ", e);
       }
     }
 
     fetchStats();
-
     return () => (mounted = false);
   }, [targetType, targetId, getAuthToken]);
+  // --- DEĞİŞİKLİK SONU ---
 
   async function commitActionNow(action) {
+    if (!currentUser) return; // Giriş yoksa işlem yapma
     try {
       const token = await getAuthToken();
       if (action.type === "like") {
@@ -79,7 +96,6 @@ export default function ActionControls({
           finalState: action.finalState,
           token,
         });
-
         if (action.finalState && currentUser.uid !== postOwnerUid) {
           const newNotification = {
             id: "temp-" + Date.now(),
@@ -127,30 +143,39 @@ export default function ActionControls({
   }
 
   function toggleLike() {
+    if (!currentUser) {
+      showToast("Beğenmek için giriş yapın!", "error");
+      return;
+    }
     const next = !liked;
     setLiked(next);
     setStats((s) => ({ ...s, likes: Math.max(0, s.likes + (next ? 1 : -1)) }));
-    scheduleCommit({ type: "like", targetType, targetId, finalState: next }, likeTimerRef, pendingLikeRef);
+    scheduleCommit(
+      { type: "like", targetType, targetId, finalState: next },
+      likeTimerRef,
+      pendingLikeRef
+    );
   }
 
   function toggleSave() {
+    if (!currentUser) {
+      showToast("Kaydetmek için giriş yapın!", "error");
+      return;
+    }
     const next = !saved;
     setSaved(next);
-    setStats((s) => ({ ...s, saves: Math.max(0, (s.saves || 0) + (next ? 1 : -1)) }));
-    scheduleCommit({ type: "save", targetType, targetId, finalState: next }, saveTimerRef, pendingSaveRef);
+    setStats((s) => ({
+      ...s,
+      saves: Math.max(0, (s.saves || 0) + (next ? 1 : -1)),
+    }));
+    scheduleCommit(
+      { type: "save", targetType, targetId, finalState: next },
+      saveTimerRef,
+      pendingSaveRef
+    );
   }
 
-  useEffect(() => {
-    return () => {
-      if (likeTimerRef.current && pendingLikeRef.current) {
-        commitActionNow(pendingLikeRef.current);
-      }
-      if (saveTimerRef.current && pendingSaveRef.current) {
-        commitActionNow(pendingSaveRef.current);
-      }
-    };
-  }, []);
-
+  // Yorumlar için giriş yapma kontrolü kaldırıldı.
   function openComments() {
     setCommentModalOpen(true);
   }
@@ -163,29 +188,30 @@ export default function ActionControls({
     setShareModalOpen(true);
   }
 
-  const showToast = (message, type = "success") => {
-    if (!shareBtnRef.current) return;
-    const rect = shareBtnRef.current.getBoundingClientRect();
+  useEffect(() => {
+    return () => {
+      if (likeTimerRef.current && pendingLikeRef.current)
+        commitActionNow(pendingLikeRef.current);
+      if (saveTimerRef.current && pendingSaveRef.current)
+        commitActionNow(pendingSaveRef.current);
+    };
+  }, []);
 
-    setToast({
-      message,
-      type,
-      style: {
-        top: rect.top + window.scrollY - 36 + "px",
-        left: rect.left + rect.width / 2 + "px",
-        transform: "translateX(-50%)",
-        whiteSpace: "nowrap",
-      },
-    });
+  const layout =
+    forceLayout || (targetType === "feed" ? "vertical" : "horizontal");
 
-    setTimeout(() => setToast(null), 2000);
-  };
-
-  // ✅ Dikey görünüm
   const renderVerticalControls = () => (
     <div className={`${styles.actionControls} ${styles.verticalFeedControls}`}>
-      <div className={styles.iconWrapper} onClick={toggleLike} data-active={liked}>
-        {liked ? <FaHeart className={`${styles.iconItem} ${styles.likedIcon}`} /> : <FaRegHeart className={styles.iconItem} />}
+      <div
+        className={styles.iconWrapper}
+        onClick={toggleLike}
+        data-active={liked}
+      >
+        {liked ? (
+          <FaHeart className={`${styles.iconItem} ${styles.likedIcon}`} />
+        ) : (
+          <FaRegHeart className={styles.iconItem} />
+        )}
         <span className={styles.iconCount}>{stats.likes}</span>
       </div>
 
@@ -196,22 +222,37 @@ export default function ActionControls({
         </div>
       )}
 
-      <div className={styles.iconWrapper} ref={shareBtnRef} onClick={handleShare}>
+      <div
+        className={styles.iconWrapper}
+        ref={shareBtnRef}
+        onClick={handleShare}
+      >
         <FaShare className={styles.iconItem} />
         <span className={styles.iconCount}>{stats.shares}</span>
       </div>
 
-      <div className={styles.iconWrapper} onClick={toggleSave} data-active={saved}>
-        {saved ? <FaBookmark className={`${styles.iconItem} ${styles.savedIcon}`} /> : <FaRegBookmark className={styles.iconItem} />}
+      <div
+        className={styles.iconWrapper}
+        onClick={toggleSave}
+        data-active={saved}
+      >
+        {saved ? (
+          <FaBookmark className={`${styles.iconItem} ${styles.savedIcon}`} />
+        ) : (
+          <FaRegBookmark className={styles.iconItem} />
+        )}
         <span className={styles.iconCount}>{stats.saves || 0}</span>
       </div>
     </div>
   );
 
-  // ✅ Yatay görünüm
   const renderHorizontalControls = () => (
     <div className={styles.actionControls}>
-      <button onClick={toggleLike} data-active={liked} className={styles.btnLike}>
+      <button
+        onClick={toggleLike}
+        data-active={liked}
+        className={styles.btnLike}
+      >
         {liked ? <FaHeart size={18} /> : <FaRegHeart size={18} />}
         <span>{stats.likes}</span>
       </button>
@@ -223,30 +264,40 @@ export default function ActionControls({
         </button>
       )}
 
-      <button ref={shareBtnRef} onClick={handleShare} className={styles.btnShare}>
+      <button
+        ref={shareBtnRef}
+        onClick={handleShare}
+        className={styles.btnShare}
+      >
         <FaShare size={18} />
         <span>{stats.shares}</span>
       </button>
 
-      <button onClick={toggleSave} data-active={saved} className={styles.btnSave}>
+      <button
+        onClick={toggleSave}
+        data-active={saved}
+        className={styles.btnSave}
+      >
         {saved ? <FaBookmark size={18} /> : <FaRegBookmark size={18} />}
+        <span>{stats.saves || 0}</span>
       </button>
     </div>
   );
 
-  // Ana render
-  const layout = forceLayout || (targetType === "feed" ? "vertical" : "horizontal");
-
   return (
     <>
-      {layout === "vertical" ? renderVerticalControls() : renderHorizontalControls()}
+      {layout === "vertical"
+        ? renderVerticalControls()
+        : renderHorizontalControls()}
 
       {commentModalOpen && (
         <CommentModal
           targetType={targetType}
           targetId={targetId}
           onClose={() => setCommentModalOpen(false)}
-          onCountsChange={(delta) => setStats((s) => ({ ...s, comments: s.comments + delta }))}
+          onCountsChange={(delta) =>
+            setStats((s) => ({ ...s, comments: s.comments + delta }))
+          }
           getAuthToken={getAuthToken}
           postOwnerUid={postOwnerUid}
         />
@@ -261,24 +312,6 @@ export default function ActionControls({
           onSuccess={handleShareSuccess}
         />
       )}
-
-      {toast &&
-        ReactDOM.createPortal(
-          <div
-            className={`${styles.toast} ${styles[toast.type]}`}
-            style={{
-              position: "absolute",
-              top: shareBtnRef.current.offsetTop - 36 + "px",
-              left: shareBtnRef.current.offsetLeft + shareBtnRef.current.offsetWidth / 2 + "px",
-              transform: "translateX(-50%)",
-              whiteSpace: "nowrap",
-              zIndex: 10,
-            }}
-          >
-            {toast.message}
-          </div>,
-          document.body
-        )}
     </>
   );
 }

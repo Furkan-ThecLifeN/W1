@@ -4,6 +4,7 @@ import styles from "./ReportModal.module.css";
 import { createReportRemote, defaultGetAuthToken } from "../actions/api";
 import { FiX, FiSend } from "react-icons/fi";
 import { FaThumbsUp } from "react-icons/fa";
+import { useAuth } from "../../context/AuthProvider"; // 1. ADIM: useAuth'u import et
 
 const ReportModal = ({ postId, reportedUserId, onClose }) => {
   const [reason, setReason] = useState("");
@@ -12,11 +13,21 @@ const ReportModal = ({ postId, reportedUserId, onClose }) => {
   const [success, setSuccess] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const modalRef = useRef(null);
+  
+  const { currentUser } = useAuth(); // 2. ADIM: currentUser'ı al
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // --- 3. ADIM: GİRİŞ KONTROLÜ EKLENDİ ---
+    if (!currentUser) {
+      setError("Rapor göndermek için giriş yapmalısınız.");
+      return;
+    }
+    // --- DEĞİŞİKLİK SONU ---
+
     if (!reason.trim()) {
-      setError("Please do not leave the report text empty.");
+      setError("Lütfen rapor metnini boş bırakmayın."); // Hata mesajını Türkçeleştirdim
       return;
     }
 
@@ -29,7 +40,7 @@ const ReportModal = ({ postId, reportedUserId, onClose }) => {
       setSuccess(true);
     } catch (e) {
       console.error("Report sending error:", e);
-      setError("An error occurred while submitting your report. Please try again.");
+      setError("Raporunuz gönderilirken bir hata oluştu. Lütfen tekrar deneyin."); // Hata mesajını Türkçeleştirdim
     } finally {
       setLoading(false);
     }
@@ -68,17 +79,17 @@ const ReportModal = ({ postId, reportedUserId, onClose }) => {
           <div className={styles.successContent}>
             <h3>
               <FaThumbsUp />
-              Report Submitted
+              Rapor Gönderildi
             </h3>
-            <p>Your report has been successfully sent. Thank you for your feedback.</p>
+            <p>Raporunuz başarıyla gönderildi. Geri bildiriminiz için teşekkür ederiz.</p>
             <button onClick={onClose} className={styles.closeButton}>
-              Close
+              Kapat
             </button>
           </div>
         ) : (
           <>
             <div className={styles.header}>
-              <h3>Report</h3>
+              <h3>Rapor Et</h3>
               <button onClick={handleClose} className={styles.closeIcon}>
                 <FiX />
               </button>
@@ -92,7 +103,7 @@ const ReportModal = ({ postId, reportedUserId, onClose }) => {
                   setReason(e.target.value);
                   if (e.target.value.trim()) setError(null);
                 }}
-                placeholder="Please explain the reason for your report (max. 500 characters)."
+                placeholder="Lütfen rapor etme nedeninizi açıklayın (maks. 500 karakter)."
                 className={styles.textarea}
               />
               {error && <p className={styles.errorText}>{error}</p>}
@@ -103,7 +114,7 @@ const ReportModal = ({ postId, reportedUserId, onClose }) => {
                   className={`${styles.button} ${styles.cancelButton}`}
                   disabled={loading}
                 >
-                  Cancel
+                  İptal
                 </button>
                 <button
                   type="submit"
@@ -111,11 +122,11 @@ const ReportModal = ({ postId, reportedUserId, onClose }) => {
                   disabled={loading}
                 >
                   {loading ? (
-                    <span>Submitting...</span>
+                    <span>Gönderiliyor...</span>
                   ) : (
                     <>
                       <FiSend />
-                      <span>Submit</span>
+                      <span>Gönder</span>
                     </>
                   )}
                 </button>

@@ -1,5 +1,14 @@
 import React, { useEffect, useCallback, useRef } from "react";
-import { collection, getDocs, query, orderBy, limit, startAfter } from "firebase/firestore";
+// 1. ADIM: Firestore'dan 'where' fonksiyonunu import ediyoruz
+import {
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+  startAfter,
+  where, // 'where' eklendi
+} from "firebase/firestore";
 import { db } from "../../config/firebase-client";
 import { useHomeStore } from "../../Store/useHomeStore";
 
@@ -14,6 +23,7 @@ import TweetCard from "../../components/TweetCard/TweetCard";
 import QuoteCard from "../../components/QuoteCard/QuoteCard";
 import MemePostCard from "../../components/MemePostCard/MemePostCard";
 import PhotoCard from "../../components/AIPhotoCard/AIPhotoCard";
+import Footer from "../../components/Footer/Footer";
 
 import allVideos from "../../data/explore.json";
 import allTweets from "../../data/tweets.json";
@@ -36,13 +46,15 @@ const Home = () => {
     feelingsExhausted,
     jsonExhausted,
     initialLoadDone,
+    // 2. ADIM: Store'dan kullanıcı önbelleğini alıyoruz (yoksa boş obje varsay)
+    usersCache = {}, // usersCache eklendi (Zustand store'unuzda olmasa bile varsayılan olarak)
     setState,
   } = useHomeStore();
 
   const lastPostDocRef = useRef(null);
   const lastFeelingDocRef = useRef(null);
 
-  // =============== Yardımcı Fonksiyonlar ===============
+  // =============== Yardımcı Fonksiyonlar (Değişiklik yok) ===============
   const getSeenIds = (key) => {
     const stored = JSON.parse(localStorage.getItem(key) || "{}");
     const now = Date.now();
@@ -68,90 +80,165 @@ const Home = () => {
     return array;
   };
 
-  // =============== Firebase Yükleme (GÜNCELLENDİ) ===============
+  // =============== Firebase Yükleme (BÜYÜK GÜNCELLEME) ===============
   const loadNextFirebaseBatch = useCallback(async () => {
     if (loading || (postsExhausted && feelingsExhausted)) return;
     setState({ loading: true });
 
     try {
-      /**
-       * YENİ fetchFS FONKSİYONU:
-       * Bu fonksiyon artık "görülmemiş" doküman bulana kadar veya
-       * koleksiyon gerçekten bitene kadar sorgu yapmaya devam eder.
-       */
-      const fetchFS = async (ref, lastDocRef, exhausted, exhaustedKey, seenKey, type) => {
-        if (exhausted) return []; // Zaten tükenmişse, hiç sorgu atma.
-
+      // fetchFS yardımcı fonksiyonu (Değişiklik yok)
+      const fetchFS = async (
+        ref,
+        lastDocRef,
+        exhausted,
+        exhaustedKey,
+        seenKey,
+        type
+      ) => {
+        if (exhausted) return [];
         const seenIds = getSeenIds(seenKey);
         let unseenDocs = [];
         let continueFetching = true;
         let localExhausted = false;
 
-        // Görülmemiş doküman bulana VEYA koleksiyon bitene kadar döngüye gir
         while (unseenDocs.length === 0 && continueFetching && !localExhausted) {
           let q;
           if (lastDocRef.current) {
-            q = query(ref, orderBy("createdAt", "desc"), startAfter(lastDocRef.current), limit(FIREBASE_BATCH_SIZE));
+            q = query(
+              ref,
+              orderBy("createdAt", "desc"),
+              startAfter(lastDocRef.current),
+              limit(FIREBASE_BATCH_SIZE)
+            );
           } else {
-            q = query(ref, orderBy("createdAt", "desc"), limit(FIREBASE_BATCH_SIZE));
+            q = query(
+              ref,
+              orderBy("createdAt", "desc"),
+              limit(FIREBASE_BATCH_SIZE)
+            );
           }
-
           const snap = await getDocs(q);
 
           if (snap.empty || snap.docs.length < FIREBASE_BATCH_SIZE) {
-            // Koleksiyonun gerçekten sonuna geldik.
             localExhausted = true;
             continueFetching = false;
           }
 
           if (!snap.empty) {
-            // Son dokümanı referans olarak al
             lastDocRef.current = snap.docs[snap.docs.length - 1];
-
-            // Gelen veriyi filtrele
             const filteredDocs = snap.docs
-              .map(doc => ({ id: doc.id, ...doc.data(), type, source: "firebase" }))
-              .filter(doc => !seenIds.has(doc.id));
+              .map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+                type,
+                source: "firebase",
+              }))
+              .filter((doc) => !seenIds.has(doc.id));
 
             if (filteredDocs.length > 0) {
-              // Görülmemiş doküman bulduk!
               unseenDocs = filteredDocs;
-              continueFetching = false; // Döngüden çık
+              continueFetching = false;
             }
-            // EĞER filteredDocs.length === 0 ise (yani 5 doküman geldi ama hepsi görülmüştü),
-            // döngü devam edecek ve bir sonraki 5'li grubu çekecek.
           }
         }
-
-        // Döngü bittiğinde, eğer koleksiyonun sonuna geldiysek,
-        // global state'i (Zustand) güncelle.
         if (localExhausted) {
           setState({ [exhaustedKey]: true });
         }
-
-        // Sadece bulunan görülmemiş dokümanları işaretle ve döndür
-        unseenDocs.forEach(doc => markAsSeen(seenKey, doc.id));
+        unseenDocs.forEach((doc) => markAsSeen(seenKey, doc.id));
         return unseenDocs;
       };
 
-      // Bu kısım aynı kaldı, ancak artık akıllı fetchFS'i çağırıyor.
-      const posts = await fetchFS(collection(db, "globalPosts"), lastPostDocRef, postsExhausted, "postsExhausted", "seenFirebasePosts", "post");
-      const feelings = await fetchFS(collection(db, "globalFeelings"), lastFeelingDocRef, feelingsExhausted, "feelingsExhausted", "seenFirebaseFeelings", "feeling");
+      // 1. Önce gönderileri ve hisleri (eski halleriyle) çek
+      const posts = await fetchFS(
+        collection(db, "globalPosts"),
+        lastPostDocRef,
+        postsExhausted,
+        "postsExhausted",
+        "seenFirebasePosts",
+        "post"
+      );
+      const feelings = await fetchFS(
+        collection(db, "globalFeelings"),
+        lastFeelingDocRef,
+        feelingsExhausted,
+        "feelingsExhausted",
+        "seenFirebaseFeelings",
+        "feeling"
+      );
 
-      const newBatch = shuffleArray([...posts, ...feelings]);
+      const preliminaryBatch = shuffleArray([...posts, ...feelings]);
+
+      // 2. --- YENİ KULLANICI VERİSİ ÇEKME VE BİRLEŞTİRME ---
+      let newBatchWithUsers = [];
+      
+      if (preliminaryBatch.length > 0) {
+        const localUsersCache = { ...usersCache }; // Mevcut önbelleği kopyala
+        const uidsToFetch = new Set();
+
+        // Önbellekte olmayan UID'leri bul
+        for (const item of preliminaryBatch) {
+          if (item.uid && !localUsersCache[item.uid]) {
+            uidsToFetch.add(item.uid);
+          }
+        }
+
+        // Eksik UID'ler için Firestore'dan 'users' koleksiyonunu sorgula
+        if (uidsToFetch.size > 0) {
+          const uidsArray = Array.from(uidsToFetch);
+          
+          // Firestore 'in' sorgusu 30 ID ile sınırlıdır, bu yüzden parçalara bölüyoruz
+          for (let i = 0; i < uidsArray.length; i += 30) {
+            const chunk = uidsArray.slice(i, i + 30);
+            
+            // Schema'nıza göre 'uid' alanını sorguluyoruz
+            const usersQuery = query(collection(db, "users"), where("uid", "in", chunk)); 
+            const usersSnap = await getDocs(usersQuery);
+
+            usersSnap.forEach(userDoc => {
+              const userData = userDoc.data();
+              // Gelen veriyi UID'sini anahtar olarak kullanarak önbelleğe ekle
+              if(userData.uid) {
+                localUsersCache[userData.uid] = userData;
+              }
+            });
+          }
+          // Global (Zustand) store'daki önbelleği güncelle
+          setState({ usersCache: localUsersCache });
+        }
+
+        // 3. Gönderi verisi ile GÜNCEL kullanıcı verisini birleştir
+        newBatchWithUsers = preliminaryBatch.map(item => {
+          const freshUserData = localUsersCache[item.uid];
+          if (freshUserData) {
+            // Eski 'displayName' ve 'photoURL' yerine yenilerini yaz
+            return {
+              ...item,
+              displayName: freshUserData.displayName, 
+              photoURL: freshUserData.photoURL,
+              username: freshUserData.username, // Profil linkleri için username'i de alalım
+            };
+          }
+          return item; // Eşleşen kullanıcı bulunamazsa orijinal veriyi döndür
+        });
+      }
+      // --- YENİ KULLANICI VERİSİ ÇEKME SONU ---
+
+
       setState({
-        firebaseFeed: [...firebaseFeed, ...newBatch],
+        // 4. Güncellenmiş veriyi feed'e ekle
+        firebaseFeed: [...firebaseFeed, ...newBatchWithUsers],
         initialLoadDone: { ...initialLoadDone, firebase: true },
       });
+
     } catch (err) {
       console.error("Firebase batch yükleme hatası:", err);
     } finally {
       setState({ loading: false });
     }
-  }, [loading, postsExhausted, feelingsExhausted, firebaseFeed, initialLoadDone, setState]);
+    // 5. ADIM: 'usersCache'i useCallback dependency array'ine ekle
+  }, [loading, postsExhausted, feelingsExhausted, firebaseFeed, initialLoadDone, setState, usersCache]);
 
-
-  // =============== JSON Yükleme (DOKUNULMADI) ===============
+  // =============== JSON Yükleme (Değişiklik yok) ===============
   const loadNextJsonBatch = useCallback(async () => {
     if (loading || jsonExhausted) return;
     setState({ loading: true });
@@ -196,7 +283,7 @@ const Home = () => {
     });
   }, [loading, jsonExhausted, jsonFeed, initialLoadDone, setState]);
 
-  // =============== useEffect’ler ===============
+  // =============== useEffect’ler (Değişiklik yok) ===============
   useEffect(() => {
     if (!initialLoadDone.json) loadNextJsonBatch();
   }, [loadNextJsonBatch, initialLoadDone.json]);
@@ -207,27 +294,40 @@ const Home = () => {
     }
   }, [activeView, initialLoadDone.firebase, loadNextFirebaseBatch]);
 
-  // =============== Görünüm ===============
+  // =============== Görünüm (Değişiklik yok) ===============
   const currentFeed = activeView === "firebase" ? firebaseFeed : jsonFeed;
-  const isExhausted = activeView === "firebase" ? (postsExhausted && feelingsExhausted) : jsonExhausted;
-  const loadMore = activeView === "firebase" ? loadNextFirebaseBatch : loadNextJsonBatch;
+  const isExhausted =
+    activeView === "firebase"
+      ? postsExhausted && feelingsExhausted
+      : jsonExhausted;
+  const loadMore =
+    activeView === "firebase" ? loadNextFirebaseBatch : loadNextJsonBatch;
 
   const renderItem = (item) => {
     const uniqueKey = `${item.source}-${item.type}-${item.id}`;
-    if (activeView === "json" && item.type === "photo") return <PhotoCard key={uniqueKey} photo={item} />;
+    if (activeView === "json" && item.type === "photo")
+      return <PhotoCard key={uniqueKey} photo={item} />;
     switch (item.type) {
-      case "video": return <VideoPostCard key={uniqueKey} data={item} />;
-      case "quote": return <QuoteCard key={uniqueKey} data={item} />;
-      case "post": return <PostCard key={uniqueKey} data={item} />;
-      case "feeling": return <TweetCard key={uniqueKey} data={item} />;
-      case "image": return <MemePostCard key={uniqueKey} meme={item} />;
-      default: return null;
+      case "video":
+        return <VideoPostCard key={uniqueKey} data={item} />;
+      case "quote":
+        return <QuoteCard key={uniqueKey} data={item} />;
+      case "post":
+        // PostCard artık güncel {displayName, photoURL, username} alacak
+        return <PostCard key={uniqueKey} data={item} />;
+      case "feeling":
+         // TweetCard artık güncel {displayName, photoURL, username} alacak
+        return <TweetCard key={uniqueKey} data={item} />;
+      case "image":
+        return <MemePostCard key={uniqueKey} meme={item} />;
+      default:
+        return null;
     }
   };
 
   const showLoadingOverlay = loading && currentFeed.length === 0;
 
-  // =============== Render ===============
+  // =============== Render (Değişiklik yok) ===============
   return (
     <div className={styles.home}>
       {showLoadingOverlay && <LoadingOverlay />}
@@ -236,15 +336,23 @@ const Home = () => {
         <header className={styles.header}>
           <div className={styles.topCenterLogo}>W1</div>
           <div className={styles.feedSwitchContainer}>
-            <div className={`${styles.switchSlider} ${activeView === "firebase" ? styles.sliderRight : ""}`}></div>
+            <div
+              className={`${styles.switchSlider} ${
+                activeView === "firebase" ? styles.sliderRight : ""
+              }`}
+            ></div>
             <button
-              className={`${styles.switchButton} ${activeView === "json" ? styles.active : ""}`}
+              className={`${styles.switchButton} ${
+                activeView === "json" ? styles.active : ""
+              }`}
               onClick={() => setState({ activeView: "json" })}
             >
               Eğlence
             </button>
             <button
-              className={`${styles.switchButton} ${activeView === "firebase" ? styles.active : ""}`}
+              className={`${styles.switchButton} ${
+                activeView === "firebase" ? styles.active : ""
+              }`}
               onClick={() => setState({ activeView: "firebase" })}
             >
               Keşfet
@@ -252,20 +360,27 @@ const Home = () => {
           </div>
         </header>
 
-        <section className={styles.feed}>{currentFeed.map(item => renderItem(item))}</section>
+        <section className={styles.feed}>
+          {currentFeed.map((item) => renderItem(item))}
+        </section>
 
-        {/* Footer'da değişiklik yok, çünkü render mantığı zaten doğruydu.
-            Sorun, 'isExhausted' state'inin yanlış ayarlanmasındaydı.
-            Yeni 'loadNextFirebaseBatch' fonksiyonu bunu düzeltti.
-        */}
         <footer className={styles.feedFooter}>
           {!loading && !isExhausted && currentFeed.length > 0 && (
             <button onClick={loadMore} className={styles.loadMoreButton}>
               Daha Fazla Göster
             </button>
           )}
-          {isExhausted && <p className={styles.exhaustedMessage}>Başka gösterilecek gönderi yok.</p>}
-          {loading && currentFeed.length > 0 && <div className={styles.loadingSpinner}></div>}
+          {isExhausted && (
+            <p className={styles.exhaustedMessage}>
+              Başka gösterilecek gönderi yok.
+            </p>
+          )}
+          {loading && currentFeed.length > 0 && (
+            <div className={styles.loadingSpinner}></div>
+          )}
+          <div className={styles.footerMain}>
+            <Footer />
+          </div>
         </footer>
       </main>
       <RightSidebar />

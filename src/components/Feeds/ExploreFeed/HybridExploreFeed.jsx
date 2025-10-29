@@ -1,21 +1,27 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { db } from "../../../config/firebase-client";
-import { collection, query, orderBy, limit, getDocs, startAfter } from "firebase/firestore";
+import {
+  collection,
+  query,
+  orderBy,
+  limit,
+  getDocs,
+  startAfter,
+} from "firebase/firestore";
 import DiscoverVideoCard from "../DiscoverVideoCard/DiscoverVideoCard";
 import DataDiscover from "../../data-discover/DataDiscover";
-import allVideos from '../../../data/explore.json';
+import allVideos from "../../../data/explore.json";
 import styles from "./HybridExploreFeed.module.css";
 import { FiArrowDown, FiArrowUp } from "react-icons/fi";
 import { useDiscoverStore } from "../../../Store/useDiscoverStore";
+import Footer from "../../../components/Footer/Footer"; // ✅ Footer import edildi
 
-// ✅ Sabitler
 const EXPIRATION_DURATION = 14 * 24 * 60 * 60 * 1000;
 const FIREBASE_SEEN_KEY = "seenPostIds_fb";
 const JSON_SEEN_KEY = "seenPostIds_json";
 const FIREBASE_BATCH_SIZE = 5;
 const MIX_RATIO = { json: 5, firebase: 1 };
 
-// ✅ LocalStorage yardımcıları
 const getAndCleanSeenIds = (storageKey, sourceList = null) => {
   try {
     const stored = localStorage.getItem(storageKey);
@@ -23,7 +29,9 @@ const getAndCleanSeenIds = (storageKey, sourceList = null) => {
     let seenPosts = JSON.parse(stored);
     const now = Date.now();
     const freshPosts = {};
-    const validIds = sourceList ? new Set(sourceList.map(item => String(item.id))) : null;
+    const validIds = sourceList
+      ? new Set(sourceList.map((item) => String(item.id)))
+      : null;
     for (const id in seenPosts) {
       const timestamp = seenPosts[id];
       const isFresh = now - timestamp < EXPIRATION_DURATION;
@@ -50,14 +58,16 @@ const markItemAsSeen = (storageKey, itemId) => {
 };
 
 const getRandomUnseenJsonVideo = (videoList, allSeenIds) => {
-  const unseenVideos = videoList.filter(v => !allSeenIds.has(String(v.id)));
+  const unseenVideos = videoList.filter((v) => !allSeenIds.has(String(v.id)));
   if (unseenVideos.length === 0) return null;
   const randomIndex = Math.floor(Math.random() * unseenVideos.length);
-  return { ...unseenVideos[randomIndex], id: String(unseenVideos[randomIndex].id), source: 'json' };
+  return {
+    ...unseenVideos[randomIndex],
+    id: String(unseenVideos[randomIndex].id),
+    source: "json",
+  };
 };
 
-// ==========================================================
-// REACT BİLEŞENİ (Zustand ile)
 export default function HybridExploreFeed() {
   const { exploreFeed, currentIndex, loading, setState } = useDiscoverStore();
 
@@ -67,18 +77,28 @@ export default function HybridExploreFeed() {
   const [jsonExhausted, setJsonExhausted] = useState(false);
 
   const jsonVideoList = useMemo(() => allVideos, []);
+  const sessionSeenIds = useMemo(
+    () => new Set(exploreFeed.map((item) => String(item.id))),
+    [exploreFeed]
+  );
 
-  const sessionSeenIds = useMemo(() => new Set(exploreFeed.map(item => String(item.id))), [exploreFeed]);
-
-  // ✅ Firebase ve JSON içerik çekme fonksiyonları
   const getNextFirebaseItem = useCallback(async () => {
     if (firebaseExhausted || lastVisible === undefined) return null;
     try {
       const localSeenIds = getAndCleanSeenIds(FIREBASE_SEEN_KEY);
       const feedsCollection = collection(db, "globalFeeds");
       const q = lastVisible
-        ? query(feedsCollection, orderBy("createdAt", "desc"), startAfter(lastVisible), limit(FIREBASE_BATCH_SIZE))
-        : query(feedsCollection, orderBy("createdAt", "desc"), limit(FIREBASE_BATCH_SIZE));
+        ? query(
+            feedsCollection,
+            orderBy("createdAt", "desc"),
+            startAfter(lastVisible),
+            limit(FIREBASE_BATCH_SIZE)
+          )
+        : query(
+            feedsCollection,
+            orderBy("createdAt", "desc"),
+            limit(FIREBASE_BATCH_SIZE)
+          );
 
       const snapshot = await getDocs(q);
       if (snapshot.empty) {
@@ -90,8 +110,14 @@ export default function HybridExploreFeed() {
       const currentLastVisible = snapshot.docs[snapshot.docs.length - 1];
       setLastVisible(currentLastVisible);
 
-      const fetchedData = snapshot.docs.map(doc => ({ id: String(doc.id), source: "firebase", ...doc.data() }));
-      const newItems = fetchedData.filter(item => !localSeenIds.has(item.id) && !sessionSeenIds.has(item.id));
+      const fetchedData = snapshot.docs.map((doc) => ({
+        id: String(doc.id),
+        source: "firebase",
+        ...doc.data(),
+      }));
+      const newItems = fetchedData.filter(
+        (item) => !localSeenIds.has(item.id) && !sessionSeenIds.has(item.id)
+      );
       return newItems.length > 0 ? newItems[0] : null;
     } catch (err) {
       console.error("Firebase veri çekme hatası:", err);
@@ -117,7 +143,8 @@ export default function HybridExploreFeed() {
     const isJsonTurn = ratioPosition < MIX_RATIO.json;
     if (isJsonTurn) {
       nextItem = getNextJsonItem();
-      if (!nextItem && !firebaseExhausted) nextItem = await getNextFirebaseItem();
+      if (!nextItem && !firebaseExhausted)
+        nextItem = await getNextFirebaseItem();
     } else {
       nextItem = await getNextFirebaseItem();
       if (!nextItem && !jsonExhausted) nextItem = getNextJsonItem();
@@ -127,10 +154,14 @@ export default function HybridExploreFeed() {
     if (!nextItem && !jsonExhausted) nextItem = getNextJsonItem();
 
     return nextItem;
-  }, [exploreFeed.length, firebaseExhausted, jsonExhausted, getNextFirebaseItem, getNextJsonItem]);
+  }, [
+    exploreFeed.length,
+    firebaseExhausted,
+    jsonExhausted,
+    getNextFirebaseItem,
+    getNextJsonItem,
+  ]);
 
-  // ==========================================================
-  // INITIAL LOAD
   useEffect(() => {
     const initialLoad = async () => {
       if (exploreFeed.length > 0 || isFetching) return;
@@ -139,7 +170,10 @@ export default function HybridExploreFeed() {
       const initialItem = await getNextHybridItem();
       if (initialItem) {
         setState({ exploreFeed: [initialItem], currentIndex: 0 });
-        markItemAsSeen(initialItem.source === "firebase" ? FIREBASE_SEEN_KEY : JSON_SEEN_KEY, initialItem.id);
+        markItemAsSeen(
+          initialItem.source === "firebase" ? FIREBASE_SEEN_KEY : JSON_SEEN_KEY,
+          initialItem.id
+        );
       }
       setState({ loading: false });
       setIsFetching(false);
@@ -147,8 +181,6 @@ export default function HybridExploreFeed() {
     initialLoad();
   }, [exploreFeed.length, isFetching, getNextHybridItem, setState]);
 
-  // ==========================================================
-  // NAVIGATION HANDLERS
   const handleNext = useCallback(async () => {
     if (isFetching) return;
 
@@ -168,9 +200,20 @@ export default function HybridExploreFeed() {
         exploreFeed: [...exploreFeed, nextItem],
         currentIndex: exploreFeed.length,
       });
-      markItemAsSeen(nextItem.source === "firebase" ? FIREBASE_SEEN_KEY : JSON_SEEN_KEY, nextItem.id);
+      markItemAsSeen(
+        nextItem.source === "firebase" ? FIREBASE_SEEN_KEY : JSON_SEEN_KEY,
+        nextItem.id
+      );
     }
-  }, [currentIndex, exploreFeed, firebaseExhausted, jsonExhausted, isFetching, getNextHybridItem, setState]);
+  }, [
+    currentIndex,
+    exploreFeed,
+    firebaseExhausted,
+    jsonExhausted,
+    isFetching,
+    getNextHybridItem,
+    setState,
+  ]);
 
   const handlePrev = useCallback(() => {
     if (currentIndex > 0) setState({ currentIndex: currentIndex - 1 });
@@ -178,15 +221,30 @@ export default function HybridExploreFeed() {
 
   const currentItem = exploreFeed[currentIndex] || null;
   const isFirstItem = currentIndex === 0;
-  const isLastItemAndExhausted = currentIndex === exploreFeed.length - 1 && firebaseExhausted && jsonExhausted;
+  const isLastItemAndExhausted =
+    currentIndex === exploreFeed.length - 1 &&
+    firebaseExhausted &&
+    jsonExhausted;
   const isNextLoading = currentIndex === exploreFeed.length - 1 && isFetching;
 
   if (loading)
-    return <div className={styles.feedWrapper}><p>Karma İçerikler Yükleniyor...</p></div>;
-
-  if (!currentItem && (firebaseExhausted && jsonExhausted))
     return (
-      <div className={styles.feedWrapper} style={{justifyContent: 'center', alignItems: 'center', height: '100vh', padding: '20px'}}>
+      <div className={styles.feedWrapper}>
+        <p>Karma İçerikler Yükleniyor...</p>
+      </div>
+    );
+
+  if (!currentItem && firebaseExhausted && jsonExhausted)
+    return (
+      <div
+        className={styles.feedWrapper}
+        style={{
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          padding: "20px",
+        }}
+      >
         <p>Tüm içerikleri gördünüz.</p>
         <button
           onClick={() => {
@@ -197,10 +255,17 @@ export default function HybridExploreFeed() {
         >
           Sıfırla ve Yeniden Başlat
         </button>
+        <Footer /> {/* ✅ Footer burada da görünecek */}
       </div>
     );
 
-  if (!currentItem) return <div className={styles.feedWrapper}><p>İçerik yüklenemedi.</p></div>;
+  if (!currentItem)
+    return (
+      <div className={styles.feedWrapper}>
+        <p>İçerik yüklenemedi.</p>
+        <Footer /> {/* ✅ Footer burada da görünecek */}
+      </div>
+    );
 
   const renderCard = (Component, data) => (
     <Component
@@ -219,17 +284,32 @@ export default function HybridExploreFeed() {
 
   return (
     <div className={styles.feedWrapper}>
-      {currentItem.source === "firebase" && renderCard(DiscoverVideoCard, currentItem)}
+      {currentItem.source === "firebase" &&
+        renderCard(DiscoverVideoCard, currentItem)}
       {currentItem.source === "json" && renderCard(DataDiscover, currentItem)}
-
       <div className={styles.navButtons}>
-        <button onClick={handlePrev} disabled={isFirstItem} className={styles.navButton}>
+        <button
+          onClick={handlePrev}
+          disabled={isFirstItem}
+          className={styles.navButton}
+        >
           <FiArrowUp size={32} />
         </button>
-        <button onClick={handleNext} disabled={isLastItemAndExhausted || isNextLoading} className={styles.navButton}>
-          {isNextLoading ? <span style={{ fontSize: '12px' }}>Yükleniyor...</span> : <FiArrowDown size={32} />}
+        <button
+          onClick={handleNext}
+          disabled={isLastItemAndExhausted || isNextLoading}
+          className={styles.navButton}
+        >
+          {isNextLoading ? (
+            <span style={{ fontSize: "12px" }}>Yükleniyor...</span>
+          ) : (
+            <FiArrowDown size={32} />
+          )}
         </button>
       </div>
+      <footer className={styles.footer}>
+        <Footer />
+      </footer>
     </div>
   );
 }

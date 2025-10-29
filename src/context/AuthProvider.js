@@ -20,24 +20,44 @@ export const AuthProvider = ({ children }) => {
       setCurrentUser(user);
       setLoading(false);
 
+      // --- GÜNCELLENMİŞ YÖNLENDİRME ---
+      const currentPath = window.location.pathname;
+
       if (user) {
-        if (window.location.pathname === '/auth') {
+        // Kullanıcı giriş yapmışsa ve auth/login sayfasındaysa, /home'a yönlendir
+        if (currentPath === '/auth' || currentPath === '/login') {
           navigate('/home', { replace: true });
         }
       } else {
-        if (
-          window.location.pathname !== '/auth' &&
-          window.location.pathname !== '/'
-        ) {
+        // Kullanıcı giriş yapmamışsa
+        const publicPaths = [
+          '/',
+          '/auth',
+          '/login', // /login'i public listeye ekle
+          '/home',
+          '/discover',
+          '/data-discover',
+          '/post', // /post/ID şeklinde çalışması için startsWith kullanılmalı
+          '/profile', // /profile/username şeklinde çalışması için
+          '/search'
+        ];
+
+        // Bulunduğu yol izin verilenlerden biri mi?
+        const isPublic = publicPaths.some(path =>
+          currentPath.startsWith(path)
+        );
+
+        if (!isPublic) {
+          // Korumalı bir sayfadaysa /auth'a (veya /login) yönlendir
           navigate('/auth', { replace: true });
         }
       }
+      // --- GÜNCELLEME SONU ---
     });
 
     return unsubscribe;
   }, [navigate]);
 
-  // ✅ Toast mesajı gösterme fonksiyonu - Adı "showToast"
   const showToast = (text, type) => {
     setMessage({ text, type });
     setTimeout(() => {
@@ -49,7 +69,7 @@ export const AuthProvider = ({ children }) => {
     currentUser,
     loading,
     message,
-    showToast, // ✅ Burada doğru isimle ekleniyor
+    showToast,
   };
 
   return (

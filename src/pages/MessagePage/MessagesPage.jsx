@@ -9,51 +9,54 @@ import Sidebar from "../../components/LeftSideBar/Sidebar";
 import MessagesMobile from "../../components/Messages/MessagesMobile/MessagesMobile";
 import BottomNav from "../../components/BottomNav/BottomNav";
 import { useMessagesStore } from "../../Store/useMessagesStore";
-import axios from "axios";
+import PublicAccessWrapper from "../../components/PublicAccessWrapper/PublicAccessWrapper";
 
 const MessagesPage = () => {
   const { selectedUser, conversations, isLoaded, loading, setState } = useMessagesStore();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
-  // ekran boyutunu takip et
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const content = (
+    <>
+      {isMobile ? (
+        <>
+          <MessagesMobile />
+          <BottomNav />
+        </>
+      ) : (
+        <div className={styles.wrapper}>
+          <Sidebar />
+          <div className={styles.page}>
+            <aside className={styles.leftBar}>
+              <MessagesLeftBar onSelectUser={(user) => setState({ selectedUser: user })} />
+            </aside>
 
+            <main className={styles.chat}>
+              {selectedUser ? (
+                <Chat user={selectedUser} onBack={() => setState({ selectedUser: null })} />
+              ) : (
+                <ChatComponent conversations={conversations} />
+              )}
+            </main>
 
-  if (isMobile) {
-    return (
-      <>
-        <MessagesMobile />
-        <BottomNav />
-      </>
-    );
-  }
+            <section className={styles.rightBar}>
+              {selectedUser ? <MessagesRightBar /> : <RightBar />}
+            </section>
+          </div>
+        </div>
+      )}
+    </>
+  );
 
   return (
-    <div className={styles.wrapper}>
-      <Sidebar />
-      <div className={styles.page}>
-        <aside className={styles.leftBar}>
-          <MessagesLeftBar onSelectUser={(user) => setState({ selectedUser: user })} />
-        </aside>
-
-        <main className={styles.chat}>
-          {selectedUser ? (
-            <Chat user={selectedUser} onBack={() => setState({ selectedUser: null })} />
-          ) : (
-            <ChatComponent conversations={conversations} />
-          )}
-        </main>
-
-        <section className={styles.rightBar}>
-          {selectedUser ? <MessagesRightBar /> : <RightBar />}
-        </section>
-      </div>
-    </div>
+    <PublicAccessWrapper loginMessage="Mesajlara erişmek için giriş yapmanız gerekiyor.">
+      {content}
+    </PublicAccessWrapper>
   );
 };
 

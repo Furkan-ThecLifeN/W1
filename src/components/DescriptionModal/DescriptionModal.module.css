@@ -20,7 +20,8 @@
   color: #f0f0f5;
   padding: 30px;
   border-radius: 12px;
-  box-shadow: 0 0 15px rgba(0, 255, 255, 0.5), 0 0 30px rgba(70, 0, 255, 0.3);
+  box-shadow: 0 0 5px rgba(0, 255, 255, 0.5), 0 0 10px rgba(0, 140, 255, 0.3);
+
   position: relative;
   max-width: 600px;
   width: 90%;
@@ -28,7 +29,6 @@
   overflow: hidden; /* modalın dışına taşmayı engelle */
   display: flex;
   flex-direction: column; /* üstte kullanıcı bilgisi, altta açıklama */
-  border: 1px solid #00ffff;
   animation: scaleIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
@@ -48,11 +48,11 @@
   justify-content: center;
   align-items: center;
   position: absolute;
-  top: 15px;
-  right: 15px;
+  top: 5px;
+  right: 5px;
   background: transparent;
   border: none;
-  color: #ff0077;
+  color: #ff0000;
   cursor: pointer;
   padding: 5px;
   border-radius: 50%;

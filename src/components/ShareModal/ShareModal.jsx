@@ -9,10 +9,12 @@ import {
 } from "../actions/api";
 import { FiX, FiLink, FiSend } from "react-icons/fi";
 import { FaTwitter, FaWhatsapp, FaInstagram, FaTiktok } from "react-icons/fa";
+// 1. ADIM: showToast'u import et
+import { useAuth } from "../../context/AuthProvider"; 
 
 export default function ShareModal({
-  targetType, // Güncelleme: postId yerine targetType
-  targetId,   // Güncelleme: postId yerine targetId
+  targetType,
+  targetId,
   onClose,
   onSuccess,
   getAuthToken = defaultGetAuthToken,
@@ -21,6 +23,9 @@ export default function ShareModal({
   const [loading, setLoading] = useState(true);
   const [sendingTo, setSendingTo] = useState(null);
   const [isExiting, setIsExiting] = useState(false);
+  
+  // 2. ADIM: currentUser'a ek olarak showToast'u da al
+  const { currentUser, showToast } = useAuth(); 
 
   const handleClose = () => {
     setIsExiting(true);
@@ -30,6 +35,12 @@ export default function ShareModal({
   useEffect(() => {
     let mounted = true;
     async function load() {
+      if (!currentUser) {
+        setLoading(false);
+        setUsers([]);
+        return;
+      }
+
       setLoading(true);
       try {
         const token = await getAuthToken();
@@ -44,10 +55,10 @@ export default function ShareModal({
     }
     load();
     return () => (mounted = false);
-  }, [getAuthToken]);
+  }, [getAuthToken, currentUser]);
 
   async function handleSendTo(uid) {
-    if (!targetId || !uid || !targetType) {
+    if (!targetId || !uid || !targetType || !currentUser) {
       console.error("Geçersiz targetId, targetType veya uid.");
       return;
     }
@@ -62,9 +73,12 @@ export default function ShareModal({
       console.log("Paylaşım başarılı.");
       handleClose();
       if (onSuccess) onSuccess();
+      // 3. ADIM: Başarı toast'u (opsiyonel, eklendi)
+      showToast("Gönderi başarıyla paylaşıldı!", "success"); 
     } catch (e) {
       console.error("Gönderilemedi:", e);
-      alert(`Gönderme hatası: ${e.message}`);
+      // 4. ADIM: alert yerine showToast
+      showToast(`Gönderme hatası: ${e.message}`, "error"); 
     } finally {
       setSendingTo(null);
     }
@@ -72,6 +86,7 @@ export default function ShareModal({
 
   async function handleExternalShare() {
     try {
+      if (!currentUser) return; 
       const token = await getAuthToken();
       await getShareLinkRemote({ targetType, targetId, token });
     } catch (e) {
@@ -83,11 +98,13 @@ export default function ShareModal({
     try {
       const link = `${window.location.origin}/${targetType}/${targetId}`;
       await navigator.clipboard.writeText(link);
-      alert("Link kopyalandı!");
-      handleExternalShare();
+      // 5. ADIM: alert yerine showToast
+      showToast("Link kopyalandı!", "success"); 
+      handleExternalShare(); 
     } catch (e) {
       console.error("Kopyalanamadı:", e);
-      alert("Kopyalanamadı: " + e.message);
+      // 6. ADIM: alert yerine showToast
+      showToast("Kopyalanamadı: " + e.message, "error"); 
     }
   }
 
@@ -123,8 +140,9 @@ export default function ShareModal({
       icon: <FaInstagram />,
       action: () => {
         handleExternalShare();
-        handleCopyLink();
-        alert("Link kopyalandı, Instagram'da manuel olarak paylaşabilirsiniz.");
+        handleCopyLink(); // handleCopyLink zaten showToast("Link kopyalandı!") gösterecek
+        // 7. ADIM: Bu gereksiz alert'i kaldırıyoruz.
+        // alert("Link kopyalandı, Instagram'da manuel olarak paylaşabilirsiniz.");
       },
     },
     {
@@ -132,8 +150,9 @@ export default function ShareModal({
       icon: <FaTiktok />,
       action: () => {
         handleExternalShare();
-        handleCopyLink();
-        alert("Link kopyalandı, TikTok'ta manuel olarak paylaşabilirsiniz.");
+        handleCopyLink(); // handleCopyLink zaten showToast("Link kopyalandı!") gösterecek
+        // 8. ADIM: Bu gereksiz alert'i kaldırıyoruz.
+        // alert("Link kopyalandı, TikTok'ta manuel olarak paylaşabilirsiniz.");
       },
     },
     { name: "Link Kopyala", icon: <FiLink />, action: handleCopyLink },
@@ -157,34 +176,47 @@ export default function ShareModal({
         <div className={styles.list}>
           {loading ? (
             <p className={styles.message}>Yükleniyor...</p>
-          ) : users.length === 0 ? (
-            <p className={styles.message}>Takip ettiğiniz kimse yok.</p>
-          ) : (
-            users.map((u) => (
-              <div key={u.uid} className={styles.card}>
-                <img
-                  src={u.photoURL || "https://picsum.photos/40"}
-                  alt={u.username}
-                  className={styles.avatar}
-                />
-                <div className={styles.info}>
-                  <div className={styles.displayName}>
-                    {u.displayName || u.username}
+          ) : currentUser ? (
+            // Kullanıcı GİRİŞ YAPMIŞSA
+            users.length === 0 ? (
+              <p className={styles.message}>Takip ettiğiniz kimse yok.</p>
+            ) : (
+              users.map((u) => (
+                <div key={u.uid} className={styles.card}>
+                  <img
+                    src={u.photoURL || "https://picsum.photos/40"}
+                    alt={u.username}
+                    className={styles.avatar}
+                  />
+                  <div className={styles.info}>
+                    <div className={styles.displayName}>
+                      {u.displayName || u.username}
+                    </div>
+                    <div className={styles.username}>@{u.username}</div>
                   </div>
-                  <div className={styles.username}>@{u.username}</div>
+                  <button
+                    disabled={sendingTo === u.uid}
+                    onClick={() => handleSendTo(u.uid)}
+                    className={styles.sendBtn}
+                  >
+                    {sendingTo === u.uid ? "..." : <FiSend />}
+                  </button>
                 </div>
-                <button
-                  disabled={sendingTo === u.uid}
-                  onClick={() => handleSendTo(u.uid)}
-                  className={styles.sendBtn}
-                >
-                  {sendingTo === u.uid ? "..." : <FiSend />}
-                </button>
-              </div>
-            ))
+              ))
+            )
+          ) : (
+            // Kullanıcı GİRİŞ YAPMAMIŞSA
+            <p className={styles.message}>
+              Arkadaşlarınıza göndermek için{" "}
+              <a href="/login" className={styles.loginLink}>
+                giriş yapın
+              </a>
+              .
+            </p>
           )}
         </div>
 
+        {/* Sosyal paylaşım butonları (her zaman görünür) */}
         <div className={styles.socialRow}>
           {socialButtons.map((btn, index) => (
             <button

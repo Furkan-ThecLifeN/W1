@@ -1,14 +1,26 @@
 .profilePage {
   display: flex;
+  justify-content: center;
+  align-items: flex-start;
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
   background-color: var(--color-black);
   overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .profilePage_box {
   flex: 1;
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  flex-direction: column; /* ✅ Footer alta sabitlenecek */
+  justify-content: flex-start;
+  align-items: center;
+  width: calc(100% - 80px);
+  box-sizing: border-box;
+}
+
+.profilePage_box > footer {
+  margin-top: 40px; /* biraz boşluk bırak */
+  width: 100%;
 }
