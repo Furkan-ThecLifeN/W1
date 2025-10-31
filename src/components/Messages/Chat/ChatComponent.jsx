@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import styles from "./ChatComponent.module.css";
 import StoryBar from "../../StoryBar/StoryBar";
+import Footer from "../../Footer/Footer";
 
 const ChatComponent = () => {
   const storyRef = useRef(null);
@@ -27,6 +28,10 @@ const ChatComponent = () => {
         <div className={styles.placeholder}>
           <p>Ready to connect ? Pick a conversation and start engaging.</p>
         </div>
+      </div>
+
+      <div className={styles.footerWrapper}>
+        <Footer />
       </div>
     </div>
   );

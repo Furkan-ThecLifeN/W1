@@ -1,22 +1,37 @@
 .postDetail {
+  min-height: 100vh;
+  display: flex;
   background-color: var(--color-black);
   color: white;
-  height: 100vh;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
-/* Main içerik */
+/* Main içerik ortada */
 .mainContent {
-  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column; /* Footer ve postWrapper alt alta */
+  justify-content: center; /* Gönderiyi ortala */
+  align-items: center;
   margin-left: var(--sidebar-left-width);
   margin-right: var(--sidebar-right-width);
-  height: 100vh;
-  overflow-y: hidden;
   padding: 20px 24px;
+  overflow-y: auto;
+  position: relative;
+}
+/* Gönderi */
+.postWrapper {
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 20px; /* Footer ile arada boşluk */
+}
+
+/* Footer her zaman en altta */
+.footerWrapper {
+  width: 100%;
 }
 
 /* Neon efekti */
@@ -59,16 +74,6 @@
   }
 }
 
-/* Gönderi */
-.postWrapper {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
 /* Hata ve boş container */
 .errorContainer {
   color: #d9534f;
@@ -95,8 +100,6 @@
   .mainContent {
     margin-left: 0;
     margin-right: 0;
-    height: 100vh;
     padding: 10px;
-    overflow-y: auto;
   }
 }

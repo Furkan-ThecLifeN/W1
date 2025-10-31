@@ -16,21 +16,19 @@ import LoadingOverlay from "../../components/LoadingOverlay/LoadingOverlay";
 import Sidebar from "../../components/LeftSideBar/Sidebar";
 import RightSidebar from "../../components/RightSideBar/RightSideBar";
 import BottomNav from "../../components/BottomNav/BottomNav";
+import Footer from "../../components/Footer/Footer";
 import styles from "./PostDetailPage.module.css";
 
 const PostDetailPage = () => {
-  // --- DEĞİŞİKLİK 1: Tüm parametreleri al ---
   const params = useParams();
-  // URL'den gelen ID'yi bul. Adı postId, feelingId, feedId veya sadece id olabilir.
-  const postId = params.postId || params.feelingId || params.feedId || params.id;
-  // --- DEĞİŞİKLİK SONU ---
+  const postId =
+    params.postId || params.feelingId || params.feedId || params.id;
 
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // 'postId' (artık genel ID'miz) geçerli mi diye kontrol et
     if (!postId) {
       setError("Gönderi ID'si URL'de bulunamadı.");
       setLoading(false);
@@ -42,7 +40,7 @@ const PostDetailPage = () => {
         const collections = ["globalPosts", "globalFeeds", "globalFeelings"];
         const results = await Promise.all(
           collections.map(async (col) => {
-            const ref = doc(db, col, postId); // Güncellenmiş postId değişkenini kullan
+            const ref = doc(db, col, postId);
             const snap = await getDoc(ref);
             if (snap.exists()) {
               const data = snap.data();
@@ -58,7 +56,6 @@ const PostDetailPage = () => {
         const foundPost = results.find((r) => r !== null);
         if (!foundPost) throw new Error("Gönderi bulunamadı.");
 
-        // Kullanıcının güncel verisini çekme (Önceki adımdaki gibi)
         if (foundPost.uid) {
           const userQuery = query(
             collection(db, "users"),
@@ -89,17 +86,13 @@ const PostDetailPage = () => {
     };
 
     fetchPost();
-  }, [postId]); // 'postId' artık doğru ID'yi içeriyor
+  }, [postId]);
 
   if (loading) return <LoadingOverlay />;
   if (error) return <div className={styles.errorContainer}>{error}</div>;
 
   const renderPostCard = () => {
     if (!post || !post.type) {
-      console.error(
-        "Render edilecek gönderi veya gönderi tipi bulunamadı:",
-        post
-      );
       return (
         <div className={styles.emptyContainer}>
           Gönderi tipi tanımsız veya gönderi yüklenemedi.
@@ -107,9 +100,7 @@ const PostDetailPage = () => {
       );
     }
 
-    const type = (post.type || "").toLowerCase();
-
-    switch (type) {
+    switch (post.type.toLowerCase()) {
       case "feeling":
         return <TweetCard data={post} />;
       case "post":
@@ -129,9 +120,10 @@ const PostDetailPage = () => {
     <div className={styles.postDetail}>
       <Sidebar />
       <main className={styles.mainContent}>
-        <section className={styles.postWrapper}>
-          {renderPostCard()}
-        </section>
+        <section className={styles.postWrapper}>{renderPostCard()}</section>
+        <div className={styles.footerWrapper}>
+          <Footer />
+        </div>
       </main>
       <RightSidebar />
       <BottomNav />

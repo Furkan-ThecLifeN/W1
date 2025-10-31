@@ -100,7 +100,7 @@
 }
 
 /* Mobil uyum */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .notification_page {
     padding: 16px;
   }
@@ -128,5 +128,10 @@
 
   .time {
     font-size: 11px;
+  }
+
+  .footerWrapper {
+    padding: 10px;
+    margin-bottom: 25px;
   }
 }

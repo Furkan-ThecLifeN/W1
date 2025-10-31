@@ -1,0 +1,172 @@
+.contactContainer {
+  background: linear-gradient(135deg, #04b4ff, #1157c0, #004483);
+  color: #fff;
+  min-height: 100vh;
+  overflow-y: auto;
+  font-family: "Poppins", sans-serif;
+}
+
+.w1Logo {
+  position: absolute;
+  top: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 2px;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+  z-index: 10;
+}
+
+.w1Logo h1 {
+  margin: 0;
+  font-size: 2.5rem;
+  font-family: "Poppins", sans-serif;
+}
+
+.heroSection {
+  text-align: center;
+  padding: 80px 20px 60px;
+}
+
+.heroTitle {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.heroSubtitle {
+  font-size: 1.2rem;
+  color: #ccc;
+  margin-top: 10px;
+}
+
+.scrollSection {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 50px 20px;
+}
+
+.contactCard {
+  display: flex;
+  flex-direction: column;
+  max-width: 900px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 25px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.socialPanel {
+  background: rgba(255, 255, 255, 0.1);
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.socialPanel h2 {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  color: #fff;
+}
+
+.socialIcons {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  font-size: 2rem;
+}
+
+.socialIcons a {
+  color: #fff;
+  transition: transform 0.3s, color 0.3s;
+}
+
+.socialIcons a:hover {
+  transform: scale(1.1);
+}
+
+.formPanel {
+  padding: 40px;
+}
+
+.formPanel h2 {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  color: #fff;
+}
+
+.inputGroup {
+  margin-bottom: 20px;
+}
+
+.inputGroup input,
+.inputGroup textarea {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+  transition: background 0.3s;
+}
+
+.inputGroup input:focus,
+.inputGroup textarea:focus {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.submitBtn {
+  width: 100%;
+  padding: 14px;
+  background: #000000;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.5s ease-in-out;
+}
+
+.submitBtn:hover {
+  background: #ffffff;
+  color: #000000;
+}
+
+.successBox {
+  text-align: center;
+  padding: 40px;
+}
+
+.newMessageBtn {
+  background: #00bcd4;
+  color: #fff;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.newMessageBtn:hover {
+  background: #0097a7;
+}
+
+@media (min-width: 768px) {
+  .contactCard {
+    flex-direction: row;
+  }
+  .socialPanel {
+    width: 40%;
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
+  }
+  .formPanel {
+    width: 60%;
+  }
+}

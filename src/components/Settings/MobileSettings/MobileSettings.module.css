@@ -20,7 +20,7 @@
 }
 
 .searchBar {
-   flex: 1;
+  flex: 1;
   display: flex;
   align-items: center;
   background: #ececec;
@@ -33,7 +33,7 @@
 
 .searchBar:focus-within {
   border-color: var(--color-blue);
-  box-shadow: 0 0 10px rgba(58, 165, 237, 0.3);  
+  box-shadow: 0 0 10px rgba(58, 165, 237, 0.3);
 }
 
 .searchIcon {
@@ -50,8 +50,6 @@
   outline: none;
   font-size: 16px;
 }
-
-
 
 .searchInput::placeholder {
   color: #000000a1;
@@ -168,4 +166,9 @@
 
 .dynamicComponent {
   padding: 10px;
+}
+
+.footerWrapper {
+  padding: 10px;
+  margin-top: 10px;
 }

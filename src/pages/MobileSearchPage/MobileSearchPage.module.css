@@ -138,7 +138,6 @@
   }
 }
 
-
 .topCenterLogo {
   font-size: 24px;
   font-weight: 900;
@@ -150,4 +149,7 @@
   z-index: 2;
 }
 
-
+.footerWrapper {
+  padding: 10px;
+  margin-bottom: 45px;
+}

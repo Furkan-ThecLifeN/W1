@@ -24,3 +24,10 @@
   margin-top: 40px; /* biraz boşluk bırak */
   width: 100%;
 }
+
+@media (max-width: 1024px) {
+  .footerWrapper {
+    padding: 10px;
+    margin-bottom: 45px;
+  }
+}

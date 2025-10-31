@@ -158,3 +158,8 @@
 .storyWrapper {
   display: none;
 }
+
+.footerWrapper {
+    padding: 10px;
+    margin-bottom: 45px;
+  }

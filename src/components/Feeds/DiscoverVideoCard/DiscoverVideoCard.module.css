@@ -152,7 +152,9 @@
 
 .extraOptionsContainer {
   position: relative;
-  display: inline-block;
+  display: flex;
+  justify-content: center;
+  align-content: center;
 }
 
 .optionsIcon {
@@ -276,7 +278,7 @@
       padding: 0.8rem 1rem;
       background: rgba(0, 0, 0, 0.55);
       color: #fff;
-      min-height: 80px;
+      padding: 5px;
     }
 
     .userPic {

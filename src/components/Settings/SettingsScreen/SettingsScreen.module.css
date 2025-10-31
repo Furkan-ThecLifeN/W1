@@ -178,13 +178,14 @@
 
 /* Right Panel Styles */
 .rightPanel {
-  flex: 1;
+  flex: 1 1;
   background-color: var(--color-black);
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  justify-content: space-between;
+  align-items: center;
   padding: 40px;
   overflow-y: auto;
+  flex-direction: column;
 }
 
 .detailContent {
@@ -192,7 +193,9 @@
   background-color: var(--color-secondary);
   border-radius: var(--border-radius);
   border: 1px solid var(--color-border);
-  overflow: hidden;
+/*   overflow: hidden;
+ */
+  overflow-y: auto;
 }
 
 .detailHeader {
@@ -314,8 +317,16 @@
   width: 160px;
   height: 160px;
   margin-bottom: 24px;
-  opacity: 0.6;
-}
+  background-color: #ffffff;
+  color: var(--color-black);
+  font-weight: bold;
+  font-size: 32px;
+  border: 2px solid #16d0ff;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 27px  #ccc;}
 
 .placeholderTitle {
   font-size: 20px;

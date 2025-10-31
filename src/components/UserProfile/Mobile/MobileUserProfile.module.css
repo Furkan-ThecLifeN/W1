@@ -623,7 +623,6 @@
   background-color: #e0e0e0;
 }
 
-
 /* Gizli/Engelli hesap mesajları için stiller (Zaten var, ama emin olun) */
 .private_message {
   text-align: center;
@@ -648,19 +647,19 @@
 }
 
 .closePostModalButton {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    background: rgba(0, 0, 0, 0.5);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    z-index: 10;
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 10;
 }
 
 .pendingBtn {
@@ -699,19 +698,19 @@
   bottom: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.95); 
-  
+  background-color: rgba(0, 0, 0, 0.95);
+
   /* KRİTİK: Z-INDEX 2000 veya daha yüksek olmalı */
-  z-index: 2000; 
-  
+  z-index: 2000;
+
   /* İçeriği ortalama */
   display: flex;
   justify-content: center;
   align-items: center;
-  
-  overflow-y: auto; 
+
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 10px; 
+  padding: 10px;
 }
 
 /* 2. Video Modal İçeriği (FeedVideoCard için - Tam Ekran deneyimi) */
@@ -722,9 +721,9 @@
   height: 100%;
   max-width: none;
   max-height: none;
-  background: transparent; 
-  border-radius: 0; 
-  overflow: hidden; 
+  background: transparent;
+  border-radius: 0;
+  overflow: hidden;
   position: relative;
   padding: 0;
   display: flex;
@@ -737,11 +736,21 @@
   align-items: center;
   background-color: var(--color-black);
   border-radius: 10px;
-  max-width: 100%; 
+  max-width: 100%;
   width: 100%;
   height: auto;
-  max-height: 95vh;  
+  max-height: 95vh;
   overflow-y: auto;
   position: relative;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+}
+
+.tabContent {
+  width: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-content: center;
+  min-height: 350px;
 }

@@ -6,7 +6,6 @@ import BottomNav from "../../components/BottomNav/BottomNav";
 import { useProfileStore } from "../../Store/useProfileStore";
 import axios from "axios";
 import PublicAccessWrapper from "../../components/PublicAccessWrapper/PublicAccessWrapper";
-import Footer from "../../components/Footer/Footer"; // ✅ Footer import edildi
 
 import styles from "./ProfilePage.module.css";
 
@@ -44,7 +43,6 @@ const ProfilePage = () => {
         <>
           <MobileProfile data={profileData} />
           <BottomNav />
-          <Footer /> {/* ✅ Mobil görünümde de footer görünsün */}
         </>
       ) : (
         <div className={styles.profilePage}>
@@ -55,7 +53,6 @@ const ProfilePage = () => {
             ) : (
               <AccountBox data={profileData} />
             )}
-            <Footer /> 
           </div>
         </div>
       )}

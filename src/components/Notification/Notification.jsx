@@ -12,14 +12,10 @@ import { Link } from "react-router-dom";
 import LoadingOverlay from "../LoadingOverlay/LoadingOverlay";
 import axios from "axios";
 import { useNotificationStore } from "../../Store/useNotificationStore";
+import Footer from "../Footer/Footer"; // <--- BU SATIRI EKLEYİN (Yol sizde farklıysa düzeltin)
 
 const Notification = () => {
-  const {
-    notifications,
-    loading,
-    isLoaded,
-    setState,
-  } = useNotificationStore();
+  const { notifications, loading, isLoaded, setState } = useNotificationStore();
   const { currentUser, showToast } = useAuth();
   const apiBaseUrl = process.env.REACT_APP_API_URL;
 
@@ -28,9 +24,13 @@ const Notification = () => {
     if (!currentUser) return;
     try {
       const idToken = await currentUser.getIdToken();
-      await axios.patch(`${apiBaseUrl}/api/users/notifications/read`, {}, {
-        headers: { Authorization: `Bearer ${idToken}` },
-      });
+      await axios.patch(
+        `${apiBaseUrl}/api/users/notifications/read`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${idToken}` },
+        }
+      );
 
       setState({
         notifications: notifications.map((n) => ({ ...n, isRead: true })),
@@ -52,9 +52,12 @@ const Notification = () => {
 
     try {
       const idToken = await currentUser.getIdToken();
-      const response = await axios.get(`${apiBaseUrl}/api/users/notifications`, {
-        headers: { Authorization: `Bearer ${idToken}` },
-      });
+      const response = await axios.get(
+        `${apiBaseUrl}/api/users/notifications`,
+        {
+          headers: { Authorization: `Bearer ${idToken}` },
+        }
+      );
 
       const allNotifications = response.data.notifications;
 
@@ -105,15 +108,22 @@ const Notification = () => {
       const idToken = await currentUser.getIdToken();
       const endpoint = `${apiBaseUrl}/api/users/follow/${action}/${requesterUid}`;
 
-      const response = await axios.post(endpoint, {}, {
-        headers: { Authorization: `Bearer ${idToken}` },
-      });
+      const response = await axios.post(
+        endpoint,
+        {},
+        {
+          headers: { Authorization: `Bearer ${idToken}` },
+        }
+      );
 
       showToast(response.data.message, "success");
       await fetchNotifications();
     } catch (error) {
       console.error("Takip isteği işlem hatası:", error);
-      showToast(error.response?.data?.error || "İşlem başarısız oldu.", "error");
+      showToast(
+        error.response?.data?.error || "İşlem başarısız oldu.",
+        "error"
+      );
     } finally {
       setState({ loading: false });
     }
@@ -238,6 +248,9 @@ const Notification = () => {
           <p>Henüz bildirim yok.</p>
         </div>
       )}
+     <div className={styles.footerWrapper}>
+       <Footer /> {/* <--- FOOTER'I BURAYA EKLEYİN */}
+     </div>
     </div>
   );
 };

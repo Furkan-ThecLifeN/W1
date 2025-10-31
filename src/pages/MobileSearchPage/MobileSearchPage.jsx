@@ -4,6 +4,7 @@ import { FiSearch } from "react-icons/fi";
 import { useAuth } from "../../context/AuthProvider";
 import UserCard from "../../components/UserCard/UserCard";
 import BottomNav from "../../components/BottomNav/BottomNav";
+import Footer from "../../components/Footer/Footer";
 
 const SimpleLoader = () => (
   <div className={styles.loader_container}>
@@ -100,6 +101,10 @@ const MobileSearchPage = () => {
             </div>
           </div>
         )}
+      </div>
+
+       <div className={styles.footerWrapper}>
+        <Footer />
       </div>
 
       <BottomNav />

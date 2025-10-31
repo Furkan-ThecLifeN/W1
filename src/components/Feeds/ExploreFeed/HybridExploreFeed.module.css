@@ -48,8 +48,8 @@
 @media (max-width: 1024px) {
   .feedWrapper {
     min-height: 100vh;
-    align-items: flex-start;
-    padding-bottom: 60px; /* ✅ Mobilde footer alanı koru */
+    align-items: center;
+    padding-bottom: 40px; /* ✅ Mobilde footer alanı koru */
   }
 
   .navButtons {
@@ -64,7 +64,5 @@
 }
 
 @media (max-width: 1024px) {
-  .footer {
-    display: none !important;
-  }
+
 }

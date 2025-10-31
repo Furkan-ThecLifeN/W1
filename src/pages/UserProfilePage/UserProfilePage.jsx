@@ -4,6 +4,7 @@ import BottomNav from "../../components/BottomNav/BottomNav";
 import UserProfile from "../../components/UserProfile/UserProfile";
 import MobileUserProfile from "../../components/UserProfile/Mobile/MobileUserProfile"; // Add MobileUserProfile
 import styles from "./UserProfilePage.module.css";
+import Footer from "../../components/Footer/Footer";
 
 const UserProfilePage = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);

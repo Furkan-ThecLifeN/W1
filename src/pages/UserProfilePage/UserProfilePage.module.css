@@ -20,5 +20,9 @@
   align-items: flex-start;
   overflow-y: auto; /* içerik fazla olursa kaydırma */
 }
-
-
+/* 
+.mobileWrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+} */

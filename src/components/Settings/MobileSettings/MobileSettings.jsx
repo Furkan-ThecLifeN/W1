@@ -21,6 +21,7 @@ import Licenses from "../SettingsSections/Licenses/Licenses";
 import TermsAndConditions from "../SettingsSections/TermsAndConditions/TermsAndConditions";
 import AboutApp from "../SettingsSections/AboutApp/AboutApp";
 import BugFeedback from "../SettingsSections/BugFeedback/BugFeedback";
+import Footer from "../../Footer/Footer";
 
 const componentMap = {
   "Profil Ayarları": <ProfileSettings />,
@@ -133,6 +134,9 @@ export default function MobileSettings() {
           </div>
         </div>
       )}
+      <div className={styles.footerWrapper}>
+        <Footer />
+      </div>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import MessagesLeftBar from "../MessagesLeftBar/MessagesLeftBar";
 import Chat from "../Chat/Chat";
 import StoryBar from "../../StoryBar/StoryBar";
 import { useUser } from "../../../context/UserContext";
+import Footer from "../../Footer/Footer";
 
 const MessagesMobile = () => {
   const [selectedUser, setSelectedUser] = useState(null);
@@ -25,6 +26,10 @@ const MessagesMobile = () => {
 
       {/* MessagesLeftBar handles user selection for both mobile and desktop */}
       <MessagesLeftBar onSelectUser={setSelectedUser} />
+
+      <div className={styles.footerWrapper}>
+        <Footer /> 
+      </div>
     </div>
   );
 };

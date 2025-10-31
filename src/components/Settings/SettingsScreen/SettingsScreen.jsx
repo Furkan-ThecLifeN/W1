@@ -44,6 +44,7 @@ import ContentSchedule from "../SettingsSections/ContentSchedule/ContentSchedule
 import EarningsPayments from "../SettingsSections/EarningsPayments/EarningsPayments";
 import CommunityCompliance from "../SettingsSections/CommunityCompliance/CommunityCompliance";
 import LiveStreamSettings from "../SettingsSections/LiveStreamSettings/LiveStreamSettings";
+import Footer from "../../Footer/Footer";
 
 const componentMap = {
   "Profile Settings": <ProfileSettings />,
@@ -256,15 +257,7 @@ export default function SettingsScreen() {
         ) : (
           <div className={styles.placeholderContent}>
             <div className={styles.placeholderIllustration}>
-              <svg viewBox="0 0 200 200">
-                <circle cx="100" cy="100" r="80" fill="#0d1117" />
-                <path
-                  d="M70 80L130 80M70 100L130 100M70 120L130 120"
-                  stroke="#00aaff"
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                />
-              </svg>
+              W1
             </div>
             <h3 className={styles.placeholderTitle}>Bir ayar seçin</h3>
             <p className={styles.placeholderText}>
@@ -272,6 +265,9 @@ export default function SettingsScreen() {
             </p>
           </div>
         )}
+        <div className={styles.footerWrapper}>
+          <Footer />
+        </div>
       </div>
     </div>
   );

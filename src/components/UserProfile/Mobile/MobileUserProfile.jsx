@@ -34,6 +34,7 @@ import {
 } from "react-icons/fa";
 import { IoIosSettings } from "react-icons/io";
 import axios from "axios";
+import Footer from "../../Footer/Footer";
 
 // Constants
 const ITEMS_PER_PAGE = 10;
@@ -62,7 +63,7 @@ const MobileUserProfile = () => {
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [showPostModal, setShowPostModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
-  
+
   // ✅ YENİ: İşlem durumları eklendi
   const [isFollowProcessing, setIsFollowProcessing] = useState(false);
   const [isBlockProcessing, setIsBlockProcessing] = useState(false);
@@ -86,7 +87,7 @@ const MobileUserProfile = () => {
       setAllData((prev) => ({ ...prev, [type]: [] }));
       return;
     }
-    
+
     setLoadingContent((prev) => ({ ...prev, [type]: true }));
 
     try {
@@ -169,7 +170,8 @@ const MobileUserProfile = () => {
 
       setAllData((prevData) => {
         const newData = filteredData.filter(
-          (item) => !prevData[type].some((existingItem) => existingItem.id === item.id)
+          (item) =>
+            !prevData[type].some((existingItem) => existingItem.id === item.id)
         );
         return { ...prevData, [type]: [...prevData[type], ...newData] };
       });
@@ -178,7 +180,10 @@ const MobileUserProfile = () => {
         ...prev,
         [type]: querySnapshot.docs[querySnapshot.docs.length - 1],
       }));
-      setHasMore((prev) => ({ ...prev, [type]: fetchedData.length === ITEMS_PER_PAGE }));
+      setHasMore((prev) => ({
+        ...prev,
+        [type]: fetchedData.length === ITEMS_PER_PAGE,
+      }));
     } catch (error) {
       console.error("Veri çekme hatası:", error);
       showToast("İçerik yüklenirken bir hata oluştu.", "error");
@@ -189,7 +194,12 @@ const MobileUserProfile = () => {
 
   const fetchContentCounts = async (profileUid) => {
     // ✅ GÜNCELLENDİ: Engelleme durumunda sayım yapmayı durdur
-    if (!profileUid || followStatus === "blocking" || followStatus === "blocked_by") return;
+    if (
+      !profileUid ||
+      followStatus === "blocking" ||
+      followStatus === "blocked_by"
+    )
+      return;
     try {
       const postsCountQuery = query(
         collection(db, `globalPosts`),
@@ -275,7 +285,7 @@ const MobileUserProfile = () => {
 
         const canView =
           !profile.isPrivate || status === "following" || status === "self";
-          
+
         // ✅ GÜNCELLENDİ: Engelleme durumunda sayım yapma
         if (canView && status !== "blocking" && status !== "blocked_by") {
           fetchContentCounts(profile.uid);
@@ -302,7 +312,7 @@ const MobileUserProfile = () => {
     };
 
     if (username && currentUser) {
-        fetchUserProfileAndStatus();
+      fetchUserProfileAndStatus();
     }
   }, [username, currentUser, apiBaseUrl]);
 
@@ -312,9 +322,13 @@ const MobileUserProfile = () => {
         !profileData.isPrivate ||
         followStatus === "following" ||
         followStatus === "self";
-        
+
       // ✅ GÜNCELLENDİ: Engelleme durumunda içerik çekme
-      if (canView && followStatus !== "blocking" && followStatus !== "blocked_by") {
+      if (
+        canView &&
+        followStatus !== "blocking" &&
+        followStatus !== "blocked_by"
+      ) {
         if (allData[activeTab].length === 0) {
           fetchUserContent(activeTab, true);
         }
@@ -402,12 +416,12 @@ const MobileUserProfile = () => {
       setIsFollowProcessing(false);
     }
   };
-  
+
   // ✅ YENİ: Engelleme/Engeli Kaldırma Fonksiyonu
   const handleBlockAction = async () => {
     if (!profileData?.uid || isBlockProcessing) return;
     setIsBlockProcessing(true);
-    
+
     const previousFollowStatus = followStatus;
     const targetUid = profileData.uid;
 
@@ -436,7 +450,7 @@ const MobileUserProfile = () => {
           setIsBlockProcessing(false);
           return;
         }
-        
+
         response = await axios.post(
           `${apiBaseUrl}/api/users/block/${targetUid}`,
           {},
@@ -445,7 +459,7 @@ const MobileUserProfile = () => {
         newStatus = "blocking";
         showToast("Kullanıcı engellendi.", "success");
       }
-      
+
       setFollowStatus(response.data.status || newStatus);
 
       // Engelleme/takibi bırakma sonrası istatistikler değişebilir
@@ -455,9 +469,11 @@ const MobileUserProfile = () => {
           stats: response.data.newStats,
         }));
       }
-
     } catch (err) {
-      console.error("Engelleme işlemi hatası:", err.response?.data || err.message);
+      console.error(
+        "Engelleme işlemi hatası:",
+        err.response?.data || err.message
+      );
       setFollowStatus(previousFollowStatus);
       const errorMsg = err.response?.data?.error || "İşlem başarısız.";
       showToast(errorMsg, "error");
@@ -471,13 +487,10 @@ const MobileUserProfile = () => {
 
   // ✅ GÜNCELLENDİ: StatClick (Engelleme kontrolü eklendi)
   const handleStatClick = (type) => {
-    if (
-      followStatus === "blocking" || 
-      followStatus === "blocked_by"
-    ) {
+    if (followStatus === "blocking" || followStatus === "blocked_by") {
       return;
     }
-    
+
     if (
       profileData.isPrivate &&
       followStatus !== "following" &&
@@ -504,10 +517,10 @@ const MobileUserProfile = () => {
     setShowVideoModal(false);
     setSelectedVideo(null);
   };
-  
+
   const handlePostClick = (postData) => {
     if (postData && postData.id) {
-      const postWithStatus = { ...postData, followStatus: followStatus }; 
+      const postWithStatus = { ...postData, followStatus: followStatus };
       setSelectedPost(postWithStatus);
       setShowPostModal(true);
     } else {
@@ -530,11 +543,7 @@ const MobileUserProfile = () => {
       case "likes":
       case "tags":
         return (
-          <PostThumbnail
-            key={item.id}
-            data={item} 
-            onClick={handlePostClick}
-          />
+          <PostThumbnail key={item.id} data={item} onClick={handlePostClick} />
         );
       case "globalFeelings":
       case "feelings":
@@ -566,7 +575,6 @@ const MobileUserProfile = () => {
     }
   };
 
-
   if (loading) {
     return <LoadingOverlay />;
   }
@@ -574,27 +582,27 @@ const MobileUserProfile = () => {
   // ✅ GÜNCELLENDİ: Hata ekranı
   if (error) {
     return (
-     <div className={styles.container}>
-       <header className={styles.header}>
-         <div className={styles.username}>{username}</div>
-       </header>
-       <div className={styles.private_message} style={{paddingTop: '50px'}}>
+      <div className={styles.container}>
+        <header className={styles.header}>
+          <div className={styles.username}>{username}</div>
+        </header>
+        <div className={styles.private_message} style={{ paddingTop: "50px" }}>
           <FaBan className={styles.privateAccountIcon} />
           <h3>{error}</h3>
           <p>Lütfen daha sonra tekrar deneyin veya ana sayfaya dönün.</p>
         </div>
-     </div>
+      </div>
     );
   }
 
   // ✅ YENİ: Engellendi (blocked_by) ekranı
   if (followStatus === "blocked_by") {
-   return (
+    return (
       <div className={styles.container}>
         <header className={styles.header}>
           <div className={styles.username}>{username}</div>
         </header>
-        <div className={styles.private_message} style={{paddingTop: '50px'}}>
+        <div className={styles.private_message} style={{ paddingTop: "50px" }}>
           <FaLock className={styles.privateAccountIcon} />
           <h3>Kullanıcı bulunamadı</h3>
           <p>Bu hesabı görme yetkiniz bulunmamaktadır.</p>
@@ -602,7 +610,7 @@ const MobileUserProfile = () => {
       </div>
     );
   }
-  
+
   if (!profileData) {
     return <div>Kullanıcı profili bulunamadı.</div>; // Fallback
   }
@@ -658,12 +666,12 @@ const MobileUserProfile = () => {
 
   // ✅ YENİ: Engelleme Butonu Render Fonksiyonu
   const renderBlockButton = () => {
-     switch (followStatus) {
+    switch (followStatus) {
       case "self":
       case "blocked_by": // Engellendiysen gösterme
         return null;
       case "blocking":
-         return (
+        return (
           <button
             onClick={handleBlockAction}
             className={`${styles.unfollowBtn} ${styles.actionButton}`} // Gri stil
@@ -676,7 +684,7 @@ const MobileUserProfile = () => {
       case "pending":
       case "following":
       default:
-         return (
+        return (
           <button
             onClick={handleBlockAction}
             className={`${styles.blockBtn} ${styles.actionButton}`} // Kırmızı stil (CSS eklenmeli)
@@ -685,19 +693,20 @@ const MobileUserProfile = () => {
             <FaBan /> Engelle
           </button>
         );
-     }
-  }
+    }
+  };
 
   const tabs = [
     { key: "posts", label: "Posts" },
     { key: "feelings", label: "Feelings" },
     { key: "feeds", label: "Feeds" },
-   /*  { key: "likes", label: "Beğenilenler", disabled: !canViewContent || followStatus === 'blocking' },
+    /*  { key: "likes", label: "Beğenilenler", disabled: !canViewContent || followStatus === 'blocking' },
     { key: "tags", label: "Etiketliler", disabled: !canViewContent || followStatus === 'blocking' }, */
   ];
 
   // RTA ve toplam post sayısını hesapla
-  const totalContentCount = (contentCounts.posts + contentCounts.feeds + contentCounts.feelings);
+  const totalContentCount =
+    contentCounts.posts + contentCounts.feeds + contentCounts.feelings;
   const rtaScore = stats?.rta || 0;
 
   return (
@@ -709,13 +718,11 @@ const MobileUserProfile = () => {
             <Link to="/settings" className={styles.actionBtn}>
               <IoIosSettings className={styles.icon} />
             </Link>
-          ) : (
-            // ❌ KALDIRILDI: Dropdown butonu
-            // <div className={styles.actionBtn}>
-            //   <FaEllipsisV className={styles.icon} />
-            // </div>
-            null
-          )}
+          ) : // ❌ KALDIRILDI: Dropdown butonu
+          // <div className={styles.actionBtn}>
+          //   <FaEllipsisV className={styles.icon} />
+          // </div>
+          null}
         </div>
       </header>
 
@@ -733,13 +740,13 @@ const MobileUserProfile = () => {
             <div className={styles.stat}>
               <span className={styles.statNumber}>
                 {/* ✅ GÜNCELLENDİ: Engelleme durumunda 0 göster */}
-                {followStatus === 'blocking' ? 0 : totalContentCount}
+                {followStatus === "blocking" ? 0 : totalContentCount}
               </span>
               <span className={styles.statLabel}>Post</span>
             </div>
             <div className={styles.stat}>
               <span className={styles.statNumber}>
-                {followStatus === 'blocking' ? 0 : rtaScore}
+                {followStatus === "blocking" ? 0 : rtaScore}
               </span>
               <span className={styles.statLabel}>RTA</span>
             </div>
@@ -751,7 +758,7 @@ const MobileUserProfile = () => {
               style={{ cursor: "pointer" }}
             >
               <span className={styles.statNumber}>
-                {followStatus === 'blocking' ? 0 : (stats?.followers || 0)}
+                {followStatus === "blocking" ? 0 : stats?.followers || 0}
               </span>
               <span className={styles.statLabel}>Followers</span>
             </div>
@@ -761,7 +768,7 @@ const MobileUserProfile = () => {
               style={{ cursor: "pointer" }}
             >
               <span className={styles.statNumber}>
-                {followStatus === 'blocking' ? 0 : (stats?.following || 0)}
+                {followStatus === "blocking" ? 0 : stats?.following || 0}
               </span>
               <span className={styles.statLabel}>Following</span>
             </div>
@@ -771,13 +778,13 @@ const MobileUserProfile = () => {
 
       {/* ✅ GÜNCELLENDİ: Engelleme durumunda bio'yu gizle */}
       {followStatus !== "blocking" && (
-         <div className={styles.bioSection}>
-           <h1 className={styles.name}>{displayName}</h1>
-           {familySystem && <div className={styles.tag}>{familySystem}</div>}
-           <p className={styles.bioText}>
-             {bio || "Henüz bir biyografi eklemediniz."}
-           </p>
-         </div>
+        <div className={styles.bioSection}>
+          <h1 className={styles.name}>{displayName}</h1>
+          {familySystem && <div className={styles.tag}>{familySystem}</div>}
+          <p className={styles.bioText}>
+            {bio || "Henüz bir biyografi eklemediniz."}
+          </p>
+        </div>
       )}
 
       {/* ✅ GÜNCELLENDİ: Aksiyon Butonları (Engelleme butonu eklendi) */}
@@ -798,10 +805,13 @@ const MobileUserProfile = () => {
 
       {/* ✅ YENİ: Engellendi (blocking) ekranı */}
       {followStatus === "blocking" ? (
-        <div className={styles.private_message} style={{paddingTop: '20px'}}>
-           <FaBan className={styles.privateAccountIcon} />
-           <h3>Bu hesabı engellediniz.</h3>
-           <p>Bu kullanıcının gönderilerini veya profilini göremezsiniz. Engeli kaldırmak için yukarıdaki butonu kullanın.</p>
+        <div className={styles.private_message} style={{ paddingTop: "20px" }}>
+          <FaBan className={styles.privateAccountIcon} />
+          <h3>Bu hesabı engellediniz.</h3>
+          <p>
+            Bu kullanıcının gönderilerini veya profilini göremezsiniz. Engeli
+            kaldırmak için yukarıdaki butonu kullanın.
+          </p>
         </div>
       ) : (
         <>
@@ -848,7 +858,9 @@ const MobileUserProfile = () => {
                       className={styles.loadMoreBtn}
                       disabled={loadingContent[activeTab]}
                     >
-                      {loadingContent[activeTab] ? "Yükleniyor..." : "Daha Fazla Yükle"}
+                      {loadingContent[activeTab]
+                        ? "Yükleniyor..."
+                        : "Daha Fazla Yükle"}
                     </button>
                   </div>
                 )}
@@ -856,6 +868,9 @@ const MobileUserProfile = () => {
             ) : (
               <div className={styles.emptyState}>{emptyMessage()}</div>
             )}
+            <div className={styles.footerWrapper}>
+              <Footer />
+            </div>
           </div>
         </>
       )}
@@ -888,19 +903,24 @@ const MobileUserProfile = () => {
       )}
 
       {showPostModal && selectedPost && (
-        <div 
-          className={styles.videoModalOverlay} 
+        <div
+          className={styles.videoModalOverlay}
           onClick={handleClosePostModal}
         >
-          <div 
-            className={`${styles.videoModalContent} ${styles.postModalContent}`} 
+          <div
+            className={`${styles.videoModalContent} ${styles.postModalContent}`}
             onClick={(e) => e.stopPropagation()}
           >
-            <PostCard 
+            <PostCard
               data={selectedPost}
               followStatus={selectedPost.followStatus || "none"}
             />
-            <button className={styles.closePostModalButton} onClick={handleClosePostModal}>X</button>
+            <button
+              className={styles.closePostModalButton}
+              onClick={handleClosePostModal}
+            >
+              X
+            </button>
           </div>
         </div>
       )}

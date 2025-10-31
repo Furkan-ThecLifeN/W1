@@ -8,6 +8,7 @@ import MessagesRightBar from "../components/MessagesRightBar/MessagesRightBar";
 import RightBar from "../components/MessagesRightBar/RightBar";
 import BottomNav from "../components/BottomNav/BottomNav";
 import { useMessagesStore } from "../../Store/useMessagesStore";
+import Footer from "../Footer/Footer";
 
 const MessagesPage = () => {
   const { selectedUser, setState } = useMessagesStore();

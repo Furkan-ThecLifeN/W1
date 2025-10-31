@@ -1,24 +1,30 @@
 .AddPage {
-  height: 100vh;
+  min-height: 100vh;
   width: 100%;
-  padding: 1rem;
-  overflow-y: hidden; 
+  display: flex;
+  flex-direction: column;
+  background: var(--color-black);
+  position: relative;
   overflow-x: hidden;
+}
+
+.mainContent {
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: var(--color-black);
-  position: relative;
+  margin-left: 80px;
+  padding: 1rem;
 }
 
-/* Diğer kurallar aynı kalabilir */
-.mainContent {
-  margin-left: 80px;
-  width: 100%;
+.footerWrapper {
+  margin-top: auto;
+  margin-bottom: 50px; /* ✅ BottomNav için boşluk bırakır */
 }
 
 @media (max-width: 1024px) {
   .mainContent {
     margin-left: 0;
+    padding-bottom: 60px; /* mobilde footer-nav çakışmasın */
   }
 }

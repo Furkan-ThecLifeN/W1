@@ -15,12 +15,14 @@ import TweetCard from "../../TweetCard/TweetCard";
 import PostThumbnail from "../Box/PostThumbnail/PostThumbnail";
 import VideoThumbnail from "../Box/VideoThumbnail/VideoThumbnail";
 import FeedVideoCard from "../../Feeds/FeedVideoCard/FeedVideoCard";
+import Footer from "../../Footer/Footer";
 
 const MobileProfile = () => {
   const { currentUser, loading } = useUser();
   const { showToast } = useAuth();
 
-  const { allData, postCounts, setAllData, setPostCounts, loadedTabs } = useMobileProfileStore();
+  const { allData, postCounts, setAllData, setPostCounts, loadedTabs } =
+    useMobileProfileStore();
 
   const [activeTab, setActiveTab] = useState("posts");
   const [loadingContent, setLoadingContent] = useState({});
@@ -35,14 +37,24 @@ const MobileProfile = () => {
     const fetchPostCounts = async () => {
       if (!currentUser?.uid) return;
       try {
-        const postsQuery = query(collection(db, "globalPosts"), where("uid", "==", currentUser.uid));
-        const feelingsQuery = query(collection(db, "globalFeelings"), where("uid", "==", currentUser.uid));
-        const feedsQuery = query(collection(db, "globalFeeds"), where("ownerId", "==", currentUser.uid));
-        const [postsSnapshot, feelingsSnapshot, feedsSnapshot] = await Promise.all([
-          getDocs(postsQuery),
-          getDocs(feelingsQuery),
-          getDocs(feedsQuery),
-        ]);
+        const postsQuery = query(
+          collection(db, "globalPosts"),
+          where("uid", "==", currentUser.uid)
+        );
+        const feelingsQuery = query(
+          collection(db, "globalFeelings"),
+          where("uid", "==", currentUser.uid)
+        );
+        const feedsQuery = query(
+          collection(db, "globalFeeds"),
+          where("ownerId", "==", currentUser.uid)
+        );
+        const [postsSnapshot, feelingsSnapshot, feedsSnapshot] =
+          await Promise.all([
+            getDocs(postsQuery),
+            getDocs(feelingsQuery),
+            getDocs(feedsQuery),
+          ]);
         setPostCounts({
           posts: postsSnapshot.size,
           feelings: feelingsSnapshot.size,
@@ -97,19 +109,31 @@ const MobileProfile = () => {
         switch (activeTab) {
           case "posts":
             snapshot = await getDocs(
-              query(collection(db, "globalPosts"), where("uid", "==", currentUser.uid), orderBy("createdAt", "desc"))
+              query(
+                collection(db, "globalPosts"),
+                where("uid", "==", currentUser.uid),
+                orderBy("createdAt", "desc")
+              )
             );
             setAllData(activeTab, processSnapshot(snapshot, activeTab));
             break;
           case "feelings":
             snapshot = await getDocs(
-              query(collection(db, "globalFeelings"), where("uid", "==", currentUser.uid), orderBy("createdAt", "desc"))
+              query(
+                collection(db, "globalFeelings"),
+                where("uid", "==", currentUser.uid),
+                orderBy("createdAt", "desc")
+              )
             );
             setAllData(activeTab, processSnapshot(snapshot, activeTab));
             break;
           case "feeds":
             snapshot = await getDocs(
-              query(collection(db, "globalFeeds"), where("ownerId", "==", currentUser.uid), orderBy("createdAt", "desc"))
+              query(
+                collection(db, "globalFeeds"),
+                where("ownerId", "==", currentUser.uid),
+                orderBy("createdAt", "desc")
+              )
             );
             setAllData(activeTab, processSnapshot(snapshot, activeTab));
             break;
@@ -186,7 +210,8 @@ const MobileProfile = () => {
   if (loading) return <LoadingOverlay />;
   if (!currentUser) return <div>Lütfen giriş yapın.</div>;
 
-  const { username, displayName, photoURL, bio, familySystem, uid } = currentUser;
+  const { username, displayName, photoURL, bio, familySystem, uid } =
+    currentUser;
 
   const handleStatClick = (type) => {
     setModalType(type);
@@ -198,11 +223,23 @@ const MobileProfile = () => {
       case "posts":
       case "likes":
       case "tags":
-        return <PostThumbnail key={item.id} data={item} onClick={() => handlePostClick(item)} />;
+        return (
+          <PostThumbnail
+            key={item.id}
+            data={item}
+            onClick={() => handlePostClick(item)}
+          />
+        );
       case "feelings":
         return <TweetCard key={item.id} data={item} />;
       case "feeds":
-        return <VideoThumbnail key={item.id} mediaUrl={item.mediaUrl} onClick={() => handleVideoClick(item)} />;
+        return (
+          <VideoThumbnail
+            key={item.id}
+            mediaUrl={item.mediaUrl}
+            onClick={() => handleVideoClick(item)}
+          />
+        );
       default:
         return null;
     }
@@ -215,11 +252,15 @@ const MobileProfile = () => {
       case "feelings":
         return `${displayName || username}, henüz bir duygu paylaşmadınız.`;
       case "feeds":
-        return `${displayName || username}, henüz feed'leriniz bulunmamaktadır.`;
+        return `${
+          displayName || username
+        }, henüz feed'leriniz bulunmamaktadır.`;
       case "likes":
         return `${displayName || username}, henüz bir gönderiyi beğenmediniz.`;
       case "tags":
-        return `${displayName || username}, henüz etiketlendiğiniz bir gönderi bulunmamaktadır.`;
+        return `${
+          displayName || username
+        }, henüz etiketlendiğiniz bir gönderi bulunmamaktadır.`;
       default:
         return `Henüz bir içerik bulunmamaktadır.`;
     }
@@ -268,12 +309,24 @@ const MobileProfile = () => {
             </div>
           </div>
           <div className={styles.stat_content}>
-            <div className={styles.stat} onClick={() => handleStatClick("followers")} style={{ cursor: "pointer" }}>
-              <span className={styles.statNumber}>{currentUser.stats?.followers || 0}</span>
+            <div
+              className={styles.stat}
+              onClick={() => handleStatClick("followers")}
+              style={{ cursor: "pointer" }}
+            >
+              <span className={styles.statNumber}>
+                {currentUser.stats?.followers || 0}
+              </span>
               <span className={styles.statLabel}>Followers</span>
             </div>
-            <div className={styles.stat} onClick={() => handleStatClick("following")} style={{ cursor: "pointer" }}>
-              <span className={styles.statNumber}>{currentUser.stats?.following || 0}</span>
+            <div
+              className={styles.stat}
+              onClick={() => handleStatClick("following")}
+              style={{ cursor: "pointer" }}
+            >
+              <span className={styles.statNumber}>
+                {currentUser.stats?.following || 0}
+              </span>
               <span className={styles.statLabel}>Following</span>
             </div>
           </div>
@@ -283,7 +336,9 @@ const MobileProfile = () => {
       <div className={styles.bioSection}>
         <h1 className={styles.name}>{displayName}</h1>
         {familySystem && <div className={styles.tag}>{familySystem}</div>}
-        <p className={styles.bioText}>{bio || "Henüz bir biyografi eklemediniz."}</p>
+        <p className={styles.bioText}>
+          {bio || "Henüz bir biyografi eklemediniz."}
+        </p>
       </div>
 
       <div className={styles.actionButtons}>
@@ -295,7 +350,9 @@ const MobileProfile = () => {
         {tabs.map(({ key, label }) => (
           <button
             key={key}
-            className={`${styles.tab} ${activeTab === key ? styles.activeTab : ""}`}
+            className={`${styles.tab} ${
+              activeTab === key ? styles.activeTab : ""
+            }`}
             onClick={() => handleTabChange(key)}
           >
             {label}
@@ -333,20 +390,41 @@ const MobileProfile = () => {
       )}
 
       {showVideoModal && selectedVideo && (
-        <div className={styles.videoModalOverlay} onClick={handleCloseVideoModal}>
-          <div className={styles.videoModalContent} onClick={(e) => e.stopPropagation()}>
-            <FeedVideoCard data={selectedVideo} onClose={handleCloseVideoModal} />
+        <div
+          className={styles.videoModalOverlay}
+          onClick={handleCloseVideoModal}
+        >
+          <div
+            className={styles.videoModalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <FeedVideoCard
+              data={selectedVideo}
+              onClose={handleCloseVideoModal}
+            />
           </div>
         </div>
       )}
 
       {showPostModal && selectedPost && (
-        <div className={styles.videoModalOverlay} onClick={handleClosePostModal}>
-          <div className={`${styles.videoModalContent} ${styles.postModalContent}`} onClick={(e) => e.stopPropagation()}>
-            <PostCard data={selectedPost} followStatus={selectedPost.followStatus || "none"} />
+        <div
+          className={styles.videoModalOverlay}
+          onClick={handleClosePostModal}
+        >
+          <div
+            className={`${styles.videoModalContent} ${styles.postModalContent}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <PostCard
+              data={selectedPost}
+              followStatus={selectedPost.followStatus || "none"}
+            />
           </div>
         </div>
       )}
+      <div className={styles.footerWrapper}>
+        <Footer />
+      </div>
     </div>
   );
 };

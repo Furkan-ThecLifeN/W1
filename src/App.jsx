@@ -31,6 +31,7 @@ import UserProfile from "./pages/UserProfilePage/UserProfilePage";
 import PostDetailPage from "./pages/PostDetailPage/PostDetailPage";
 import MobileSearchPage from "./pages/MobileSearchPage/MobileSearchPage";
 import AboutUs from "./pages/AboutUs/AboutUs";
+import Contact from "./pages/Contact/Contact";
 
 const AppContent = () => {
   const [isSplashing, setIsSplashing] = useState(true);
@@ -69,6 +70,7 @@ const AppContent = () => {
       <Route path="/create/drafts" element={<DraftsAdd />} />
       <Route path="/settings" element={<SettingsPage />} />
       <Route path="/about" element={<AboutUs />} />
+      <Route path="/contact" element={<Contact />} />
 
       <Route path="/post/:postId" element={<PostDetailPage />} />
       <Route path="/feeling/:feelingId" element={<PostDetailPage />} />

@@ -18,6 +18,7 @@ import PostCard from "../Post/PostCard";
 import TweetCard from "../TweetCard/TweetCard";
 import PostVideoCard from "../Feeds/FeedVideoCard/FeedVideoCard";
 import VideoThumbnail from "../AccountPage/Box/VideoThumbnail/VideoThumbnail";
+import Footer from "../Footer/Footer";
 
 const UserProfile = () => {
   const { username } = useParams();
@@ -97,7 +98,7 @@ const UserProfile = () => {
       setError(null);
       setProfileData(null); // YENİ: Kullanıcı değiştirirken eski veriyi temizle
       setFollowStatus("none"); // YENİ: Durumu sıfırla
-      
+
       try {
         const profileRes = await dedupedFetch(`profile/${username}`, () =>
           axiosInstance.current.get(`/api/users/profile/${username}`)
@@ -155,7 +156,7 @@ const UserProfile = () => {
   }, [username, currentUser]);
 
   // ... (useEffect [profileData?.uid] ve chunkArray, fetchPostsByIds aynı)
-  
+
   useEffect(() => {
     let mounted = true;
     if (!profileData?.uid) return;
@@ -201,31 +202,30 @@ const UserProfile = () => {
     );
     return items;
   };
-  
 
   useEffect(() => {
     let mounted = true;
     const fetchTabData = async () => {
       if (!profileData || !profileData.uid) return;
-      
+
       // GÜNCELLENDİ: Engelleme durumlarını kontrol et
       const canViewContent =
         !profileData.isPrivate ||
         followStatus === "following" ||
         followStatus === "self";
-      
+
       // Engelleme durumunda veya gizli hesapta içerik çekme
       if (
-        followStatus === "blocking" || 
+        followStatus === "blocking" ||
         followStatus === "blocked_by" ||
         (!canViewContent && ["likes", "tags"].includes(activeTab)) ||
         (!canViewContent && profileData.isPrivate)
       ) {
-         setLoadingContent((prev) => ({ ...prev, [activeTab]: false }));
-         setAllData((prev) => ({ ...prev, [activeTab]: [] }));
-         return;
+        setLoadingContent((prev) => ({ ...prev, [activeTab]: false }));
+        setAllData((prev) => ({ ...prev, [activeTab]: [] }));
+        return;
       }
-      
+
       if (allData[activeTab]?.length > 0) return;
 
       setLoadingContent((prev) => ({ ...prev, [activeTab]: true }));
@@ -233,7 +233,7 @@ const UserProfile = () => {
         const processSnapshot = (docs, type) => {
           const likedIds = cachedLikedIdsRef.current;
           const savedIds = cachedSavedIdsRef.current;
-          
+
           const commonUserData = {
             displayName: profileData.displayName,
             photoURL: profileData.photoURL,
@@ -241,17 +241,20 @@ const UserProfile = () => {
             isPrivate: profileData.isPrivate,
             uid: profileData.uid,
           };
-          
+
           let data = docs.map((item) => {
             const itemId = item.id || item.__name__;
             const isLiked = likedIds.includes(itemId);
             const isSaved = savedIds.includes(itemId);
-            
-            const feedSpecificData = (type === "feeds" || item.mediaUrl) ? {
-              ownerId: item.uid || item.ownerId,
-              userProfileImage: commonUserData.photoURL,
-              username: commonUserData.username,
-            } : {};
+
+            const feedSpecificData =
+              type === "feeds" || item.mediaUrl
+                ? {
+                    ownerId: item.uid || item.ownerId,
+                    userProfileImage: commonUserData.photoURL,
+                    username: commonUserData.username,
+                  }
+                : {};
 
             return {
               id: itemId,
@@ -262,7 +265,7 @@ const UserProfile = () => {
               initialSaved: isSaved,
             };
           });
-          
+
           if (type === "feeds") {
             data = data.filter((item) => item.mediaUrl);
           }
@@ -455,7 +458,7 @@ const UserProfile = () => {
   const handleBlockAction = async () => {
     if (!profileData?.uid || isBlockProcessing) return;
     setIsBlockProcessing(true);
-    
+
     const previousFollowStatus = followStatus;
     const targetUid = profileData.uid;
 
@@ -484,7 +487,7 @@ const UserProfile = () => {
           setIsBlockProcessing(false);
           return;
         }
-        
+
         response = await axiosInstance.current.post(
           `/api/users/block/${targetUid}`,
           {},
@@ -493,7 +496,7 @@ const UserProfile = () => {
         newStatus = "blocking";
         showToast("Kullanıcı engellendi.", "success");
       }
-      
+
       setFollowStatus(response.data.status || newStatus);
 
       // Engelleme/takibi bırakma sonrası istatistikler değişebilir
@@ -503,9 +506,11 @@ const UserProfile = () => {
           stats: response.data.newStats,
         }));
       }
-
     } catch (err) {
-      console.error("Engelleme işlemi hatası:", err.response?.data || err.message);
+      console.error(
+        "Engelleme işlemi hatası:",
+        err.response?.data || err.message
+      );
       setFollowStatus(previousFollowStatus);
       const errorMsg = err.response?.data?.error || "İşlem başarısız.";
       showToast(errorMsg, "error");
@@ -514,20 +519,16 @@ const UserProfile = () => {
     }
   };
 
-
   // handleMessageAction KALDIRILDI
   // handleBlockUser, handleReportUser, handleFeedback KALDIRILDI
   // toggleDropdown KALDIRILDI
 
   const handleStatClick = (type) => {
     // GÜNCELLENDİ: Engelleme durumunda modal açılmasın
-    if (
-      followStatus === "blocking" || 
-      followStatus === "blocked_by"
-    ) {
+    if (followStatus === "blocking" || followStatus === "blocked_by") {
       return;
     }
-    
+
     if (
       profileData.isPrivate &&
       followStatus !== "following" &&
@@ -590,7 +591,7 @@ const UserProfile = () => {
 
   const getCardComponent = (item) => {
     const type = item.originalType || activeTab;
-    
+
     const cardData = {
       ...item,
       uid: profileData.uid,
@@ -607,9 +608,9 @@ const UserProfile = () => {
       case "likes":
       case "tags":
         return (
-          <PostCard 
-            key={item.id} 
-            data={cardData} 
+          <PostCard
+            key={item.id}
+            data={cardData}
             followStatus={followStatus}
             onFollowStatusChange={(newStatus) => setFollowStatus(newStatus)}
           />
@@ -623,14 +624,13 @@ const UserProfile = () => {
           <VideoThumbnail
             key={item.id}
             mediaUrl={item.mediaUrl}
-            onClick={() => handleVideoClick(cardData)} 
+            onClick={() => handleVideoClick(cardData)}
           />
         );
       default:
         return null;
     }
   };
-
 
   if (loading) {
     return <LoadingOverlay />;
@@ -639,44 +639,43 @@ const UserProfile = () => {
   // GÜNCELLENDİ: Hata durumunda da kullanıcı adını göster
   if (error) {
     return (
-       <div className={styles.pageWrapper}>
+      <div className={styles.pageWrapper}>
         <div className={styles.fixedTopBox}>{username}</div>
-         <div className={styles.private_message}>
-            <FaBan className={styles.privateAccountIcon} />
-            <h3>{error}</h3>
-            <p>Lütfen daha sonra tekrar deneyin veya ana sayfaya dönün.</p>
-          </div>
-       </div>
+        <div className={styles.private_message}>
+          <FaBan className={styles.privateAccountIcon} />
+          <h3>{error}</h3>
+          <p>Lütfen daha sonra tekrar deneyin veya ana sayfaya dönün.</p>
+        </div>
+      </div>
     );
   }
 
   // YENİ: Engellenen (blocked_by) kullanıcı ekranı
   // Bu durum, profil verisi yüklendikten SONRA ama içerikten ÖNCE kontrol edilmeli.
   if (followStatus === "blocked_by") {
-     return (
-        <div className={styles.pageWrapper}>
-          <div className={styles.fixedTopBox}>{username}</div>
-          <div className={styles.private_message} style={{paddingTop: '50px'}}>
-            <FaLock className={styles.privateAccountIcon} />
-            <h3>Kullanıcı bulunamadı</h3>
-            <p>Bu hesabı görme yetkiniz bulunmamaktadır.</p>
-          </div>
+    return (
+      <div className={styles.pageWrapper}>
+        <div className={styles.fixedTopBox}>{username}</div>
+        <div className={styles.private_message} style={{ paddingTop: "50px" }}>
+          <FaLock className={styles.privateAccountIcon} />
+          <h3>Kullanıcı bulunamadı</h3>
+          <p>Bu hesabı görme yetkiniz bulunmamaktadır.</p>
         </div>
-      );
+      </div>
+    );
   }
-  
+
   if (!profileData) {
     // Bu durum normalde error veya blocked_by tarafından yakalanmalı
     return <LoadingOverlay />;
   }
-
 
   // GÜNCELLENDİ: Engelleme durumunu da kontrol et
   const canViewContent =
     !profileData.isPrivate ||
     followStatus === "following" ||
     followStatus === "self";
-    
+
   const { displayName, photoURL, bio, familySystem } = profileData;
   const currentContent = allData[activeTab] || [];
   const totalContentCount =
@@ -723,15 +722,15 @@ const UserProfile = () => {
         );
     }
   };
-  
+
   // YENİ: Engelleme Butonunu Render Etme Fonksiyonu
   const renderBlockButton = () => {
-     switch (followStatus) {
+    switch (followStatus) {
       case "self":
       case "blocked_by": // Engellendiysen engelleme butonu gösterme
         return null;
       case "blocking":
-         return (
+        return (
           <button
             onClick={handleBlockAction}
             className={`${styles.unfollowBtn} ${styles.actionButton}`} // 'unfollow' stili (gri)
@@ -744,7 +743,7 @@ const UserProfile = () => {
       case "pending":
       case "following":
       default:
-         return (
+        return (
           <button
             onClick={handleBlockAction}
             className={`${styles.blockBtn} ${styles.actionButton}`} // YENİ CSS SINIFI GEREKEBİLİR
@@ -753,8 +752,8 @@ const UserProfile = () => {
             <FaBan /> Engelle
           </button>
         );
-     }
-  }
+    }
+  };
 
   return (
     <div className={styles.pageWrapper}>
@@ -767,7 +766,7 @@ const UserProfile = () => {
       {followStatus !== "self" && (
         <div className={styles.buttonsContainer}>
           {renderFollowButton()}
-          {renderBlockButton()} 
+          {renderBlockButton()}
           {/* Mesaj butonu KALDIRILDI */}
         </div>
       )}
@@ -775,32 +774,32 @@ const UserProfile = () => {
       {/* ✅✅✅ DEĞİŞİKLİK BURADA ✅✅✅ */}
       {/* YENİ: Engellenen (blocking) kullanıcı ekranı (Mobile stiliyle güncellendi) */}
       {followStatus === "blocking" ? (
-        <div 
+        <div
           // CSS dosyanıza güvenmek yerine stili doğrudan uyguluyoruz
           // Bu, MobileUserProfile.jsx'teki .private_message stilidir
           style={{
-            textAlign: 'center',
-            padding: '40px 20px',
-            color: '#555'
+            textAlign: "center",
+            padding: "40px 20px",
+            color: "#555",
           }}
         >
-           <FaBan 
-              // className={styles.privateAccountIcon} 
-              // Bu da MobileUserProfile.jsx'teki .privateAccountIcon stilidir
-              style={{
-                fontSize: '48px',
-                color: '#888',
-                display: 'block',
-                margin: '0 auto 20px auto' // İkonu ortalamak için
-              }}
-           />
-           <h3 style={{ margin: '10px 0', fontSize: '22px', fontWeight: '600' }}>
-             Bu hesabı engellediniz.
-           </h3>
-           <p style={{ fontSize: '16px', color: '#666' }}>
-             Bu kullanıcının gönderilerini veya profilini göremezsiniz. 
-             Engeli kaldırmak için yukarıdaki butonu kullanın.
-           </p>
+          <FaBan
+            // className={styles.privateAccountIcon}
+            // Bu da MobileUserProfile.jsx'teki .privateAccountIcon stilidir
+            style={{
+              fontSize: "48px",
+              color: "#888",
+              display: "block",
+              margin: "0 auto 20px auto", // İkonu ortalamak için
+            }}
+          />
+          <h3 style={{ margin: "10px 0", fontSize: "22px", fontWeight: "600" }}>
+            Bu hesabı engellediniz.
+          </h3>
+          <p style={{ fontSize: "16px", color: "#666" }}>
+            Bu kullanıcının gönderilerini veya profilini göremezsiniz. Engeli
+            kaldırmak için yukarıdaki butonu kullanın.
+          </p>
         </div>
       ) : (
         <>
@@ -808,14 +807,20 @@ const UserProfile = () => {
           <div className={styles.mainProfileBox}>
             <div className={styles.profileImageSection}>
               <div className={styles.profileImageWrapper}>
-                <img src={photoURL} alt="Profile" className={styles.profileImage} />
+                <img
+                  src={photoURL}
+                  alt="Profile"
+                  className={styles.profileImage}
+                />
               </div>
               <div className={styles.imageBackground}></div>
             </div>
 
             <div className={styles.profileInfoSection}>
               <h2 className={styles.profileName}>{displayName}</h2>
-              {familySystem && <div className={styles.tagBox}>{familySystem}</div>}
+              {familySystem && (
+                <div className={styles.tagBox}>{familySystem}</div>
+              )}
               <div className={styles.bio}>
                 {bio || "Henüz bir biyografi eklenmedi."}
               </div>
@@ -862,7 +867,7 @@ const UserProfile = () => {
             >
               Feelings
             </button>
-           {/*  <button
+            {/*  <button
               className={activeTab === "likes" ? styles.active : ""}
               onClick={() => handleTabChange("likes")}
               disabled={!canViewContent}
@@ -902,7 +907,6 @@ const UserProfile = () => {
         </>
       )}
 
-
       {showModal && profileData && (
         <ConnectionsModal
           show={showModal}
@@ -929,6 +933,9 @@ const UserProfile = () => {
           </div>
         </div>
       )}
+      <div className={styles.footerWrapper}>
+        <Footer />
+      </div>
     </div>
   );
 };

@@ -8,6 +8,7 @@ import { BsImageFill } from "react-icons/bs";
 import { SiStreamlabs } from "react-icons/si";
 import { MdFolderCopy } from "react-icons/md";
 import { TbNumber24Small } from "react-icons/tb";
+import Footer from "../Footer/Footer";
 
 const AddPage = () => {
   const navigate = useNavigate();
