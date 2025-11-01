@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthProvider";
 import PostOptionsCard from "../PostOptionsCard/PostOptionsCard";
 import DescriptionModal from "../DescriptionModal/DescriptionModal";
+import PrivacyIndicator from "../../utils/PrivacyIndicator";
 
 const TRUNCATE_LIMIT = 100;
 const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
@@ -53,9 +54,9 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
     );
   };
 
-  // ✅ Gönderi Silme
   const handleDeletePost = async () => {
-    if (!window.confirm("Bu gönderiyi silmek istediğinize emin misiniz?")) return;
+    if (!window.confirm("Bu gönderiyi silmek istediğinize emin misiniz?"))
+      return;
     try {
       const token = await getToken();
       const res = await fetch(`${BASE_URL}/api/posts/${data.id}`, {
@@ -72,7 +73,6 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
     }
   };
 
-  // ✅ Yorumları Kapatma
   const handleDisableComments = async () => {
     try {
       const token = await getToken();
@@ -95,7 +95,6 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
     }
   };
 
-  // ✅ Yorumları Açma
   const handleEnableComments = async () => {
     try {
       const token = await getToken();
@@ -118,7 +117,6 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
     }
   };
 
-  // ✅ Raporlama
   const handleReportPost = async (reason = "Uygunsuz içerik") => {
     try {
       const token = await getToken();
@@ -153,12 +151,14 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
 
   return (
     <>
-      {/* Desktop View */}
       <div className={`${styles.post_card} ${styles.desktop}`}>
         {data.imageUrls?.[0] && (
-          <img src={data.imageUrls[0]} alt="Post" className={styles.post_image} />
+          <img
+            src={data.imageUrls[0]}
+            alt="Post"
+            className={styles.post_image}
+          />
         )}
-
         <div className={styles.post_overlay}>
           <div className={styles.post_header}>
             <div className={styles.user_info}>
@@ -173,6 +173,7 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
               <span className={styles.username}>
                 {data.displayName || "Bilinmeyen Kullanıcı"}
               </span>
+              <PrivacyIndicator privacy={data.privacy} />
             </div>
             <div className={styles.actions}>
               {!isOwnPost && (
@@ -190,7 +191,6 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
                   className={styles.more_icon}
                   onClick={() => setShowOptions(!showOptions)}
                 />
-
                 {showOptions && (
                   <PostOptionsCard
                     isOwner={isOwnPost}
@@ -206,14 +206,15 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
               </div>
             </div>
           </div>
-
           <div className={styles.post_footer}>
             <p
               className={`${styles.post_text} ${
                 needsTruncation ? styles.clickableDescription : ""
               }`}
               onClick={
-                needsTruncation ? () => setIsDescriptionModalOpen(true) : undefined
+                needsTruncation
+                  ? () => setIsDescriptionModalOpen(true)
+                  : undefined
               }
             >
               {truncatedDescription}
@@ -222,7 +223,6 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
               )}
             </p>
             {renderActionControls()}
-
             {tokenError && (
               <div style={{ color: "red", fontSize: "12px" }}>
                 Token alınamadı, ActionControls çalışmayabilir!
@@ -232,7 +232,6 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
         </div>
       </div>
 
-      {/* Mobile View */}
       <div className={`${styles.post_card_mobile} ${styles.mobile}`}>
         <div className={styles.post_header_mobile}>
           <div className={styles.user_info}>
@@ -247,6 +246,7 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
             <span className={styles.username}>
               {data.displayName || "Bilinmeyen Kullanıcı"}
             </span>
+            <PrivacyIndicator privacy={data.privacy} />
           </div>
           <div className={styles.actions}>
             {!isOwnPost && (
@@ -279,7 +279,6 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
             </div>
           </div>
         </div>
-
         {data.imageUrls?.[0] && (
           <img
             src={data.imageUrls[0]}
@@ -287,14 +286,15 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
             className={styles.post_image_mobile}
           />
         )}
-
         <div className={styles.post_footer_mobile}>
           <p
             className={`${styles.post_text} ${
               needsTruncation ? styles.clickableDescription : ""
             }`}
             onClick={
-              needsTruncation ? () => setIsDescriptionModalOpen(true) : undefined
+              needsTruncation
+                ? () => setIsDescriptionModalOpen(true)
+                : undefined
             }
           >
             {truncatedDescription}

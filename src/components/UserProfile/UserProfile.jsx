@@ -8,12 +8,13 @@ import {
   FaUserPlus,
   FaUserMinus,
   FaUserTimes,
-  FaBan, // FaEllipsisV, FaFlag, FaCommentDots kaldırıldı, FaBan zaten var
+  FaBan,
   FaLock,
 } from "react-icons/fa";
 import axios from "axios";
-import { db } from "../../config/firebase-client";
-import { collection, query, getDocs, orderBy, where } from "firebase/firestore";
+// ⛔️ Firebase importları kaldırıldı
+// import { db } from "../../config/firebase-client";
+// import { collection, query, getDocs, orderBy, where } from "firebase/firestore";
 import PostCard from "../Post/PostCard";
 import TweetCard from "../TweetCard/TweetCard";
 import PostVideoCard from "../Feeds/FeedVideoCard/FeedVideoCard";
@@ -28,7 +29,6 @@ const UserProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("posts");
-  // const [showDropdown, setShowDropdown] = useState(false); // KALDIRILDI
   const [followStatus, setFollowStatus] = useState("none");
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState(null);
@@ -36,20 +36,18 @@ const UserProfile = () => {
     posts: [],
     feelings: [],
     feeds: [],
-    likes: [],
-    tags: [],
+    likes: [], // Bu sekmeler artık doldurulmayacak
+    tags: [], // Bu sekmeler artık doldurulmayacak
   });
   const [loadingContent, setLoadingContent] = useState({});
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [isFollowProcessing, setIsFollowProcessing] = useState(false);
-  const [isBlockProcessing, setIsBlockProcessing] = useState(false); // YENİ EKLENDİ
+  const [isBlockProcessing, setIsBlockProcessing] = useState(false);
 
   const apiBaseUrl = process.env.REACT_APP_API_URL;
   const idTokenRef = useRef(null);
-  const cachedLikedIdsRef = useRef([]);
-  const cachedSavedIdsRef = useRef([]);
-
+  // ⛔️ cachedLikedIdsRef ve cachedSavedIdsRef kaldırıldı
   const inflightRequests = useRef(new Map());
 
   const axiosInstance = useRef(axios.create({ baseURL: apiBaseUrl }));
@@ -96,8 +94,8 @@ const UserProfile = () => {
     const fetchProfileAndStatus = async () => {
       setLoading(true);
       setError(null);
-      setProfileData(null); // YENİ: Kullanıcı değiştirirken eski veriyi temizle
-      setFollowStatus("none"); // YENİ: Durumu sıfırla
+      setProfileData(null);
+      setFollowStatus("none");
 
       try {
         const profileRes = await dedupedFetch(`profile/${username}`, () =>
@@ -122,7 +120,6 @@ const UserProfile = () => {
               )
             );
             if (!mounted) return;
-            // GÜNCELLENDİ: 'blocking' ve 'blocked_by' durumları eklendi
             currentFollowStatus = statusRes.data.followStatus;
           }
         }
@@ -136,7 +133,6 @@ const UserProfile = () => {
           "Profil veya takip durumu çekme hatası:",
           err.response?.data || err.message
         );
-        // GÜNCELLENDİ: Engellenen veya bulunamayan kullanıcıyı ayır
         if (err.response && err.response.status === 404) {
           setError("Kullanıcı bulunamadı.");
         } else {
@@ -155,226 +151,107 @@ const UserProfile = () => {
     };
   }, [username, currentUser]);
 
-  // ... (useEffect [profileData?.uid] ve chunkArray, fetchPostsByIds aynı)
+  // ⛔️ fetchLikesAndTags useEffect bloğu kaldırıldı.
+  // ⛔️ chunkArray fonksiyonu kaldırıldı.
+  // ⛔️ fetchPostsByIds fonksiyonu kaldırıldı.
 
-  useEffect(() => {
-    let mounted = true;
-    if (!profileData?.uid) return;
-    const fetchLikesAndTags = async () => {
-      try {
-        const [likesSnapshot, tagsSnapshot] = await Promise.all([
-          getDocs(collection(db, "users", profileData.uid, "likes")),
-          getDocs(collection(db, "users", profileData.uid, "tags")),
-        ]);
-        if (!mounted) return;
-        cachedLikedIdsRef.current = likesSnapshot.docs.map((doc) => doc.id);
-        cachedSavedIdsRef.current = tagsSnapshot.docs.map((doc) => doc.id);
-      } catch (e) {
-        console.error("Beğenilenler/etiketliler çekme hatası:", e);
-      }
-    };
-    fetchLikesAndTags();
-    return () => {
-      mounted = false;
-    };
-  }, [profileData?.uid]);
-
-  const chunkArray = (arr, size) => {
-    const result = [];
-    for (let i = 0; i < arr.length; i += size) {
-      result.push(arr.slice(i, i + size));
-    }
-    return result;
-  };
-
-  const fetchPostsByIds = async (ids) => {
-    if (!ids || ids.length === 0) return [];
-    const chunks = chunkArray(ids, 10);
-    const snapshots = await Promise.all(
-      chunks.map((chunk) =>
-        getDocs(
-          query(collection(db, "globalPosts"), where("__name__", "in", chunk))
-        )
-      )
-    );
-    const items = snapshots.flatMap((snap) =>
-      snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-    );
-    return items;
-  };
-
+  // ✅✅✅ GÜNCELLENEN BÖLÜM BURASI ✅✅✅
+  // Bu useEffect, artık Firestore'u değil,
+  // 1. Adım'da oluşturduğunuz yeni API endpoint'ini çağıracak.
   useEffect(() => {
     let mounted = true;
     const fetchTabData = async () => {
       if (!profileData || !profileData.uid) return;
 
-      // GÜNCELLENDİ: Engelleme durumlarını kontrol et
+      // 1. Gizli profili ve engellenen profilleri kontrol et
       const canViewContent =
         !profileData.isPrivate ||
         followStatus === "following" ||
         followStatus === "self";
 
-      // Engelleme durumunda veya gizli hesapta içerik çekme
       if (
         followStatus === "blocking" ||
         followStatus === "blocked_by" ||
-        (!canViewContent && ["likes", "tags"].includes(activeTab)) ||
-        (!canViewContent && profileData.isPrivate)
+        !canViewContent
       ) {
         setLoadingContent((prev) => ({ ...prev, [activeTab]: false }));
         setAllData((prev) => ({ ...prev, [activeTab]: [] }));
         return;
       }
 
+      // 2. 'likes' veya 'tags' sekmeleri (Yorum satırında olsalar da kontrolü kalsın)
+      if (
+        !canViewContent &&
+        profileData.isPrivate &&
+        ["likes", "tags"].includes(activeTab)
+      ) {
+        setAllData((prev) => ({ ...prev, [activeTab]: [] }));
+        return;
+      }
+
+      // 3. Bu tab için veri zaten çekildiyse tekrar çekme
       if (allData[activeTab]?.length > 0) return;
 
       setLoadingContent((prev) => ({ ...prev, [activeTab]: true }));
+
       try {
-        const processSnapshot = (docs, type) => {
-          const likedIds = cachedLikedIdsRef.current;
-          const savedIds = cachedSavedIdsRef.current;
-
-          const commonUserData = {
-            displayName: profileData.displayName,
-            photoURL: profileData.photoURL,
-            username: profileData.username,
-            isPrivate: profileData.isPrivate,
-            uid: profileData.uid,
-          };
-
-          let data = docs.map((item) => {
-            const itemId = item.id || item.__name__;
-            const isLiked = likedIds.includes(itemId);
-            const isSaved = savedIds.includes(itemId);
-
-            const feedSpecificData =
-              type === "feeds" || item.mediaUrl
-                ? {
-                    ownerId: item.uid || item.ownerId,
-                    userProfileImage: commonUserData.photoURL,
-                    username: commonUserData.username,
-                  }
-                : {};
-
-            return {
-              id: itemId,
-              ...item,
-              ...commonUserData,
-              ...feedSpecificData,
-              initialLiked: isLiked,
-              initialSaved: isSaved,
-            };
-          });
-
-          if (type === "feeds") {
-            data = data.filter((item) => item.mediaUrl);
-          }
-          return data;
-        };
-
-        switch (activeTab) {
-          case "posts": {
-            const q = query(
-              collection(db, "globalPosts"),
-              where("uid", "==", profileData.uid),
-              orderBy("createdAt", "desc")
-            );
-            const snapshot = await getDocs(q);
-            if (!mounted) return;
-            setAllData((prev) => ({
-              ...prev,
-              [activeTab]: processSnapshot(
-                snapshot.docs.map((d) => ({ id: d.id, ...d.data() })),
-                activeTab
-              ),
-            }));
-            break;
-          }
-          case "feelings": {
-            const q = query(
-              collection(db, "globalFeelings"),
-              where("uid", "==", profileData.uid),
-              orderBy("createdAt", "desc")
-            );
-            const snapshot = await getDocs(q);
-            if (!mounted) return;
-            setAllData((prev) => ({
-              ...prev,
-              [activeTab]: processSnapshot(
-                snapshot.docs.map((d) => ({ id: d.id, ...d.data() })),
-                activeTab
-              ),
-            }));
-            break;
-          }
-          case "feeds": {
-            const q = query(
-              collection(db, "globalFeeds"),
-              where("ownerId", "==", profileData.uid),
-              orderBy("createdAt", "desc")
-            );
-            const snapshot = await getDocs(q);
-            if (!mounted) return;
-            setAllData((prev) => ({
-              ...prev,
-              [activeTab]: processSnapshot(
-                snapshot.docs.map((d) => ({ id: d.id, ...d.data() })),
-                activeTab
-              ),
-            }));
-            break;
-          }
-          case "likes": {
-            const likedIds = cachedLikedIdsRef.current;
-            const likedPosts = await fetchPostsByIds(likedIds);
-            if (!mounted) return;
-            setAllData((prev) => ({
-              ...prev,
-              [activeTab]: processSnapshot(likedPosts, activeTab),
-            }));
-            break;
-          }
-          case "tags": {
-            const savedIds = cachedSavedIdsRef.current;
-            const taggedPosts = await fetchPostsByIds(savedIds);
-            if (!mounted) return;
-            setAllData((prev) => ({
-              ...prev,
-              [activeTab]: processSnapshot(taggedPosts, activeTab),
-            }));
-            break;
-          }
-          default:
-            if (mounted) setAllData((prev) => ({ ...prev, [activeTab]: [] }));
-            break;
+        // 4. API'yi çağırmak için token'a ihtiyacımız var
+        const idToken = idTokenRef.current;
+        if (!idToken) {
+          throw new Error(
+            "Kimlik doğrulama token'ı bulunamadı. (idTokenRef.current is null)"
+          );
         }
+
+        const headers = { Authorization: `Bearer ${idToken}` };
+
+        // 5. YENİ API ENDPOINT'İNİ ÇAĞIR
+        const response = await axiosInstance.current.get(
+          `/api/users/profile/${username}/content`, // Profilin kullanıcı adı
+          {
+            headers,
+            params: { tab: activeTab }, // ?tab=posts, ?tab=feelings vb.
+          }
+        );
+
+        if (!mounted) return;
+
+        // 6. Gelen veriyi işle
+        const processedData = (response.data.content || []).map((item) => ({
+          ...item,
+          displayName: item.displayName || profileData.displayName,
+          photoURL: item.photoURL || profileData.photoURL,
+          username: item.username || profileData.username,
+          isPrivate: profileData.isPrivate,
+          uid: item.uid || profileData.uid,
+        }));
+
+        setAllData((prev) => ({
+          ...prev,
+          [activeTab]: processedData,
+        }));
       } catch (error) {
-        console.error(`Veri çekilirken hata oluştu (${activeTab}):`, error);
-        const errorMessage =
-          error.code === "failed-precondition"
-            ? "Dizin hatası: İçerikleri görüntülemek için Firebase'de gerekli dizinlerin oluşturulması gerekiyor. Lütfen konsolu kontrol edin."
-            : "Veriler yüklenirken bir sorun oluştu. Lütfen tekrar deneyin.";
-        showToast(errorMessage, "error");
+        console.error(
+          `Veri çekilirken hata oluştu (${activeTab}):`,
+          error.response?.data || error.message
+        );
+        showToast("Gönderiler yüklenirken bir sorun oluştu.", "error");
       } finally {
-        if (mounted)
+        if (mounted) {
           setLoadingContent((prev) => ({ ...prev, [activeTab]: false }));
+        }
       }
     };
 
-    if (
-      profileData &&
-      (followStatus === "following" ||
-        followStatus === "self" ||
-        !profileData.isPrivate) &&
-      followStatus !== "blocking" && // YENİ: Engelleme durumunda çekme
-      followStatus !== "blocked_by"
-    ) {
-      fetchTabData();
-    }
+    // fetchTabData'yı çağıran eski 'if' bloğu kaldırıldı
+    // ve doğrudan 'fetchTabData' çağrıldı (içeride kontroller zaten var).
+    fetchTabData();
+
     return () => {
       mounted = false;
     };
-  }, [activeTab, profileData, followStatus]);
+  }, [activeTab, profileData, followStatus, username, showToast]);
+  // ✅✅✅ GÜNCELLENEN BÖLÜM SONU ✅✅✅
 
   const handleTabChange = (tab) => {
     if (activeTab === tab) return;
@@ -454,7 +331,6 @@ const UserProfile = () => {
     }
   };
 
-  // YENİ: Engelleme/Engeli Kaldırma Fonksiyonu
   const handleBlockAction = async () => {
     if (!profileData?.uid || isBlockProcessing) return;
     setIsBlockProcessing(true);
@@ -476,7 +352,7 @@ const UserProfile = () => {
           `/api/users/unblock/${targetUid}`,
           { headers }
         );
-        newStatus = "none"; // Engel kalkınca 'none' durumuna döner
+        newStatus = "none";
         showToast("Kullanıcının engeli kaldırıldı.", "success");
       } else {
         // Engelle
@@ -499,7 +375,6 @@ const UserProfile = () => {
 
       setFollowStatus(response.data.status || newStatus);
 
-      // Engelleme/takibi bırakma sonrası istatistikler değişebilir
       if (response.data.newStats) {
         setProfileData((prev) => ({
           ...prev,
@@ -519,12 +394,7 @@ const UserProfile = () => {
     }
   };
 
-  // handleMessageAction KALDIRILDI
-  // handleBlockUser, handleReportUser, handleFeedback KALDIRILDI
-  // toggleDropdown KALDIRILDI
-
   const handleStatClick = (type) => {
-    // GÜNCELLENDİ: Engelleme durumunda modal açılmasın
     if (followStatus === "blocking" || followStatus === "blocked_by") {
       return;
     }
@@ -541,7 +411,6 @@ const UserProfile = () => {
     }
   };
 
-  // ... (handleVideoClick, handleCloseVideoModal, emptyMessage, getCardComponent fonksiyonları aynı)
   const handleVideoClick = (videoData) => {
     if (videoData && videoData.mediaUrl) {
       const fullVideoData = {
@@ -590,23 +459,25 @@ const UserProfile = () => {
   };
 
   const getCardComponent = (item) => {
-    const type = item.originalType || activeTab;
+    // 'type'ı backend'den gelen 'type' alanından almayı deneyelim,
+    // yoksa 'activeTab'ı kullanalım.
+    const type = item.type || activeTab;
 
+    // Backend'den gelen veriye, profil sahibinin verilerini ekle
     const cardData = {
       ...item,
       uid: profileData.uid,
       displayName: profileData.displayName,
       photoURL: profileData.photoURL,
       isPrivate: profileData.isPrivate,
-      ownerId: profileData.uid,
-      userProfileImage: profileData.photoURL,
+      ownerId: profileData.uid, // Feeds için
+      userProfileImage: profileData.photoURL, // Feeds için
     };
 
     switch (type) {
-      case "globalPosts":
-      case "posts":
-      case "likes":
-      case "tags":
+      case "post":
+      case "likes": // 'likes' ve 'tags' artık bu fonksiyona gelmemeli
+      case "tags":  // ama eski mantık bozulmasın diye tutuluyor.
         return (
           <PostCard
             key={item.id}
@@ -615,11 +486,9 @@ const UserProfile = () => {
             onFollowStatusChange={(newStatus) => setFollowStatus(newStatus)}
           />
         );
-      case "globalFeelings":
-      case "feelings":
+      case "feeling":
         return <TweetCard key={item.id} data={cardData} />;
-      case "globalFeeds":
-      case "feeds":
+      case "feed":
         return (
           <VideoThumbnail
             key={item.id}
@@ -628,6 +497,16 @@ const UserProfile = () => {
           />
         );
       default:
+        // Eski 'globalPosts' vb. anahtarları için de destek (artık gelmemeli)
+        if (activeTab === "posts" || activeTab === "likes" || activeTab === "tags") {
+            return <PostCard key={item.id} data={cardData} followStatus={followStatus} onFollowStatusChange={(newStatus) => setFollowStatus(newStatus)} />;
+        }
+        if (activeTab === "feelings") {
+            return <TweetCard key={item.id} data={cardData} />;
+        }
+        if (activeTab === "feeds") {
+            return <VideoThumbnail key={item.id} mediaUrl={item.mediaUrl} onClick={() => handleVideoClick(cardData)} />;
+        }
         return null;
     }
   };
@@ -636,7 +515,6 @@ const UserProfile = () => {
     return <LoadingOverlay />;
   }
 
-  // GÜNCELLENDİ: Hata durumunda da kullanıcı adını göster
   if (error) {
     return (
       <div className={styles.pageWrapper}>
@@ -650,8 +528,6 @@ const UserProfile = () => {
     );
   }
 
-  // YENİ: Engellenen (blocked_by) kullanıcı ekranı
-  // Bu durum, profil verisi yüklendikten SONRA ama içerikten ÖNCE kontrol edilmeli.
   if (followStatus === "blocked_by") {
     return (
       <div className={styles.pageWrapper}>
@@ -666,11 +542,9 @@ const UserProfile = () => {
   }
 
   if (!profileData) {
-    // Bu durum normalde error veya blocked_by tarafından yakalanmalı
     return <LoadingOverlay />;
   }
 
-  // GÜNCELLENDİ: Engelleme durumunu da kontrol et
   const canViewContent =
     !profileData.isPrivate ||
     followStatus === "following" ||
@@ -678,6 +552,8 @@ const UserProfile = () => {
 
   const { displayName, photoURL, bio, familySystem } = profileData;
   const currentContent = allData[activeTab] || [];
+  
+  // Stats'ı doğrudan profileData'dan al, çünkü backend artık bunu sağlıyor
   const totalContentCount =
     (profileData.stats?.posts || 0) +
     (profileData.stats?.feeds || 0) +
@@ -686,8 +562,8 @@ const UserProfile = () => {
   const renderFollowButton = () => {
     switch (followStatus) {
       case "self":
-      case "blocking": // YENİ: Engelliyorsan takip butonu gösterme
-      case "blocked_by": // YENİ: Engellendiysen takip butonu gösterme
+      case "blocking":
+      case "blocked_by":
         return null;
       case "following":
         return (
@@ -723,17 +599,16 @@ const UserProfile = () => {
     }
   };
 
-  // YENİ: Engelleme Butonunu Render Etme Fonksiyonu
   const renderBlockButton = () => {
     switch (followStatus) {
       case "self":
-      case "blocked_by": // Engellendiysen engelleme butonu gösterme
+      case "blocked_by":
         return null;
       case "blocking":
         return (
           <button
             onClick={handleBlockAction}
-            className={`${styles.unfollowBtn} ${styles.actionButton}`} // 'unfollow' stili (gri)
+            className={`${styles.unfollowBtn} ${styles.actionButton}`}
             disabled={isBlockProcessing}
           >
             <FaUserPlus /> Engeli Kaldır
@@ -746,7 +621,7 @@ const UserProfile = () => {
         return (
           <button
             onClick={handleBlockAction}
-            className={`${styles.blockBtn} ${styles.actionButton}`} // YENİ CSS SINIFI GEREKEBİLİR
+            className={`${styles.blockBtn} ${styles.actionButton}`}
             disabled={isBlockProcessing}
           >
             <FaBan /> Engelle
@@ -759,24 +634,17 @@ const UserProfile = () => {
     <div className={styles.pageWrapper}>
       <div className={styles.account_top}>
         <div className={styles.fixedTopBox}>{username}</div>
-        {/* Dropdown menü ve butonu KALDIRILDI */}
       </div>
 
-      {/* GÜNCELLENDİ: Buton konteyneri */}
       {followStatus !== "self" && (
         <div className={styles.buttonsContainer}>
           {renderFollowButton()}
           {renderBlockButton()}
-          {/* Mesaj butonu KALDIRILDI */}
         </div>
       )}
 
-      {/* ✅✅✅ DEĞİŞİKLİK BURADA ✅✅✅ */}
-      {/* YENİ: Engellenen (blocking) kullanıcı ekranı (Mobile stiliyle güncellendi) */}
       {followStatus === "blocking" ? (
         <div
-          // CSS dosyanıza güvenmek yerine stili doğrudan uyguluyoruz
-          // Bu, MobileUserProfile.jsx'teki .private_message stilidir
           style={{
             textAlign: "center",
             padding: "40px 20px",
@@ -784,13 +652,11 @@ const UserProfile = () => {
           }}
         >
           <FaBan
-            // className={styles.privateAccountIcon}
-            // Bu da MobileUserProfile.jsx'teki .privateAccountIcon stilidir
             style={{
               fontSize: "48px",
               color: "#888",
               display: "block",
-              margin: "0 auto 20px auto", // İkonu ortalamak için
+              margin: "0 auto 20px auto",
             }}
           />
           <h3 style={{ margin: "10px 0", fontSize: "22px", fontWeight: "600" }}>
@@ -803,7 +669,6 @@ const UserProfile = () => {
         </div>
       ) : (
         <>
-          {/* Profilin geri kalanı (eğer engellenmediyse) */}
           <div className={styles.mainProfileBox}>
             <div className={styles.profileImageSection}>
               <div className={styles.profileImageWrapper}>
@@ -867,7 +732,7 @@ const UserProfile = () => {
             >
               Feelings
             </button>
-            {/*  <button
+            {/* <button
               className={activeTab === "likes" ? styles.active : ""}
               onClick={() => handleTabChange("likes")}
               disabled={!canViewContent}
@@ -880,7 +745,8 @@ const UserProfile = () => {
               disabled={!canViewContent}
             >
               Etiketliler
-            </button> */}
+            </button> 
+            */}
           </div>
 
           <div className={styles.tabContent}>

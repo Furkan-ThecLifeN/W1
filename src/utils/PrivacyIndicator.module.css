@@ -1,0 +1,15 @@
+/* src/components/utils/PrivacyIndicator/PrivacyIndicator.module.css */
+
+.privacyIndicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  color: #8a919e; /* Soluk bir renk, temanıza göre değiştirin */
+  font-weight: 500;
+  margin-left: 8px; /* Kullanıcı adından ne kadar uzakta olacağı */
+}
+
+.privacyIndicator svg {
+  stroke-width: 2.5px;
+}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./TweetCard.module.css";
 import { MdMore } from "react-icons/md";
 import ActionControls from "../actions/ActionControls";
@@ -8,6 +8,9 @@ import { useAuth } from "../../context/AuthProvider";
 import DescriptionModal from "../DescriptionModal/DescriptionModal";
 import PostOptionsCard from "../PostOptionsCard/PostOptionsCard";
 import { useNavigate } from "react-router-dom";
+// ✅ 1. ADIM: PrivacyIndicator bileşenini import et
+// (Dosya yolunu kendi projenize göre düzenlemeniz gerekebilir)
+import PrivacyIndicator from "../../utils/PrivacyIndicator";
 
 const TRUNCATE_LIMIT = 1000;
 const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
@@ -17,7 +20,9 @@ const TweetCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
   const navigate = useNavigate();
   const [isDescriptionModalOpen, setIsDescriptionModalOpen] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
-  const [commentsDisabled, setCommentsDisabled] = useState(data?.commentsDisabled || false);
+  const [commentsDisabled, setCommentsDisabled] = useState(
+    data?.commentsDisabled || false
+  );
   const [tokenError, setTokenError] = useState(false);
 
   if (!data || !data.id || !data.uid) return null;
@@ -40,7 +45,8 @@ const TweetCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
   };
 
   const handleDeleteFeeling = async () => {
-    if (!window.confirm("Bu gönderiyi silmek istediğinize emin misiniz?")) return;
+    if (!window.confirm("Bu gönderiyi silmek istediğinize emin misiniz?"))
+      return;
     try {
       const token = await getToken();
       const res = await fetch(`${BASE_URL}/api/feelings/${data.id}`, {
@@ -59,10 +65,13 @@ const TweetCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
   const handleDisableComments = async () => {
     try {
       const token = await getToken();
-      const res = await fetch(`${BASE_URL}/api/feelings/${data.id}/disable-comments`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(
+        `${BASE_URL}/api/feelings/${data.id}/disable-comments`,
+        {
+          method: "PATCH",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       if (!res.ok) throw new Error("Yorumlar kapatılamadı");
       setCommentsDisabled(true);
       setShowOptions(false);
@@ -76,10 +85,13 @@ const TweetCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
   const handleEnableComments = async () => {
     try {
       const token = await getToken();
-      const res = await fetch(`${BASE_URL}/api/feelings/${data.id}/enable-comments`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(
+        `${BASE_URL}/api/feelings/${data.id}/enable-comments`,
+        {
+          method: "PATCH",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       if (!res.ok) throw new Error("Yorumlar açılamadı");
       setCommentsDisabled(false);
       setShowOptions(false);
@@ -144,6 +156,8 @@ const TweetCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
               />
             </div>
             <span className={styles.username}>{data.displayName}</span>
+            {/* ✅ 2. ADIM: Belirteci buraya ekle */}
+            <PrivacyIndicator privacy={data.privacy} />
           </div>
 
           <div className={styles.actions}>
@@ -152,7 +166,9 @@ const TweetCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
                 targetUid={data.uid}
                 isTargetPrivate={data.isPrivate || false}
                 initialFollowStatus={followStatus}
-                onFollowStatusChange={(newStatus) => onFollowStatusChange?.(newStatus, data.uid)}
+                onFollowStatusChange={(newStatus) =>
+                  onFollowStatusChange?.(newStatus, data.uid)
+                }
               />
             )}
             <div className={styles.optionsContainer}>
@@ -177,8 +193,12 @@ const TweetCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
         </div>
 
         <div
-          className={`${styles.content} ${needsTruncation ? styles.clickableDescription : ""}`}
-          onClick={needsTruncation ? () => setIsDescriptionModalOpen(true) : undefined}
+          className={`${styles.content} ${
+            needsTruncation ? styles.clickableDescription : ""
+          }`}
+          onClick={
+            needsTruncation ? () => setIsDescriptionModalOpen(true) : undefined
+          }
         >
           {truncatedDescription}
         </div>

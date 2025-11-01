@@ -36,6 +36,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy/PrivacyPolicy";
 import CookiePolicy from "./pages/CookiePolicy/CookiePolicy";
 import Terms from "./pages/Terms/Terms";
 import HelpCenter from "./pages/HelpCenter/HelpCenter";
+import Welcome from "./pages/Welcome/Welcome";
 
 
 const AppContent = () => {
@@ -80,6 +81,7 @@ const AppContent = () => {
       <Route path="/cookie-policy" element={<CookiePolicy />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/help" element={<HelpCenter />} />
+      <Route path="/welcome" element={<Welcome />} />
 
 
       <Route path="/post/:postId" element={<PostDetailPage />} />

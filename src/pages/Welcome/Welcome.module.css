@@ -1,0 +1,410 @@
+/* src/pages/Home/Home.module.css */
+
+/* === 1. TEMEL STİLLER (AboutUs'tan alındı) === */
+.homePage {
+  background: linear-gradient(135deg, #04b4ff, #1157c0, #004483);
+  background-attachment: fixed;
+  font-family: var(--font-main);
+  color: #e8f4ff;
+  width: 100%;
+  overflow-x: hidden; /* Yatay kaydırmayı engelle */
+  /* Sticky Header için üst boşluk */
+  padding-top: 80px;
+}
+
+.contentWrapper {
+  max-width: 1100px; /* Diğer sayfalardan biraz daha geniş */
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.titleH1 {
+  font-size: 3.8rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.titleH2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 3rem;
+  position: relative;
+  padding-bottom: 15px;
+  display: inline-block;
+  text-align: center;
+  width: 100%;
+}
+.titleH2::after {
+  content: "";
+  display: block;
+  width: 60px;
+  height: 4px;
+  background-color: #00e0ff;
+  margin: 10px auto 0;
+  border-radius: 2px;
+}
+
+.text {
+  color: #d6eaff;
+  font-size: 1.1rem;
+  line-height: 1.8;
+}
+
+/* === 2. YENİ: STICKY HEADER (Giriş Yapmamış Kullanıcı) === */
+.stickyHeader {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  height: 80px;
+
+  /* Cam efekti */
+  background: rgba(4, 9, 30, 0.5); /* Koyu bir cam */
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.headerContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.authNav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.navLink {
+  color: #e8f4ff;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: color 0.2s ease;
+}
+.navLink:hover {
+  color: #00e0ff;
+}
+
+.ctaButtonHeader {
+  padding: 10px 25px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #00e0ff, #007bff);
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 224, 255, 0.3);
+}
+.ctaButtonHeader:hover {
+  background: linear-gradient(90deg, #33aadd, #005fcc);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 224, 255, 0.5);
+}
+
+/* === 3. YENİ: HERO BÖLÜMÜ === */
+.heroSection {
+  min-height: calc(90vh - 80px); /* 100vh - header yüksekliği */
+  padding: 60px 0;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.heroSection .contentWrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 3rem;
+}
+
+.heroContent {
+  flex: 1;
+  max-width: 600px;
+}
+.heroContent strong {
+  color: #00e0ff;
+  font-weight: 700;
+}
+
+.heroText {
+  font-size: 1.3rem;
+  color: #f0faff;
+  margin-bottom: 3rem;
+  max-width: 550px;
+}
+
+.ctaButtonHero {
+  /* AboutUs'taki .ctaButton'dan daha büyük */
+  display: inline-flex;
+  padding: 18px 45px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #00e0ff, #007bff);
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 224, 255, 0.4);
+}
+.ctaButtonHero:hover {
+  background: linear-gradient(90deg, #33aadd, #005fcc);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 224, 255, 0.6);
+}
+
+/* Hero Görsel Mockup'ı */
+.heroVisual {
+  flex: 0.8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.visualMockup {
+  width: 100%;
+  max-width: 400px;
+  height: 500px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  padding: 15px;
+}
+.mockupHeader {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #fff;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+.mockupFeedItem,
+.mockupFeelingItem {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  border-radius: 10px;
+  margin-top: 15px;
+  color: #c0e6ff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* === 4. YENİ: "STICKY SCROLL" BÖLÜMÜ === */
+.stickySection {
+  padding: 100px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stickyLayout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+}
+
+.stickyLeft {
+  /* Sol tarafın yüksekliği sağ taraftan azsa bile yer kaplaması için */
+  min-height: 400px;
+}
+
+.stickyContent {
+  position: sticky;
+  top: 120px; /* Header (80px) + 40px boşluk */
+  height: auto;
+}
+.stickyContent .titleH2 {
+  text-align: left;
+  width: auto;
+  display: block;
+}
+.stickyContent .titleH2::after {
+  margin: 10px 0 0; /* Çizgiyi sola hizala */
+}
+
+.stickyVisual {
+  height: 200px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  margin-top: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stickyRight {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Sağdaki kayan kartlar */
+.featureCard {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+.featureCard h3 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 1rem 0;
+}
+.featureIcon {
+  font-size: 2rem;
+  color: #00e0ff;
+  margin-bottom: 1rem;
+}
+
+/* === 5. BENTO GRID BÖLÜMÜ (AboutUs'tan alındı) === */
+.bentoSection {
+  padding: 100px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bentoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.bentoItem {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 25px 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  text-align: left;
+}
+.bentoItem strong {
+  font-size: 1.3rem;
+  color: #fff;
+  display: block;
+  margin-bottom: 10px;
+}
+.bentoItem p {
+  color: #d6eaff;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.bentoItemLarge {
+  grid-row: span 2;
+  min-height: 300px;
+}
+
+/* === 6. FİNAL CTA BÖLÜMÜ === */
+.finalCtaSection {
+  padding: 100px 0 80px 0;
+  text-align: center;
+}
+.finalCtaSection .text {
+  font-size: 1.3rem;
+  color: #f0faff;
+  margin-bottom: 3rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* === 7. FOOTER === */
+.footerSection {
+  padding-top: 40px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* === 8. RESPONSIVE DÜZENLEMELER === */
+@media (max-width: 900px) {
+  .titleH1 {
+    font-size: 2.8rem;
+  }
+  .heroSection .contentWrapper {
+    flex-direction: column-reverse; /* Görsel üste gelsin */
+    text-align: center;
+  }
+  .heroContent {
+    max-width: 100%;
+  }
+  .heroText {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .stickyLayout {
+    grid-template-columns: 1fr; /* Tek sütun */
+  }
+  .stickyLeft {
+    min-height: auto;
+  }
+  .stickyContent {
+    position: static; /* Yapışkanlığı iptal et */
+  }
+  .stickyContent .titleH2 {
+    text-align: center;
+    width: 100%;
+  }
+  .stickyContent .titleH2::after {
+    margin: 10px auto 0; /* Ortala */
+  }
+  .bentoGrid {
+    grid-template-columns: 1fr;
+  }
+  .bentoItemLarge {
+    grid-row: span 1;
+    min-height: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .homePage {
+    padding-top: 70px; /* Header küçülsün */
+  }
+  .stickyHeader {
+    height: 70px;
+  }
+  .authNav {
+    gap: 0.8rem;
+  }
+  .navLink {
+    font-size: 0.9rem;
+  }
+  .ctaButtonHeader {
+    padding: 8px 15px;
+    font-size: 0.85rem;
+  }
+  .logo {
+    font-size: 1.8rem;
+  }
+  .titleH1 {
+    font-size: 2.2rem;
+  }
+  .heroSection {
+    padding: 40px 0;
+  }
+  .stickySection, .bentoSection, .finalCtaSection {
+    padding: 60px 0;
+  }
+}

@@ -51,23 +51,21 @@ const AccountBox = () => {
     setState({ profileData: currentUser });
   }, [currentUser, setState]);
 
-  // Gönderi sayılarını çek
+  // Gönderi sayılarını çek (Kullanıcı alt koleksiyonlarından)
   useEffect(() => {
     if (!currentUser?.uid) return;
 
     const fetchPostCounts = async () => {
       try {
+        // ✅ DEĞİŞİKLİK: Global koleksiyonlar yerine kullanıcının alt koleksiyonları sorgulandı
         const postsQuery = query(
-          collection(db, "globalPosts"),
-          where("uid", "==", currentUser.uid)
+          collection(db, "users", currentUser.uid, "posts")
         );
         const feelingsQuery = query(
-          collection(db, "globalFeelings"),
-          where("uid", "==", currentUser.uid)
+          collection(db, "users", currentUser.uid, "feelings")
         );
         const feedsQuery = query(
-          collection(db, "globalFeeds"),
-          where("ownerId", "==", currentUser.uid)
+          collection(db, "users", currentUser.uid, "feeds")
         );
 
         const [postsSnapshot, feelingsSnapshot, feedsSnapshot] =
@@ -100,6 +98,9 @@ const AccountBox = () => {
       let snapshot;
       let queryToRun;
 
+      // Bu helper fonksiyonu (processSnapshot) harika,
+      // alt koleksiyondan gelen veriye güncel kullanıcı verisini ekliyor.
+      // Bu yüzden olduğu gibi kalıyor.
       const processSnapshot = (snapshot, type) =>
         snapshot.docs.map((doc) => {
           const itemData = { id: doc.id, ...doc.data() };
@@ -120,9 +121,15 @@ const AccountBox = () => {
               userProfileImage: currentUser.photoURL,
             };
           }
+          // 'likes' ve 'tags' için gelen veriyi doğrudan döndür
+          if (["likes", "tags"].includes(type)) {
+            return itemData;
+          }
           return itemData;
         });
 
+      // Likes ve Tags (Beğenilenler ve Kaydedilenler) için mantık
+      // Önce beğenilen/kaydedilen post ID'lerini al
       const [likesSnapshot, tagsSnapshot] = await Promise.all([
         getDocs(collection(db, "users", currentUser.uid, "likes")),
         getDocs(collection(db, "users", currentUser.uid, "tags")),
@@ -133,9 +140,9 @@ const AccountBox = () => {
 
       switch (tab) {
         case "posts":
+          // ✅ DEĞİŞİKLİK: globalPosts yerine kullanıcının alt koleksiyonu
           queryToRun = query(
-            collection(db, "globalPosts"),
-            where("uid", "==", currentUser.uid),
+            collection(db, "users", currentUser.uid, "posts"),
             orderBy("createdAt", "desc")
           );
           snapshot = await getDocs(queryToRun);
@@ -145,9 +152,9 @@ const AccountBox = () => {
           });
           break;
         case "feelings":
+          // ✅ DEĞİŞİKLİK: globalFeelings yerine kullanıcının alt koleksiyonu
           queryToRun = query(
-            collection(db, "globalFeelings"),
-            where("uid", "==", currentUser.uid),
+            collection(db, "users", currentUser.uid, "feelings"),
             orderBy("createdAt", "desc")
           );
           snapshot = await getDocs(queryToRun);
@@ -157,9 +164,9 @@ const AccountBox = () => {
           });
           break;
         case "feeds":
+          // ✅ DEĞİŞİKLİK: globalFeeds yerine kullanıcının alt koleksiyonu
           queryToRun = query(
-            collection(db, "globalFeeds"),
-            where("ownerId", "==", currentUser.uid),
+            collection(db, "users", currentUser.uid, "feeds"),
             orderBy("createdAt", "desc")
           );
           snapshot = await getDocs(queryToRun);
@@ -169,9 +176,13 @@ const AccountBox = () => {
           });
           break;
         case "likes":
+          // Not: Bu mantık, beğenilen gönderilerin "globalPosts" içinde olduğunu varsayar.
+          // Eğer beğenilen özel (private) gönderiler de gösterilecekse,
+          // 'likes' koleksiyonuna verinin kopyalanması (denormalizasyon) gerekir.
+          // Mevcut (çalışan) mantığı koruyoruz:
           if (likedIds.length > 0) {
             const likedPostsQuery = query(
-              collection(db, "globalPosts"),
+              collection(db, "globalPosts"), // Beğenilenler hala globalden çekiliyor
               where("__name__", "in", likedIds.slice(0, 30))
             );
             const likedPostsSnapshot = await getDocs(likedPostsQuery);
@@ -184,9 +195,10 @@ const AccountBox = () => {
           }
           break;
         case "tags":
+          // Not: Bu mantık da 'likes' ile aynı varsayıma sahiptir.
           if (savedIds.length > 0) {
             const taggedPostsQuery = query(
-              collection(db, "globalPosts"),
+              collection(db, "globalPosts"), // Kaydedilenler hala globalden çekiliyor
               where("__name__", "in", savedIds.slice(0, 30))
             );
             const taggedPostsSnapshot = await getDocs(taggedPostsQuery);

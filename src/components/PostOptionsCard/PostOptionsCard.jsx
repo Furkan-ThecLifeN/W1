@@ -36,7 +36,6 @@ const PostOptionsCard = ({
   return (
     // 2. ADIM: Bileşeni bir React Fragment (<> ... </>) ile sarmala
     <>
-      {/* Bu senin açılır menün, bunda değişiklik yok */}
       <div className={styles.card}>
         {isOwner && (
           <>

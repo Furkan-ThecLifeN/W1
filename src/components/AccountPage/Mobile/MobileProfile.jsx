@@ -37,24 +37,24 @@ const MobileProfile = () => {
     const fetchPostCounts = async () => {
       if (!currentUser?.uid) return;
       try {
+        // ✅ DEĞİŞİKLİK: Sorgular artık global yerine kullanıcının alt koleksiyonlarına yapılıyor
         const postsQuery = query(
-          collection(db, "globalPosts"),
-          where("uid", "==", currentUser.uid)
+          collection(db, "users", currentUser.uid, "posts")
         );
         const feelingsQuery = query(
-          collection(db, "globalFeelings"),
-          where("uid", "==", currentUser.uid)
+          collection(db, "users", currentUser.uid, "feelings")
         );
         const feedsQuery = query(
-          collection(db, "globalFeeds"),
-          where("ownerId", "==", currentUser.uid)
+          collection(db, "users", currentUser.uid, "feeds")
         );
+
         const [postsSnapshot, feelingsSnapshot, feedsSnapshot] =
           await Promise.all([
             getDocs(postsQuery),
             getDocs(feelingsQuery),
             getDocs(feedsQuery),
           ]);
+
         setPostCounts({
           posts: postsSnapshot.size,
           feelings: feelingsSnapshot.size,
@@ -95,6 +95,10 @@ const MobileProfile = () => {
                 userProfileImage: currentUser.photoURL,
               };
             }
+            // 'likes' ve 'tags' için gelen veriyi doğrudan döndür
+            if (["likes", "tags"].includes(type)) {
+              return itemData;
+            }
             return itemData;
           });
 
@@ -108,36 +112,38 @@ const MobileProfile = () => {
         let snapshot;
         switch (activeTab) {
           case "posts":
+            // ✅ DEĞİŞİKLİK: globalPosts yerine kullanıcının alt koleksiyonu
             snapshot = await getDocs(
               query(
-                collection(db, "globalPosts"),
-                where("uid", "==", currentUser.uid),
+                collection(db, "users", currentUser.uid, "posts"),
                 orderBy("createdAt", "desc")
               )
             );
             setAllData(activeTab, processSnapshot(snapshot, activeTab));
             break;
           case "feelings":
+            // ✅ DEĞİŞİKLİK: globalFeelings yerine kullanıcının alt koleksiyonu
             snapshot = await getDocs(
               query(
-                collection(db, "globalFeelings"),
-                where("uid", "==", currentUser.uid),
+                collection(db, "users", currentUser.uid, "feelings"),
                 orderBy("createdAt", "desc")
               )
             );
             setAllData(activeTab, processSnapshot(snapshot, activeTab));
             break;
           case "feeds":
+            // ✅ DEĞİŞİKLİK: globalFeeds yerine kullanıcının alt koleksiyonu
             snapshot = await getDocs(
               query(
-                collection(db, "globalFeeds"),
-                where("ownerId", "==", currentUser.uid),
+                collection(db, "users", currentUser.uid, "feeds"),
                 orderBy("createdAt", "desc")
               )
             );
             setAllData(activeTab, processSnapshot(snapshot, activeTab));
             break;
           case "likes":
+            // Beğenilenler (likes) ve kaydedilenler (tags) mantığı global koleksiyondan
+            // okumaya devam etmeli, çünkü kullanıcı başkalarının gönderilerini beğenebilir.
             if (likedIds.length > 0) {
               const likedQuery = query(
                 collection(db, "globalPosts"),

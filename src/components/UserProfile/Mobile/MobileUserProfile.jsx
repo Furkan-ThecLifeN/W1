@@ -1,21 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import styles from "./MobileUserProfile.module.css";
 import { useAuth } from "../../../context/AuthProvider";
 import LoadingOverlay from "../../LoadingOverlay/LoadingOverlay";
 import ConnectionsModal from "../../ConnectionsModal/ConnectionsModal";
-import { db } from "../../../config/firebase-client";
-import {
-  collection,
-  query,
-  getDocs,
-  orderBy,
-  limit,
-  startAfter,
-  where,
-  doc,
-  getDoc,
-} from "firebase/firestore";
+// ⛔️ Firebase importları kaldırıldı
+// import { db } from "../../../config/firebase-client";
+// import { ... } from "firebase/firestore";
 
 // Yeni İçerik Bileşenlerini Import Etme
 import PostCard from "../../Post/PostCard";
@@ -29,19 +20,16 @@ import {
   FaUserMinus,
   FaUserTimes,
   FaLock,
-  FaBan, // ✅ YENİ: Engelleme ikonu eklendi
-  // FaEllipsisV, FaCommentDots kaldırıldı
+  FaBan,
 } from "react-icons/fa";
 import { IoIosSettings } from "react-icons/io";
 import axios from "axios";
 import Footer from "../../Footer/Footer";
 
-// Constants
-const ITEMS_PER_PAGE = 10;
-
 const MobileUserProfile = () => {
   const { username } = useParams();
   const { currentUser, showToast } = useAuth();
+  const navigate = useNavigate(); // useNavigate eklendi (UserProfile'da vardı)
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -57,295 +45,227 @@ const MobileUserProfile = () => {
     tags: [],
   });
   const [loadingContent, setLoadingContent] = useState({});
-  const [lastVisible, setLastVisible] = useState({});
-  const [hasMore, setHasMore] = useState({});
+  // ⛔️ Pagination state'leri kaldırıldı
+  // const [lastVisible, setLastVisible] = useState({});
+  // const [hasMore, setHasMore] = useState({});
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [showPostModal, setShowPostModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
 
-  // ✅ YENİ: İşlem durumları eklendi
   const [isFollowProcessing, setIsFollowProcessing] = useState(false);
   const [isBlockProcessing, setIsBlockProcessing] = useState(false);
 
-  const [contentCounts, setContentCounts] = useState({
-    posts: 0,
-    feeds: 0,
-    feelings: 0,
-    likes: 0,
-    tags: 0,
-  });
+  // ⛔️ contentCounts state'i kaldırıldı
 
   const apiBaseUrl = process.env.REACT_APP_API_URL;
 
-  // Function to fetch the user's content (posts, feeds, etc.)
-  const fetchUserContent = async (type, isInitialLoad = true) => {
-    // ✅ GÜNCELLENDİ: Engelleme durumunda içerik çekmeyi durdur
-    if (!profileData?.uid) return;
-    if (followStatus === "blocking" || followStatus === "blocked_by") {
-      setLoadingContent((prev) => ({ ...prev, [type]: false }));
-      setAllData((prev) => ({ ...prev, [type]: [] }));
-      return;
+  // ✅ YENİ: UserProfile.jsx'ten eklenen Ref'ler
+  const idTokenRef = useRef(null);
+  const inflightRequests = useRef(new Map());
+  const axiosInstance = useRef(axios.create({ baseURL: apiBaseUrl }));
+
+  // ✅ YENİ: UserProfile.jsx'ten eklenen dedupedFetch
+  const dedupedFetch = async (key, fetcher) => {
+    if (inflightRequests.current.has(key)) {
+      return inflightRequests.current.get(key);
     }
-
-    setLoadingContent((prev) => ({ ...prev, [type]: true }));
-
+    const promise = fetcher();
+    inflightRequests.current.set(key, promise);
     try {
-      let collectionName;
-      let userFilterField = "uid";
-
-      switch (type) {
-        case "feelings":
-          collectionName = "globalFeelings";
-          break;
-        case "posts":
-          collectionName = "globalPosts";
-          break;
-        case "feeds":
-          collectionName = "globalFeeds";
-          userFilterField = "ownerId";
-          break;
-        case "likes":
-        case "tags":
-          collectionName = `users/${profileData.uid}/${type}`;
-          userFilterField = null;
-          break;
-        default:
-          setLoadingContent((prev) => ({ ...prev, [type]: false }));
-          return;
-      }
-
-      let queryRef = collection(db, collectionName);
-
-      if (userFilterField) {
-        queryRef = query(
-          queryRef,
-          where(userFilterField, "==", profileData.uid),
-          orderBy("createdAt", "desc")
-        );
-      } else {
-        queryRef = query(queryRef, orderBy("createdAt", "desc"));
-      }
-
-      const q = query(
-        queryRef,
-        ...(isInitialLoad
-          ? [limit(ITEMS_PER_PAGE)]
-          : [startAfter(lastVisible[type]), limit(ITEMS_PER_PAGE)])
-      );
-
-      if (!isInitialLoad && !lastVisible[type]) {
-        setLoadingContent((prev) => ({ ...prev, [type]: false }));
-        setHasMore((prev) => ({ ...prev, [type]: false }));
-        return;
-      }
-
-      const querySnapshot = await getDocs(q);
-      const fetchedData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      let contentData = [];
-      if (type === "likes" || type === "tags") {
-        for (const item of fetchedData) {
-          const postRef = doc(db, item.postType, item.postId);
-          const postSnap = await getDoc(postRef);
-          if (postSnap.exists()) {
-            contentData.push({
-              id: postSnap.id,
-              ...postSnap.data(),
-              originalType: item.postType,
-            });
-          }
-        }
-      } else {
-        contentData = fetchedData;
-      }
-
-      let filteredData = contentData;
-      if (type === "feeds") {
-        filteredData = contentData.filter((item) => item.mediaUrl);
-      }
-
-      setAllData((prevData) => {
-        const newData = filteredData.filter(
-          (item) =>
-            !prevData[type].some((existingItem) => existingItem.id === item.id)
-        );
-        return { ...prevData, [type]: [...prevData[type], ...newData] };
-      });
-
-      setLastVisible((prev) => ({
-        ...prev,
-        [type]: querySnapshot.docs[querySnapshot.docs.length - 1],
-      }));
-      setHasMore((prev) => ({
-        ...prev,
-        [type]: fetchedData.length === ITEMS_PER_PAGE,
-      }));
-    } catch (error) {
-      console.error("Veri çekme hatası:", error);
-      showToast("İçerik yüklenirken bir hata oluştu.", "error");
+      const result = await promise;
+      return result;
     } finally {
-      setLoadingContent((prev) => ({ ...prev, [type]: false }));
+      inflightRequests.current.delete(key);
     }
   };
 
-  const fetchContentCounts = async (profileUid) => {
-    // ✅ GÜNCELLENDİ: Engelleme durumunda sayım yapmayı durdur
-    if (
-      !profileUid ||
-      followStatus === "blocking" ||
-      followStatus === "blocked_by"
-    )
-      return;
-    try {
-      const postsCountQuery = query(
-        collection(db, `globalPosts`),
-        where("uid", "==", profileUid)
-      );
-      const feelingsCountQuery = query(
-        collection(db, `globalFeelings`),
-        where("uid", "==", profileUid)
-      );
-      const feedsCountQuery = query(
-        collection(db, `globalFeeds`),
-        where("ownerId", "==", profileUid)
-      );
-      const likesCountQuery = query(
-        collection(db, `users/${profileUid}/likes`)
-      );
-      const tagsCountQuery = query(collection(db, `users/${profileUid}/tags`));
-
-      const [
-        postsSnapshot,
-        feelingsSnapshot,
-        feedsSnapshot,
-        likesSnapshot,
-        tagsSnapshot,
-      ] = await Promise.all([
-        getDocs(postsCountQuery),
-        getDocs(feelingsCountQuery),
-        getDocs(feedsCountQuery),
-        getDocs(likesCountQuery),
-        getDocs(tagsCountQuery),
-      ]);
-
-      setContentCounts({
-        posts: postsSnapshot.size,
-        feelings: feelingsSnapshot.size,
-        feeds: feedsSnapshot.size,
-        likes: likesSnapshot.size,
-        tags: tagsSnapshot.size,
-      });
-    } catch (error) {
-      console.error("Koleksiyon sayıları çekme hatası:", error);
-      setContentCounts({
-        posts: 0,
-        feeds: 0,
-        feelings: 0,
-        likes: 0,
-        tags: 0,
-      });
-    }
-  };
-
+  // ✅ YENİ: UserProfile.jsx'ten eklenen idTokenRef useEffect'i
   useEffect(() => {
-    // ✅ GÜNCELLENDİ: Profil ve Durum Çekme
+    let mounted = true;
+    if (!currentUser) {
+      idTokenRef.current = null;
+      return;
+    }
+    const fetchToken = async () => {
+      try {
+        const t = await currentUser.getIdToken();
+        if (mounted) {
+          idTokenRef.current = t;
+        }
+      } catch (err) {
+        console.error("Token alınamadı:", err);
+      }
+    };
+    fetchToken();
+    return () => {
+      mounted = false;
+    };
+  }, [currentUser]);
+
+  // ⛔️ fetchUserContent fonksiyonu kaldırıldı
+  // ⛔️ fetchContentCounts fonksiyonu kaldırıldı
+
+  // ✅ GÜNCELLENDİ: fetchUserProfileAndStatus (UserProfile.jsx'teki mantıkla)
+  useEffect(() => {
+    let mounted = true;
     const fetchUserProfileAndStatus = async () => {
       setLoading(true);
       setError(null);
-      setProfileData(null); // Temizle
-      setFollowStatus("none"); // Sıfırla
+      setProfileData(null);
+      setFollowStatus("none");
+
       try {
-        const idToken = await currentUser.getIdToken();
-        const profileRes = await axios.get(
-          `${apiBaseUrl}/api/users/profile/${username}`,
-          {
-            headers: { Authorization: `Bearer ${idToken}` },
-          }
+        const profileRes = await dedupedFetch(`profile/${username}`, () =>
+          axiosInstance.current.get(`/api/users/profile/${username}`)
         );
+
+        if (!mounted) return;
         const profile = profileRes.data.profile;
-        setProfileData(profile);
+        setProfileData(profile); // Stats verisi artık burada geliyor
 
-        let status = "none";
-        if (profile.uid === currentUser.uid) {
-          status = "self";
-        } else {
-          const statusRes = await axios.get(
-            `${apiBaseUrl}/api/users/profile/${profile.uid}/status`,
-            {
-              headers: { Authorization: `Bearer ${idToken}` },
-            }
-          );
-          status = statusRes.data.followStatus;
+        let currentFollowStatus = "none";
+        if (currentUser) {
+          const idToken = await currentUser.getIdToken();
+          if (!mounted) return;
+          if (profile.uid === currentUser.uid) {
+            currentFollowStatus = "self";
+          } else {
+            const headers = { Authorization: `Bearer ${idToken}` };
+            const statusRes = await dedupedFetch(`status/${profile.uid}`, () =>
+              axiosInstance.current.get(
+                `/api/users/profile/${profile.uid}/status`,
+                { headers }
+              )
+            );
+            if (!mounted) return;
+            currentFollowStatus = statusRes.data.followStatus;
+          }
         }
-        setFollowStatus(status); // ✅ 'blocking' ve 'blocked_by' dahil
 
-        const canView =
-          !profile.isPrivate || status === "following" || status === "self";
-
-        // ✅ GÜNCELLENDİ: Engelleme durumunda sayım yapma
-        if (canView && status !== "blocking" && status !== "blocked_by") {
-          fetchContentCounts(profile.uid);
-        } else {
-          setContentCounts({
-            posts: 0,
-            feeds: 0,
-            feelings: 0,
-            likes: 0,
-            tags: 0,
-          });
+        if (mounted) {
+          setFollowStatus(currentFollowStatus);
         }
       } catch (err) {
-        console.error("Profil veya takip durumu çekme hatası:", err);
-        // ✅ GÜNCELLENDİ: Hata yönetimi
+        console.error(
+          "Profil veya takip durumu çekme hatası:",
+          err.response?.data || err.message
+        );
         if (err.response && err.response.status === 404) {
           setError("Kullanıcı bulunamadı.");
         } else {
           setError("Profil bilgileri yüklenemedi.");
         }
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
 
     if (username && currentUser) {
       fetchUserProfileAndStatus();
+    } else if (!currentUser && username) {
+      // Misafir kullanıcı için (tokensiz istek)
+      fetchUserProfileAndStatus();
     }
-  }, [username, currentUser, apiBaseUrl]);
+  }, [username, currentUser]);
 
+  // ✅✅✅ GÜNCELLENEN BÖLÜM BURASI ✅✅✅
+  // Bu useEffect, artık Firestore'u değil,
+  // 1. Adım'da oluşturduğunuz yeni API endpoint'ini çağıracak.
   useEffect(() => {
-    if (profileData?.uid) {
-      const canView =
+    let mounted = true;
+    const fetchTabData = async () => {
+      if (!profileData || !profileData.uid) return;
+
+      // 1. Gizli profili ve engellenen profilleri kontrol et
+      const canViewContent =
         !profileData.isPrivate ||
         followStatus === "following" ||
         followStatus === "self";
 
-      // ✅ GÜNCELLENDİ: Engelleme durumunda içerik çekme
       if (
-        canView &&
-        followStatus !== "blocking" &&
-        followStatus !== "blocked_by"
+        followStatus === "blocking" ||
+        followStatus === "blocked_by" ||
+        !canViewContent
       ) {
-        if (allData[activeTab].length === 0) {
-          fetchUserContent(activeTab, true);
-        }
-      } else {
-        setAllData({
-          posts: [],
-          feelings: [],
-          feeds: [],
-          likes: [],
-          tags: [],
-        });
-        setLoadingContent({});
+        setLoadingContent((prev) => ({ ...prev, [activeTab]: false }));
+        setAllData((prev) => ({ ...prev, [activeTab]: [] }));
+        return;
       }
-    }
-  }, [activeTab, profileData, followStatus]);
 
-  // ✅ GÜNCELLENDİ: Takip Fonksiyonu (Daha verimli)
+      // 2. 'likes' veya 'tags' sekmeleri (Yorum satırında olsalar da)
+      if (
+        !canViewContent &&
+        profileData.isPrivate &&
+        ["likes", "tags"].includes(activeTab)
+      ) {
+        setAllData((prev) => ({ ...prev, [activeTab]: [] }));
+        return;
+      }
+
+      // 3. Bu tab için veri zaten çekildiyse tekrar çekme
+      if (allData[activeTab]?.length > 0) return;
+
+      setLoadingContent((prev) => ({ ...prev, [activeTab]: true }));
+
+      try {
+        // 4. API'yi çağırmak için token'a ihtiyacımız var
+        const idToken = idTokenRef.current;
+        if (!idToken) {
+          throw new Error(
+            "Kimlik doğrulama token'ı bulunamadı. (idTokenRef.current is null)"
+          );
+        }
+
+        const headers = { Authorization: `Bearer ${idToken}` };
+
+        // 5. YENİ API ENDPOINT'İNİ ÇAĞIR
+        const response = await axiosInstance.current.get(
+          `/api/users/profile/${username}/content`, // Profilin kullanıcı adı
+          {
+            headers,
+            params: { tab: activeTab }, // ?tab=posts, ?tab=feelings vb.
+          }
+        );
+
+        if (!mounted) return;
+
+        // 6. Gelen veriyi işle
+        const processedData = (response.data.content || []).map((item) => ({
+          ...item,
+          displayName: item.displayName || profileData.displayName,
+          photoURL: item.photoURL || profileData.photoURL,
+          username: item.username || profileData.username,
+          isPrivate: profileData.isPrivate,
+          uid: item.uid || profileData.uid,
+        }));
+
+        setAllData((prev) => ({
+          ...prev,
+          [activeTab]: processedData,
+        }));
+      } catch (error) {
+        console.error(
+          `Veri çekilirken hata oluştu (${activeTab}):`,
+          error.response?.data || error.message
+        );
+        showToast("Gönderiler yüklenirken bir sorun oluştu.", "error");
+      } finally {
+        if (mounted) {
+          setLoadingContent((prev) => ({ ...prev, [activeTab]: false }));
+        }
+      }
+    };
+
+    fetchTabData();
+
+    return () => {
+      mounted = false;
+    };
+  }, [activeTab, profileData, followStatus, username, showToast]);
+  // ✅✅✅ GÜNCELLENEN BÖLÜM SONU ✅✅✅
+
+  // ✅ GÜNCELLENDİ: handleFollowAction (UserProfile.jsx'teki mantıkla)
   const handleFollowAction = async () => {
     if (!profileData?.uid || isFollowProcessing) return;
     setIsFollowProcessing(true);
@@ -354,7 +274,7 @@ const MobileUserProfile = () => {
     const isPrivate = profileData?.isPrivate;
 
     try {
-      const idToken = await currentUser.getIdToken();
+      const idToken = idTokenRef.current; // ✅ Ref'ten al
       if (!idToken) throw new Error("Kimlik doğrulama belirteci mevcut değil.");
 
       let endpoint;
@@ -363,16 +283,16 @@ const MobileUserProfile = () => {
 
       switch (previousFollowStatus) {
         case "none":
-          endpoint = `${apiBaseUrl}/api/users/follow`;
+          endpoint = `/api/users/follow`;
           method = "POST";
           bodyData = { targetUid: profileData.uid };
           break;
         case "pending":
-          endpoint = `${apiBaseUrl}/api/users/follow/request/retract/${profileData.uid}`;
+          endpoint = `/api/users/follow/request/retract/${profileData.uid}`;
           method = "DELETE";
           break;
         case "following":
-          endpoint = `${apiBaseUrl}/api/users/unfollow/${profileData.uid}`;
+          endpoint = `/api/users/unfollow/${profileData.uid}`;
           method = "DELETE";
           break;
         default:
@@ -392,9 +312,12 @@ const MobileUserProfile = () => {
       let response;
 
       if (method === "POST") {
-        response = await axios.post(endpoint, bodyData, { headers });
+        response = await axiosInstance.current.post(endpoint, bodyData, {
+          // ✅ axiosInstance
+          headers,
+        });
       } else {
-        response = await axios.delete(endpoint, { headers });
+        response = await axiosInstance.current.delete(endpoint, { headers }); // ✅ axiosInstance
       }
 
       setFollowStatus(response.data.status || "none");
@@ -417,7 +340,7 @@ const MobileUserProfile = () => {
     }
   };
 
-  // ✅ YENİ: Engelleme/Engeli Kaldırma Fonksiyonu
+  // ✅ GÜNCELLENDİ: handleBlockAction (UserProfile.jsx'teki mantıkla)
   const handleBlockAction = async () => {
     if (!profileData?.uid || isBlockProcessing) return;
     setIsBlockProcessing(true);
@@ -426,7 +349,7 @@ const MobileUserProfile = () => {
     const targetUid = profileData.uid;
 
     try {
-      const idToken = await currentUser.getIdToken();
+      const idToken = idTokenRef.current; // ✅ Ref'ten al
       if (!idToken) throw new Error("Kimlik doğrulama belirteci mevcut değil.");
       const headers = { Authorization: `Bearer ${idToken}` };
 
@@ -435,11 +358,11 @@ const MobileUserProfile = () => {
 
       if (followStatus === "blocking") {
         // Engeli Kaldır
-        response = await axios.delete(
-          `${apiBaseUrl}/api/users/unblock/${targetUid}`,
+        response = await axiosInstance.current.delete( // ✅ axiosInstance
+          `/api/users/unblock/${targetUid}`,
           { headers }
         );
-        newStatus = "none"; // Engel kalkınca 'none' durumuna döner
+        newStatus = "none";
         showToast("Kullanıcının engeli kaldırıldı.", "success");
       } else {
         // Engelle
@@ -451,8 +374,8 @@ const MobileUserProfile = () => {
           return;
         }
 
-        response = await axios.post(
-          `${apiBaseUrl}/api/users/block/${targetUid}`,
+        response = await axiosInstance.current.post( // ✅ axiosInstance
+          `/api/users/block/${targetUid}`,
           {},
           { headers }
         );
@@ -462,7 +385,6 @@ const MobileUserProfile = () => {
 
       setFollowStatus(response.data.status || newStatus);
 
-      // Engelleme/takibi bırakma sonrası istatistikler değişebilir
       if (response.data.newStats) {
         setProfileData((prev) => ({
           ...prev,
@@ -482,10 +404,7 @@ const MobileUserProfile = () => {
     }
   };
 
-  // ❌ KALDIRILDI: handleMessageAction
-  // const handleMessageAction = async () => { ... };
-
-  // ✅ GÜNCELLENDİ: StatClick (Engelleme kontrolü eklendi)
+  // ✅ GÜNCELLENDİ: handleStatClick (UserProfile.jsx'teki mantıkla)
   const handleStatClick = (type) => {
     if (followStatus === "blocking" || followStatus === "blocked_by") {
       return;
@@ -503,10 +422,18 @@ const MobileUserProfile = () => {
     }
   };
 
-  // ... (handleVideoClick, handleCloseVideoModal, handlePostClick, handleClosePostModal fonksiyonları aynı)
+  // ... (Video/Post modal handle fonksiyonları aynı) ...
   const handleVideoClick = (videoData) => {
     if (videoData && videoData.mediaUrl) {
-      setSelectedVideo(videoData);
+      // Veriyi zenginleştir
+      const fullData = {
+        ...videoData,
+        displayName: profileData.displayName,
+        username: profileData.username,
+        photoURL: profileData.photoURL,
+        userProfileImage: profileData.photoURL,
+      };
+      setSelectedVideo(fullData);
       setShowVideoModal(true);
     } else {
       console.error("Geçersiz video verisi:", videoData);
@@ -520,8 +447,14 @@ const MobileUserProfile = () => {
 
   const handlePostClick = (postData) => {
     if (postData && postData.id) {
-      const postWithStatus = { ...postData, followStatus: followStatus };
-      setSelectedPost(postWithStatus);
+      const fullData = {
+        ...postData,
+        displayName: profileData.displayName,
+        username: profileData.username,
+        photoURL: profileData.photoURL,
+        followStatus: followStatus, // Takip durumunu da ekle
+      };
+      setSelectedPost(fullData);
       setShowPostModal(true);
     } else {
       console.error("Geçersiz gönderi verisi:", postData);
@@ -533,43 +466,82 @@ const MobileUserProfile = () => {
     setSelectedPost(null);
   };
 
-  // ... (getCardComponent ve emptyMessage fonksiyonları aynı)
+  // ✅ GÜNCELLENDİ: getCardComponent (Yeni 'type' alanlarına göre)
   const getCardComponent = (item) => {
-    const type = item.originalType || activeTab;
+    const type = item.type || activeTab; // Backend'den 'type' alanı gelir
+
+    // Veriyi zenginleştir (Her karta profil sahibinin bilgisini ekle)
+    const cardData = {
+      ...item,
+      displayName: profileData.displayName,
+      username: profileData.username,
+      photoURL: profileData.photoURL,
+      isPrivate: profileData.isPrivate,
+      uid: profileData.uid,
+      ownerId: profileData.uid, // Feeds için
+      userProfileImage: profileData.photoURL, // Feeds için
+    };
 
     switch (type) {
-      case "globalPosts":
-      case "posts":
+      case "post":
       case "likes":
       case "tags":
         return (
-          <PostThumbnail key={item.id} data={item} onClick={handlePostClick} />
+          <PostThumbnail
+            key={item.id}
+            data={cardData}
+            onClick={() => handlePostClick(cardData)} // handlePostClick'e cardData ver
+          />
         );
-      case "globalFeelings":
-      case "feelings":
-        return <TweetCard key={item.id} data={item} />;
-      case "globalFeeds":
-      case "feeds":
+      case "feeling":
+        return <TweetCard key={item.id} data={cardData} />;
+      case "feed":
         return (
           <VideoThumbnail
             key={item.id}
             mediaUrl={item.mediaUrl}
-            onClick={() => handleVideoClick(item)}
+            onClick={() => handleVideoClick(cardData)} // handleVideoClick'e cardData ver
           />
         );
       default:
+         // Fallback (eski global... anahtarları için)
+        if (activeTab === "posts" || activeTab === "likes" || activeTab === "tags") {
+           return <PostThumbnail key={item.id} data={cardData} onClick={() => handlePostClick(cardData)} />;
+        }
+        if (activeTab === "feelings") {
+           return <TweetCard key={item.id} data={cardData} />;
+        }
+        if (activeTab === "feeds") {
+           return <VideoThumbnail key={item.id} mediaUrl={item.mediaUrl} onClick={() => handleVideoClick(cardData)} />;
+        }
         return null;
     }
   };
 
+  // ... (emptyMessage aynı) ...
   const emptyMessage = () => {
-    // ... (bu fonksiyon değişmedi)
+    if (!profileData) return "Yükleniyor...";
     switch (activeTab) {
       case "posts":
         return `${
           profileData.displayName || profileData.username
         }, henüz bir gönderi paylaşmadı.`;
-      // ... diğer case'ler
+      case "feelings":
+        return `${
+          profileData.displayName || profileData.username
+        }, henüz bir duygu paylaşmadı.`;
+      case "feeds":
+        return `${
+          profileData.displayName || profileData.username
+        }, henüz feed'leri bulunmamaktadır.`;
+      case "likes":
+        return `${
+          profileData.displayName || profileData.username
+        }, henüz bir gönderiyi beğenmedi.`;
+      case "tags":
+        return `${
+          profileData.displayName || profileData.username
+        }, henüz etiketlendiği bir gönderi bulunmamaktadır.`;
       default:
         return `Henüz bir içerik bulunmamaktadır.`;
     }
@@ -579,7 +551,7 @@ const MobileUserProfile = () => {
     return <LoadingOverlay />;
   }
 
-  // ✅ GÜNCELLENDİ: Hata ekranı
+  // ✅ GÜNCELLENDİ: Hata ekranı (UserProfile.jsx'teki mantıkla)
   if (error) {
     return (
       <div className={styles.container}>
@@ -595,7 +567,7 @@ const MobileUserProfile = () => {
     );
   }
 
-  // ✅ YENİ: Engellendi (blocked_by) ekranı
+  // ✅ GÜNCELLENDİ: Engellendi (blocked_by) ekranı (UserProfile.jsx'teki mantıkla)
   if (followStatus === "blocked_by") {
     return (
       <div className={styles.container}>
@@ -615,7 +587,6 @@ const MobileUserProfile = () => {
     return <div>Kullanıcı profili bulunamadı.</div>; // Fallback
   }
 
-  // ✅ GÜNCELLENDİ: canViewContent (Engelleme kontrolü)
   const canViewContent =
     !profileData.isPrivate ||
     followStatus === "following" ||
@@ -623,18 +594,18 @@ const MobileUserProfile = () => {
 
   const { displayName, photoURL, bio, familySystem, stats } = profileData;
 
-  // ✅ GÜNCELLENDİ: Takip Butonu (Engelleme kontrolü)
+  // ✅ GÜNCELLENDİ: Takip Butonu (UserProfile.jsx'teki mantıkla)
   const renderFollowButton = () => {
     switch (followStatus) {
       case "self":
-      case "blocking": // Engelliyorsan gösterme
-      case "blocked_by": // Engellendiysen gösterme
+      case "blocking":
+      case "blocked_by":
         return null;
       case "following":
         return (
           <button
             onClick={handleFollowAction}
-            className={`${styles.unfollowBtn} ${styles.actionButton}`}
+            className={`${styles.unfollowBtn} ${styles.actionButton}`} // Kendi CSS'inize göre stiller
             disabled={isFollowProcessing}
           >
             <FaUserMinus /> Takibi Bırak
@@ -644,7 +615,7 @@ const MobileUserProfile = () => {
         return (
           <button
             onClick={handleFollowAction}
-            className={`${styles.pendingBtn} ${styles.actionButton}`}
+            className={`${styles.pendingBtn} ${styles.actionButton}`} // Kendi CSS'inize göre stiller
             disabled={isFollowProcessing}
           >
             <FaUserTimes /> İstek Gönderildi
@@ -655,7 +626,7 @@ const MobileUserProfile = () => {
         return (
           <button
             onClick={handleFollowAction}
-            className={`${styles.followBtn} ${styles.actionButton}`}
+            className={`${styles.followBtn} ${styles.actionButton}`} // Kendi CSS'inize göre stiller
             disabled={isFollowProcessing}
           >
             <FaUserPlus /> Takip Et
@@ -664,17 +635,17 @@ const MobileUserProfile = () => {
     }
   };
 
-  // ✅ YENİ: Engelleme Butonu Render Fonksiyonu
+  // ✅ GÜNCELLENDİ: Engelleme Butonu (UserProfile.jsx'teki mantıkla)
   const renderBlockButton = () => {
     switch (followStatus) {
       case "self":
-      case "blocked_by": // Engellendiysen gösterme
+      case "blocked_by":
         return null;
       case "blocking":
         return (
           <button
             onClick={handleBlockAction}
-            className={`${styles.unfollowBtn} ${styles.actionButton}`} // Gri stil
+            className={`${styles.unfollowBtn} ${styles.actionButton}`}
             disabled={isBlockProcessing}
           >
             <FaUserPlus /> Engeli Kaldır
@@ -687,7 +658,7 @@ const MobileUserProfile = () => {
         return (
           <button
             onClick={handleBlockAction}
-            className={`${styles.blockBtn} ${styles.actionButton}`} // Kırmızı stil (CSS eklenmeli)
+            className={`${styles.blockBtn} ${styles.actionButton}`}
             disabled={isBlockProcessing}
           >
             <FaBan /> Engelle
@@ -700,14 +671,17 @@ const MobileUserProfile = () => {
     { key: "posts", label: "Posts" },
     { key: "feelings", label: "Feelings" },
     { key: "feeds", label: "Feeds" },
-    /*  { key: "likes", label: "Beğenilenler", disabled: !canViewContent || followStatus === 'blocking' },
+    /* { key: "likes", label: "Beğenilenler", disabled: !canViewContent || followStatus === 'blocking' },
     { key: "tags", label: "Etiketliler", disabled: !canViewContent || followStatus === 'blocking' }, */
   ];
 
-  // RTA ve toplam post sayısını hesapla
+  // ✅ GÜNCELLENDİ: totalContentCount ve rtaScore (profileData.stats'tan)
   const totalContentCount =
-    contentCounts.posts + contentCounts.feeds + contentCounts.feelings;
-  const rtaScore = stats?.rta || 0;
+    (profileData.stats?.posts || 0) +
+    (profileData.stats?.feeds || 0) +
+    (profileData.stats?.feelings || 0);
+  const rtaScore = profileData.stats?.rta || 0;
+  const currentData = allData[activeTab] || [];
 
   return (
     <div className={styles.container}>
@@ -718,11 +692,7 @@ const MobileUserProfile = () => {
             <Link to="/settings" className={styles.actionBtn}>
               <IoIosSettings className={styles.icon} />
             </Link>
-          ) : // ❌ KALDIRILDI: Dropdown butonu
-          // <div className={styles.actionBtn}>
-          //   <FaEllipsisV className={styles.icon} />
-          // </div>
-          null}
+          ) : null}
         </div>
       </header>
 
@@ -734,15 +704,13 @@ const MobileUserProfile = () => {
             <img src={photoURL} alt="Profile" className={styles.avatar} />
           </div>
         </div>
-
         <div className={styles.stats}>
           <div className={styles.stat_content}>
             <div className={styles.stat}>
               <span className={styles.statNumber}>
-                {/* ✅ GÜNCELLENDİ: Engelleme durumunda 0 göster */}
                 {followStatus === "blocking" ? 0 : totalContentCount}
               </span>
-              <span className={styles.statLabel}>Post</span>
+              <span className={styles.statLabel}>Posts</span>
             </div>
             <div className={styles.stat}>
               <span className={styles.statNumber}>
@@ -776,7 +744,6 @@ const MobileUserProfile = () => {
         </div>
       </div>
 
-      {/* ✅ GÜNCELLENDİ: Engelleme durumunda bio'yu gizle */}
       {followStatus !== "blocking" && (
         <div className={styles.bioSection}>
           <h1 className={styles.name}>{displayName}</h1>
@@ -787,23 +754,23 @@ const MobileUserProfile = () => {
         </div>
       )}
 
-      {/* ✅ GÜNCELLENDİ: Aksiyon Butonları (Engelleme butonu eklendi) */}
       {followStatus !== "self" && (
         <div className={styles.actionButtons}>
           {renderFollowButton()}
           {renderBlockButton()}
-          {/* ❌ KALDIRILDI: Mesaj butonu
-          <button
-            onClick={handleMessageAction}
-            className={`${styles.messageBtn} ${styles.actionButton}`}
-          >
-            <FaCommentDots /> Mesaj
-          </button>
-          */}
+          {/* Mesaj butonu (gerekirse) buraya eklenebilir */}
         </div>
       )}
+      
+      {/* Kendi profilindeki butonlar (Eski mantık) */}
+      {followStatus === "self" && (
+         <div className={styles.actionButtons}>
+            <button className={styles.editButton}>Edit Profile</button>
+            <button className={styles.shareButton}>Share Profile</button>
+         </div>
+      )}
 
-      {/* ✅ YENİ: Engellendi (blocking) ekranı */}
+
       {followStatus === "blocking" ? (
         <div className={styles.private_message} style={{ paddingTop: "20px" }}>
           <FaBan className={styles.privateAccountIcon} />
@@ -815,7 +782,6 @@ const MobileUserProfile = () => {
         </div>
       ) : (
         <>
-          {/* Profilin geri kalanı (eğer engellenmediyse) */}
           <div className={styles.tabs}>
             {tabs.map(({ key, label, disabled }) => (
               <button
@@ -840,7 +806,7 @@ const MobileUserProfile = () => {
               </div>
             ) : loadingContent[activeTab] ? (
               <LoadingOverlay />
-            ) : allData[activeTab].length > 0 ? (
+            ) : currentData.length > 0 ? (
               <div
                 className={
                   activeTab === "feelings"
@@ -850,20 +816,8 @@ const MobileUserProfile = () => {
                     : styles.postsGrid
                 }
               >
-                {allData[activeTab].map(getCardComponent)}
-                {hasMore[activeTab] && (
-                  <div className={styles.loadMoreContainer}>
-                    <button
-                      onClick={() => fetchUserContent(activeTab, false)}
-                      className={styles.loadMoreBtn}
-                      disabled={loadingContent[activeTab]}
-                    >
-                      {loadingContent[activeTab]
-                        ? "Yükleniyor..."
-                        : "Daha Fazla Yükle"}
-                    </button>
-                  </div>
-                )}
+                {currentData.map(getCardComponent)}
+                {/* ⛔️ Pagination (Load More) butonu kaldırıldı */}
               </div>
             ) : (
               <div className={styles.emptyState}>{emptyMessage()}</div>
@@ -875,15 +829,15 @@ const MobileUserProfile = () => {
         </>
       )}
 
-      {/* ... (Modallar değişmedi) ... */}
       {showModal && profileData && (
         <ConnectionsModal
           show={showModal}
           onClose={() => setShowModal(false)}
           listType={modalType}
-          currentUserId={profileData.uid}
+          currentUserId={profileData.uid} // ✅ profileData'dan alındı
         />
       )}
+
       {showVideoModal && selectedVideo && (
         <div
           className={styles.videoModalOverlay}
