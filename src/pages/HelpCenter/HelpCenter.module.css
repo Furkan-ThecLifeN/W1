@@ -1,0 +1,282 @@
+/* src/pages/HelpCenter/HelpCenter.module.css */
+
+/* === 1. GENEL SAYFA YAPISI (AboutUs ile aynı) === */
+.helpPage {
+  background: linear-gradient(135deg, #04b4ff, #1157c0, #004483);
+  background-attachment: fixed;
+  font-family: var(--font-main);
+  color: #e8f4ff;
+  width: 100%;
+}
+
+.contentWrapper {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* === 2. TEMEL STİLLER (AboutUs ile aynı) === */
+.titleH1 {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.titleH2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 3rem;
+  position: relative;
+  padding-bottom: 15px;
+  display: inline-block;
+  text-align: center;
+  width: 100%;
+}
+
+.titleH2::after {
+  content: "";
+  display: block;
+  width: 60px;
+  height: 4px;
+  background-color: #00e0ff; /* Vurgu rengi */
+  margin: 10px auto 0;
+  border-radius: 2px;
+}
+
+.text {
+  color: #d6eaff;
+  font-size: 1.1rem;
+  line-height: 1.8;
+}
+
+.ctaButton {
+  display: inline-flex;
+  margin-top: 1.5rem;
+  padding: 15px 40px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #00e0ff, #007bff);
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.05rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 224, 255, 0.4);
+}
+.ctaButton:hover {
+  background: linear-gradient(90deg, #33aadd, #005fcc);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 224, 255, 0.6);
+}
+
+.link {
+  color: #00e0ff;
+  text-decoration: none;
+  font-weight: 500;
+}
+.link:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+/* === 3. HERO BÖLÜMÜ (Arama Odaklı) === */
+.heroSection {
+  padding: 80px 0;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.heroText {
+  font-size: 1.3rem;
+  color: #f0faff;
+  margin-bottom: 2.5rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.searchBar {
+  position: relative;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #00e0ff;
+  font-size: 1.2rem;
+  opacity: 0.7;
+}
+
+.searchBar input {
+  width: 100%;
+  padding: 20px 20px 20px 55px;
+  font-size: 1.1rem;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  backdrop-filter: blur(5px);
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.searchBar input::placeholder {
+  color: #c0e6ff;
+  opacity: 0.8;
+}
+.searchBar input:focus {
+  border-color: #00e0ff;
+  box-shadow: 0 0 15px rgba(0, 224, 255, 0.5);
+}
+
+/* === 4. KATEGORİ BÖLÜMÜ (Cam Kartlar) === */
+.categoriesSection {
+  padding: 80px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.categoryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.categoryCard {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 30px 25px;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  text-decoration: none;
+  color: #e8f4ff;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+.categoryCard:hover {
+  transform: translateY(-5px);
+  border-color: #00e0ff;
+}
+
+.categoryIcon {
+  font-size: 2.5rem;
+  color: #00e0ff;
+  margin-bottom: 1rem;
+}
+
+.categoryTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+/* === 5. S.S.S. BÖLÜMÜ (Akordeon) === */
+.faqSection {
+  padding: 80px 0;
+}
+
+.categorySubTitle {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 10px;
+  border-bottom: 2px solid rgba(0, 224, 255, 0.3);
+}
+/* İlk başlığın üst boşluğunu kaldır */
+.categorySubTitle:first-of-type {
+  margin-top: 0;
+}
+
+.accordionItem {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  overflow: hidden; /* İçerik taşmasını engeller */
+}
+
+.accordionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 20px 25px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #ffffff;
+  transition: background-color 0.2s ease;
+}
+.accordionHeader:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.accordionIcon {
+  flex-shrink: 0;
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #00e0ff;
+  margin-left: 20px;
+}
+
+.accordionContent {
+  padding: 0 25px 25px 25px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.noResults {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #f0faff;
+  padding: 40px 0;
+}
+
+/* === 6. İLETİŞİM ÇAĞRISI (AboutUs Legal Section gibi) === */
+.contactCtaSection {
+  text-align: center;
+  margin-top: 40px;
+  padding: 40px 30px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+}
+
+.footerSection {
+  padding-top: 40px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* === 7. RESPONSIVE DÜZENLEMELER === */
+@media (max-width: 900px) {
+  .titleH1 {
+    font-size: 2.8rem;
+  }
+  .titleH2 {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .heroSection {
+    padding: 60px 0;
+  }
+  .categoriesSection,
+  .faqSection {
+    padding: 60px 0;
+  }
+  .categoryGrid {
+    grid-template-columns: 1fr; /* Mobilde tek sütun */
+  }
+}

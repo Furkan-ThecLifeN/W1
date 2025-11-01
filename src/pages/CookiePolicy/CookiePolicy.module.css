@@ -1,0 +1,159 @@
+/* src/pages/CookiePolicy/CookiePolicy.module.css */
+
+/* === 1. GENEL SAYFA YAPISI (AboutUs'tan MİRAS ALINDI) === */
+.policyPage {
+  background: linear-gradient(135deg, #04b4ff, #1157c0, #004483);
+  background-attachment: fixed;
+  font-family: var(--font-main);
+  color: #e8f4ff;
+  width: 100%;
+  padding: 40px 0;
+}
+
+.contentWrapper {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.footerSection {
+  padding-top: 40px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 40px;
+}
+
+/* === 2. ANA BAŞLIK (PrivacyPolicy'den MİRAS ALINDI) === */
+.titleH1 {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  text-align: center;
+}
+
+.lastUpdated {
+  font-size: 0.95rem;
+  color: #c0e6ff;
+  font-style: italic;
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+/* === 3. GİRİŞ VE YÖNETİM METİNLERİ === */
+.introText {
+  font-size: 1.2rem;
+  color: #f0faff;
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto 2.5rem auto;
+  line-height: 1.8;
+}
+
+.managementSection {
+  /* Çerez yönetimi bölümü için (Sayfanın altında) */
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 30px;
+  margin-top: 3rem;
+  text-align: center;
+}
+
+.managementTitle {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.managementText {
+  color: #d6eaff;
+  font-size: 1.05rem;
+  line-height: 1.8;
+  margin-bottom: 1.5rem;
+}
+
+/* === 4. BENTO GRID (ÇEREZ KATEGORİLERİ) === */
+/* AboutUs'taki Bento Grid'in uyarlanmış hali */
+.bentoGrid {
+  display: grid;
+  /* 2 sütunlu yapı */
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.bentoItem {
+  /* Cam efekti (AboutUs'tan) */
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 25px 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, border-color 0.3s ease;
+  text-align: left;
+}
+.bentoItem:hover {
+  transform: translateY(-5px);
+  border-color: #00e0ff;
+}
+
+.bentoTitle {
+  font-size: 1.4rem;
+  color: #fff;
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+.bentoText {
+  color: #d6eaff;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+/* Reklamcılık kartını daha büyük (dikey) yap */
+.bentoItemLarge {
+  grid-row: span 2;
+  min-height: 300px;
+}
+
+.link {
+  color: #00e0ff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+.link:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+/* === 5. RESPONSIVE DÜZENLEME === */
+@media (max-width: 900px) {
+  .titleH1 {
+    font-size: 2.8rem;
+  }
+  .bentoGrid {
+    /* Mobil için tek sütuna düşür */
+    grid-template-columns: 1fr;
+  }
+  .bentoItemLarge {
+    grid-row: span 1; /* Tek satıra dön */
+    min-height: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .titleH1 {
+    font-size: 2.4rem;
+  }
+  .introText {
+    font-size: 1rem;
+  }
+  .bentoTitle {
+    font-size: 1.2rem;
+  }
+}

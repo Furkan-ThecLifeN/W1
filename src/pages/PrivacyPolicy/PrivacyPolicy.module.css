@@ -1,0 +1,180 @@
+/* src/pages/PrivacyPolicy/PrivacyPolicy.module.css */
+
+/* === 1. GENEL SAYFA YAPISI (AboutUs'tan MİRAS ALINDI) === */
+.policyPage {
+  background: linear-gradient(135deg, #04b4ff, #1157c0, #004483);
+  background-attachment: fixed;
+  font-family: var(--font-main);
+  color: #e8f4ff;
+  width: 100%;
+  padding: 40px 0;
+}
+
+.contentWrapper {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.footerSection {
+  padding-top: 40px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 40px;
+}
+
+/* === 2. ANA BAŞLIK (AboutUs'tan MİRAS ALINDI) === */
+.titleH1 {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  text-align: center;
+}
+
+.lastUpdated {
+  font-size: 0.95rem;
+  color: #c0e6ff;
+  font-style: italic;
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+/* === 3. YENİ AKORDEON TASARIMI === */
+
+.accordionContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* Her akordeon öğesi arası boşluk */
+}
+
+/* Her bir tıklanabilir öğe (Kapalıyken) */
+.accordionItem {
+  /* Cam efekti BURAYA taşındı */
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  transition: background 0.3s ease;
+  overflow: hidden; /* İçeriğin düzgün açılıp kapanması için */
+}
+.accordionItem:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Tıklanabilir başlık alanı */
+.accordionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px 30px;
+  cursor: pointer;
+  width: 100%;
+  border: none;
+  background: none;
+  text-align: left;
+}
+
+.accordionTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* İkon ( + / - ) */
+.accordionIcon {
+  font-size: 2rem;
+  font-weight: 300;
+  color: #00e0ff; /* Vurgu rengi */
+  transition: transform 0.3s ease;
+}
+
+/* Açık durumdaki ikonun dönmesi */
+.accordionHeader.active .accordionIcon {
+  transform: rotate(45deg);
+}
+
+/* Açılan içerik alanı */
+.accordionContent {
+  padding: 0px 30px 30px 30px; /* Üst padding header'dan geliyor */
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === 4. AKORDEON İÇİ METİN STİLLERİ === */
+.contentH3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.contentText {
+  color: #d6eaff;
+  font-size: 1.05rem;
+  line-height: 1.8;
+  margin-bottom: 1rem;
+}
+
+.link {
+  color: #00e0ff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+.link:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.list {
+  list-style-type: disc;
+  padding-left: 25px;
+  margin-bottom: 1rem;
+  color: #d6eaff;
+}
+.listItem {
+  margin-bottom: 10px;
+  line-height: 1.7;
+}
+
+/* === 5. RESPONSIVE DÜZENLEME === */
+@media (max-width: 900px) {
+  .titleH1 {
+    font-size: 2.8rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .titleH1 {
+    font-size: 2.4rem;
+  }
+  .accordionHeader {
+    padding: 20px 25px;
+  }
+  .accordionTitle {
+    font-size: 1.2rem; /* Mobilde başlığı küçült */
+  }
+  .accordionContent {
+    padding: 0px 25px 25px 25px;
+  }
+  .contentH3 {
+    font-size: 1.15rem;
+  }
+  .contentText {
+    font-size: 1rem;
+  }
+}

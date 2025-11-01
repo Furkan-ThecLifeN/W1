@@ -1,0 +1,200 @@
+/* src/pages/Terms/Terms.module.css */
+
+/* === 1. GENEL SAYFA YAPISI (Diğerlerinden MİRAS ALINDI) === */
+.termsPage {
+  background: linear-gradient(135deg, #04b4ff, #1157c0, #004483);
+  background-attachment: fixed;
+  font-family: var(--font-main);
+  color: #e8f4ff;
+  width: 100%;
+  padding: 40px 0;
+}
+
+.contentWrapper {
+  max-width: 1100px; /* Bu sayfa için biraz daha geniş */
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.footerSection {
+  padding-top: 40px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 40px;
+}
+
+/* === 2. ANA BAŞLIK (Diğerlerinden MİRAS ALINDI) === */
+.titleH1 {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  text-align: center;
+}
+
+.lastUpdated {
+  font-size: 0.95rem;
+  color: #c0e6ff;
+  font-style: italic;
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+/* === 3. İKİ SÜTUNLU YAPI (NAV + İÇERİK) === */
+.termsLayout {
+  display: grid;
+  grid-template-columns: 250px 1fr; /* Sol: 250px, Sağ: Kalan alan */
+  gap: 2.5rem;
+  position: relative;
+}
+
+/* === 4. SOL SÜTUN (Sticky Navigasyon) === */
+.navColumn {
+  position: -webkit-sticky; /* Safari için */
+  position: sticky;
+  top: 40px; /* Sayfanın üstünden 40px aşağıda sabitlensin */
+  align-self: flex-start; /* Sütunun en üstüne hizala */
+  height: calc(100vh - 80px); /* Ekran yüksekliği kadar, boşlukları düş */
+  overflow-y: auto; /* Gerekirse kaydırma çubuğu (küçük ekranlar için) */
+}
+
+.stickyNav {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  border-left: 3px solid rgba(0, 224, 255, 0.3); /* Sol tarafta soluk bir çizgi */
+  padding: 10px 0;
+}
+
+.navLink {
+  color: #c0e6ff;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent; /* Aktif olmayan link */
+  margin-left: -3px; /* Sola hizala */
+}
+
+.navLink:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+/* NOT: Aktif linkin stilini JavaScript ile (scroll-spy) yapmak gerekir. 
+  Şimdilik :hover ile aynı stili veriyoruz.
+  Eğer 'active' class'ı eklenirse:
+*/
+.navLink.active {
+  color: #000000;
+  font-weight: 600;
+  border-left: 3px solid #00c3ff;
+  background-color: rgb(255, 255, 255);
+}
+
+/* === 5. SAĞ SÜTUN (İçerik Alanı - Cam Kart) === */
+.contentColumn {
+  /* Cam efekti (PrivacyPolicy'den) */
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 20px 40px 40px 40px;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* === 6. KART İÇİ METİN STİLLERİ === */
+.termsSection {
+  /* Her bir bölümün (id'li) üst boşluğu */
+  padding-top: 20px;
+  margin-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+.termsSection:first-child {
+  border-top: none;
+  margin-top: 0;
+  padding-top: 10px;
+}
+
+.titleH2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1rem;
+}
+
+.titleH3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.text {
+  color: #d6eaff;
+  font-size: 1.05rem;
+  line-height: 1.8;
+  margin-bottom: 1rem;
+}
+
+.link {
+  color: #00e0ff;
+  text-decoration: none;
+}
+.link:hover {
+  text-decoration: underline;
+}
+
+.list {
+  list-style-type: disc;
+  padding-left: 25px;
+  margin-bottom: 1rem;
+  color: #d6eaff;
+}
+.listItem {
+  margin-bottom: 10px;
+  line-height: 1.7;
+}
+
+/* === 7. RESPONSIVE DÜZENLEME === */
+@media (max-width: 900px) {
+  .termsLayout {
+    /* Mobilde navigasyonu üste al, içeriği alta */
+    grid-template-columns: 1fr;
+  }
+  .navColumn {
+    /* Navigasyonu artık sticky yapma */
+    position: relative;
+    top: 0;
+    height: auto; /* Yüksekliği sıfırla */
+    margin-bottom: 1.5rem;
+    overflow-y: hidden;
+  }
+  .stickyNav {
+    flex-direction: row; /* Yatay yap */
+    flex-wrap: wrap; /* Sığmazsa alt satıra at */
+    border-left: none;
+  }
+  .navLink {
+    border-bottom: 3px solid transparent;
+    border-left: none;
+    margin-left: 0;
+  }
+  .navLink.active {
+    border-left: none;
+    border-bottom: 3px solid #00e0ff;
+  }
+}
+
+@media (max-width: 600px) {
+  .titleH1 {
+    font-size: 2.4rem;
+  }
+  .contentColumn {
+    padding: 20px 25px;
+  }
+}

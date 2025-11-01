@@ -32,6 +32,11 @@ import PostDetailPage from "./pages/PostDetailPage/PostDetailPage";
 import MobileSearchPage from "./pages/MobileSearchPage/MobileSearchPage";
 import AboutUs from "./pages/AboutUs/AboutUs";
 import Contact from "./pages/Contact/Contact";
+import PrivacyPolicy from "./pages/PrivacyPolicy/PrivacyPolicy";
+import CookiePolicy from "./pages/CookiePolicy/CookiePolicy";
+import Terms from "./pages/Terms/Terms";
+import HelpCenter from "./pages/HelpCenter/HelpCenter";
+
 
 const AppContent = () => {
   const [isSplashing, setIsSplashing] = useState(true);
@@ -71,6 +76,11 @@ const AppContent = () => {
       <Route path="/settings" element={<SettingsPage />} />
       <Route path="/about" element={<AboutUs />} />
       <Route path="/contact" element={<Contact />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/cookie-policy" element={<CookiePolicy />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/help" element={<HelpCenter />} />
+
 
       <Route path="/post/:postId" element={<PostDetailPage />} />
       <Route path="/feeling/:feelingId" element={<PostDetailPage />} />
