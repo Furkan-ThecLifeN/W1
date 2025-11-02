@@ -1,410 +1,591 @@
-/* src/pages/Home/Home.module.css */
-
-/* === 1. TEMEL STİLLER (AboutUs'tan alındı) === */
-.homePage {
-  background: linear-gradient(135deg, #04b4ff, #1157c0, #004483);
-  background-attachment: fixed;
+:root {
+  --welcome-color-bg: #000;
+  --welcome-color-surface: rgb(0, 179, 255);
+  --welcome-color-muted: #a0cfff;
+  --welcome-color-text: #d6eaff;
+  --welcome-color-accent: #00c3ff;
+  --welcome-color-accent-2: #0099ff;
+  --welcome-radius-sm: 8px;
+  --welcome-radius-md: 12px;
+  --welcome-glass-blur: 10px;
+  --welcome-max-width: 1200px;
+  --welcome-header-height: 80px;
+  --welcome-shadow-strong: 0 10px 30px rgba(0, 0, 0, 0.6);
+  --welcome-transition-fast: 180ms cubic-bezier(0.2, 0.9, 0.3, 1);
+  --welcome-border-color: rgba(255, 255, 255, 0.04);
+  --welcome-border-dashed: rgba(255, 255, 255, 0.06);
+  --welcome-bg-gradient-subtle: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0.008)
+  );
+  --welcome-icon-color-feature: #fff;
+  --welcome-icon-shadow-feature: 0 0 40px rgba(255, 255, 255, 0.904);
+  --welcome-toggle-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --welcome-toggle-bg: rgba(255, 255, 255, 0.06);
+}
+:root[data-theme="light"] {
+  --welcome-color-bg: #f7fbff;
+  --welcome-color-surface: rgba(255, 255, 255, 0.75);
+  --welcome-color-muted: #2b5d8a;
+  --welcome-color-text: #0b1a2b;
+  --welcome-color-accent: #00c3ff;
+  --welcome-color-accent-2: #0099ff;
+  --welcome-shadow-strong: 0 10px 30px rgba(0, 0, 0, 0.1);
+  --welcome-border-color: rgba(0, 0, 0, 0.06);
+  --welcome-border-dashed: rgba(0, 0, 0, 0.1);
+  --welcome-bg-gradient-subtle: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.01),
+    rgba(0, 0, 0, 0.005)
+  );
+  --welcome-icon-color-feature: var(--welcome-color-accent-2);
+  --welcome-icon-shadow-feature: 0 0 40px rgba(0, 107, 255, 0.2);
+  --welcome-toggle-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --welcome-toggle-bg: rgba(0, 0, 0, 0.06);
+}
+.welcomePage {
+  background: var(--welcome-color-bg);
+  color: var(--welcome-color-text);
   font-family: var(--font-main);
-  color: #e8f4ff;
   width: 100%;
-  overflow-x: hidden; /* Yatay kaydırmayı engelle */
-  /* Sticky Header için üst boşluk */
-  padding-top: 80px;
+  -webkit-font-smoothing: antialiased;
 }
-
-.contentWrapper {
-  max-width: 1100px; /* Diğer sayfalardan biraz daha geniş */
-  margin: 0 auto;
-  padding: 0 20px;
+:root[data-theme="dark"] .welcomePage {
+  background: radial-gradient(
+      1200px 600px at 10% 10%,
+      rgba(0, 224, 255, 0.04),
+      transparent
+    ),
+    var(--welcome-color-bg);
 }
-
-.titleH1 {
-  font-size: 3.8rem;
-  font-weight: 800;
-  color: #ffffff;
-  margin-bottom: 1.5rem;
-  line-height: 1.2;
-  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+:focus {
+  outline: none;
 }
-
-.titleH2 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #ffffff;
-  margin-bottom: 3rem;
-  position: relative;
-  padding-bottom: 15px;
-  display: inline-block;
-  text-align: center;
-  width: 100%;
+a:focus,
+button:focus,
+.privacyPill:focus {
+  border-radius: 8px;
 }
-.titleH2::after {
-  content: "";
-  display: block;
-  width: 60px;
-  height: 4px;
-  background-color: #00e0ff;
-  margin: 10px auto 0;
-  border-radius: 2px;
-}
-
-.text {
-  color: #d6eaff;
-  font-size: 1.1rem;
-  line-height: 1.8;
-}
-
-/* === 2. YENİ: STICKY HEADER (Giriş Yapmamış Kullanıcı) === */
 .stickyHeader {
-  width: 100%;
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 1000;
-  height: 80px;
-
-  /* Cam efekti */
-  background: rgba(4, 9, 30, 0.5); /* Koyu bir cam */
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-}
-
-.headerContent {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-  height: 100%;
+  right: 0;
+  height: var(--welcome-header-height);
+  z-index: 1200;
   display: flex;
+  align-items: center;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  background: var(--welcome-bg-gradient-subtle);
+  border-bottom: 1px solid var(--welcome-border-color);
+}
+.headerContent {
+  width: 100%;
+  max-width: var(--welcome-max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
   justify-content: space-between;
+}
+.logo {
+  font-weight: 900;
+  font-size: 1.6rem;
+  color: var(--welcome-color-text);
+  text-decoration: none;
+}
+.headerControls {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.iconRow {
+  display: flex;
+  gap: 8px;
   align-items: center;
 }
-
-.logo {
-  font-size: 2rem;
-  font-weight: 900;
-  color: #ffffff;
-  text-decoration: none;
+.iconButton {
+  background: transparent;
+  border: none;
+  color: var(--welcome-color-text);
+  font-size: 1.1rem;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all var(--welcome-transition-fast);
+}
+.iconButton:hover {
+  transform: translateY(-3px);
+  color: var(--welcome-color-accent);
 }
 
 .authNav {
   display: flex;
+  gap: 12px;
   align-items: center;
-  gap: 1.5rem;
+}
+.navLink {
+  color: var(--welcome-color-text);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
 }
 
-.navLink {
-  color: #e8f4ff;
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 1rem;
-  transition: color 0.2s ease;
-}
 .navLink:hover {
-  color: #00e0ff;
+  color: var(--welcome-color-accent);
 }
 
 .ctaButtonHeader {
-  padding: 10px 25px;
-  border: none;
-  border-radius: 8px;
-  background: linear-gradient(90deg, #00e0ff, #007bff);
-  color: #ffffff;
+  padding: 8px 18px;
+  border-radius: 10px;
+  background: linear-gradient(
+    90deg,
+    var(--welcome-color-accent),
+    var(--welcome-color-accent-2)
+  );
+  color: #fff;
   text-decoration: none;
-  font-weight: 600;
-  font-size: 0.95rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 224, 255, 0.3);
-}
-.ctaButtonHeader:hover {
-  background: linear-gradient(90deg, #33aadd, #005fcc);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 224, 255, 0.5);
+  box-shadow: 0 6px 20px rgba(0, 224, 255, 0.12);
+  font-weight: 700;
+  transition: transform 0.3s ease;
 }
 
-/* === 3. YENİ: HERO BÖLÜMÜ === */
-.heroSection {
-  min-height: calc(90vh - 80px); /* 100vh - header yüksekliği */
-  padding: 60px 0;
+.ctaButtonHeader:hover {
+  transform: scale(1.1);
+}
+
+.fullscreenSection {
+  min-height: 100vh;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  justify-content: center;
+  padding: calc(var(--welcome-header-height) + 40px) 20px;
+  border-bottom: 1px solid var(--welcome-border-color);
 }
-
-.heroSection .contentWrapper {
+.heroSection {
+  position: relative;
+  overflow: visible;
+}
+.heroContentEnhanced {
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  align-items: flex-start;
+}
+.heroIntro {
+  display: flex;
+  flex-direction: row;
+  gap: 18px;
+  align-items: center;
+}
+.heroTitleLarge {
+  font-size: 6.8rem;
+  margin: 0;
+  line-height: 0.95;
+  letter-spacing: -2px;
+  color: var(--welcome-color-text);
+  text-shadow: 0 6px 40px rgba(0, 224, 255, 0.06);
+}
+.heroKicker {
+  font-size: 1rem;
+  color: var(--welcome-color-muted);
+  font-weight: 700;
+}
+.heroCopy {
+  max-width: 760px;
+}
+.heroSubtitle {
+  font-size: 2.4rem;
+  margin: 0;
+  color: var(--welcome-color-accent);
+}
+.heroText {
+  font-size: 1.05rem;
+  color: var(--welcome-color-text);
+  opacity: 0.95;
+  line-height: 1.8;
+}
+.heroActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+.secondaryButton {
+  padding: 12px 18px;
+  border-radius: 10px;
+  border: 1px solid var(--welcome-border-color);
+  background: transparent;
+  color: var(--welcome-color-text);
+  text-decoration: none;
+}
+.quickStats {
+  display: flex;
+  gap: 14px;
+  margin-top: 18px;
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.stat strong {
+  font-size: 1.3rem;
+}
+.stat span {
+  font-size: 0.85rem;
+  color: var(--welcome-color-muted);
+}
+.splitGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+  max-width: 1200px;
+  width: 100%;
+  align-items: stretch;
+}
+.featureCard {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  background: var(--welcome-color-surface);
+  padding: 26px;
+  border-radius: 14px;
+  border: 1px solid var(--welcome-border-color);
+  box-shadow: var(--welcome-shadow-strong);
+  transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1),
+    box-shadow 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+.featureCard.reversed {
+  flex-direction: row-reverse;
+}
+.featureCardVisual {
+  flex: 0 0 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.featureIconLarge {
+  font-size: 7.5rem;
+  color: var(--welcome-icon-color-feature);
+  text-shadow: var(--welcome-icon-shadow-feature);
+}
+.featureCardBody {
+  flex: 1;
+}
+.featureCardTitle {
+  font-size: 1.8rem;
+  margin: 0 0 8px 0;
+}
+.featureCardText {
+  color: var(--welcome-color-text);
+  line-height: 1.6;
+}
+.privacySection {
+  padding-bottom: 140px;
+}
+.centeredContent {
+  max-width: 980px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+.sectionTitle {
+  font-size: 2.4rem;
+  margin: 0;
+}
+.sectionText {
+  max-width: 680px;
+  text-align: center;
+}
+.sectionTextSmall {
+  max-width: 680px;
+  text-align: center;
+  color: var(--welcome-color-muted);
+}
+.privacyInteractive {
+  display: flex;
+  gap: 22px;
+  width: 100%;
+  align-items: flex-start;
+}
+.privacyPreview {
+  flex: 1;
+  background: var(--welcome-bg-gradient-subtle);
+  padding: 18px;
+  border-radius: 12px;
+  border: 1px solid var(--welcome-border-color);
+}
+.postPreviewHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 3rem;
+  margin-bottom: 12px;
 }
-
-.heroContent {
-  flex: 1;
-  max-width: 600px;
-}
-.heroContent strong {
-  color: #00e0ff;
+.previewUser {
   font-weight: 700;
 }
-
-.heroText {
-  font-size: 1.3rem;
-  color: #f0faff;
-  margin-bottom: 3rem;
-  max-width: 550px;
+.previewPrivacy {
+  font-size: 0.9rem;
+  color: var(--welcome-color-muted);
+  text-transform: capitalize;
 }
-
-.ctaButtonHero {
-  /* AboutUs'taki .ctaButton'dan daha büyük */
-  display: inline-flex;
-  padding: 18px 45px;
-  border: none;
-  border-radius: 10px;
-  background: linear-gradient(90deg, #00e0ff, #007bff);
-  color: #ffffff;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 1.1rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 224, 255, 0.4);
+.postPreviewBody {
+  padding: 10px 0;
+  min-height: 60px;
 }
-.ctaButtonHero:hover {
-  background: linear-gradient(90deg, #33aadd, #005fcc);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 224, 255, 0.6);
-}
-
-/* Hero Görsel Mockup'ı */
-.heroVisual {
-  flex: 0.8;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.visualMockup {
-  width: 100%;
-  max-width: 400px;
-  height: 500px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  padding: 15px;
-}
-.mockupHeader {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #fff;
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-}
-.mockupFeedItem,
-.mockupFeelingItem {
-  background: rgba(0, 0, 0, 0.2);
-  padding: 15px;
-  border-radius: 10px;
-  margin-top: 15px;
-  color: #c0e6ff;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-/* === 4. YENİ: "STICKY SCROLL" BÖLÜMÜ === */
-.stickySection {
-  padding: 100px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.stickyLayout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
-}
-
-.stickyLeft {
-  /* Sol tarafın yüksekliği sağ taraftan azsa bile yer kaplaması için */
-  min-height: 400px;
-}
-
-.stickyContent {
-  position: sticky;
-  top: 120px; /* Header (80px) + 40px boşluk */
-  height: auto;
-}
-.stickyContent .titleH2 {
-  text-align: left;
-  width: auto;
-  display: block;
-}
-.stickyContent .titleH2::after {
-  margin: 10px 0 0; /* Çizgiyi sola hizala */
-}
-
-.stickyVisual {
-  height: 200px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  margin-top: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.stickyRight {
+.privacyControls {
+  flex: 0 0 360px;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 16px;
 }
-
-/* Sağdaki kayan kartlar */
-.featureCard {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-}
-.featureCard h3 {
-  font-size: 1.6rem;
-  font-weight: 600;
-  color: #ffffff;
-  margin: 0 0 1rem 0;
-}
-.featureIcon {
-  font-size: 2rem;
-  color: #00e0ff;
-  margin-bottom: 1rem;
-}
-
-/* === 5. BENTO GRID BÖLÜMÜ (AboutUs'tan alındı) === */
-.bentoSection {
-  padding: 100px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.bentoGrid {
+.privacyGridControls {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-  margin-top: 2rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
-
-.bentoItem {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  padding: 25px 30px;
-  border-radius: 12px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-  text-align: left;
+.privacyBtn {
+  padding: 12px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid var(--welcome-border-color);
+  cursor: pointer;
+  font-weight: 600;
 }
-.bentoItem strong {
-  font-size: 1.3rem;
+.selectedBtn {
+  background: linear-gradient(
+    90deg,
+    var(--welcome-color-accent),
+    var(--welcome-color-accent-2)
+  );
   color: #fff;
-  display: block;
-  margin-bottom: 10px;
+  box-shadow: 0 8px 30px rgba(0, 224, 255, 0.12);
 }
-.bentoItem p {
-  color: #d6eaff;
-  font-size: 1rem;
-  line-height: 1.7;
+.privacyPillsWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
-
-.bentoItemLarge {
-  grid-row: span 2;
-  min-height: 300px;
+.privacyPill {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 12px;
+  background: transparent;
+  border: 1px solid var(--welcome-border-color);
+  transition: all var(--welcome-transition-fast);
+  cursor: pointer;
 }
-
-/* === 6. FİNAL CTA BÖLÜMÜ === */
-.finalCtaSection {
-  padding: 100px 0 80px 0;
+.privacyPill:hover {
+  transform: translateY(-4px);
+}
+.privacyPill.activePill {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 224, 255, 0.06),
+    rgba(0, 124, 255, 0.02)
+  );
+  border-color: rgba(0, 224, 255, 0.18);
+}
+.pillIcon {
+  font-size: 1.4rem;
+  color: var(--welcome-color-accent);
+}
+.pillBody {
+  display: flex;
+  flex-direction: column;
+}
+.pillTitle {
+  font-weight: 700;
+}
+.pillDesc {
+  font-size: 0.85rem;
+  color: var(--welcome-color-muted);
+}
+.pillMark {
+  margin-left: auto;
+  color: var(--welcome-color-muted);
+}
+.securityGridEnhanced {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  width: 100%;
+  margin-top: 8px;
+}
+.securityCard {
+  background: var(--welcome-color-surface);
+  padding: 18px;
+  border-radius: 12px;
+  border: 1px solid var(--welcome-border-color);
+  text-align: left;
+  transition: transform 0.1s ease, border-color 0.1s ease;
+  transform-origin: center;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+.securityCard h4 {
+  margin: 8px 0;
+}
+.cardIcon {
+  font-size: 1.6rem;
+}
+.ctaSection {
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0) 40%);
+}
+.ctaCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 40px 60px;
+  border-radius: 20px;
+  border: 1px solid var(--welcome-border-color);
+  box-shadow: var(--welcome-shadow-strong);
+}
+:root[data-theme="light"] .ctaCard {
+  background: rgba(255, 255, 255, 0.6);
+}
+.ctaTitle {
+  font-size: 2.2rem;
+  margin: 0;
   text-align: center;
 }
-.finalCtaSection .text {
-  font-size: 1.3rem;
-  color: #f0faff;
-  margin-bottom: 3rem;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
+.ctaRow {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.ghostButton {
+  background: transparent;
+  border: 1px dashed var(--welcome-border-dashed);
+  padding: 12px 18px;
+  border-radius: 10px;
+  text-decoration: none;
 }
 
-/* === 7. FOOTER === */
-.footerSection {
-  padding-top: 40px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+footer {
+  margin-top: 40px;
 }
-
-/* === 8. RESPONSIVE DÜZENLEMELER === */
-@media (max-width: 900px) {
-  .titleH1 {
-    font-size: 2.8rem;
+@media (max-width: 1100px) {
+  .heroTitleLarge {
+    font-size: 5rem;
   }
-  .heroSection .contentWrapper {
-    flex-direction: column-reverse; /* Görsel üste gelsin */
-    text-align: center;
-  }
-  .heroContent {
-    max-width: 100%;
-  }
-  .heroText {
-    margin-left: auto;
-    margin-right: auto;
-  }
-  .stickyLayout {
-    grid-template-columns: 1fr; /* Tek sütun */
-  }
-  .stickyLeft {
-    min-height: auto;
-  }
-  .stickyContent {
-    position: static; /* Yapışkanlığı iptal et */
-  }
-  .stickyContent .titleH2 {
-    text-align: center;
-    width: 100%;
-  }
-  .stickyContent .titleH2::after {
-    margin: 10px auto 0; /* Ortala */
-  }
-  .bentoGrid {
+  .splitGrid {
     grid-template-columns: 1fr;
   }
-  .bentoItemLarge {
-    grid-row: span 1;
-    min-height: auto;
+  .featureCardVisual {
+    flex: 0 0 140px;
+  }
+  .securityGridEnhanced {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
-
-@media (max-width: 600px) {
-  .homePage {
-    padding-top: 70px; /* Header küçülsün */
+@media (max-width: 700px) {
+  .heroTitleLarge {
+    font-size: 3.6rem;
   }
-  .stickyHeader {
-    height: 70px;
+  .heroSubtitle {
+    font-size: 1.4rem;
   }
-  .authNav {
-    gap: 0.8rem;
+  .privacyInteractive {
+    flex-direction: column;
   }
-  .navLink {
-    font-size: 0.9rem;
+  .privacyControls {
+    width: 100%;
+    flex: unset;
   }
-  .ctaButtonHeader {
-    padding: 8px 15px;
-    font-size: 0.85rem;
+  .privacyGridControls {
+    grid-template-columns: repeat(2, 1fr);
   }
-  .logo {
-    font-size: 1.8rem;
+  .ctaCard {
+    padding: 30px 20px;
   }
-  .titleH1 {
-    font-size: 2.2rem;
+}
+@media (max-width: 420px) {
+  .headerContent {
+    padding: 0 12px;
   }
-  .heroSection {
-    padding: 40px 0;
+  .heroTitleLarge {
+    font-size: 3rem;
   }
-  .stickySection, .bentoSection, .finalCtaSection {
-    padding: 60px 0;
+  .privacyPill {
+    padding: 8px;
+  }
+  .featureCard {
+    padding: 16px;
+  }
+}
+.ctaButtonHero {
+  padding: 14px 28px;
+  border-radius: 12px;
+  background: linear-gradient(
+    90deg,
+    var(--welcome-color-accent),
+    var(--welcome-color-accent-2)
+  );
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 12px 40px rgba(0, 224, 255, 0.12);
+  border: none;
+}
+.ctaButtonHero:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 58px rgba(0, 224, 255, 0.18);
+}
+.toggle {
+  background: transparent;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+}
+.toggleTrack {
+  display: inline-block;
+  width: 46px;
+  height: 26px;
+  border-radius: 20px;
+  position: relative;
+  transition: all var(--welcome-transition-fast);
+  background: var(--welcome-toggle-bg);
+  border: 1px solid var(--welcome-border-color);
+}
+.toggleTrack.on {
+  background: linear-gradient(
+    90deg,
+    var(--welcome-color-accent),
+    var(--welcome-color-accent-2)
+  );
+}
+.toggleThumb {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  top: 3px;
+  left: 4px;
+  background: #fff;
+  box-shadow: var(--welcome-toggle-shadow);
+  transition: all var(--welcome-transition-fast);
+}
+.toggleTrack.on .toggleThumb {
+  left: 24px;
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
   }
 }

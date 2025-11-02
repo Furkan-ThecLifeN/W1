@@ -1,260 +1,463 @@
-// src/pages/Home/Home.jsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion"; // Contact.jsx'teki gibi animasyon için
-import { FaFeatherAlt, FaVideo, FaShieldAlt } from "react-icons/fa";
-
+import { motion } from "framer-motion";
+import {
+  FaFeatherAlt,
+  FaImage,
+  FaVideo,
+  FaShieldAlt,
+  FaGlobe,
+  FaUserFriends,
+  FaStar,
+  FaLock,
+  FaFlag,
+  FaBug,
+  FaCode,
+  FaMoon,
+  FaSun,
+  FaChevronDown,
+  FaCheck,
+  FaTimes,
+  FaPlay,
+} from "react-icons/fa";
 import styles from "./Welcome.module.css";
 import Footer from "../../components/Footer/Footer";
 
-// Animasyon varyantları (Framer Motion için)
-const fadeIn = {
-  hidden: { opacity: 0, y: 20 },
+// Animasyon objeleri
+const containerFadeIn = {
+  hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.6,
-      ease: "easeInOut",
-    },
+    transition: { duration: 0.5, ease: "easeInOut", staggerChildren: 0.18 },
+  },
+};
+const itemFadeIn = {
+  hidden: { opacity: 0, y: 18 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+};
+const visualFadeIn = {
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.7, ease: "easeOut" },
   },
 };
 
+function Toggle({ checked, onChange, ariaLabel }) {
+  return (
+    <button
+      aria-label={ariaLabel}
+      className={styles.toggle}
+      onClick={() => onChange(!checked)}
+    >
+      <span
+        className={`${styles.toggleTrack} ${checked ? styles.on : styles.off}`}
+      >
+        <span className={styles.toggleThumb} />
+      </span>
+    </button>
+  );
+}
+
+function PrivacyPill({ icon: Icon, title, description, active }) {
+  return (
+    <div
+      className={`${styles.privacyPill} ${active ? styles.activePill : ""}`}
+      role="article"
+      aria-pressed={active}
+      tabIndex={0}
+    >
+      <Icon className={styles.pillIcon} />
+      <div className={styles.pillBody}>
+        <strong className={styles.pillTitle}>{title}</strong>
+        <span className={styles.pillDesc}>{description}</span>
+      </div>
+      <div className={styles.pillMark}>
+        {active ? <FaCheck /> : <FaTimes />}
+      </div>
+    </div>
+  );
+}
+
+function FeatureCard({ visual, title, children, reversed }) {
+  return (
+    <motion.div
+      className={`${styles.featureCard} ${reversed ? styles.reversed : ""}`}
+      variants={containerFadeIn}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.3 }}
+      whileHover={{
+        scale: 1.03,
+        transition: { type: "spring", stiffness: 300 },
+      }}
+    >
+      <motion.div className={styles.featureCardVisual} variants={visualFadeIn}>
+        {visual}
+      </motion.div>
+      <motion.div className={styles.featureCardBody} variants={itemFadeIn}>
+        <h3 className={styles.featureCardTitle}>{title}</h3>
+        <div className={styles.featureCardText}>{children}</div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 const Welcome = () => {
+  const [darkMode, setDarkMode] = useState(false);
+  const [audible, setAudible] = useState(false);
+  const [selectedPrivacy, setSelectedPrivacy] = useState("public");
+  const [faqOpen, setFaqOpen] = useState({});
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = darkMode ? "dark" : "light";
+  }, [darkMode]);
+
+  const toggleFaq = (id) => setFaqOpen((s) => ({ ...s, [id]: !s[id] }));
+
   return (
     <>
-      <title>W1 - Geleceğin Sosyal Deneyimi | QuantumTag</title>
+      <title>W1'e Hoş Geldiniz - Sosyal Medyanın Yeniden Tanımı</title>
       <meta
         name="description"
-        content="W1'e katılın. Fikirlerinizi 'Feeling' ile paylaşın, anılarınızı 'Feed' ile ölümsüzleştirin. Güvenli, modern ve özgün sosyal platform."
+        content="W1 (QuantumTag) - Fikirler (Feeling), Fotoğraflar (Post) ve Videolar (Feed) için fütüristik sosyal platform. Benzersiz gizlilik kontrolleri ve Firebase güvencesiyle."
       />
-      <meta property="og:title" content="W1 - Geleceğin Sosyal Deneyimi" />
-      <meta
-        property="og:description"
-        content="W1 (QuantumTag) platformu, fikirlerinizi ve anılarınızı paylaşmanız için fütüristik bir sosyal ağ sunar."
-      />
-      <meta property="og:url" content="https://www.siteniz.com/" />
-      {/* Diğer meta etiketleri... */}
 
-      <div className={styles.homePage}>
-        {/* === 0. STICKY HEADER (Sadece Ana Sayfa için) === */}
-        {/* Bu, kullanıcı giriş yapmadığında görünen header'dır */}
+      <div className={styles.welcomePage}>
         <motion.header
           className={styles.stickyHeader}
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -60 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          transition={{ duration: 0.6, ease: "easeInOut" }}
         >
           <div className={styles.headerContent}>
             <Link to="/" className={styles.logo}>
               W1
             </Link>
-            <nav className={styles.authNav}>
-              <Link to="/auth" className={styles.navLink}>
-                Giriş Yap
-              </Link>
-              <Link to="/auth" className={styles.ctaButtonHeader}>
-                Kayıt Ol
-              </Link>
+
+            <nav className={styles.headerControls} aria-label="Üst navigasyon">
+              <div className={styles.iconRow}>
+                <button
+                  className={styles.iconButton}
+                  aria-label="Tema"
+                  onClick={() => setDarkMode(!darkMode)}
+                >
+                  {darkMode ? <FaMoon /> : <FaSun />}
+                </button>
+              </div>
+
+              <div className={styles.authNav}>
+                <Link to="/auth" className={styles.navLink}>
+                  Giriş Yap
+                </Link>
+                <Link to="/auth" className={styles.ctaButtonHeader}>
+                  Kayıt Ol
+                </Link>
+              </div>
             </nav>
           </div>
         </motion.header>
 
-        {/* === 1. HERO BÖLÜMÜ (Ekranı Kaplayan Giriş) === */}
-        <section className={styles.heroSection}>
-          <div className={styles.contentWrapper}>
-            <motion.div
-              className={styles.heroContent}
-              initial="hidden"
-              animate="visible"
-              variants={fadeIn}
-            >
-              <h1 className={styles.titleH1}>
-                Geleceğin Sosyal Deneyimi. <br />
-                Bugün.
-              </h1>
-              <p className={styles.heroText}>
-                Fikirlerini <strong>"Feeling"</strong> ile dünyaya duyur.
-                Anılarını <strong>"Feed"</strong> ile ölümsüzleştir.
-                QuantumTag'in yeni nesil sosyal platformu W1'e hoş geldin.
+        <section
+          className={`${styles.fullscreenSection} ${styles.heroSection}`}
+        >
+          <motion.div
+            className={styles.heroContentEnhanced}
+            variants={containerFadeIn}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.div className={styles.heroIntro} variants={itemFadeIn}>
+              <h1 className={styles.heroTitleLarge}>W1</h1>
+              <p className={styles.heroKicker}>
+                Sosyal Medyanın Yeniden Tanımı
               </p>
+            </motion.div>
+
+            <motion.div className={styles.heroCopy} variants={itemFadeIn}>
+              <h2 className={styles.heroSubtitle}>
+                Kontrol Sizde, Deneyim Fütüristik
+              </h2>
+              <p className={styles.heroText}>
+                Fikirleriniz, anılarınız ve keşiflerinizi üç farklı formatta
+                ifade edin: kısa "Feeling" parıltıları, tekil "Post"
+                fotoğrafları ve ilham verici "Feed" videoları. Gönderi bazlı
+                gizlilik ve gelişmiş keşif araçlarıyla paylaşın.
+              </p>
+            </motion.div>
+
+            <motion.div className={styles.heroActions} variants={itemFadeIn}>
               <Link to="/auth" className={styles.ctaButtonHero}>
-                Topluluğa Şimdi Katıl
+                Evrene Katıl
+              </Link>
+              <Link to="/home" className={styles.secondaryButton}>
+                Keşfet
               </Link>
             </motion.div>
 
-            {/* Buraya uygulamanızın bir görselini/mockup'ını ekleyebilirsiniz */}
-            <motion.div
-              className={styles.heroVisual}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.7, delay: 0.4 }}
-            >
-              <div className={styles.visualMockup}>
-                <div className={styles.mockupHeader}>W1</div>
-                <div className={styles.mockupFeedItem}>
-                  <FaVideo /> Video Feed
-                </div>
-                <div className={styles.mockupFeelingItem}>
-                  <FaFeatherAlt /> Feeling...
-                </div>
+            <motion.div className={styles.quickStats} variants={itemFadeIn}>
+              {/*    <div className={styles.stat}>
+                <strong>12K+</strong>
+                <span>Günlük Aktif</span>
+              </div> */}
+              <div className={styles.stat}>
+                <strong>4.8</strong>
+                <span>Topluluk Puanı</span>
+              </div>
+              <div className={styles.stat}>
+                <strong>0</strong>
+                <span>Rekabet (Reklamsız)</span>
               </div>
             </motion.div>
-          </div>
-        </section>
-
-        {/* === 2. "STICKY SCROLL" ÖZELLİK BÖLÜMÜ === */}
-        <section className={styles.stickySection}>
-          <div className={`${styles.contentWrapper} ${styles.stickyLayout}`}>
-            {/* SOL TARAF (Yapışkan) */}
-            <div className={styles.stickyLeft}>
-              <motion.div
-                className={styles.stickyContent}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.5 }}
-                variants={fadeIn}
-              >
-                <h2 className={styles.titleH2}>W1 Nedir?</h2>
-                <p className={styles.text}>
-                  W1, iki dünyayı birleştiren hibrit bir platformdur. Hem hızlı
-                  düşüncelerinizi hem de derinlemesine görsel hikayelerinizi
-                  paylaşmanız için tasarlandı.
-                </p>
-                <div className={styles.stickyVisual}>
-                  {/* Buraya da bir görsel eklenebilir */}
-                </div>
-              </motion.div>
-            </div>
-
-            {/* SAĞ TARAF (Kayan) */}
-            <div className={styles.stickyRight}>
-              <motion.div
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.3 }}
-                variants={fadeIn}
-              >
-                <div className={styles.featureCard}>
-                  <FaFeatherAlt className={styles.featureIcon} />
-                  <h3>Feelings (Hisler)</h3>
-                  <p className={styles.text}>
-                    Kısa, metin tabanlı düşünceleriniz, anlık fikirleriniz ve
-                    dünyayla hızlıca paylaşmak istedikleriniz.
-                  </p>
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.3 }}
-                variants={fadeIn}
-              >
-                <div className={styles.featureCard}>
-                  <FaVideo className={styles.featureIcon} />
-                  <h3>Feeds (Akışlar)</h3>
-                  <p className={styles.text}>
-                    Hayatınızdan anlar, görsel hikayeler, videolar ve
-                    fotoğraflar. Estetik ve kalıcı içerikleriniz için ana
-                    akışınız.
-                  </p>
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.3 }}
-                variants={fadeIn}
-              >
-                <div className={styles.featureCard}>
-                  <FaShieldAlt className={styles.featureIcon} />
-                  <h3>Güvenli Bağlantı</h3>
-                  <p className={styles.text}>
-                    Özel mesajlaşma ve gelişmiş gizlilik ayarlarıyla
-                    bağlantılarınızı siz yönetin. Güvenliğiniz bizim
-                    önceliğimiz.
-                  </p>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </section>
-
-        {/* === 3. BENTO GRID (AboutUs'taki stil) === */}
-        {/* Stil aynı, içerik farklı */}
-        <section className={styles.bentoSection}>
-          <div className={styles.contentWrapper}>
-            <motion.h2
-              className={styles.titleH2}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.5 }}
-              variants={fadeIn}
-            >
-              Sınırların Ötesinde
-            </motion.h2>
-
-            <motion.div
-              className={styles.bentoGrid}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-              variants={fadeIn}
-            >
-              {/* KART 1 (BÜYÜK) */}
-              <div className={`${styles.bentoItem} ${styles.bentoItemLarge}`}>
-                <strong>Özgün ve Yenilikçi Tasarım</strong>
-                <p>
-                  W1, hazır bir şablon değildir. QuantumTag bünyesinde
-                  geliştirilen, kullanıcı deneyimini ön planda tutan fütüristik
-                  ve akıcı bir arayüze sahiptir.
-                </p>
-              </div>
-              {/* KART 2 */}
-              <div className={styles.bentoItem}>
-                <strong>Güvenlik Odaklı Moderasyon</strong>
-                <p>
-                  Güçlü raporlama araçları ve 6 saat içinde müdahale hedefiyle
-                  çalışan ekibimizle, saygılı bir topluluk sağlıyoruz.
-                </p>
-              </div>
-              {/* KART 3 */}
-              <div className={styles.bentoItem}>
-                <strong>Hızlı ve Güçlü Altyapı</strong>
-                <p>
-                  Google Firebase altyapısı üzerinde çalışan W1, içeriklerinize
-                  hızlı ve kesintisiz erişim sunar.
-                </p>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* === 4. FİNAL CTA (ÇAĞRI) BÖLÜMÜ === */}
-        <section className={styles.finalCtaSection}>
-          <motion.div
-            className={styles.contentWrapper}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.5 }}
-            variants={fadeIn}
-          >
-            <h2 className={styles.titleH2}>W1 Evrenine Adım Atın.</h2>
-            <p className={styles.text}>
-              Keşfetmeye, paylaşmaya ve ilham almaya hazır mısın?
-            </p>
-            <Link to="/auth" className={styles.ctaButtonHero}>
-              Ücretsiz Hesap Oluştur
-            </Link>
           </motion.div>
         </section>
 
-        {/* === 5. FOOTER === */}
-        <section className={styles.footerSection}>
-          <Footer />
+        <section className={styles.fullscreenSection}>
+          <div className={styles.splitGrid}>
+            <FeatureCard
+              visual={<FaFeatherAlt className={styles.featureIconLarge} />}
+              title="FEELING"
+            >
+              Anlık düşünceleriniz. Kısa, hızlı ve etkili. Hemen paylaşın, geri
+              bildirim alın ya da özel kaydedin.
+            </FeatureCard>
+
+            <FeatureCard
+              visual={<FaImage className={styles.featureIconLarge} />}
+              title="POST"
+              reversed
+            >
+              Yüksek çözünürlükte görseller için ideal. Albümler oluşturun,
+              düzenleyin ve koleksiyonlara kaydedin.
+            </FeatureCard>
+
+            <FeatureCard
+              visual={<FaVideo className={styles.featureIconLarge} />}
+              title="FEED"
+            >
+              Embed destekli videolar ve interaktif içerikler. Keşif motorumuz
+              kişiselleştirilmiş sonuçlar sunar.
+            </FeatureCard>
+          </div>
         </section>
+
+        <section
+          className={`${styles.fullscreenSection} ${styles.privacySection}`}
+        >
+          <motion.div
+            className={styles.centeredContent}
+            variants={containerFadeIn}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+          >
+            <motion.h2 className={styles.sectionTitle} variants={itemFadeIn}>
+              Kontrol Tamamen Sende
+            </motion.h2>
+            <motion.p className={styles.sectionText} variants={itemFadeIn}>
+              Her gönderi için detaylı gizlilik ayarları. Birden fazla gizlilik
+              seviyesini test edebilir ve önizleyebilirsiniz.
+            </motion.p>
+
+            <motion.div
+              className={styles.privacyInteractive}
+              variants={itemFadeIn}
+            >
+              <div className={styles.privacyPreview}>
+                <div className={styles.postPreviewHeader}>
+                  <div className={styles.previewUser}>W1 Kullanıcısı</div>
+                  <div className={styles.previewPrivacy}>{selectedPrivacy}</div>
+                </div>
+
+                <div className={styles.postPreviewBody}>
+                  <p>
+                    Keşke dünya daha yavaş olsaydı. Bu anı kaydetmek yetiyor
+                    bana.
+                  </p>
+                </div>
+              </div>
+
+              <div className={styles.privacyControls}>
+                <div className={styles.privacyGridControls}>
+                  <button
+                    onClick={() => setSelectedPrivacy("public")}
+                    className={`${styles.privacyBtn} ${
+                      selectedPrivacy === "public" ? styles.selectedBtn : ""
+                    }`}
+                  >
+                    Herkese Açık
+                  </button>
+                  <button
+                    onClick={() => setSelectedPrivacy("followers")}
+                    className={`${styles.privacyBtn} ${
+                      selectedPrivacy === "followers" ? styles.selectedBtn : ""
+                    }`}
+                  >
+                    Arkadaşlar
+                  </button>
+                  <button
+                    onClick={() => setSelectedPrivacy("close")}
+                    className={`${styles.privacyBtn} ${
+                      selectedPrivacy === "close" ? styles.selectedBtn : ""
+                    }`}
+                  >
+                    Yakın Arkadaşlar
+                  </button>
+                  <button
+                    onClick={() => setSelectedPrivacy("private")}
+                    className={`${styles.privacyBtn} ${
+                      selectedPrivacy === "private" ? styles.selectedBtn : ""
+                    }`}
+                  >
+                    Sadece Ben
+                  </button>
+                </div>
+
+                <div className={styles.privacyPillsWrap}>
+                  <PrivacyPill
+                    icon={FaGlobe}
+                    title="Herkese Açık"
+                    description="Gönderinizi herkes görebilir."
+                    active={selectedPrivacy === "public"}
+                  />
+                  <PrivacyPill
+                    icon={FaUserFriends}
+                    title="Arkadaşlar"
+                    description="Sadece sizi takip edenler görebilir."
+                    active={selectedPrivacy === "followers"}
+                  />
+                  <PrivacyPill
+                    icon={FaStar}
+                    title="Yakın Arkadaşlar"
+                    description="Sadece özel listeniz görebilir."
+                    active={selectedPrivacy === "close"}
+                  />
+                  <PrivacyPill
+                    icon={FaLock}
+                    title="Sadece Ben"
+                    description="Sadece siz görebilirsiniz."
+                    active={selectedPrivacy === "private"}
+                  />
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.p className={styles.sectionTextSmall} variants={itemFadeIn}>
+              Bu ayarlar mesajlaşma için de uygulanır. Kimlerden mesaj
+              alacağınızı da burada kontrol edin.
+            </motion.p>
+          </motion.div>
+        </section>
+
+        <section
+          className={`${styles.fullscreenSection} ${styles.securitySection}`}
+        >
+          <motion.div
+            className={styles.centeredContent}
+            variants={containerFadeIn}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+          >
+            <motion.h2 className={styles.sectionTitle} variants={itemFadeIn}>
+              Güven ve Şeffaflık
+            </motion.h2>
+            <motion.p className={styles.sectionText} variants={itemFadeIn}>
+              Verilerinizin korunması ve şeffaf politika uygulamaları W1'in
+              temelidir.
+            </motion.p>
+
+            <motion.div
+              className={styles.securityGridEnhanced}
+              variants={containerFadeIn}
+            >
+              <motion.div
+                className={styles.securityCard}
+                variants={itemFadeIn}
+                whileHover={{
+                  scale: 1.08,
+                  borderColor: "rgba(0, 153, 255, 0.932)",
+                }}
+                transition={{ type: "spring", stiffness: 200, damping: 10 }}
+              >
+                <FaCode className={styles.cardIcon} />
+                <h4>Firebase Altyapısı</h4>
+                <p>Verileriniz güçlü bir altyapıda saklanır.</p>
+              </motion.div>
+
+              <motion.div
+                className={styles.securityCard}
+                variants={itemFadeIn}
+                whileHover={{
+                  scale: 1.08,
+                  borderColor: "rgba(0, 153, 255, 0.932)",
+                }}
+                transition={{ type: "spring", stiffness: 200, damping: 10 }}
+              >
+                <FaFlag className={styles.cardIcon} />
+                <h4>Raporlama</h4>
+                <p>Uygunsuz içeriği kolayca raporlayın ve takip edin.</p>
+              </motion.div>
+
+              <motion.div
+                className={styles.securityCard}
+                variants={itemFadeIn}
+                whileHover={{ scale: 1.08 }}
+                transition={{ type: "spring", stiffness: 200, damping: 10 }}
+              >
+                <FaBug className={styles.cardIcon} />
+                <h4>Geri Bildirim</h4>
+                <p>Hata bildirimleri ve öneriler için özel kanal.</p>
+              </motion.div>
+
+              <motion.div
+                className={styles.securityCard}
+                variants={itemFadeIn}
+                whileHover={{
+                  scale: 1.08,
+                  borderColor: "rgba(0, 153, 255, 0.932)",
+                }}
+                transition={{ type: "spring", stiffness: 200, damping: 10 }}
+              >
+                <FaShieldAlt className={styles.cardIcon} />
+                <h4>Veri Şeffaflığı</h4>
+                <p>Hangi veriler toplandığını görün.</p>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        </section>
+
+        <section className={`${styles.fullscreenSection} ${styles.ctaSection}`}>
+          <motion.div
+            className={styles.centeredContent}
+            variants={containerFadeIn}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.5 }}
+          >
+            <motion.div className={styles.ctaCard} variants={itemFadeIn}>
+              <motion.h2 className={styles.ctaTitle} variants={itemFadeIn}>
+                W1 Evrenine Adım Atın.
+              </motion.h2>
+              <motion.p className={styles.sectionText} variants={itemFadeIn}>
+                Keşfetmeye, paylaşmaya ve ilham almaya hazır mısın? Platformumuz
+                sürekli gelişiyor ve topluluğumuz büyüyor.
+              </motion.p>
+
+              <motion.div className={styles.ctaRow} variants={itemFadeIn}>
+                <Link to="/auth" className={styles.ctaButtonHero}>
+                  Ücretsiz Hesap Oluştur
+                </Link>
+                <Link to="/discover" className={styles.ghostButton}>
+                  Discover
+                </Link>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        </section>
+
+        <Footer />
       </div>
     </>
   );
