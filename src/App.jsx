@@ -51,7 +51,7 @@ const AppContent = () => {
 
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/home" replace />} />
+      <Route path="/" element={<Navigate to="/welcome" replace />} />
 
       {/* Tüm sayfalar herkese açık */}
       <Route path="/auth" element={<AuthPage />} />
@@ -59,7 +59,6 @@ const AppContent = () => {
       <Route path="/notifications" element={<Notifications />} />
       <Route path="/messages" element={<Messages />} />
       <Route path="/discover" element={<Discover />} />
-      <Route path="/data-discover" element={<DataDiscover />} />
       <Route path="/saved" element={<SavedPage />} />
       <Route path="/vocentra" element={<VoCentra />} />
       <Route path="/search" element={<MobileSearchPage />} />
