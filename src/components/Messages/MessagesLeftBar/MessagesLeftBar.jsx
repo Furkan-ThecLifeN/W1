@@ -5,7 +5,15 @@ import { FaMicrophone } from "react-icons/fa";
 import { useUser } from "../../../context/UserContext";
 import { useAuth } from "../../../context/AuthProvider";
 import LoadingOverlay from "../../LoadingOverlay/LoadingOverlay";
-import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  getDoc,
+} from "firebase/firestore";
 import { getApp } from "firebase/app";
 import ActiveUsersBar from "../../ActiveUsersBar/ActiveUsersBar";
 import { useMessagesStore } from "../../../Store/useMessagesStore";
@@ -13,45 +21,74 @@ import { useMessagesStore } from "../../../Store/useMessagesStore";
 const MessagesLeftBar = ({ onSelectUser }) => {
   const { currentUser } = useUser();
   const { currentUser: firebaseUser } = useAuth();
-  const {
-    users,
-    loadingUsers,
-    errorUsers,
-    setState
-  } = useMessagesStore();
+  const { users, loadingUsers, errorUsers, setState } = useMessagesStore();
 
   useEffect(() => {
     if (!currentUser?.uid || users.length > 0) return; // ✅ Eğer kullanıcılar zaten yüklüyse tekrar fetch etme
 
+    // Ortam değişkeninden API adresini al
+    // Vercel'de bu 'https://w1b.onrender.com' olacak
+    const API_URL = process.env.REACT_APP_API_URL;
+
     const fetchAllData = async () => {
       setState({ loadingUsers: true, errorUsers: null });
+
+      if (!API_URL) {
+        console.error(
+          "REACT_APP_API_URL bulunamadı. Lütfen .env dosyanızı veya Vercel ayarlarınızı kontrol edin."
+        );
+        setState({
+          errorUsers: "API adresi yapılandırılmamış.",
+          loadingUsers: false,
+        });
+        return;
+      }
 
       try {
         const db = getFirestore(getApp());
 
         // 1️⃣ Backend'den takip edilen kullanıcılar
-        const res = await fetch(`http://localhost:3001/api/users/${currentUser.uid}/following`, {
-          headers: { Authorization: `Bearer ${firebaseUser?.accessToken}` },
-        });
+        // API_URL değişkeni burada kullanıldı
+        const res = await fetch(
+          `${API_URL}/api/users/${currentUser.uid}/following`,
+          {
+            headers: { Authorization: `Bearer ${firebaseUser?.accessToken}` },
+          }
+        );
+
+        // Hata kontrolü eklendi
+        if (!res.ok) {
+          throw new Error(`API isteği başarısız oldu: ${res.status}`);
+        }
+
         const data = await res.json();
-        const followingList = Array.isArray(data.following) ? data.following : [];
+        const followingList = Array.isArray(data.following)
+          ? data.following
+          : [];
 
         // 2️⃣ Firebase’den mesajlaşılmış kullanıcılar
         const conversationsRef = collection(db, "conversations");
-        const q = query(conversationsRef, where("members", "array-contains", currentUser.uid));
+        const q = query(
+          conversationsRef,
+          where("members", "array-contains", currentUser.uid)
+        );
         const snapshot = await getDocs(q);
 
         const messageUsers = await Promise.all(
           snapshot.docs.map(async (docSnap) => {
             const data = docSnap.data();
             const otherUserId = data.members.find((m) => m !== currentUser.uid);
+            // Hata durumunda (otherUserId yoksa) devam etmeyi engelle
+            if (!otherUserId) return null;
+
             const userDoc = await getDoc(doc(db, "users", otherUserId));
             const userData = userDoc.exists() ? userDoc.data() : {};
             return {
               uid: otherUserId,
               conversationId: docSnap.id,
               lastMessage: data.lastMessage || null,
-              displayName: userData.displayName || userData.username || otherUserId,
+              displayName:
+                userData.displayName || userData.username || otherUserId,
               username: userData.username || otherUserId,
               photoURL: userData.photoURL || "/default-profile.png",
               status: userData.status || "offline",
@@ -59,17 +96,29 @@ const MessagesLeftBar = ({ onSelectUser }) => {
           })
         );
 
+        // null olanları filtrele (yukarıdaki if (!otherUserId) kontrolü için)
+        const validMessageUsers = messageUsers.filter((user) => user !== null);
+
         // 3️⃣ Takip edilenler + mesajlaşılmış kişiler birleşir ve UID bazlı tekilleşir
-        const merged = [...followingList, ...messageUsers];
-        const uniqueMerged = Array.from(new Map(merged.map(u => [u.uid, u])).values());
+        const merged = [...followingList, ...validMessageUsers];
+        const uniqueMerged = Array.from(
+          new Map(merged.map((u) => [u.uid, u])).values()
+        );
 
         // 4️⃣ Son mesaj zamanına göre sırala
-        uniqueMerged.sort((a, b) => (b.lastMessage?.updatedAt?.seconds || 0) - (a.lastMessage?.updatedAt?.seconds || 0));
+        uniqueMerged.sort(
+          (a, b) =>
+            (b.lastMessage?.updatedAt?.seconds || 0) -
+            (a.lastMessage?.updatedAt?.seconds || 0)
+        );
 
         setState({ users: uniqueMerged, loadingUsers: false });
       } catch (err) {
         console.error("Veri yükleme hatası:", err);
-        setState({ errorUsers: "Kullanıcılar yüklenemedi.", loadingUsers: false });
+        setState({
+          errorUsers: "Kullanıcılar yüklenemedi.",
+          loadingUsers: false,
+        });
       }
     };
 
@@ -92,7 +141,7 @@ const MessagesLeftBar = ({ onSelectUser }) => {
         {errorUsers ? (
           <li className={styles.statusMessage}>{errorUsers}</li>
         ) : users.length > 0 ? (
-          users.map(user => (
+          users.map((user) => (
             <li
               key={user.uid}
               className={styles.userCard}
@@ -123,7 +172,9 @@ const MessagesLeftBar = ({ onSelectUser }) => {
             </li>
           ))
         ) : (
-          !loadingUsers && <li className={styles.statusMessage}>Henüz konuşmanız yok.</li>
+          !loadingUsers && (
+            <li className={styles.statusMessage}>Henüz konuşmanız yok.</li>
+          )
         )}
       </ul>
     </div>

@@ -5,8 +5,8 @@ import {
   toggleSaveRemote,
   getPostStats,
   defaultGetAuthToken,
-} from "./api";
-import { useActionsQueue } from "./useActionsQueue";
+} from "./api"; // API dosyasının yolu güncellendi (varsayım)
+import { useActionsQueue } from "./useActionsQueue"; // Hook yolu güncellendi (varsayım)
 import styles from "./ActionControls.module.css";
 import {
   FaHeart,
@@ -45,9 +45,6 @@ export default function ActionControls({
 
   const { enqueue } = useActionsQueue({ getAuthToken });
 
-  // --- DEĞİŞİKLİK BURADA ---
-  // Bu useEffect bloğu, giriş yapılmamış olsa bile
-  // istatistikleri çekecek şekilde güncellendi.
   useEffect(() => {
     let mounted = true;
 
@@ -55,35 +52,36 @@ export default function ActionControls({
       try {
         // Token almayı dene, başarısız olursa (giriş yoksa) null döner.
         const token = await getAuthToken().catch(() => null);
-        
+
         if (!mounted) return;
 
-        // API'ye token ile (giriş yapmışsa) veya token'sız (giriş yapmamışsa) istek at.
-        // getPostStats fonksiyonunun (ve backend'in) "token: null" durumunu
-        // herkese açık bir istek olarak işlemesi gerekir.
+        // Hata burada oluşuyor: Backend bu isteğe 404 veriyor.
         const res = await getPostStats({ targetType, targetId, token });
-        
+
         if (!mounted) return;
 
         // İstatistikler varsa ayarla
         if (res.stats) {
           setStats(res.stats);
         }
-        
+
         // Kullanıcıya özel 'liked' ve 'saved' bilgisi varsa ayarla,
         // yoksa (giriş yapılmamışsa) false olarak ayarla.
         setLiked(res.liked || false);
         setSaved(res.saved || false);
-
       } catch (e) {
+        // Backend'den gelen 404 hatası burada yakalanıyor.
         console.error("İstatistikler alınamadı: ", e);
       }
     }
 
-    fetchStats();
+    // targetId yoksa istek atma
+    if (targetId) {
+      fetchStats();
+    }
+
     return () => (mounted = false);
   }, [targetType, targetId, getAuthToken]);
-  // --- DEĞİŞİKLİK SONU ---
 
   async function commitActionNow(action) {
     if (!currentUser) return; // Giriş yoksa işlem yapma

@@ -19,15 +19,20 @@ export async function defaultGetAuthToken() {
 async function request(path, { method = "GET", body, token } = {}) {
   const headers = { "Content-Type": "application/json" };
   if (token) headers["Authorization"] = `Bearer ${token}`;
+  
   const res = await fetch(`${BASE_URL}${path}`, {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
   });
+
   if (!res.ok) {
+    // Backend 404 verdiğinde hata burada fırlatılıyor.
     const txt = await res.text();
-    throw new Error(txt || res.statusText);
+    // Gelen {"error":"target not found"} mesajı burada Error objesine dönüşüyor.
+    throw new Error(txt || res.statusText); 
   }
+  
   return res.json();
 }
 
@@ -51,6 +56,7 @@ export async function toggleSaveRemote({ targetType, targetId, finalState, token
 
 // Get post stats
 export async function getPostStats({ targetType, targetId, token }) {
+  // Frontend'den giden istek bu. Bu kod doğru görünüyor.
   return request(`/api/actions/getStats/${encodeURIComponent(targetType)}/${encodeURIComponent(targetId)}`, {
     method: "GET",
     token,
