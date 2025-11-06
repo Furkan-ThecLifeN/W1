@@ -2,25 +2,27 @@
 
 import React, { useState } from "react";
 import {
-  signInWithEmailAndPassword,
+  // signInWithEmailAndPassword, // <-- BU SİLİNDİ, ÇÜNKÜ KULLANMAYACAĞIZ
+  signInWithCustomToken, // <-- BU EKLENDİ, ÇÜNKÜ BACKEND'DEN TOKEN ALACAĞIZ
   GoogleAuthProvider,
   signInWithPopup,
 } from "firebase/auth";
 import { auth } from "../../config/firebase-client";
 import { useAuth } from "../../context/AuthProvider";
 import { useUser } from "../../context/UserContext";
-import styles from "./AuthForms.module.css"; // Yeni form stilleri
+import styles from "./AuthForms.module.css";
 import { useNavigate } from "react-router-dom";
 import LoadingOverlay from "../LoadingOverlay/LoadingOverlay";
-import { FiMail, FiLock } from "react-icons/fi"; // İkonlar eklendi
+import { FiMail, FiLock } from "react-icons/fi";
+import axios from "axios"; // <-- AXIOS EKLENDİ (veya fetch kullanıyorsanız ona göre düzeltin)
 
-const isValidEmailFormat = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+// Bu fonksiyon artık gerekli değil, backend e-posta veya kullanıcı adı olduğunu anlıyor
+// const isValidEmailFormat = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-// onShowRegister ve onShowForgotPassword prop'ları eklendi
 const LoginForm = ({ onShowRegister, onShowForgotPassword }) => {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(""); // Tek bir genel hata state'i
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const { showToast } = useAuth();
@@ -37,6 +39,7 @@ const LoginForm = ({ onShowRegister, onShowForgotPassword }) => {
     setError("");
   };
 
+  // --- Burası en önemli kısım, handleLogin fonksiyonu güncellendi ---
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
@@ -49,29 +52,25 @@ const LoginForm = ({ onShowRegister, onShowForgotPassword }) => {
     setLoading(true);
 
     try {
-      let resolvedEmail = identifier;
-      if (!isValidEmailFormat(identifier)) {
-        const res = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/auth/resolve-identifier`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ identifier }),
-          }
-        );
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error || "Kullanıcı bulunamadı.");
-        }
-        resolvedEmail = data.email;
-      }
-
-      const userCred = await signInWithEmailAndPassword(
-        auth,
-        resolvedEmail,
-        password
+      // 1. GİRİŞ İÇİN DOĞRUDAN BACKEND'İN /api/auth/login ENDPOINT'İNİ ÇAĞIR
+      // Backend (authController.js) e-posta/kullanıcı adı ayrımını ve şifre kontrolünü yapacak
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/auth/login`,
+        { identifier, password }
       );
 
+      // 2. BACKEND'DEN GELEN CUSTOM TOKEN'I AL
+      const { token } = response.data;
+
+      if (!token) {
+        throw new Error("Giriş token'ı (jeton) alınamadı.");
+      }
+
+      // 3. FIREBASE'E CUSTOM TOKEN İLE GİRİŞ YAP
+      // Bu, "Ben backend'imden onay aldım" demektir.
+      const userCred = await signInWithCustomToken(auth, token);
+
+      // 4. Cihaz bilgilerini kaydet (bu sizin kodunuzda vardı, iyi bir özellik)
       const deviceInfo = {
         device: navigator.userAgent,
         os: navigator.platform,
@@ -79,6 +78,7 @@ const LoginForm = ({ onShowRegister, onShowForgotPassword }) => {
       };
       await saveLoginDevice(deviceInfo);
 
+      // 5. Başarılı giriş ve yönlendirme
       showToast(
         `Giriş başarılı. Hoş geldin ${
           userCred.user.displayName || userCred.user.email
@@ -86,19 +86,25 @@ const LoginForm = ({ onShowRegister, onShowForgotPassword }) => {
         "success"
       );
       navigate("/home");
+
     } catch (err) {
-      let errorMessage = "Giriş hatası.";
-      if (
-        err.code === "auth/user-not-found" ||
-        err.code === "auth/wrong-password" ||
-        err.code === "auth/invalid-credential"
-      ) {
-        errorMessage = "Geçersiz email/kullanıcı adı veya şifre.";
-      } else if (err.code === "auth/invalid-email") {
-        errorMessage = "Geçersiz e-posta formatı.";
-      } else {
-        errorMessage = `Giriş hatası: ${err.message}`;
+      // Hata yönetimi de güncellendi
+      console.error("Giriş hatası:", err);
+      let errorMessage = "Giriş sırasında bilinmeyen bir hata oluştu.";
+
+      // Hata backend'den (axios) geliyorsa (örn: 403 - Şifre yanlış)
+      if (err.response?.data?.error) {
+        errorMessage = err.response.data.error; // "Geçersiz email/kullanıcı adı veya şifre."
+      } 
+      // Hata Firebase'den (custom token) geliyorsa
+      else if (err.code === "auth/custom-token-mismatch") {
+        errorMessage = "Giriş token'ı geçersiz. Lütfen tekrar deneyin.";
+      } 
+      // Diğer hatalar
+      else if (err.message) {
+        errorMessage = err.message;
       }
+      
       setError(errorMessage);
       showToast(errorMessage, "error");
     } finally {
@@ -106,9 +112,10 @@ const LoginForm = ({ onShowRegister, onShowForgotPassword }) => {
     }
   };
 
+  // Google ile giriş fonksiyonunuz (handleGoogleSignIn) backend'inize
+  // göre düzeltilmemiş, ancak o ayrı bir konu. Şimdilik ona dokunmadım.
+  // E-posta/şifre girişini çözdükten sonra gerekirse ona da bakarız.
   const handleGoogleSignIn = async () => {
-    // ... (Mevcut handleGoogleSignIn fonksiyonunuzun tamamı) ...
-    // ... (Bu fonksiyonun içeriği aynı kalacak) ...
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
@@ -149,6 +156,7 @@ const LoginForm = ({ onShowRegister, onShowForgotPassword }) => {
     }
   };
 
+  // JSX (HTML) kısmında hiçbir değişiklik yok
   return (
     <>
       {loading && <LoadingOverlay />}
@@ -180,7 +188,7 @@ const LoginForm = ({ onShowRegister, onShowForgotPassword }) => {
 
         <div className={styles.form_utils}>
           <span
-            onClick={onShowForgotPassword} // Yeni prop'u kullan
+            onClick={onShowForgotPassword}
             className={styles.toggle_link_inline}
           >
             Şifremi Unuttum
