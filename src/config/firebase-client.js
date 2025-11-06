@@ -1,4 +1,5 @@
-// src/config/firebase-client.js
+// src/config/firebase-client.js 
+// Firebase istemci yapılandırması
 
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
