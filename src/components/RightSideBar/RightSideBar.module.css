@@ -71,7 +71,7 @@
 
 /* ✨ Reklam Alanı */
 .ads_section {
-  display: flex;
+  display: none;
   flex-direction: column;
   gap: 16px;
   flex-grow: 1; /* EN ÖNEMLİ DEĞİŞİKLİK: Bu bölümün kalan tüm dikey alanı doldurmasını sağlar */
@@ -187,5 +187,46 @@
 @media (max-width: 1024px) {
   .right_sidebar {
     display: none;
+  }
+}
+
+/* ==============================
+   Yakında Yazısı (Ortada)
+   ============================== */
+.comingSoonWrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%; /* İhtiyaca göre ayarlayabilirsin */
+  width: 100%;
+  background: var(--color-dark-bg); /* Arka plan ile uyumlu */
+  border-radius: 12px;
+  margin-top: 20px;
+  border: 1px solid #c8c8c8;
+}
+
+.comingSoonText {
+  font-family: var(--font-main);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 
+    0 0 8px #ffffff, 
+    0 0 12px #ffffff, 
+    0 0 20px #00bfff, 
+    0 0 30px #00aaff; /* Parlak neon efekti */
+  animation: glow 2s infinite alternate;
+}
+
+/* Neon Glow Animasyonu */
+@keyframes glow {
+  from {
+    text-shadow: 0 0 6px #ffffff, 0 0 10px #00bfff, 0 0 20px #00aaff;
+  }
+  to {
+    text-shadow: 0 0 12px #ffffff, 0 0 20px #00bfff, 0 0 30px #00aaff;
   }
 }

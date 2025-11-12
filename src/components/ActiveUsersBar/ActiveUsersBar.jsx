@@ -4,20 +4,16 @@ import styles from "./ActiveUsersBar.module.css";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useUser } from "../../context/UserContext";
 import { db } from "../../config/firebase-client";
-// ✅ Sadece kendi durumumuzu dinlemek için 'doc' ve 'onUserSnapshot' kaldı.
-import { doc, onSnapshot as onUserSnapshot } from "firebase/firestore";
+import { doc, onSnapshot as onUserSnapshot, updateDoc, serverTimestamp } from "firebase/firestore";
 
-// ✅ 1. 'users' prop'unu al. Varsayılan olarak boş bir dizi ata.
 const ActiveUsersBar = ({ users = [] }) => {
   const { currentUser } = useUser();
   const scrollRef = useRef(null);
   const [myStatus, setMyStatus] = useState("online");
 
-  // ✅ 2. BÜYÜK DEĞİŞİKLİK:
-  // 'activeUsers' state'i ve tüm kullanıcıları dinleyen useEffect kaldırıldı.
-  // Bileşen artık 'users' prop'una bağımlı.
-
-  // 🔹 Sadece kendi durumunu dinle (Bu kısım aynı kalır)
+  // ---------------------------------------------------
+  // Kullanıcının kendi durumunu ve lastActive bilgisini dinleme
+  // ---------------------------------------------------
   useEffect(() => {
     if (!currentUser?.uid) return;
     const userRef = doc(db, "users", currentUser.uid);
@@ -30,6 +26,36 @@ const ActiveUsersBar = ({ users = [] }) => {
     return () => unsub();
   }, [currentUser]);
 
+  // ---------------------------------------------------
+  // Kullanıcı aktifliğini güncelleme (mouse, scroll, keypress)
+  // ---------------------------------------------------
+  useEffect(() => {
+    if (!currentUser?.uid) return;
+
+    const updateLastActive = async () => {
+      const userRef = doc(db, "users", currentUser.uid);
+      await updateDoc(userRef, {
+        lastActive: serverTimestamp(),
+      });
+    };
+
+    // Sayfa açıldığında güncelle
+    updateLastActive();
+
+    // Etkinlikler
+    const events = ["mousemove", "keydown", "scroll", "click"];
+    const handler = () => updateLastActive();
+
+    events.forEach((e) => window.addEventListener(e, handler));
+
+    return () => {
+      events.forEach((e) => window.removeEventListener(e, handler));
+    };
+  }, [currentUser]);
+
+  // ---------------------------------------------------
+  // Scroll butonları
+  // ---------------------------------------------------
   const scroll = (direction) => {
     if (!scrollRef.current) return;
     const scrollAmount = 250;
@@ -39,11 +65,19 @@ const ActiveUsersBar = ({ users = [] }) => {
     });
   };
 
-  // ✅ 3. Filtreleme mantığı 'activeUsers' state'i yerine 'users' prop'unu kullanır.
-  // 'followingUsers' listesi zaten 'currentUser'ı içermediği için UID kontrolüne gerek yok.
-  const otherUsers = users.filter(
-    (u) => u.status !== "invisible"
-  );
+  // ---------------------------------------------------
+  // Kullanıcının aktif mi, away mı olduğunu hesaplama (7 dk)
+  // ---------------------------------------------------
+  const getStatus = (user) => {
+    if (!user.lastActive) return "offline";
+    const last = user.lastActive.toDate?.() || user.lastActive;
+    const diff = (new Date() - new Date(last)) / 1000; // saniye
+    if (diff > 420) return "away"; // 7 dakika = 420 saniye
+    return user.status || "offline";
+  };
+
+  // Diğer kullanıcılar (invisible değil)
+  const otherUsers = users.filter((u) => u.status !== "invisible");
 
   return (
     <div className={styles.activeUsersContainer}>
@@ -60,7 +94,7 @@ const ActiveUsersBar = ({ users = [] }) => {
       </div>
 
       <div className={styles.usersScroll} ref={scrollRef}>
-        {/* 🔹 Kendi profili - status daima güncel */}
+        {/* Kendi profili */}
         {currentUser && (
           <div className={`${styles.userCard} ${styles.myProfileCard}`}>
             <div className={styles.profileWrapper}>
@@ -70,11 +104,11 @@ const ActiveUsersBar = ({ users = [] }) => {
               />
               <span
                 className={`${styles.statusDot} ${
-                  myStatus === "online"
+                  getStatus({ lastActive: new Date(), status: myStatus }) === "online"
                     ? styles.online
-                    : myStatus === "dnd"
+                    : getStatus({ lastActive: new Date(), status: myStatus }) === "dnd"
                     ? styles.dnd
-                    : myStatus === "away"
+                    : getStatus({ lastActive: new Date(), status: myStatus }) === "away"
                     ? styles.away
                     : styles.offline
                 }`}
@@ -86,18 +120,18 @@ const ActiveUsersBar = ({ users = [] }) => {
           </div>
         )}
 
-        {/* ✅ 4. Diğer kullanıcılar (Artık prop'tan gelen 'followingUsers' listesi) */}
+        {/* Diğer kullanıcılar */}
         {otherUsers.map((user) => (
           <div key={user.uid} className={styles.userCard}>
             <div className={styles.profileWrapper}>
               <img src={user.photoURL} alt={user.displayName} />
               <span
                 className={`${styles.statusDot} ${
-                  user.status === "online"
+                  getStatus(user) === "online"
                     ? styles.online
-                    : user.status === "dnd"
+                    : getStatus(user) === "dnd"
                     ? styles.dnd
-                    : user.status === "away"
+                    : getStatus(user) === "away"
                     ? styles.away
                     : styles.offline
                 }`}

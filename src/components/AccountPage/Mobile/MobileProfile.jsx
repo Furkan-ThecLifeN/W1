@@ -428,9 +428,6 @@ const MobileProfile = () => {
           </div>
         </div>
       )}
-      <div className={styles.footerWrapper}>
-        <Footer />
-      </div>
     </div>
   );
 };

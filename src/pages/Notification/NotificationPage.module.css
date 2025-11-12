@@ -1,14 +1,14 @@
 .notification_container {
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: column;
   background-color: var(--color-black);
   width: 100%;
   height: 100vh;
   font-family: var(--font-main);
   box-sizing: border-box;
-
-  overflow-y: auto;   /* dikey scroll çalışsın */
+  overflow-y: auto; /* dikey scroll çalışsın */
   overflow-x: hidden; /* yatay scroll kapalı */
 
   /* Scrollbar gizle */
@@ -18,4 +18,15 @@
 
 .notification_container::-webkit-scrollbar {
   display: none; /* Chrome, Safari ve Opera için */
+}
+
+/* Mobil uyum */
+@media (max-width: 1024px) {
+  .footerWrapper {
+    padding: 10px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 }

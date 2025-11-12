@@ -63,6 +63,12 @@ const RightSidebar = () => {
         <>
           <hr className={RightSidebarStyle.separator} />
 
+          <div className={RightSidebarStyle.comingSoonWrapper}>
+            <span className={RightSidebarStyle.comingSoonText}>W1</span>
+
+            <span className={RightSidebarStyle.comingSoonText}>Yakında</span>
+          </div>
+
           {/* ✨ Reklam Alanı (Bu bölüm artık dikeyde esneyecek) */}
           <div className={RightSidebarStyle.ads_section}>
             <h4 className={RightSidebarStyle.ads_title}>Öne Çıkanlar</h4>

@@ -99,6 +99,39 @@
   background-color: #444;
 }
 
+/* 🔹 Bildirim Temizleme Butonu  */
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.clearNotificationsBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #ff0000;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 4px rgba(255, 0, 0, 0.863);
+}
+
+.clearNotificationsBtn:hover {
+  background-color: #da0000;
+  transform: translateY(-1px);
+}
+
+.clearNotificationsBtn:active {
+  transform: translateY(0);
+  background-color: #cc3333;
+}
+
 /* Mobil uyum */
 @media (max-width: 1024px) {
   .notification_page {

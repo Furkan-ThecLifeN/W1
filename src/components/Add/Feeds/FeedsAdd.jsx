@@ -151,7 +151,7 @@ const FeedsAdd = ({ onClose }) => {
         transition={{ type: "spring", damping: 20, stiffness: 100 }}
       >
         <div className={styles.modalHeader}>
-          <button className={styles.backButton} onClick={handleClose}>
+          <button className={styles.backButton} onClick={() => navigate(-1)}>
             <FiArrowLeft size={24} />
           </button>
           <h2 className={styles.modalTitle}>Yeni Feeds Paylaş</h2>

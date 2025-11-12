@@ -7,30 +7,63 @@ import {
   FaRegCommentDots,
   FaCheckCircle,
 } from "react-icons/fa";
+import { MdDataSaverOff } from "react-icons/md";
 import { useAuth } from "../../context/AuthProvider";
 import { Link } from "react-router-dom";
 import LoadingOverlay from "../LoadingOverlay/LoadingOverlay";
 import axios from "axios";
 import { useNotificationStore } from "../../Store/useNotificationStore";
-import Footer from "../Footer/Footer"; // <--- BU SATIRI EKLEYİN (Yol sizde farklıysa düzeltin)
+import Footer from "../Footer/Footer";
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  orderBy,
+  getDocs,
+  writeBatch,
+  doc,
+} from "firebase/firestore";
 
 const Notification = () => {
-  const { notifications, loading, isLoaded, setState } = useNotificationStore();
+  const { notifications, loading, isLoaded, setState, reset } =
+    useNotificationStore();
   const { currentUser, showToast } = useAuth();
   const apiBaseUrl = process.env.REACT_APP_API_URL;
+  const db = getFirestore();
 
-  // ========== Bildirimleri okundu yap ==========
+  // 🔹 Local notification-store'u temizleme
+  const clearNotificationData = () => {
+    try {
+      localStorage.removeItem("notification-store");
+      reset();
+      showToast("Bildirim verileri temizlendi.", "success");
+    } catch (err) {
+      console.error("Temizleme hatası:", err);
+      showToast("Veriler temizlenirken hata oluştu.", "error");
+    }
+  };
+
+  // ========== Bildirimleri okundu yap (Firestore) ==========
   const markNotificationsRead = async () => {
     if (!currentUser) return;
     try {
-      const idToken = await currentUser.getIdToken();
-      await axios.patch(
-        `${apiBaseUrl}/api/users/notifications/read`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${idToken}` },
-        }
+      const notifRef = collection(
+        db,
+        "users",
+        currentUser.uid,
+        "notifications"
       );
+      const q = query(notifRef, where("isRead", "==", false));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) return;
+
+      const batch = writeBatch(db);
+      querySnapshot.docs.forEach((docSnap) => {
+        batch.update(docSnap.ref, { isRead: true });
+      });
+      await batch.commit();
 
       setState({
         notifications: notifications.map((n) => ({ ...n, isRead: true })),
@@ -40,7 +73,7 @@ const Notification = () => {
     }
   };
 
-  // ========== Bildirimleri çek ==========
+  // ========== Bildirimleri çek (Firestore) ==========
   const fetchNotifications = async () => {
     if (loading) return;
     setState({ loading: true });
@@ -51,15 +84,19 @@ const Notification = () => {
     }
 
     try {
-      const idToken = await currentUser.getIdToken();
-      const response = await axios.get(
-        `${apiBaseUrl}/api/users/notifications`,
-        {
-          headers: { Authorization: `Bearer ${idToken}` },
-        }
+      const notifRef = collection(
+        db,
+        "users",
+        currentUser.uid,
+        "notifications"
       );
+      const querySnapshot = await getDocs(notifRef);
 
-      const allNotifications = response.data.notifications;
+      const allNotifications = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt.toDate().toISOString(),
+      }));
 
       const uniqueFollowRequests = {};
       const otherNotifications = [];
@@ -80,10 +117,7 @@ const Notification = () => {
 
       const combinedNotifications = [
         ...Object.values(uniqueFollowRequests),
-        ...otherNotifications.filter(
-          (item) =>
-            item.type !== "follow_accepted" && item.type !== "follow_rejected"
-        ),
+        ...otherNotifications,
       ];
 
       const sortedNotifications = combinedNotifications.sort(
@@ -102,6 +136,7 @@ const Notification = () => {
     }
   };
 
+  // ========== Takip İsteği İşlemi ==========
   const handleFollowRequest = async (requesterUid, action) => {
     setState({ loading: true });
     try {
@@ -180,7 +215,16 @@ const Notification = () => {
 
   return (
     <div className={styles.notification_page}>
-      <h2 className={styles.page_title}>Bildirimler</h2>
+      <div className={styles.headerRow}>
+        <h2 className={styles.page_title}>Bildirimler</h2>
+        <button
+          className={styles.clearNotificationsBtn}
+          onClick={clearNotificationData}
+        >
+          <MdDataSaverOff /> Güncel Verileri Al
+        </button>
+      </div>
+
       {loading ? (
         <LoadingOverlay />
       ) : notifications.length > 0 ? (
@@ -248,9 +292,7 @@ const Notification = () => {
           <p>Henüz bildirim yok.</p>
         </div>
       )}
-     <div className={styles.footerWrapper}>
-       <Footer /> {/* <--- FOOTER'I BURAYA EKLEYİN */}
-     </div>
+
     </div>
   );
 };
