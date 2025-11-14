@@ -7,7 +7,7 @@ const Footer = () => {
   return (
     <footer className={styles.footerContainer}>
       <nav className={styles.footerNav}>
-        {/* Bu linkleri kendi sayfalarına yönlendirmelisin (örn: /hakkimizda) */}
+        <a href="/welcome" className={styles.footerLink}>Home</a>
         <a href="/about" className={styles.footerLink}>Hakkımızda</a>
         <a href="/contact" className={styles.footerLink}>İletişim</a>
         <a href="/privacy" className={styles.footerLink}>Gizlilik Politikası</a>

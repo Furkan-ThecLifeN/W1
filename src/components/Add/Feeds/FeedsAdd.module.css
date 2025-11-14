@@ -1,139 +1,371 @@
-.modalOverlay {
-  position: fixed;
+/* FeedsAdd.module.css
+  Stiller, PostAdd.module.css dosyasındaki parlak mavi temayla 
+  birebir aynı olacak şekilde GÜNCELLENDİ.
+*/
+
+/* PostAdd.module.css'den kopyalanan renk paleti.
+  Bu dosyanın kendi kendine yetmesi için buraya eklendi.
+*/
+:root {
+  /* Parlak Mavi Tema */
+  --postadd-primary-blue: #00aaff; /* Ana parlak mavi */
+  --postadd-secondary-blue: #00c6ff; /* Gradientler için ikincil mavi */
+
+  /* Arka Plan ve Kart Renkleri */
+  --postadd-bg-dark: #101014; /* Siyah ana arka plan */
+  --postadd-card-bg: #1a1d2e; /* Koyu, hafif mavi kart arka planı */
+  --postadd-input-bg: #25283a; /* Input/void alanı arka planı */
+
+  /* Metin ve Nötr Renkler */
+  --postadd-text-light: #e0e0e0; /* Ana metin rengi */
+  --postadd-text-mid: #a0a0b0; /* İkincil, soluk metin */
+
+  /* Kenarlık ve Vurgu */
+  --postadd-border-accent: #00aaff; /* Vurgu kenarlığı (Ana mavi) */
+  --postadd-border-light: rgba(255, 255, 255, 0.1); /* Soluk kenarlık */
+
+  /* Diğer */
+  --postadd-danger: #ff4444; /* Hata/Silme rengi */
+  --postadd-success: #00c3ff; /* Başarı rengi (Mavi) */
+  --postadd-success-green: #00e676; /* Başarı (Yeşil) */
+}
+
+/* === Ana Konteyner === */
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+  /* font-family: var(--font-main); -> Global fontunuzu korur */
+  background-color: var(--postadd-bg-dark); /* PostAdd stili */
+}
+
+/* === Post Kartı === */
+.postCard {
+  background-color: var(--postadd-card-bg); /* PostAdd stili */
+  border-radius: 20px; /* PostAdd stili (daha yuvarlak) */
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  max-width: 900px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--postadd-border-accent); /* PostAdd stili */
+}
+
+/* === Başlık Alanı (PostAdd gibi Gradient) === */
+.postHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 25px;
+  /* PostAdd stili: Parlak mavi gradient */
+  background: linear-gradient(
+    90deg,
+    var(--postadd-primary-blue) 0%,
+    var(--postadd-secondary-blue) 100%
+  );
+  color: white; /* PostAdd stili */
+  position: relative;
+  border-bottom: none; /* Gradient olduğu için gerek yok */
+}
+
+/* Başlıktaki Butonlar (PostAdd stili) */
+.backButton,
+.shareButton {
+  background: none; /* PostAdd stili */
+  border: none;
+  color: white; /* PostAdd stili */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem; /* PostAdd stili (biraz daha büyük) */
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+}
+
+.backButton:hover {
+  background: rgba(255, 255, 255, 0.2); /* PostAdd stili */
+  transform: scale(1.05);
+}
+
+.shareButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--blur-bg);
+  color: var(--color-grey);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Varsayılan hover (aktif değilken) */
+.shareButton:hover:not(:disabled) {
+  background: var(--gradient-button-hover);
+  color: var(--text-white);
+  transform: scale(1.05);
+}
+
+/* Active durumda */
+.shareButton.active {
+  background: var(--gradient-button);
+  color: var(--text-white);
+  border: 1px solid #2b8fdce2;
+  box-shadow: 0 6px 20px rgba(0, 170, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+
+/* Disabled durumu */
+.shareButton:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+/* Başlık (PostAdd stili) */
+.title {
+  margin: 0;
+  font-size: 1.5rem; /* PostAdd stili */
+  font-weight: 700;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+  /* Gradient kaldırıldı, çünkü header zaten gradient */
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: white;
+  color: white;
+}
+
+/* === İçerik Alanı === */
+.postContent {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  padding: 25px;
+}
+
+@media (min-width: 768px) {
+  .postContent {
+    flex-direction: row;
+  }
+}
+
+/* === 1. Sütun: Medya (PostAdd stili) === */
+.mediaSection {
+  flex: 1;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--postadd-input-bg); /* PostAdd stili */
+  border-radius: 12px;
+  border: 1px dashed var(--postadd-border-accent); /* PostAdd stili */
+  padding: 20px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.mediaSection.mediaSectionVideo {
+  padding: 0;
+  border: 1px solid var(--postadd-border-accent); /* PostAdd stili */
+  overflow: hidden;
+}
+
+.mediaSection:hover {
+  border-color: var(--postadd-secondary-blue); /* PostAdd stili */
+  box-shadow: 0 0 15px rgba(0, 198, 255, 0.3);
+}
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  gap: 15px;
+  flex-grow: 1;
+}
+
+.dropzoneIcon {
+  color: var(--postadd-primary-blue); /* PostAdd stili */
+  opacity: 0.7;
+}
+
+.dropzoneText {
+  font-size: 1.1rem;
+  color: var(--postadd-text-mid); /* PostAdd stili */
+}
+
+/* === Video Önizleme Stilleri === */
+.videoPreviewContainer {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;
+  height: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.videoPreview {
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
+}
+
+.removeVideoButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
-  padding: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  z-index: 10;
 }
 
-.modalContainer {
-  background: rgba(28, 28, 30, 0.95); /* Glass effect */
-  border-radius: 20px;
-  width: 400px;
-  max-width: 100%;
-  padding: 24px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(8px);
+.removeVideoButton:hover {
+  background-color: var(--busy); /* PostAdd stili */
+}
+
+/* === 2. Sütun: Detaylar === */
+.detailsSection {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.modalHeader {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.backButton {
-  background: transparent;
-  border: none;
-  color: #fff;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.backButton:hover {
-  transform: rotate(-45deg) scale(1.1);
-}
-
-.modalTitle {
-  color: #fff;
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
-.formContent {
+/* Input Grupları */
+.inputGroup {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
+  width: 100%;
 }
 
-.inputGroup label {
-  color: #ccc;
-  font-size: 14px;
-  margin-bottom: 6px;
-  display: block;
+.inputGroup label,
+.checkboxGroup label {
+  color: var(--postadd-text-mid); /* PostAdd stili */
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
+/* Input Alanları (PostAdd stili) */
 .inputField,
 .textareaField {
   width: 100%;
-  padding: 10px 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(40, 40, 42, 0.6);
-  color: #fff;
+  padding: 12px 14px;
+  border-radius: 8px; /* PostAdd stili */
+  border: 1px solid var(--postadd-border-accent); /* PostAdd stili */
+  background: var(--postadd-input-bg); /* PostAdd stili */
+  color: var(--postadd-text-light); /* PostAdd stili */
+  font-size: 0.95rem;
   outline: none;
-  font-size: 14px;
   transition: all 0.3s ease;
-  backdrop-filter: blur(4px);
+  box-sizing: border-box;
+}
+
+.inputField::placeholder,
+.textareaField::placeholder {
+   color: var(--postadd-text-mid); /* PostAdd stili */
 }
 
 .inputField:focus,
 .textareaField:focus {
-  border: 1px solid #ff416c;
-  box-shadow: 0 0 8px rgba(255, 65, 108, 0.6);
+  border-color: var(--postadd-secondary-blue); /* PostAdd stili */
+  box-shadow: 0 0 8px rgba(0, 198, 255, 0.4);
 }
 
-/* inputGroup CSS */
-.inputGroup label {
-  font-weight: 600;
-  color: var(--text-color-primary, #333);
-  margin-bottom: 8px;
-  display: block;
-  font-size: 0.9rem;
+.textareaField {
+  resize: vertical;
+  min-height: 100px;
 }
 
-.privacySelector {
+/* Kullanıcı Bilgisi ve Gizlilik (PostAdd stili) */
+.userInfoAndPrivacy {
   display: flex;
   align-items: center;
-  position: relative;
-  width: 100%;
-  cursor: pointer;
+  gap: 15px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--postadd-border-light); /* PostAdd stili */
+}
 
-  background-color: var(--background-light, #f0f2f5);
-  border-radius: 12px;
-  border: 1px solid var(--border-color, #e0e0e0);
-  transition: all 0.2s ease-in-out;
+.avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.userMeta {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 4px;
+}
+
+.username {
+  font-weight: 600;
+  font-size: 1.1rem; /* PostAdd stili */
+  color: var(--postadd-text-light); /* PostAdd stili */
+}
+
+/* Gizlilik Seçici (PostAdd stili) */
+.privacySelector {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--postadd-input-bg); /* PostAdd stili */
+  border-radius: 6px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border: 1px solid var(--postadd-border-light); /* PostAdd stili */
 }
 
 .privacySelector:hover {
-  border-color: var(--primary-color, #1877f2);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background-color: #3b3b63; /* PostAdd stili */
 }
 
 .privacyDisplay {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--text-color-primary, #333);
-  flex-grow: 1;
-  pointer-events: none;
-}
-
-.privacyDisplay svg {
-  margin-right: 10px;
-  color: var(--primary-color, var(--color-blue));
-  min-width: 20px;
-  height: 20px;
-}
-
-.privacyDisplay span {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--postadd-text-mid); /* PostAdd stili */
 }
 
 .hiddenSelect {
@@ -144,82 +376,71 @@
   height: 100%;
   opacity: 0;
   cursor: pointer;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
 }
 
-.privacySelector:focus-within {
-  box-shadow: 0 0 0 3px rgba(var(--primary-rgb, 24, 119, 242), 0.3);
-  border-color: var(--primary-color, #1877f2);
-}
-
+/* Checkbox (PostAdd stili) */
 .checkboxGroup {
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: #ccc;
-  font-size: 13px;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--postadd-text-mid); /* PostAdd stili */
+  margin-top: -10px;
 }
 
 .checkboxField {
-  width: 16px;
-  height: 16px;
-  accent-color: #ff416c;
-  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--postadd-primary-blue); /* PostAdd stili */
 }
 
+/* Hata ve Başarı Mesajları (PostAdd stili) */
 .errorMessage,
 .successMessage {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  padding: 6px 10px;
+  align-items: center; /* 'align-itemsİ' düzeltildi */
+  gap: 8px;
+  padding: 10px;
   border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin: 0;
 }
 
 .errorMessage {
-  background: rgba(255, 82, 82, 0.15);
-  color: #ff5252;
+  background-color: rgba(255, 68, 68, 0.1);
+  color: var(--postadd-danger);
+  border: 1px solid var(--postadd-danger);
 }
 
 .successMessage {
-  background: rgba(76, 217, 100, 0.15);
-  color: #4cd964;
+  background-color: rgba(0, 230, 118, 0.1); /* Yeşil başarı rengi */
+  color: var(--postadd-success-green);
+  border: 1px solid var(--postadd-success-green);
 }
 
-.modalFooter {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.shareButton {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, #ff416c, #ff4b2b);
-  color: #fff;
-  font-weight: 600;
-  border: none;
-  border-radius: 14px;
-  padding: 12px 20px;
-  cursor: pointer;
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
-  box-shadow: 0 6px 20px rgba(255, 65, 108, 0.4);
-}
-
-.shareButton:hover {
-  transform: scale(1.05);
-  box-shadow: 0 10px 30px rgba(255, 65, 108, 0.6);
-}
-
-.shareButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: 0 4px 10px rgba(255, 65, 108, 0.3);
+/* === Responsive === */
+@media (max-width: 767px) {
+  .postCard {
+    width: 100%;
+    margin-top: 10px;
+    border-radius: 12px; /* Mobilde de uyumlu olsun */
+  }
+  .postHeader {
+    padding: 12px 15px;
+  }
+  .title {
+    font-size: 1.2rem; /* PostAdd mobil stili */
+  }
+  .backButton,
+  .shareButton {
+    padding: 6px 10px; /* PostAdd mobil stili */
+    font-size: 0.9rem;
+  }
+  .postContent {
+    padding: 15px;
+  }
+  .mediaSection {
+    min-height: 250px;
+  }
 }

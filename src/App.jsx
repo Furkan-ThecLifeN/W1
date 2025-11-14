@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./context/AuthProvider";
+import { AuthProvider, useAuth } from "./context/AuthProvider"; // ✅ useAuth eklendi
 import Toast from "./Toast";
 import { UserProvider } from "./context/UserContext";
 import { useUserStatus } from "./hooks/useUserStatus"; // Kullanıcı aktiflik hook’u
@@ -39,21 +39,36 @@ import HelpCenter from "./pages/HelpCenter/HelpCenter";
 import Welcome from "./pages/Welcome/Welcome";
 
 
+// ===============================
+// 🔹 Uygulama Ana İçeriği
+// ===============================
 const AppContent = () => {
+  const { currentUser, loading } = useAuth(); // ✅ Kullanıcı bilgisi
   const [isSplashing, setIsSplashing] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsSplashing(false), 6000); // 6 saniye splash
+    const timer = setTimeout(() => setIsSplashing(false), 4000); // 4 saniye splash süresi
     return () => clearTimeout(timer);
   }, []);
 
-  if (isSplashing) return <SplashScreen />;
+  // 🔹 Splash veya kullanıcı yükleniyorsa splash ekranını göster
+  if (isSplashing || loading) return <SplashScreen />;
 
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/welcome" replace />} />
+      {/* 🔹 KULLANICI VARSA /home, YOKSA /welcome */}
+      <Route
+        path="/"
+        element={
+          currentUser ? (
+            <Navigate to="/home" replace />
+          ) : (
+            <Navigate to="/welcome" replace />
+          )
+        }
+      />
 
-      {/* Tüm sayfalar herkese açık */}
+      {/* Tüm sayfalar */}
       <Route path="/auth" element={<AuthPage />} />
       <Route path="/home" element={<Home />} />
       <Route path="/notifications" element={<Notifications />} />
@@ -82,7 +97,6 @@ const AppContent = () => {
       <Route path="/help" element={<HelpCenter />} />
       <Route path="/welcome" element={<Welcome />} />
 
-
       <Route path="/post/:postId" element={<PostDetailPage />} />
       <Route path="/feeling/:feelingId" element={<PostDetailPage />} />
       <Route path="/feed/:feedId" element={<PostDetailPage />} />
@@ -93,8 +107,9 @@ const AppContent = () => {
   );
 };
 
+// 🔹 Ana App Bileşeni
 const App = () => {
-  useUserStatus(); // Kullanıcı aktifliğini Firestore'da takip et
+  useUserStatus(); // Kullanıcı aktiflik takibi
 
   return (
     <UserProvider>

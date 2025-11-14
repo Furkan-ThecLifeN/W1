@@ -1,6 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react"; // useMemo eklendi
 import styles from "./FeedsAdd.module.css";
-import { FiArrowLeft, FiSend, FiCheck, FiX, FiGlobe, FiUsers, FiEye, FiLock } from "react-icons/fi";
+import {
+  FiArrowLeft,
+  FiSend,
+  FiCheck,
+  FiX,
+  FiGlobe,
+  FiUsers,
+  FiEye,
+  FiLock,
+  FiYoutube,
+} from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthProvider";
 import { useUser } from "../../../context/UserContext";
@@ -11,7 +21,7 @@ const FeedsAdd = ({ onClose }) => {
   const [mediaUrl, setMediaUrl] = useState("");
   const [description, setDescription] = useState("");
   const [ownershipAccepted, setOwnershipAccepted] = useState(false);
-  const [privacy, setPrivacy] = useState("public"); // ✅ yeni state
+  const [privacy, setPrivacy] = useState("public");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -20,6 +30,23 @@ const FeedsAdd = ({ onClose }) => {
   const { currentUser } = useUser();
   const { showToast } = useAuth();
 
+  // YENİ: mediaUrl değiştiğinde video ID'sini çıkarmak için useMemo kullanılır.
+  const videoId = useMemo(() => {
+    // YouTube Shorts ve standart youtu.be linklerini yakalayan Regex
+    const regex =
+      /(?:youtube\.com\/shorts\/|youtu\.be\/)([\w-]{11})/;
+    const match = mediaUrl.match(regex);
+    return match ? match[1] : null; // Eşleşme varsa video ID'sini, yoksa null döndür
+  }, [mediaUrl]); // Sadece mediaUrl değiştiğinde çalışır
+
+  // Aktif 'Paylaş' butonu için kontrol
+  const canShare =
+    mediaUrl.trim() &&
+    description.trim() &&
+    ownershipAccepted &&
+    !loading;
+
+  // Gizlilik ikonu ve metni için yardımcı fonksiyonlar (değişiklik yok)
   const getPrivacyIcon = () => {
     switch (privacy) {
       case "public":
@@ -50,22 +77,19 @@ const FeedsAdd = ({ onClose }) => {
     }
   };
 
+  // handleShare ve handleClose fonksiyonları (değişiklik yok)
   const handleShare = async () => {
     if (!mediaUrl.trim() || !description.trim()) {
       setError("Lütfen tüm alanları doldurun.");
       showToast("Tüm alanlar zorunludur.", "error");
       return;
     }
-
-    if (
-      !mediaUrl.includes("youtube.com/shorts/") &&
-      !mediaUrl.includes("youtu.be/")
-    ) {
+    // YENİ: videoId kontrolü (regex'in bir ID bulup bulmadığına bakar)
+    if (!videoId) {
       setError("Geçerli bir YouTube Shorts linki girin.");
       showToast("Geçersiz YouTube Shorts linki.", "error");
       return;
     }
-
     if (!ownershipAccepted) {
       setError("Lütfen sahiplik beyanını onaylayın.");
       showToast("Paylaşım için sahiplik onayı zorunludur.", "error");
@@ -83,7 +107,6 @@ const FeedsAdd = ({ onClose }) => {
 
     try {
       const idToken = await auth.currentUser.getIdToken();
-
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/api/feeds/create`,
         {
@@ -96,7 +119,7 @@ const FeedsAdd = ({ onClose }) => {
             postText: description,
             mediaUrl: mediaUrl,
             ownershipAccepted: ownershipAccepted,
-            privacy: privacy, // ✅ backend'e gönderildi
+            privacy: privacy,
           }),
         }
       );
@@ -115,7 +138,6 @@ const FeedsAdd = ({ onClose }) => {
 
       const data = await response.json();
       console.log(data.message);
-
       setSuccess(true);
       setMediaUrl("");
       setDescription("");
@@ -142,103 +164,157 @@ const FeedsAdd = ({ onClose }) => {
   };
 
   return (
-    <div className={styles.modalOverlay}>
+    <div className={styles.container}>
       <motion.div
-        className={styles.modalContainer}
-        initial={{ y: "100vh" }}
-        animate={{ y: 0 }}
-        exit={{ y: "100vh" }}
+        className={styles.postCard}
+        initial={{ y: 50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 50, opacity: 0 }}
         transition={{ type: "spring", damping: 20, stiffness: 100 }}
       >
-        <div className={styles.modalHeader}>
+        <div className={styles.postHeader}>
           <button className={styles.backButton} onClick={() => navigate(-1)}>
             <FiArrowLeft size={24} />
           </button>
-          <h2 className={styles.modalTitle}>Yeni Feeds Paylaş</h2>
-        </div>
-        <div className={styles.formContent}>
-          <div className={styles.inputGroup}>
-            <label htmlFor="mediaUrl">YouTube Shorts Linki</label>
-            <input
-              type="text"
-              id="mediaUrl"
-              value={mediaUrl}
-              onChange={(e) => setMediaUrl(e.target.value)}
-              placeholder="https://youtube.com/shorts/..."
-              className={styles.inputField}
-            />
-          </div>
-          <div className={styles.inputGroup}>
-            <label htmlFor="description">Açıklama</label>
-            <textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Video hakkında bir şeyler yazın..."
-              rows="4"
-              className={styles.textareaField}
-            />
-          </div>
-
-          {/* ✅ Yeni Gizlilik Ayarı */}
-          <div className={styles.inputGroup}>
-            <label>Gizlilik Ayarı</label>
-            <div className={styles.privacySelector}>
-              <div className={styles.privacyDisplay}>
-                {getPrivacyIcon()}
-                <span>{getPrivacyText()}</span>
-              </div>
-              <select
-                className={styles.hiddenSelect}
-                value={privacy}
-                onChange={(e) => setPrivacy(e.target.value)}
-              >
-                <option value="public">Herkese Açık</option>
-                <option value="friends">Sadece Arkadaşlar</option>
-                <option value="close_friendships">Yakın Arkadaşlar</option>
-                <option value="private">Sadece Ben</option>
-              </select>
-            </div>
-          </div>
-
-          <div className={styles.checkboxGroup}>
-            <input
-              type="checkbox"
-              id="ownershipAccepted"
-              checked={ownershipAccepted}
-              onChange={(e) => setOwnershipAccepted(e.target.checked)}
-              className={styles.checkboxField}
-            />
-            <label htmlFor="ownershipAccepted">
-              Bu içeriğin sahibi olduğumu beyan ederim.
-            </label>
-          </div>
-          {error && (
-            <p className={styles.errorMessage}>
-              <FiX /> {error}
-            </p>
-          )}
-          {success && (
-            <p className={styles.successMessage}>
-              <FiCheck /> Başarıyla paylaşıldı!
-            </p>
-          )}
-        </div>
-        <div className={styles.modalFooter}>
-          <motion.button
-            className={styles.shareButton}
+          <h2 className={styles.title}>Yeni Feeds Paylaş</h2>
+          <button
+            className={`${styles.shareButton} ${canShare ? styles.active : ""}`}
             onClick={handleShare}
-            disabled={loading}
-            whileTap={{ scale: 0.95 }}
+            disabled={!canShare}
           >
             {loading ? (
-              "Paylaşılıyor..."
+              "..."
             ) : (
               <>
-                <FiSend size={18} /> Paylaş
+                <FiSend size={18} />
+                <span>Paylaş</span>
               </>
             )}
-          </motion.button>
+          </button>
+        </div>
+
+        <div className={styles.postContent}>
+          {/* 1. Sütun: Medya (YouTube Linki VEYA ÖNİZLEME) */}
+          {/* YENİ: videoId varsa .mediaSectionVideo sınıfı eklenir */}
+          <div
+            className={`${styles.mediaSection} ${
+              videoId ? styles.mediaSectionVideo : ""
+            }`}
+          >
+            {videoId ? (
+              // 1. Durum: videoId bulundu -> Önizlemeyi göster
+              <div className={styles.videoPreviewContainer}>
+                <iframe
+                  className={styles.videoPreview}
+                  src={`https://www.youtube.com/embed/${videoId}`}
+                  title="YouTube video player"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+                {/* YENİ: Videoyu kaldırmak için 'X' butonu */}
+                <button
+                  className={styles.removeVideoButton}
+                  onClick={() => setMediaUrl("")}
+                >
+                  <FiX size={18} />
+                </button>
+              </div>
+            ) : (
+              // 2. Durum: videoId yok -> 'dropzone'u göster
+              <div className={styles.dropzone}>
+                <FiYoutube size={48} className={styles.dropzoneIcon} />
+                <p className={styles.dropzoneText}>
+                  YouTube Shorts linkinizi buraya yapıştırın
+                </p>
+                <div className={styles.inputGroup}>
+                  <label htmlFor="mediaUrl">YouTube Shorts Linki</label>
+                  <input
+                    type="text"
+                    id="mediaUrl"
+                    value={mediaUrl}
+                    onChange={(e) => setMediaUrl(e.target.value)}
+                    placeholder="https://youtube.com/shorts/..."
+                    className={styles.inputField}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 2. Sütun: Detaylar (Açıklama, Gizlilik, vb.) */}
+          <div className={styles.detailsSection}>
+            {/* ... (2. sütundaki kodların tamamı değişmedi) ... */}
+            <div className={styles.userInfoAndPrivacy}>
+              <div className={styles.avatar}>
+                <img
+                  src={
+                    currentUser?.photoURL ||
+                    "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
+                  }
+                  alt="User Avatar"
+                  className={styles.avatarImage}
+                />
+              </div>
+              <div className={styles.userMeta}>
+                <span className={styles.username}>
+                  {currentUser?.displayName || "Kullanıcı Adı"}
+                </span>
+                <div className={styles.privacySelector}>
+                  <div className={styles.privacyDisplay}>
+                    {getPrivacyIcon()}
+                    <span>{getPrivacyText()}</span>
+                  </div>
+                  <select
+                    className={styles.hiddenSelect}
+                    value={privacy}
+                    onChange={(e) => setPrivacy(e.target.value)}
+                  >
+                    <option value="public">Herkese Açık</option>
+                    <option value="friends">Sadece Arkadaşlar</option>
+                    <option value="close_friendships">Yakın Arkadaşlar</option>
+                    <option value="private">Sadece Ben</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label htmlFor="description">Açıklama</label>
+              <textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Video hakkında bir şeyler yazın..."
+                rows="6"
+                className={styles.textareaField}
+              />
+            </div>
+
+            <div className={styles.checkboxGroup}>
+              <input
+                type="checkbox"
+                id="ownershipAccepted"
+                checked={ownershipAccepted}
+                onChange={(e) => setOwnershipAccepted(e.target.checked)}
+                className={styles.checkboxField}
+              />
+              <label htmlFor="ownershipAccepted">
+                Bu içeriğin sahibi olduğumu beyan ederim.
+              </label>
+            </div>
+
+            {error && (
+              <p className={styles.errorMessage}>
+                <FiX /> {error}
+              </p>
+            )}
+            {success && (
+              <p className={styles.successMessage}>
+                <FiCheck /> Başarıyla paylaşıldı!
+              </p>
+            )}
+          </div>
         </div>
       </motion.div>
     </div>

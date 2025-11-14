@@ -1,29 +1,47 @@
 /* ===============================
-   FEELINGS ADD STYLES (v2)
-   Palette: project root variables
-   =============================== */
+   FEELINGS ADD STYLES (v3 - Mavi Tema)
+   Palette: PostAdd'dan uyarlandı
+   Not: .postButton stilleri isteğiniz üzerine KORUNDU.
+   =============================== */
+
+/* PostAdd.module.css'den kopyalanan ve bu
+  dosyaya uyarlanan renk paleti.
+*/
+:root {
+  /* Parlak Mavi Tema (PostAdd'dan uyarlandı) */
+  --feelingsadd-primary-blue: #00aaff;
+  --feelingsadd-secondary-blue: #00c6ff;
+  --feelingsadd-bg-dark: #101014;
+  --feelingsadd-card-bg: #1a1d2e;
+  --feelingsadd-input-bg: #25283a;
+  --feelingsadd-text-light: #e0e0e0;
+  --feelingsadd-text-mid: #a0a0b0;
+  --feelingsadd-border-accent: #00c3ff69;
+  --feelingsadd-border-light: rgba(255, 255, 255, 0.1);
+  --feelingsadd-danger: #ff4444;
+}
+
 .feelings_add {
-display: flex;
-justify-content: center;
-align-items: center;
-min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: var(--feelingsadd-bg-dark); /* PostAdd stili */
+  font-family: var(--font-main);
 }
 
 .postFormContainer {
   width: 100%;
   max-width: 820px;
   margin: 30px auto;
-  background: var(--color-dark-bg);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  background: var(--feelingsadd-card-bg); /* PostAdd stili */
+  border: 1px solid var(--feelingsadd-border-accent); /* PostAdd stili */
+  border-radius: 20px; /* PostAdd stili */
   padding: 18px;
-  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); /* PostAdd stili */
   position: relative;
   overflow: hidden;
-  backdrop-filter: var(--backdrop-filter);
-  -webkit-backdrop-filter: var(--backdrop-filter);
-  font-family: var(--font-main);
-  color: var(--color-text);
+  color: var(--feelingsadd-text-light); /* PostAdd stili */
 }
 
 /* ===== Header ===== */
@@ -33,12 +51,14 @@ min-height: 100vh;
   justify-content: space-between;
   margin-bottom: 12px;
   gap: 10px;
+  /* Not: PostAdd'daki gibi gradient header yapılmadı,
+     çünkü yapı "içeriden" dolgulu. */
 }
 
 .closeButton {
   background: transparent;
   border: none;
-  color: var(--color-grey);
+  color: var(--feelingsadd-text-mid); /* PostAdd stili */
   padding: 8px;
   border-radius: 8px;
   cursor: pointer;
@@ -48,8 +68,8 @@ min-height: 100vh;
   transition: all 0.16s ease;
 }
 .closeButton:hover {
-  background: var(--hover-bg);
-  color: var(--text-white);
+  background: var(--feelingsadd-input-bg); /* PostAdd stili */
+  color: var(--feelingsadd-text-light); /* PostAdd stili */
   transform: translateY(-2px);
 }
 
@@ -58,13 +78,18 @@ min-height: 100vh;
   text-align: center;
   font-size: 16px;
   font-weight: 600;
-  background: var(--text-title-gradient);
+  /* PostAdd stili gradient başlık */
+  background: linear-gradient(
+    90deg,
+    var(--feelingsadd-primary-blue) 0%,
+    var(--feelingsadd-secondary-blue) 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   letter-spacing: 0.2px;
 }
 
-/* ===== Paylaş Butonu ===== */
+/* ===== Paylaş Butonu (İSTEĞİNİZ ÜZERİNE DOKUNULMADI) ===== */
 .postButton {
   display: flex;
   align-items: center;
@@ -98,6 +123,8 @@ min-height: 100vh;
   display: inline-block;
   transform: translateY(-1px);
 }
+/* ====================================================== */
+
 
 /* ===== İçerik Alanı ===== */
 .postFormContent {
@@ -119,7 +146,6 @@ min-height: 100vh;
   border-radius: 12px;
   overflow: hidden;
   flex-shrink: 0;
-  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 .avatarImage {
   width: 100%;
@@ -131,7 +157,7 @@ min-height: 100vh;
   flex-direction: column;
 }
 .username {
-  color: var(--color-text);
+  color: var(--feelingsadd-text-light); /* PostAdd stili */
   font-weight: 600;
   font-size: 14px;
 }
@@ -142,14 +168,15 @@ min-height: 100vh;
   width: 180px;
 }
 
+/* Select (Input) Stili PostAdd'dan uyarlandı */
 .privacySelect {
   width: 100%;
   padding: 8px 12px;
   font-size: 14px;
   font-weight: 500;
-  color: var(--color-text);
-  background: var(--secondary-bg);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--feelingsadd-text-light); /* PostAdd stili */
+  background: var(--feelingsadd-input-bg); /* PostAdd stili */
+  border: 1px solid var(--feelingsadd-border-accent); /* PostAdd stili */
   border-radius: 10px;
   appearance: none;
   -webkit-appearance: none;
@@ -158,40 +185,35 @@ min-height: 100vh;
   transition: all 0.2s ease;
 }
 
-/* Hover ve focus */
 .privacySelect:hover {
-  border-color: var(--color-blue);
+  border-color: var(--feelingsadd-secondary-blue); /* PostAdd stili */
 }
 .privacySelect:focus {
   outline: none;
-  border-color: var(--color-secondary-accent);
-  box-shadow: 0 0 10px rgba(0, 191, 255, 0.25);
+  border-color: var(--feelingsadd-secondary-blue); /* PostAdd stili */
+  box-shadow: 0 0 8px rgba(0, 198, 255, 0.4); /* PostAdd stili */
 }
 
-/* Ok simgesi (custom) */
 .privacySelector::after {
   content: "▼";
   position: absolute;
   top: 50%;
   right: 12px;
   transform: translateY(-50%);
-  color: var(--color-gray888);
+  color: var(--feelingsadd-text-mid); /* PostAdd stili */
   font-size: 10px;
   pointer-events: none;
 }
 
-/* Option (tarayıcı desteği sınırlı ama renk uyumlu) */
 .privacySelect option {
-  background: var(--color-bg);
-  color: var(--color-white);
+  background: var(--feelingsadd-card-bg); /* PostAdd stili */
+  color: var(--feelingsadd-text-light); /* PostAdd stili */
   padding: 10px;
 }
 
-/* Hover efektli custom seçenekler için modern görünüm (Chrome/Firefox) */
 .privacySelect option:hover {
-  color: var(--color-blue);
+  color: var(--feelingsadd-primary-blue); /* PostAdd stili */
 }
-
 
 /* Tabs */
 .tabs {
@@ -200,7 +222,7 @@ min-height: 100vh;
 .tab {
   background: transparent;
   border: none;
-  color: var(--color-white);
+  color: var(--feelingsadd-text-mid); /* PostAdd stili (inaktif) */
   font-weight: 600;
   padding: 8px 10px;
   border-radius: 8px;
@@ -210,7 +232,7 @@ min-height: 100vh;
   gap: 7px;
 }
 .tab.active {
-  color: var(--color-secondary-accent);
+  color: var(--feelingsadd-primary-blue); /* PostAdd stili (aktif) */
 }
 
 /* ===== Textarea ve Görseller ===== */
@@ -220,25 +242,25 @@ min-height: 100vh;
   gap: 10px;
 }
 
+/* Textarea stili PostAdd'dan uyarlandı */
 .postTextarea {
   width: 100%;
   min-height: 240px;
   resize: vertical;
   padding: 14px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: var(--secondary-bg);
-  color: var(--color-text);
+  background: var(--feelingsadd-input-bg); /* PostAdd stili */
+  color: var(--feelingsadd-text-light); /* PostAdd stili */
   font-size: 15px;
   line-height: 1.45;
   outline: none;
 }
 .postTextarea::placeholder {
-  color: var(--color-gray888);
+  color: var(--feelingsadd-text-mid); /* PostAdd stili */
 }
 .postTextarea:focus {
-  border: 1px solid var(--color-blue);
-  box-shadow: 0 0 20px rgba(0, 170, 255, 0.1);
+  border: 1px solid var(--feelingsadd-secondary-blue); /* PostAdd stili */
+  box-shadow: 0 0 8px rgba(0, 198, 255, 0.4); /* PostAdd stili */
 }
 
 /* Görsel Önizleme */
@@ -253,8 +275,8 @@ min-height: 100vh;
   border-radius: 10px;
   overflow: hidden;
   position: relative;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: var(--color-dark);
+  border: 1px solid var(--feelingsadd-border-light); /* PostAdd stili */
+  background: var(--feelingsadd-input-bg); /* PostAdd stili */
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
 }
 .imagePreview {
@@ -268,7 +290,7 @@ min-height: 100vh;
   right: 6px;
   background: rgba(0, 0, 0, 0.55);
   border: none;
-  color: var(--text-white);
+  color: var(--feelingsadd-text-light);
   width: 26px;
   height: 26px;
   border-radius: 6px;
@@ -279,8 +301,9 @@ min-height: 100vh;
   transition: all 0.15s ease;
 }
 .removeImageButton:hover {
-  background: var(--color-blue);
+  background: var(--feelingsadd-danger); /* PostAdd stili */
   transform: translateY(-2px);
+  color: white;
 }
 
 /* ===== Footer ===== */
@@ -299,26 +322,27 @@ min-height: 100vh;
 }
 .characterCounter {
   font-size: 13px;
-  color: var(--color-grey);
+  color: var(--feelingsadd-text-mid); /* PostAdd stili */
 }
 .counter {
   padding: 6px 8px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--feelingsadd-input-bg); /* PostAdd stili */
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  color: var(--color-gray888);
+  border: 1px solid var(--feelingsadd-border-light); /* PostAdd stili */
+  color: var(--feelingsadd-text-mid); /* PostAdd stili */
 }
 .counter.error {
-  color: var(--busy);
-  border-color: rgba(255, 0, 0, 0.25);
+  color: var(--feelingsadd-danger); /* PostAdd stili */
+  border-color: var(--feelingsadd-danger); /* PostAdd stili */
 }
 
-/* ===== Arka Plan Efektleri ===== */
+/* ===== Arka Plan Efektleri (Maviye uyarlandı) ===== */
 .backgroundEffects {
   position: absolute;
   inset: 0;
   pointer-events: none;
   overflow: hidden;
+  border-radius: 20px; /* Ana kartın radius'u ile eşleşmeli */
 }
 .gradientCircle1 {
   position: absolute;
@@ -326,12 +350,13 @@ min-height: 100vh;
   height: 380px;
   right: -120px;
   top: -160px;
+  /* PostAdd parlak mavi renkleri ile güncellendi */
   background: radial-gradient(
       circle at 30% 30%,
-      rgba(0, 170, 255, 0.08),
+      rgba(0, 170, 255, 0.2), /* Güçlendirildi */
       transparent 40%
     ),
-    linear-gradient(180deg, rgba(0, 191, 255, 0.04), transparent);
+    linear-gradient(180deg, rgba(0, 191, 255, 0.1), transparent); /* Güçlendirildi */
   filter: blur(36px);
   opacity: 0.9;
 }
@@ -341,9 +366,10 @@ min-height: 100vh;
   height: 260px;
   left: -100px;
   bottom: -90px;
+  /* Beyaz yerine mavi yapıldı */
   background: radial-gradient(
     circle at 70% 70%,
-    rgba(255, 255, 255, 0.06),
+    rgba(0, 170, 255, 0.15), /* Maviye dönüştü */
     transparent 30%
   );
   filter: blur(30px);
@@ -355,7 +381,7 @@ min-height: 100vh;
   .postFormContainer {
     margin: 14px;
     padding: 14px;
-    border-radius: 10px;
+    border-radius: 12px; /* PostAdd mobil stili */
   }
   .postTextarea {
     min-height: 100px;

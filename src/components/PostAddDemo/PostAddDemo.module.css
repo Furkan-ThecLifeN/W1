@@ -1,0 +1,333 @@
+
+:root {
+  /* Parlak Mavi Tema */
+  --postadd-primary-blue: #00aaff; /* Ana parlak mavi */
+  --postadd-secondary-blue: #00c6ff;
+  --galaxy-pink: #e100ff;
+  /* Gradientler için ikincil mavi */
+
+  /* Arka Plan ve Kart Renkleri */
+  --postadd-bg-dark: #101014; /* Siyah ana arka plan */
+  --postadd-card-bg: #1a1d2e; /* Koyu, hafif mavi kart arka planı */
+  --postadd-input-bg: #25283a; /* Input/void alanı arka planı */
+
+  /* Metin ve Nötr Renkler */
+  --postadd-text-light: #e0e0e0; /* Ana metin rengi (Eskisi gibi) */
+  --postadd-text-mid: #a0a0b0; /* İkincil, soluk metin */
+
+  /* Kenarlık ve Vurgu */
+  --postadd-border-accent: #00aaff; /* Vurgu kenarlığı (Ana mavi) */
+  --postadd-border-light: rgba(255, 255, 255, 0.1); /* Soluk kenarlık */
+
+  /* Diğer */
+  --postadd-danger: #ff4444; /* Hata/Silme rengi */
+}
+
+/* Demo Bileşeni Ana Sarmalayıcısı */
+.demoWrapper {
+  width: 100%;
+  max-width: 900px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Post Kartı (PostAdd stili) */
+.postCard {
+  background-color: var(--postadd-card-bg);
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--postadd-border-accent);
+}
+
+/* Demo için özel başlık (Parlak Mavi Gradient ile) */
+.demoHeader {
+  padding: 15px 25px;
+  text-align: center;
+  /* PostAdd'dan alınan parlak mavi gradient */
+  background: linear-gradient(
+    90deg,
+    var(--postadd-primary-blue) 0%,
+    var(--postadd-secondary-blue) 100%
+  );
+  border-bottom: none; /* Gradient olduğu için kenarlığa gerek yok */
+}
+.demoHeader h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white; /* PostAdd stili */
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+}
+.demoHeader p {
+  margin: 2px 0 0 0;
+  font-size: 0.85rem;
+  color: var(--postadd-text-light); /* PostAdd stili */
+  opacity: 0.9;
+}
+
+/* İçerik Alanı */
+.postContent {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 25px;
+}
+
+@media (min-width: 768px) {
+  .postContent {
+    flex-direction: row;
+  }
+}
+
+/* Medya Yükleme Bölümü (PostAdd stili) */
+.mediaUploadSection {
+  flex: 1;
+  min-height: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--postadd-input-bg);
+  border-radius: 12px;
+  border: 1px dashed var(--postadd-border-accent);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.mediaUploadSection:hover {
+  border-color: var(--postadd-secondary-blue);
+  box-shadow: 0 0 15px rgba(0, 198, 255, 0.3);
+}
+
+.mediaPreview {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.imageWrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+  min-height: 300px;
+}
+
+.uploadedImage {
+  width: 100%;
+  height: 100%;
+  max-height: 400px;
+  object-fit: contain;
+  border-radius: 10px;
+}
+
+.removeImageButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  z-index: 5;
+}
+
+.removeImageButton:hover {
+  background-color: var(--postadd-danger); /* PostAdd stili */
+}
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  padding: 20px;
+  text-align: center;
+  width: 100%;
+  height: 100%;
+}
+
+.dropzoneIcon {
+  color: var(--postadd-primary-blue); /* PostAdd stili */
+  opacity: 0.7;
+}
+
+.dropzoneText {
+  font-size: 1.1rem;
+  color: var(--postadd-text-mid); /* PostAdd stili */
+}
+
+.urlInput {
+  width: 80%;
+  padding: 10px 15px;
+  border: 1px solid var(--postadd-border-accent); /* PostAdd stili */
+  border-radius: 8px;
+  background-color: var(--postadd-input-bg); /* PostAdd stili */
+  color: var(--postadd-text-light); /* PostAdd stili */
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.urlInput::placeholder {
+  color: var(--postadd-text-mid); /* PostAdd stili */
+}
+
+.urlInput:focus {
+  border-color: var(--postadd-secondary-blue); /* PostAdd stili */
+  box-shadow: 0 0 8px rgba(0, 198, 255, 0.4); /* PostAdd stili */
+}
+
+/* Detaylar Bölümü */
+.detailsSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.userInfoAndPrivacy {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--postadd-border-light); /* PostAdd stili */
+}
+
+.avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--postadd-primary-blue); /* PostAdd stili */
+  flex-shrink: 0;
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.userMeta {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.username {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--postadd-text-light); /* PostAdd stili */
+}
+
+.privacySelector {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--postadd-input-bg); /* PostAdd stili */
+  border-radius: 6px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border: 1px solid var(--postadd-border-light); /* PostAdd stili */
+  margin-top: 4px;
+}
+
+.privacySelector:hover {
+  background-color: #3b3b63;
+}
+
+.privacyDisplay {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.85rem;
+  color: var(--postadd-text-mid); /* PostAdd stili */
+}
+
+.hiddenSelect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.captionInput {
+  width: 100%;
+  flex-grow: 1;
+  background-color: var(--postadd-input-bg); /* PostAdd stili */
+  border: 1px solid var(--postadd-border-accent); /* PostAdd stili */
+  border-radius: 12px;
+  padding: 15px;
+  color: var(--postadd-text-light); /* PostAdd stili */
+  font-size: 1rem;
+  resize: vertical;
+  min-height: 100px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.captionInput::placeholder {
+  color: var(--postadd-text-mid); /* PostAdd stili */
+}
+
+.captionInput:focus {
+  border-color: var(--postadd-secondary-blue); /* PostAdd stili */
+  box-shadow: 0 0 10px rgba(0, 198, 255, 0.4); /* PostAdd stili */
+}
+
+/* Responsive Düzenlemeler */
+@media (max-width: 767px) {
+  .postContent {
+    padding: 15px;
+  }
+  .mediaUploadSection {
+    min-height: 250px;
+  }
+  .dropzone {
+    gap: 10px;
+  }
+  .dropzoneIcon {
+    width: 40px;
+    height: 40px;
+  }
+  .dropzoneText {
+    font-size: 1rem;
+  }
+  .urlInput {
+    width: 90%;
+  }
+  .avatar {
+    width: 40px;
+    height: 40px;
+  }
+  .username {
+    font-size: 1rem;
+  }
+  .captionInput {
+    min-height: 80px;
+    padding: 10px;
+  }
+}

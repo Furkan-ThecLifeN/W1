@@ -1,4 +1,8 @@
+/* =================================================================
+  BÖLÜM 1: KÖK DEĞİŞKENLER (Root Variables)
+  ================================================================= */
 :root {
+  /* WelcomePage Tema (Koyu) */
   --welcome-color-bg: #000;
   --welcome-color-surface: rgb(0, 179, 255);
   --welcome-color-muted: #a0cfff;
@@ -24,7 +28,9 @@
   --welcome-toggle-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   --welcome-toggle-bg: rgba(255, 255, 255, 0.06);
 }
+
 :root[data-theme="light"] {
+  /* WelcomePage Tema (Açık) */
   --welcome-color-bg: #f7fbff;
   --welcome-color-surface: rgba(255, 255, 255, 0.75);
   --welcome-color-muted: #2b5d8a;
@@ -44,6 +50,10 @@
   --welcome-toggle-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   --welcome-toggle-bg: rgba(0, 0, 0, 0.06);
 }
+
+/* =================================================================
+  BÖLÜM 2: GENEL SAYFA STİLLERİ (WelcomePage)
+  ================================================================= */
 .welcomePage {
   background: var(--welcome-color-bg);
   color: var(--welcome-color-text);
@@ -51,6 +61,7 @@
   width: 100%;
   -webkit-font-smoothing: antialiased;
 }
+
 :root[data-theme="dark"] .welcomePage {
   background: radial-gradient(
       1200px 600px at 10% 10%,
@@ -59,14 +70,29 @@
     ),
     var(--welcome-color-bg);
 }
+
 :focus {
   outline: none;
 }
+
 a:focus,
 button:focus,
 .privacyPill:focus {
   border-radius: 8px;
 }
+
+.fullscreenSection {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--welcome-header-height) + 40px) 20px;
+  border-bottom: 1px solid var(--welcome-border-color);
+}
+
+/* =================================================================
+  BÖLÜM 3: HEADER (stickyHeader)
+  ================================================================= */
 .stickyHeader {
   position: fixed;
   top: 0;
@@ -81,6 +107,7 @@ button:focus,
   background: var(--welcome-bg-gradient-subtle);
   border-bottom: 1px solid var(--welcome-border-color);
 }
+
 .headerContent {
   width: 100%;
   max-width: var(--welcome-max-width);
@@ -90,22 +117,26 @@ button:focus,
   align-items: center;
   justify-content: space-between;
 }
+
 .logo {
   font-weight: 900;
   font-size: 1.6rem;
   color: var(--welcome-color-text);
   text-decoration: none;
 }
+
 .headerControls {
   display: flex;
   align-items: center;
   gap: 18px;
 }
+
 .iconRow {
   display: flex;
   gap: 8px;
   align-items: center;
 }
+
 .iconButton {
   background: transparent;
   border: none;
@@ -116,6 +147,7 @@ button:focus,
   cursor: pointer;
   transition: all var(--welcome-transition-fast);
 }
+
 .iconButton:hover {
   transform: translateY(-3px);
   color: var(--welcome-color-accent);
@@ -126,6 +158,7 @@ button:focus,
   gap: 12px;
   align-items: center;
 }
+
 .navLink {
   color: var(--welcome-color-text);
   text-decoration: none;
@@ -156,18 +189,14 @@ button:focus,
   transform: scale(1.1);
 }
 
-.fullscreenSection {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: calc(var(--welcome-header-height) + 40px) 20px;
-  border-bottom: 1px solid var(--welcome-border-color);
-}
+/* =================================================================
+  BÖLÜM 4: HERO BÖLÜMÜ (heroSection)
+  ================================================================= */
 .heroSection {
   position: relative;
   overflow: visible;
 }
+
 .heroContentEnhanced {
   max-width: 1100px;
   width: 100%;
@@ -177,12 +206,14 @@ button:focus,
   gap: 22px;
   align-items: flex-start;
 }
+
 .heroIntro {
   display: flex;
   flex-direction: row;
   gap: 18px;
   align-items: center;
 }
+
 .heroTitleLarge {
   font-size: 6.8rem;
   margin: 0;
@@ -191,30 +222,36 @@ button:focus,
   color: var(--welcome-color-text);
   text-shadow: 0 6px 40px rgba(0, 224, 255, 0.06);
 }
+
 .heroKicker {
   font-size: 1rem;
   color: var(--welcome-color-muted);
   font-weight: 700;
 }
+
 .heroCopy {
   max-width: 760px;
 }
+
 .heroSubtitle {
   font-size: 2.4rem;
   margin: 0;
   color: var(--welcome-color-accent);
 }
+
 .heroText {
   font-size: 1.05rem;
   color: var(--welcome-color-text);
   opacity: 0.95;
   line-height: 1.8;
 }
+
 .heroActions {
   display: flex;
   gap: 12px;
   margin-top: 8px;
 }
+
 .secondaryButton {
   padding: 12px 18px;
   border-radius: 10px;
@@ -223,312 +260,28 @@ button:focus,
   color: var(--welcome-color-text);
   text-decoration: none;
 }
+
 .quickStats {
   display: flex;
   gap: 14px;
   margin-top: 18px;
 }
+
 .stat {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 }
+
 .stat strong {
   font-size: 1.3rem;
 }
+
 .stat span {
   font-size: 0.85rem;
   color: var(--welcome-color-muted);
 }
-.splitGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 28px;
-  max-width: 1200px;
-  width: 100%;
-  align-items: stretch;
-}
-.featureCard {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-  background: var(--welcome-color-surface);
-  padding: 26px;
-  border-radius: 14px;
-  border: 1px solid var(--welcome-border-color);
-  box-shadow: var(--welcome-shadow-strong);
-  transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1),
-    box-shadow 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
-}
-.featureCard.reversed {
-  flex-direction: row-reverse;
-}
-.featureCardVisual {
-  flex: 0 0 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.featureIconLarge {
-  font-size: 7.5rem;
-  color: var(--welcome-icon-color-feature);
-  text-shadow: var(--welcome-icon-shadow-feature);
-}
-.featureCardBody {
-  flex: 1;
-}
-.featureCardTitle {
-  font-size: 1.8rem;
-  margin: 0 0 8px 0;
-}
-.featureCardText {
-  color: var(--welcome-color-text);
-  line-height: 1.6;
-}
-.privacySection {
-  padding-bottom: 140px;
-}
-.centeredContent {
-  max-width: 980px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 18px;
-}
-.sectionTitle {
-  font-size: 2.4rem;
-  margin: 0;
-}
-.sectionText {
-  max-width: 680px;
-  text-align: center;
-}
-.sectionTextSmall {
-  max-width: 680px;
-  text-align: center;
-  color: var(--welcome-color-muted);
-}
-.privacyInteractive {
-  display: flex;
-  gap: 22px;
-  width: 100%;
-  align-items: flex-start;
-}
-.privacyPreview {
-  flex: 1;
-  background: var(--welcome-bg-gradient-subtle);
-  padding: 18px;
-  border-radius: 12px;
-  border: 1px solid var(--welcome-border-color);
-}
-.postPreviewHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-.previewUser {
-  font-weight: 700;
-}
-.previewPrivacy {
-  font-size: 0.9rem;
-  color: var(--welcome-color-muted);
-  text-transform: capitalize;
-}
-.postPreviewBody {
-  padding: 10px 0;
-  min-height: 60px;
-}
-.privacyControls {
-  flex: 0 0 360px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.privacyGridControls {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-.privacyBtn {
-  padding: 12px;
-  border-radius: 10px;
-  background: transparent;
-  border: 1px solid var(--welcome-border-color);
-  cursor: pointer;
-  font-weight: 600;
-}
-.selectedBtn {
-  background: linear-gradient(
-    90deg,
-    var(--welcome-color-accent),
-    var(--welcome-color-accent-2)
-  );
-  color: #fff;
-  box-shadow: 0 8px 30px rgba(0, 224, 255, 0.12);
-}
-.privacyPillsWrap {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.privacyPill {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px;
-  border-radius: 12px;
-  background: transparent;
-  border: 1px solid var(--welcome-border-color);
-  transition: all var(--welcome-transition-fast);
-  cursor: pointer;
-}
-.privacyPill:hover {
-  transform: translateY(-4px);
-}
-.privacyPill.activePill {
-  background: linear-gradient(
-    180deg,
-    rgba(0, 224, 255, 0.06),
-    rgba(0, 124, 255, 0.02)
-  );
-  border-color: rgba(0, 224, 255, 0.18);
-}
-.pillIcon {
-  font-size: 1.4rem;
-  color: var(--welcome-color-accent);
-}
-.pillBody {
-  display: flex;
-  flex-direction: column;
-}
-.pillTitle {
-  font-weight: 700;
-}
-.pillDesc {
-  font-size: 0.85rem;
-  color: var(--welcome-color-muted);
-}
-.pillMark {
-  margin-left: auto;
-  color: var(--welcome-color-muted);
-}
-.securityGridEnhanced {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
-  width: 100%;
-  margin-top: 8px;
-}
-.securityCard {
-  background: var(--welcome-color-surface);
-  padding: 18px;
-  border-radius: 12px;
-  border: 1px solid var(--welcome-border-color);
-  text-align: left;
-  transition: transform 0.1s ease, border-color 0.1s ease;
-  transform-origin: center;
-  cursor: pointer;
-  position: relative;
-  z-index: 1;
-}
-.securityCard h4 {
-  margin: 8px 0;
-}
-.cardIcon {
-  font-size: 1.6rem;
-}
-.ctaSection {
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0) 40%);
-}
-.ctaCard {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  padding: 40px 60px;
-  border-radius: 20px;
-  border: 1px solid var(--welcome-border-color);
-  box-shadow: var(--welcome-shadow-strong);
-}
-:root[data-theme="light"] .ctaCard {
-  background: rgba(255, 255, 255, 0.6);
-}
-.ctaTitle {
-  font-size: 2.2rem;
-  margin: 0;
-  text-align: center;
-}
-.ctaRow {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-.ghostButton {
-  background: transparent;
-  border: 1px dashed var(--welcome-border-dashed);
-  padding: 12px 18px;
-  border-radius: 10px;
-  text-decoration: none;
-}
 
-footer {
-  margin-top: 40px;
-}
-@media (max-width: 1100px) {
-  .heroTitleLarge {
-    font-size: 5rem;
-  }
-  .splitGrid {
-    grid-template-columns: 1fr;
-  }
-  .featureCardVisual {
-    flex: 0 0 140px;
-  }
-  .securityGridEnhanced {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-@media (max-width: 700px) {
-  .heroTitleLarge {
-    font-size: 3.6rem;
-  }
-  .heroSubtitle {
-    font-size: 1.4rem;
-  }
-  .privacyInteractive {
-    flex-direction: column;
-  }
-  .privacyControls {
-    width: 100%;
-    flex: unset;
-  }
-  .privacyGridControls {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .ctaCard {
-    padding: 30px 20px;
-  }
-}
-@media (max-width: 420px) {
-  .headerContent {
-    padding: 0 12px;
-  }
-  .heroTitleLarge {
-    font-size: 3rem;
-  }
-  .privacyPill {
-    padding: 8px;
-  }
-  .featureCard {
-    padding: 16px;
-  }
-}
 .ctaButtonHero {
   padding: 14px 28px;
   border-radius: 12px;
@@ -542,16 +295,1016 @@ footer {
   box-shadow: 0 12px 40px rgba(0, 224, 255, 0.12);
   border: none;
 }
+
 .ctaButtonHero:hover {
   transform: translateY(-4px);
   box-shadow: 0 18px 58px rgba(0, 224, 255, 0.18);
 }
+
+/* =================================================================
+  BÖLÜM 5: ÖZELLİKLER BÖLÜMÜ (splitGrid / featureCard)
+  ================================================================= */
+.splitGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+  max-width: 1200px;
+  width: 100%;
+  align-items: stretch;
+}
+
+.featureCard {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  background: var(--welcome-color-surface);
+  padding: 26px;
+  border-radius: 14px;
+  border: 1px solid var(--welcome-border-color);
+  box-shadow: var(--welcome-shadow-strong);
+  transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1),
+    box-shadow 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.featureCard.reversed {
+  flex-direction: row-reverse;
+}
+
+.featureCardVisual {
+  flex: 0 0 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.featureIconLarge {
+  font-size: 7.5rem;
+  color: var(--welcome-icon-color-feature);
+  text-shadow: var(--welcome-icon-shadow-feature);
+}
+
+.featureCardBody {
+  flex: 1;
+}
+
+.featureCardTitle {
+  font-size: 1.8rem;
+  margin: 0 0 8px 0;
+}
+
+.featureCardText {
+  color: var(--welcome-color-text);
+  line-height: 1.6;
+}
+
+/* =================================================================
+  BÖLÜM 5.5: ÖZELLİK VİTRİNİ BÖLÜMÜ (featuresSection)
+  ================================================================= */
+
+.featuresSection {
+  width: 100%;
+  padding: 100px 20px;
+  color: var(--welcome-color-text);
+  overflow: hidden;
+  font-family: "Inter", sans-serif;
+  position: relative;
+}
+
+.featuresSection::before {
+  content: "";
+  position: absolute;
+  top: -15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 400px;
+  background: radial-gradient(
+    ellipse at top,
+    rgba(0, 170, 255, 0.08) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.featuresSection .centeredContent {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  position: relative;
+  z-index: 1;
+}
+
+.featuresSection .sectionTitle {
+  font-size: 2.8rem;
+  font-weight: 800;
+  text-align: center;
+  margin: 0 0 10px 0;
+  background: linear-gradient(90deg, #00c6ff 0%, #00aaff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.featuresSection .sectionText {
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--welcome-color-text);
+  text-align: center;
+  max-width: 750px;
+  line-height: 1.7;
+  margin: 0;
+  margin-bottom: 30px;
+}
+
+.featuresGrid {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 25px;
+}
+
+.featureBox {
+  background: rgb(4, 4, 4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.featureBox:hover {
+  transform: translateY(-8px);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 40px rgba(var(--accent-color-rgb, 0, 170, 255), 0.2),
+    0 0 0 1px rgba(var(--accent-color-rgb, 0, 170, 255), 0.5);
+}
+
+/* İkon wrapper'a renk geçişlerini de ekleyelim */
+.iconWrapper {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--accent-color); /* Düz renk olarak kalsın */
+  color: #ffffff;
+  box-shadow: 0 4px 15px
+    color-mix(in srgb, var(--accent-color) 40%, transparent); /* Daha yumuşak gölge */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Geçiş ekle */
+}
+
+/* Kutuların hover durumunda ikonların rengini de değiştirebiliriz */
+.featureBox:hover .iconWrapper {
+  background: linear-gradient(
+    45deg,
+    var(--accent-color),
+    color-mix(in srgb, var(--accent-color) 80%, #ffffff)
+  );
+  box-shadow: 0 6px 20px
+    color-mix(in srgb, var(--accent-color) 60%, transparent);
+}
+
+.boxTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+.boxDescription {
+  font-size: 0.95rem;
+  color: #b0b0c0;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* GRID YERLEŞİMİ */
+.boxHome {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.boxDiscover {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.boxChat {
+  grid-column: span 2;
+}
+.boxActivity {
+  grid-column: span 2;
+}
+.boxStories {
+  grid-column: span 4;
+}
+
+/* "Yakında" Etiketi - GÜNCELLENDİ (Mavi tonlar) */
+.comingSoonBadge {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(90deg, #00aaff, #00c6ff); /* Mavi gradyan */
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 30px;
+  letter-spacing: 0.5px;
+}
+.boxStories {
+  --accent-color: #00aaff;
+}
+
+/* Kutu içi mini-mockup'lar */
+.homeMockup {
+  margin-top: auto;
+  padding-top: 20px;
+}
+.mockPost {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(37, 40, 58, 0.7);
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+.mockAvatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+.mockTextLines {
+  width: 100%;
+}
+.mockTextLines span {
+  display: block;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  margin-bottom: 6px;
+}
+.mockTextLines span:last-child {
+  width: 70%;
+  margin-bottom: 0;
+}
+.mockFeeling {
+  background: rgba(0, 170, 255, 0.1);
+  border: 1px solid rgba(0, 170, 255, 0.3);
+  color: #00aaff;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Shorts Mockup - GÜNCELLENDİ */
+.shortsMockup {
+  margin-top: auto;
+  padding-top: 20px;
+  display: flex;
+  gap: 15px; /* Aralık artırıldı */
+  height: 120px;
+  justify-content: center; /* Ortalamak için */
+  align-items: center; /* Ortalamak için */
+}
+.mockShortsVideo {
+  flex: 1;
+  max-width: 150px; /* Her kutucuğun maksimum genişliği */
+  height: 100%;
+  background-color: rgba(
+    0,
+    225,
+    255,
+    0.54
+  ); /* Kırmızımsı bir ton, biraz şeffaf */
+  border-radius: 15px; /* Daha yuvarlak */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative; /* Gölge animasyonu için */
+}
+
+.mockShortsVideo:hover {
+  box-shadow: 0 10px 30px rgba(0, 170, 255, 0.15);
+}
+
+/* Her bir video kutucuğuna farklı renkler ve gecikmeler */
+.mockShortsVideo:nth-child(1) {
+  background-color: rgba(255, 0, 0, 0.86);
+  animation-delay: 0s;
+}
+.mockShortsVideo:nth-child(2) {
+  background-color: rgba(255, 0, 0, 0.86);
+  animation-delay: 0.5s;
+}
+.mockShortsVideo:nth-child(3) {
+  background-color: rgba(255, 0, 0, 0.86);
+  animation-delay: 1s;
+}
+
+/* Shorts ikonlarının stili */
+.shortsIcon {
+  font-size: 2.5rem; /* Büyük ikonlar */
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Hafif gölge */
+}
+
+/* =================================================================
+  BÖLÜM 6: DEMO BÖLÜMLERİ (feedDemo, postDemo, feelingsDemo)
+  ================================================================= */
+
+/* 🎬 Feed Demo Section */
+.feedDemoSection {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 80px 20px;
+}
+
+.feedDemoContainer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 60px;
+  max-width: 1200px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.feedDemoLeft {
+  flex: 1 1 400px;
+  display: flex;
+  justify-content: center;
+}
+
+.feedDemoRight {
+  flex: 1 1 400px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+}
+
+.feedDemoTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, var(--color-blue), var(--galaxy-pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.feedDemoText {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--welcome-color-text);
+}
+
+.feedDemoText strong {
+  color: var(--color-blue, #e100ff);
+}
+
+.feedDemoList {
+  list-style: none;
+  margin-top: 10px;
+  padding: 0;
+  color: var(--welcome-color-text);
+}
+
+.feedDemoList li {
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.feedDemoNote {
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: var(--welcome-color-text);
+  background: rgba(51, 51, 51, 0.06);
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(49, 49, 49, 0.1);
+}
+
+/* 🖼️ Post Creation Demo Section */
+.postDemoSection .feedDemoLeft {
+  flex: 1 1 400px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+}
+
+.postDemoSection .feedDemoRight {
+  flex: 1 1 400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* 🎬 Feelings Demo Section */
+.feelingsDemoSection {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 80px 20px;
+}
+
+.feelingsDemoContainer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 60px;
+  max-width: 1400px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.feelingsDemoLeft {
+  flex: 1 1 700px;
+  min-width: 400px;
+  display: flex;
+  justify-content: center;
+}
+
+.feelingsDemoRight {
+  flex: 1 1 400px;
+  min-width: 300px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+}
+
+.feelingsDemoTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(90deg, var(--color-blue), var(--galaxy-pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.feelingsDemoText {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--welcome-color-text);
+}
+
+.feelingsDemoText strong {
+  color: var(--color-blue, #e100ff);
+}
+
+.feelingsDemoList {
+  list-style: none;
+  margin-top: 10px;
+  padding: 0;
+  color: var(--welcome-color-text);
+}
+
+.feelingsDemoList li {
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+}
+
+.feelingsDemoNote {
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: #aaa;
+  background: rgba(51, 51, 51, 0.06);
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(49, 49, 49, 0.1);
+}
+
+/* =================================================================
+  BÖLÜM 7: EMBED YARDIM BÖLÜMÜ (embedHelpSection)
+  (Artık --postadd değişkenlerini KULLANMIYOR)
+  ================================================================= */
+.embedHelpSection {
+  width: 100%;
+  padding: 80px 20px;
+  color: var(--welcome-color-text);
+  overflow: hidden;
+  font-family: "Inter", sans-serif;
+}
+
+.embedHelpSection .centeredContent {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 25px;
+}
+
+.embedHelpSection .sectionTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+  margin: 0 0 10px 0;
+  background: linear-gradient(90deg, #00aaff 0%, #00c6ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.embedHelpSection .sectionText {
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: #a0a0b0;
+  text-align: center;
+  max-width: 700px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.embedHelpSection .sectionTextSmall {
+  font-size: 0.9rem;
+  color: #a0a0b0;
+  text-align: center;
+  max-width: 500px;
+}
+
+.embedHelpSection .methodsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  width: 100%;
+  margin-top: 30px;
+}
+
+.embedHelpSection .methodBox {
+  background: rgb(4, 4, 4);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transition: all 0.3s ease;
+}
+.embedHelpSection .methodBox:hover {
+  border-color: rgba(0, 170, 255, 0.5);
+  box-shadow: 0 10px 30px rgba(0, 170, 255, 0.15);
+  transform: translateY(-8px);
+}
+
+.embedHelpSection .methodTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #e0e0e0;
+  margin: 0;
+}
+
+.embedHelpSection .methodText {
+  font-size: 1rem;
+  color: #a0a0b0;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.embedHelpSection .methodStep {
+  font-size: 0.95rem;
+  color: #e0e0e0;
+  line-height: 1.6;
+  background: #25283a;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 3px solid #00aaff;
+}
+
+.embedHelpSection .visualMockup {
+  width: 100%;
+  padding: 20px;
+  background: #25283a;
+  border-radius: 8px;
+}
+
+.embedHelpSection .mockBrowser {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: #1a1d2e;
+  overflow: hidden;
+  position: relative;
+}
+
+.embedHelpSection .mockBrowserHeader {
+  height: 25px;
+  background: #333;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  gap: 6px;
+}
+.embedHelpSection .mockBrowserHeader span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #555;
+}
+
+.embedHelpSection .mockImage {
+  width: 100%;
+  height: auto;
+  display: block;
+  opacity: 0.7;
+}
+
+.embedHelpSection .mockMousePointer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.5rem;
+  z-index: 2;
+}
+
+.embedHelpSection .mockMenu {
+  position: absolute;
+  top: 55%;
+  left: 52%;
+  background: #fff;
+  color: #222;
+  border-radius: 6px;
+  padding: 5px;
+  font-size: 0.8rem;
+  font-family: Arial, sans-serif;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+}
+.embedHelpSection .mockMenu div {
+  padding: 4px 12px;
+}
+.embedHelpSection .mockMenuHighlight {
+  background: #00aaff;
+  color: white !important;
+  border-radius: 3px;
+}
+
+.embedHelpSection .stepDiagram {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 10px;
+  padding: 20px 0;
+}
+
+.embedHelpSection .step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.embedHelpSection .stepIcon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.embedHelpSection .step strong {
+  font-size: 1rem;
+  color: #e0e0e0;
+}
+
+.embedHelpSection .step p {
+  font-size: 0.85rem;
+  color: #a0a0b0;
+  margin: 0;
+}
+
+.embedHelpSection .stepArrow {
+  font-size: 2rem;
+  color: #00aaff;
+}
+
+.embedHelpSection .pasteExample {
+  width: 100%;
+  background: rgb(4, 4, 4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  margin-top: 20px;
+  transition: all 0.3s ease;
+}
+
+.embedHelpSection .pasteExample:hover {
+  border-color: rgba(0, 170, 255, 0.5);
+  box-shadow: 0 10px 30px rgba(0, 170, 255, 0.15);
+}
+
+.embedHelpSection .mockInputWrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 500px;
+  background-color: #25283a;
+  border: 1px solid #00aaff;
+  border-radius: 8px;
+  padding: 10px 15px;
+}
+
+.embedHelpSection .mockInputWrapper span {
+  font-size: 1.2rem;
+}
+
+.embedHelpSection .mockInput {
+  width: 100%;
+  background: none;
+  border: none;
+  outline: none;
+  color: #e0e0e0;
+  font-size: 0.95rem;
+}
+
+/* =================================================================
+  BÖLÜM 8: GİZLİLİK BÖLÜMÜ (privacySection)
+  ================================================================= */
+.privacySection {
+  padding-bottom: 140px;
+}
+
+.centeredContent {
+  max-width: 980px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.privacySection .sectionTitle {
+  font-size: 2.4rem;
+  margin: 0;
+}
+
+.privacySection .sectionText {
+  max-width: 680px;
+  text-align: center;
+}
+
+.privacySection .sectionTextSmall {
+  max-width: 680px;
+  text-align: center;
+  color: var(--welcome-color-muted);
+}
+
+.privacyInteractive {
+  display: flex;
+  gap: 22px;
+  width: 100%;
+  align-items: flex-start;
+}
+
+.privacyPreview {
+  flex: 1;
+  background: var(--welcome-bg-gradient-subtle);
+  padding: 18px;
+  border-radius: 12px;
+  border: 1px solid var(--welcome-border-color);
+}
+
+.postPreviewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.previewUser {
+  font-weight: 700;
+}
+
+.previewPrivacy {
+  font-size: 0.9rem;
+  color: var(--welcome-color-muted);
+  text-transform: capitalize;
+}
+
+.postPreviewBody {
+  padding: 10px 0;
+  min-height: 60px;
+}
+
+.privacyControls {
+  flex: 0 0 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.privacyGridControls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.privacyBtn {
+  padding: 12px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid var(--welcome-border-color);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.selectedBtn {
+  background: linear-gradient(
+    90deg,
+    var(--welcome-color-accent),
+    var(--welcome-color-accent-2)
+  );
+  color: #fff;
+  box-shadow: 0 8px 30px rgba(0, 224, 255, 0.12);
+}
+
+.privacyPillsWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.privacyPill {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 12px;
+  background: transparent;
+  border: 1px solid var(--welcome-border-color);
+  transition: all var(--welcome-transition-fast);
+  cursor: pointer;
+}
+
+.privacyPill:hover {
+  transform: translateY(-4px);
+}
+
+.privacyPill.activePill {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 224, 255, 0.06),
+    rgba(0, 124, 255, 0.02)
+  );
+  border-color: rgba(0, 224, 255, 0.18);
+}
+
+.pillIcon {
+  font-size: 1.4rem;
+  color: var(--welcome-color-accent);
+}
+
+.pillBody {
+  display: flex;
+  flex-direction: column;
+}
+
+.pillTitle {
+  font-weight: 700;
+}
+
+.pillDesc {
+  font-size: 0.85rem;
+  color: var(--welcome-color-muted);
+}
+
+.pillMark {
+  margin-left: auto;
+  color: var(--welcome-color-muted);
+}
+
+/* =================================================================
+  BÖLÜM 9: GÜVENLİK BÖLÜMÜ (securitySection)
+  ================================================================= */
+.securityGridEnhanced {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.securityCard {
+  background: var(--welcome-color-surface);
+  padding: 18px;
+  border-radius: 12px;
+  border: 1px solid var(--welcome-border-color);
+  text-align: left;
+  transition: transform 0.1s ease, border-color 0.1s ease;
+  transform-origin: center;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+
+.securityCard h4 {
+  margin: 8px 0;
+}
+
+.cardIcon {
+  font-size: 1.6rem;
+}
+
+/* =================================================================
+  BÖLÜM 10: EYLEME ÇAĞRI BÖLÜMÜ (ctaSection)
+  ================================================================= */
+.ctaSection {
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0) 40%);
+}
+
+.ctaCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 40px 60px;
+  border-radius: 20px;
+  border: 1px solid var(--welcome-border-color);
+  box-shadow: var(--welcome-shadow-strong);
+}
+
+:root[data-theme="light"] .ctaCard {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.ctaTitle {
+  font-size: 2.2rem;
+  margin: 0;
+  text-align: center;
+}
+
+.ctaRow {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.ghostButton {
+  background: transparent;
+  border: 1px dashed var(--welcome-border-dashed);
+  padding: 12px 18px;
+  border-radius: 10px;
+  text-decoration: none;
+}
+
+/* =================================================================
+  BÖLÜM 11: FOOTER
+  ================================================================= */
+footer {
+  margin-top: 40px;
+}
+
+/* =================================================================
+  BÖLÜM 12: YARDIMCI BİLEŞENLER (toggle)
+  ================================================================= */
 .toggle {
   background: transparent;
   border: none;
   padding: 2px;
   cursor: pointer;
 }
+
 .toggleTrack {
   display: inline-block;
   width: 46px;
@@ -562,6 +1315,7 @@ footer {
   background: var(--welcome-toggle-bg);
   border: 1px solid var(--welcome-border-color);
 }
+
 .toggleTrack.on {
   background: linear-gradient(
     90deg,
@@ -569,6 +1323,7 @@ footer {
     var(--welcome-color-accent-2)
   );
 }
+
 .toggleThumb {
   position: absolute;
   width: 18px;
@@ -580,9 +1335,193 @@ footer {
   box-shadow: var(--welcome-toggle-shadow);
   transition: all var(--welcome-transition-fast);
 }
+
 .toggleTrack.on .toggleThumb {
   left: 24px;
 }
+
+/* =================================================================
+  BÖLÜM 13: RESPONSIVE MEDYA SORGULARI
+  ================================================================= */
+
+@media (max-width: 1100px) {
+  /* Hero Bölümü */
+  .heroTitleLarge {
+    font-size: 5rem;
+  }
+  /* Özellikler Bölümü */
+  .splitGrid {
+    grid-template-columns: 1fr;
+  }
+  .featureCardVisual {
+    flex: 0 0 140px;
+  }
+  /* Güvenlik Bölümü */
+  .securityGridEnhanced {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  /* Demo Bölümleri */
+  .feedDemoContainer {
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+  }
+  .feedDemoRight {
+    text-align: center;
+    align-items: center;
+  }
+  .feedDemoTitle {
+    font-size: 1.6rem;
+  }
+  .feedDemoText {
+    font-size: 0.95rem;
+  }
+  .feelingsDemoContainer {
+    gap: 40px;
+  }
+  .feelingsDemoLeft {
+    flex-basis: 100%;
+  }
+  .feelingsDemoRight {
+    flex-basis: 100%;
+    align-items: center;
+    text-align: center;
+  }
+  .feelingsDemoList {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .featuresGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .boxHome,
+  .boxDiscover,
+  .boxChat,
+  .boxActivity,
+  .boxStories {
+    grid-column: span 2;
+  }
+
+  .boxHome,
+  .boxDiscover {
+    grid-row: span 1;
+  }
+
+  .homeMockup,
+  .shortsMockup {
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Embed Yardım Bölümü */
+  .embedHelpSection .sectionTitle {
+    font-size: 2rem;
+  }
+  .embedHelpSection .methodsGrid {
+    grid-template-columns: 1fr;
+  }
+  .embedHelpSection .stepDiagram {
+    flex-direction: column;
+    gap: 20px;
+  }
+  .embedHelpSection .stepArrow {
+    transform: rotate(90deg);
+  }
+  .featuresSection .sectionTitle {
+    font-size: 2.2rem;
+  }
+  .featuresSection .sectionText {
+    font-size: 1rem;
+    margin-bottom: 10px;
+  }
+
+  .featuresSection .sectionTitle {
+    font-size: 2.2rem;
+  }
+  .featuresSection .sectionText {
+    font-size: 1rem;
+    margin-bottom: 10px;
+  }
+
+  .featuresGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .boxHome,
+  .boxDiscover,
+  .boxChat,
+  .boxActivity,
+  .boxStories {
+    grid-column: span 1;
+  }
+
+  .featureBox {
+    padding: 25px;
+  }
+  .boxTitle {
+    font-size: 1.3rem;
+  }
+
+  .shortsMockup {
+    height: 100px;
+    gap: 10px;
+  }
+  .shortsIcon {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 700px) {
+  /* Hero Bölümü */
+  .heroTitleLarge {
+    font-size: 3.6rem;
+  }
+  .heroSubtitle {
+    font-size: 1.4rem;
+  }
+  /* Gizlilik Bölümü */
+  .privacyInteractive {
+    flex-direction: column;
+  }
+  .privacyControls {
+    width: 100%;
+    flex: unset;
+  }
+  .privacyGridControls {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  /* CTA Bölümü */
+  .ctaCard {
+    padding: 30px 20px;
+  }
+}
+
+@media (max-width: 420px) {
+  /* Header */
+  .headerContent {
+    padding: 0 12px;
+  }
+  /* Hero Bölümü */
+  .heroTitleLarge {
+    font-size: 3rem;
+  }
+  /* Gizlilik Bölümü */
+  .privacyPill {
+    padding: 8px;
+  }
+  /* Özellikler Bölümü */
+  .featureCard {
+    padding: 16px;
+  }
+}
+
+/* Erişilebilirlik - Azaltılmış Hareket */
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
