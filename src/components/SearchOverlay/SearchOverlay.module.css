@@ -3,7 +3,7 @@
   left: 0;
   width: 100%;
   height: calc(100% - 80px);
-  background: linear-gradient(145deg, #181818, #202020);
+  background: linear-gradient(145deg, #020202, #080808);
   border-radius: 12px;
   box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6);
   z-index: 999;
@@ -86,9 +86,9 @@
 }
 
 .initial_message {
-  color: #00d9ff;
+  color: #ffffff;
   font-weight: 500;
-  text-shadow: 0 0 8px #00b4d3a3;
+  text-shadow: 0 0 8px #eeeeeed8;
 }
 
 .no_results {

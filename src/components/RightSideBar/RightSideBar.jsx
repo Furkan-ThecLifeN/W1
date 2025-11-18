@@ -50,7 +50,7 @@ const RightSidebar = () => {
         <IoSearch className={RightSidebarStyle.search_icon} />
         <input
           type="text"
-          placeholder="Keşfet..."
+          placeholder="Discover..."
           className={RightSidebarStyle.search_input}
           onFocus={handleSearchFocus}
           onChange={handleSearchChange}
@@ -65,8 +65,7 @@ const RightSidebar = () => {
 
           <div className={RightSidebarStyle.comingSoonWrapper}>
             <span className={RightSidebarStyle.comingSoonText}>W1</span>
-
-            <span className={RightSidebarStyle.comingSoonText}>Yakında</span>
+            <span className={RightSidebarStyle.comingSoonText}>Coming Soon</span>
           </div>
 
           {/* ✨ Reklam Alanı (Bu bölüm artık dikeyde esneyecek) */}

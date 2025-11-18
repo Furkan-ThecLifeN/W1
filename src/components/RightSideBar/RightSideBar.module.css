@@ -9,7 +9,7 @@
   width: clamp(280px, 20vw, 320px); /* Ekrana göre OTOMATİK ve AKICI genişlik */
 
   height: 95vh;
-  background-color: rgba(26, 27, 30, 0.9);
+  background-color: rgb(11, 12, 12);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
@@ -36,7 +36,7 @@
   border: none;
   font-size: 15px;
   outline: none;
-  background-color: #25262b;
+  background-color: #131313;
   color: #f1f1f1;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   transition: box-shadow 0.3s ease;
@@ -200,7 +200,7 @@
   align-items: center;
   height: 100%; /* İhtiyaca göre ayarlayabilirsin */
   width: 100%;
-  background: var(--color-dark-bg); /* Arka plan ile uyumlu */
+  background: var(--color-black); /* Arka plan ile uyumlu */
   border-radius: 12px;
   margin-top: 20px;
   border: 1px solid #c8c8c8;

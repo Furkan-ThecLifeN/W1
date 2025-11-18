@@ -107,7 +107,7 @@ const Sidebar = () => {
         </NavLink>
 
         {/* "Yakında Gelecek" Butonu - Parlama Efektli Tasarım */}
-        <div
+       {/*  <div
           className={`${LeftSideBarStyles.link} ${LeftSideBarStyles.disabled_link}`}
         >
           <div className={LeftSideBarStyles.icon_wrapper}>
@@ -115,7 +115,7 @@ const Sidebar = () => {
             <span className={LeftSideBarStyles.glow_effect}></span>
           </div>
           <span className={LeftSideBarStyles.tooltip}>VoCentra (Yakında)</span>
-        </div>
+        </div> */}
 
         <NavLink
           to="/account"
