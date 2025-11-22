@@ -12,7 +12,10 @@ import { useMessagesStore } from "../../Store/useMessagesStore";
 import PublicAccessWrapper from "../../components/PublicAccessWrapper/PublicAccessWrapper";
 
 const MessagesPage = () => {
-  const { selectedUser, conversations, isLoaded, loading, setState } = useMessagesStore();
+  // GÜNCELLEME 1: 'setState' yerine 'setSelectedUser' çekiyoruz.
+  // Eğer store'unuzda bu fonksiyonun adı farklıysa (örn: setCurrentUser), onu buraya yazın.
+  const { selectedUser, conversations, isLoaded, loading, setSelectedUser } = useMessagesStore();
+  
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
   useEffect(() => {
@@ -33,12 +36,17 @@ const MessagesPage = () => {
           <Sidebar />
           <div className={styles.page}>
             <aside className={styles.leftBar}>
-              <MessagesLeftBar onSelectUser={(user) => setState({ selectedUser: user })} />
+              {/* GÜNCELLEME 2: setState({...}) yerine doğrudan setSelectedUser(user) kullanıyoruz */}
+              <MessagesLeftBar onSelectUser={(user) => setSelectedUser(user)} />
             </aside>
 
             <main className={styles.chat}>
               {selectedUser ? (
-                <Chat user={selectedUser} onBack={() => setState({ selectedUser: null })} />
+                // GÜNCELLEME 3: Geri tuşuna basıldığında kullanıcıyı null yapıyoruz
+                <Chat 
+                  user={selectedUser} 
+                  onBack={() => setSelectedUser(null)} 
+                />
               ) : (
                 <ChatComponent conversations={conversations} />
               )}

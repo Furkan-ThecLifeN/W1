@@ -15,58 +15,36 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { getApp } from "firebase/app";
-import ActiveUsersBar from "../../ActiveUsersBar/ActiveUsersBar";
 import { useMessagesStore } from "../../../Store/useMessagesStore";
 
 const MessagesLeftBar = ({ onSelectUser }) => {
   const { currentUser } = useUser();
   const { currentUser: firebaseUser } = useAuth();
-  const { users, loadingUsers, errorUsers, setState } = useMessagesStore();
+  const { users, loadingUsers, errorUsers, setUsers, setLoading, setError } =
+    useMessagesStore();
 
   useEffect(() => {
-    if (!currentUser?.uid || users.length > 0) return; // ✅ Eğer kullanıcılar zaten yüklüyse tekrar fetch etme
+    // Eğer kullanıcılar zaten store'da yüklüyse tekrar çekme! (Caching)
+    if (!currentUser?.uid || (users.length > 0 && !loadingUsers)) return;
 
-    // Ortam değişkeninden API adresini al
-    // Vercel'de bu 'https://w1b.onrender.com' olacak
     const API_URL = process.env.REACT_APP_API_URL;
+    if (!API_URL) return setError("API adresi yapılandırılmamış.");
 
-    const fetchAllData = async () => {
-      setState({ loadingUsers: true, errorUsers: null });
-
-      if (!API_URL) {
-        console.error(
-          "REACT_APP_API_URL bulunamadı. Lütfen .env dosyanızı veya Vercel ayarlarınızı kontrol edin."
-        );
-        setState({
-          errorUsers: "API adresi yapılandırılmamış.",
-          loadingUsers: false,
-        });
-        return;
-      }
-
+    const fetchUsers = async () => {
+      setLoading(true);
       try {
         const db = getFirestore(getApp());
 
-        // 1️⃣ Backend'den takip edilen kullanıcılar
-        // API_URL değişkeni burada kullanıldı
+        // 1. Backend takip edilen kullanıcıları getir (Burası HTTP, Firestore Read yazmaz)
         const res = await fetch(
           `${API_URL}/api/users/${currentUser.uid}/following`,
           {
             headers: { Authorization: `Bearer ${firebaseUser?.accessToken}` },
           }
         );
+        const followingList = res.ok ? (await res.json()).following || [] : [];
 
-        // Hata kontrolü eklendi
-        if (!res.ok) {
-          throw new Error(`API isteği başarısız oldu: ${res.status}`);
-        }
-
-        const data = await res.json();
-        const followingList = Array.isArray(data.following)
-          ? data.following
-          : [];
-
-        // 2️⃣ Firebase’den mesajlaşılmış kullanıcılar
+        // 2. Firebase Konuşmalarını Getir
         const conversationsRef = collection(db, "conversations");
         const q = query(
           conversationsRef,
@@ -74,15 +52,34 @@ const MessagesLeftBar = ({ onSelectUser }) => {
         );
         const snapshot = await getDocs(q);
 
+        // OPTİMİZASYON BURADA:
         const messageUsers = await Promise.all(
           snapshot.docs.map(async (docSnap) => {
             const data = docSnap.data();
             const otherUserId = data.members.find((m) => m !== currentUser.uid);
-            // Hata durumunda (otherUserId yoksa) devam etmeyi engelle
             if (!otherUserId) return null;
 
-            const userDoc = await getDoc(doc(db, "users", otherUserId));
-            const userData = userDoc.exists() ? userDoc.data() : {};
+            let userData = null;
+
+            // A) Verimlilik: Eğer conversation içinde 'membersInfo' varsa oradan al (0 READ)
+            if (data.membersInfo && data.membersInfo[otherUserId]) {
+              userData = {
+                ...data.membersInfo[otherUserId],
+                username: data.membersInfo[otherUserId].displayName, // Fallback
+              };
+            }
+
+            // B) Eğer yoksa mecburen Firestore'dan çek (1 READ - Eskisi gibi)
+            // Zamanla yeni mesajlar geldikçe herkes A şıkkına dönecek.
+            if (!userData) {
+              const userDoc = await getDoc(doc(db, "users", otherUserId));
+              if (userDoc.exists()) {
+                userData = userDoc.data();
+              }
+            }
+
+            if (!userData) return null;
+
             return {
               uid: otherUserId,
               conversationId: docSnap.id,
@@ -96,39 +93,29 @@ const MessagesLeftBar = ({ onSelectUser }) => {
           })
         );
 
-        // null olanları filtrele (yukarıdaki if (!otherUserId) kontrolü için)
-        const validMessageUsers = messageUsers.filter((user) => user !== null);
-
-        // 3️⃣ Takip edilenler + mesajlaşılmış kişiler birleşir ve UID bazlı tekilleşir
-        const merged = [...followingList, ...validMessageUsers];
-        const uniqueMerged = Array.from(
-          new Map(merged.map((u) => [u.uid, u])).values()
+        const validUsers = [...followingList, ...messageUsers.filter(Boolean)];
+        const uniqueUsers = Array.from(
+          new Map(validUsers.map((u) => [u.uid, u])).values()
         );
 
-        // 4️⃣ Son mesaj zamanına göre sırala
-        uniqueMerged.sort(
+        uniqueUsers.sort(
           (a, b) =>
             (b.lastMessage?.updatedAt?.seconds || 0) -
             (a.lastMessage?.updatedAt?.seconds || 0)
         );
 
-        setState({ users: uniqueMerged, loadingUsers: false });
+        setUsers(uniqueUsers);
       } catch (err) {
-        console.error("Veri yükleme hatası:", err);
-        setState({
-          errorUsers: "Kullanıcılar yüklenemedi.",
-          loadingUsers: false,
-        });
+        console.error(err);
+        setError("Kullanıcılar yüklenemedi.");
       }
     };
 
-    fetchAllData();
-  }, [currentUser?.uid, firebaseUser, users.length, setState]);
+    fetchUsers();
+  }, [currentUser?.uid, firebaseUser, setUsers, setLoading, setError]); // users.length dependency'den kaldırıldı, manuel kontrol var
 
   return (
     <div className={styles.MessagesLeftBar}>
-      <ActiveUsersBar users={users} />
-
       {loadingUsers && <LoadingOverlay />}
 
       <div className={styles.left_SearchInputBox}>
@@ -160,7 +147,7 @@ const MessagesLeftBar = ({ onSelectUser }) => {
                         ? styles.away
                         : styles.offline
                     }`}
-                  ></span>
+                  />
                 </div>
               </div>
               <div className={styles.userMessageInfo}>
