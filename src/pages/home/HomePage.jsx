@@ -46,47 +46,63 @@ const Home = () => {
 
   const lastPostDocRef = useRef(null);
   const lastFeelingDocRef = useRef(null);
+  const usersCacheRef = useRef(usersCache);
 
-  // ================== Yardımcı Fonksiyonlar ==================
+  const jsonCacheRef = useRef({
+    videos: null,
+    tweets: null,
+    memes: null,
+    photos: null,
+    loaded: false,
+  });
+
+  const jsonPointersRef = useRef({
+    videos: 0,
+    tweets: 0,
+    memes: 0,
+    photos: 0,
+  });
+
   const getSeenIds = (key) => {
-    const stored = JSON.parse(localStorage.getItem(key) || "{}");
-    const now = Date.now();
-    const filtered = {};
-    for (const [id, ts] of Object.entries(stored)) {
-      if (now - ts < FIFTEEN_DAYS_MS) filtered[id] = ts;
+    try {
+      const stored = JSON.parse(localStorage.getItem(key) || "{}");
+      const now = Date.now();
+      const filtered = {};
+      for (const [id, ts] of Object.entries(stored)) {
+        if (now - ts < FIFTEEN_DAYS_MS) filtered[id] = ts;
+      }
+      localStorage.setItem(key, JSON.stringify(filtered));
+      return new Set(Object.keys(filtered));
+    } catch {
+      localStorage.setItem(key, "{}");
+      return new Set();
     }
-    localStorage.setItem(key, JSON.stringify(filtered));
-    return new Set(Object.keys(filtered));
   };
 
   const markAsSeen = (key, id) => {
-    const stored = JSON.parse(localStorage.getItem(key) || "{}");
-    stored[id] = Date.now();
-    localStorage.setItem(key, JSON.stringify(stored));
-  };
-
-  const shuffleArray = (array) => {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
+    try {
+      const stored = JSON.parse(localStorage.getItem(key) || "{}");
+      stored[id] = Date.now();
+      localStorage.setItem(key, JSON.stringify(stored));
+    } catch {
+      localStorage.setItem(key, JSON.stringify({ [id]: Date.now() }));
     }
-    return array;
   };
 
-  // ================== Firebase Yükleme ==================
+  const shuffleSmall = (arr) => {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  };
+
   const loadNextFirebaseBatch = useCallback(async () => {
     if (loading || (postsExhausted && feelingsExhausted)) return;
     setState({ loading: true });
 
     try {
-      const fetchFS = async (
-        ref,
-        lastDocRef,
-        exhausted,
-        exhaustedKey,
-        seenKey,
-        type
-      ) => {
+      const fetchFS = async (ref, lastDocRef, exhausted, exhaustedKey, seenKey, type) => {
         if (exhausted) return [];
         const seenIds = getSeenIds(seenKey);
         let unseenDocs = [];
@@ -96,12 +112,7 @@ const Home = () => {
         while (unseenDocs.length === 0 && continueFetching && !localExhausted) {
           let q;
           if (lastDocRef.current) {
-            q = query(
-              ref,
-              orderBy("createdAt", "desc"),
-              startAfter(lastDocRef.current),
-              limit(FIREBASE_BATCH_SIZE)
-            );
+            q = query(ref, orderBy("createdAt", "desc"), startAfter(lastDocRef.current), limit(FIREBASE_BATCH_SIZE));
           } else {
             q = query(ref, orderBy("createdAt", "desc"), limit(FIREBASE_BATCH_SIZE));
           }
@@ -115,12 +126,7 @@ const Home = () => {
           if (!snap.empty) {
             lastDocRef.current = snap.docs[snap.docs.length - 1];
             const filteredDocs = snap.docs
-              .map((doc) => ({
-                id: doc.id,
-                ...doc.data(),
-                type,
-                source: "firebase",
-              }))
+              .map((doc) => ({ id: doc.id, ...doc.data(), type, source: "firebase" }))
               .filter((doc) => !seenIds.has(doc.id));
 
             if (filteredDocs.length > 0) {
@@ -129,69 +135,59 @@ const Home = () => {
             }
           }
         }
+
         if (localExhausted) {
-          setState({ [exhaustedKey]: true });
+          return { items: [], exhausted: true };
         }
+
         unseenDocs.forEach((doc) => markAsSeen(seenKey, doc.id));
-        return unseenDocs;
+        return { items: unseenDocs, exhausted: false };
       };
 
-      const posts = await fetchFS(
-        collection(db, "globalPosts"),
-        lastPostDocRef,
-        postsExhausted,
-        "postsExhausted",
-        "seenFirebasePosts",
-        "post"
-      );
-      const feelings = await fetchFS(
-        collection(db, "globalFeelings"),
-        lastFeelingDocRef,
-        feelingsExhausted,
-        "feelingsExhausted",
-        "seenFirebaseFeelings",
-        "feeling"
-      );
+      const [postsRes, feelingsRes] = await Promise.all([
+        fetchFS(collection(db, "globalPosts"), lastPostDocRef, postsExhausted, "postsExhausted", "seenFirebasePosts", "post"),
+        fetchFS(collection(db, "globalFeelings"), lastFeelingDocRef, feelingsExhausted, "feelingsExhausted", "seenFirebaseFeelings", "feeling"),
+      ]);
 
-      const preliminaryBatch = shuffleArray([...posts, ...feelings]);
+      const posts = postsRes.items || [];
+      const feelings = feelingsRes.items || [];
+
+      if (postsRes.exhausted) setState({ postsExhausted: true });
+      if (feelingsRes.exhausted) setState({ feelingsExhausted: true });
+
+      const preliminaryBatch = shuffleSmall([...posts, ...feelings]);
       let newBatchWithUsers = [];
 
       if (preliminaryBatch.length > 0) {
-        const localUsersCache = { ...usersCache };
+        const localUsersCache = { ...usersCacheRef.current };
         const uidsToFetch = new Set();
-
         for (const item of preliminaryBatch) {
-          if (item.uid && !localUsersCache[item.uid]) {
-            uidsToFetch.add(item.uid);
-          }
+          if (item.uid && !localUsersCache[item.uid]) uidsToFetch.add(item.uid);
         }
 
         if (uidsToFetch.size > 0) {
           const uidsArray = Array.from(uidsToFetch);
+          const fetchUsersPromises = [];
           for (let i = 0; i < uidsArray.length; i += 30) {
             const chunk = uidsArray.slice(i, i + 30);
             const usersQuery = query(collection(db, "users"), where("uid", "in", chunk));
-            const usersSnap = await getDocs(usersQuery);
-
-            usersSnap.forEach((userDoc) => {
-              const userData = userDoc.data();
-              if (userData.uid) {
-                localUsersCache[userData.uid] = userData;
-              }
-            });
+            fetchUsersPromises.push(getDocs(usersQuery));
           }
+          const usersSnaps = await Promise.all(fetchUsersPromises);
+          usersSnaps.forEach((snap) => {
+            snap.forEach((userDoc) => {
+              const userData = userDoc.data();
+              if (userData.uid) localUsersCache[userData.uid] = userData;
+            });
+          });
+          usersCacheRef.current = localUsersCache;
           setState({ usersCache: localUsersCache });
         }
 
         newBatchWithUsers = preliminaryBatch.map((item) => {
-          const freshUserData = localUsersCache[item.uid];
-          if (freshUserData) {
-            return {
-              ...item,
-              displayName: freshUserData.displayName,
-              photoURL: freshUserData.photoURL,
-              username: freshUserData.username,
-            };
+          const fresh = usersCacheRef.current[item.uid];
+          if (fresh) {
+            return { ...item, displayName: fresh.displayName, photoURL: fresh.photoURL, username: fresh.username };
           }
           return item;
         });
@@ -206,82 +202,91 @@ const Home = () => {
     } finally {
       setState({ loading: false });
     }
-  }, [loading, postsExhausted, feelingsExhausted, firebaseFeed, initialLoadDone, setState, usersCache]);
+  }, [loading, postsExhausted, feelingsExhausted, firebaseFeed, initialLoadDone, setState]);
 
-  // ================== JSON Yükleme (fetch ile) ==================
-  const loadNextJsonBatch = useCallback(async () => {
-    if (loading || jsonExhausted) return;
-    setState({ loading: true });
-
+  const loadJsonOnce = useCallback(async () => {
+    if (jsonCacheRef.current.loaded) return jsonCacheRef.current;
     try {
       const [videosRes, tweetsRes, memesRes, photosRes] = await Promise.all([
         fetch("/explore.json"),
         fetch("/tweets.json"),
         fetch("/memes.json"),
-        fetch("/ai-images.json"),
+        fetch("/pinterest.json"),
       ]);
+      const [videos, tweets, memes, photos] = await Promise.all([
+        videosRes.ok ? videosRes.json() : [],
+        tweetsRes.ok ? tweetsRes.json() : [],
+        memesRes.ok ? memesRes.json() : [],
+        photosRes.ok ? photosRes.json() : [],
+      ]);
+      jsonCacheRef.current = { videos, tweets, memes, photos, loaded: true };
+    } catch (e) {
+      jsonCacheRef.current = { videos: [], tweets: [], memes: [], photos: [], loaded: true };
+      console.error("JSON yükleme hatası", e);
+    }
+    return jsonCacheRef.current;
+  }, []);
 
-      if (!videosRes.ok || !tweetsRes.ok || !memesRes.ok || !photosRes.ok) {
-        throw new Error("Bir veya daha fazla JSON dosyası yüklenemedi.");
-      }
+  const pickFromPool = (poolName, count, seenKey, type) => {
+    const pool = jsonCacheRef.current[poolName] || [];
+    const seen = getSeenIds(seenKey);
+    const pointer = jsonPointersRef.current[poolName] || 0;
+    const result = [];
+    let idx = pointer;
+    while (result.length < count && idx < pool.length) {
+      const item = pool[idx];
+      idx += 1;
+      if (!item) continue;
+      const idStr = item.id != null ? item.id.toString() : null;
+      if (idStr && seen.has(idStr)) continue;
+      if (idStr) markAsSeen(seenKey, idStr);
+      result.push({ ...item, id: idStr || `${poolName}-${idx}`, type, source: "json" });
+    }
+    jsonPointersRef.current[poolName] = idx;
+    return result;
+  };
 
-      const allVideos = await videosRes.json();
-      const allTweets = await tweetsRes.json();
-      const allMemes = await memesRes.json();
-      const allPhotos = await photosRes.json();
+  const loadNextJsonBatch = useCallback(async () => {
+    if (loading || jsonExhausted) return;
+    setState({ loading: true });
 
-      const pickRandomly = (pool, count, seenKey, typeOverride = null) => {
-        const seenIds = getSeenIds(seenKey);
-        const available = pool.filter((item) => !seenIds.has(item.id.toString()));
-        if (available.length === 0) return [];
+    try {
+      await loadJsonOnce();
+      const videos = pickFromPool("videos", 2, "seenVideos", "video");
+      const tweets = pickFromPool("tweets", 2, "seenTweets", "quote");
+      const memes = pickFromPool("memes", 2, "seenMemes", "image");
+      const photos = pickFromPool("photos", 2, "seenPhotos", "photo");
 
-        const selected = [];
-        for (let i = 0; i < count; i++) {
-          if (available.length === 0) break;
-          const index = Math.floor(Math.random() * available.length);
-          const item = available.splice(index, 1)[0];
-          markAsSeen(seenKey, item.id.toString());
-          selected.push({
-            ...item,
-            id: item.id.toString(),
-            type:
-              typeOverride ||
-              (seenKey === "seenMemes"
-                ? "image"
-                : seenKey === "seenVideos"
-                ? "video"
-                : "quote"),
-            source: "json",
-          });
-        }
-        return selected;
-      };
-
-      let newBatch = [];
-      const numSets = JSON_BATCH_SIZE / 6;
+      const sets = [];
+      const numSets = Math.max(1, Math.floor(JSON_BATCH_SIZE / 6));
       for (let i = 0; i < numSets; i++) {
-        let set = [];
-        set.push(...pickRandomly(allVideos, 2, "seenVideos"));
-        set.push(...pickRandomly(allTweets, 2, "seenTweets"));
-        set.push(...pickRandomly(allMemes, 2, "seenMemes"));
-        set.push(...pickRandomly(allPhotos, 2, "seenPhotos", "photo"));
-        newBatch.push(...shuffleArray(set));
+        const set = [
+          ...videos.splice(0, 2),
+          ...tweets.splice(0, 2),
+          ...memes.splice(0, 2),
+          ...photos.splice(0, 2),
+        ].filter(Boolean);
+        sets.push(...shuffleSmall(set));
       }
 
-      if (newBatch.length < JSON_BATCH_SIZE) setState({ jsonExhausted: true });
+      const newBatch = sets;
+      if (newBatch.length === 0) {
+        setState({ jsonExhausted: true, initialLoadDone: { ...initialLoadDone, json: true } });
+        return;
+      }
+
       setState({
         jsonFeed: [...jsonFeed, ...newBatch],
         initialLoadDone: { ...initialLoadDone, json: true },
       });
-    } catch (err) {
-      console.error("JSON batch yükleme hatası:", err);
+    } catch (e) {
+      console.error("JSON batch yükleme hatası:", e);
       setState({ jsonExhausted: true });
     } finally {
       setState({ loading: false });
     }
-  }, [loading, jsonExhausted, setState]);
+  }, [loading, jsonExhausted, jsonFeed, setState, loadJsonOnce, initialLoadDone]);
 
-  // ================== useEffect ==================
   useEffect(() => {
     if (!initialLoadDone.json) loadNextJsonBatch();
   }, [loadNextJsonBatch, initialLoadDone.json]);
@@ -292,15 +297,13 @@ const Home = () => {
     }
   }, [activeView, initialLoadDone.firebase, loadNextFirebaseBatch]);
 
-  // ================== Render ==================
   const currentFeed = activeView === "firebase" ? firebaseFeed : jsonFeed;
-  const isExhausted =
-    activeView === "firebase" ? postsExhausted && feelingsExhausted : jsonExhausted;
+  const isExhausted = activeView === "firebase" ? postsExhausted && feelingsExhausted : jsonExhausted;
   const loadMore = activeView === "firebase" ? loadNextFirebaseBatch : loadNextJsonBatch;
 
   const renderItem = (item) => {
     const uniqueKey = `${item.source}-${item.type}-${item.id}`;
-    if (activeView === "json" && item.type === "photo") return <PhotoCard key={uniqueKey} photo={item} />;
+    if (activeView === "json" && (item.type === "photo" || item.type === "image")) return <PhotoCard key={uniqueKey} photo={item} />;
     switch (item.type) {
       case "video":
         return <VideoPostCard key={uniqueKey} data={item} />;
@@ -327,23 +330,9 @@ const Home = () => {
         <header className={styles.header}>
           <div className={styles.topCenterLogo}>W1</div>
           <div className={styles.feedSwitchContainer}>
-            <div
-              className={`${styles.switchSlider} ${
-                activeView === "firebase" ? styles.sliderRight : ""
-              }`}
-            ></div>
-            <button
-              className={`${styles.switchButton} ${activeView === "json" ? styles.active : ""}`}
-              onClick={() => setState({ activeView: "json" })}
-            >
-              Eğlence
-            </button>
-            <button
-              className={`${styles.switchButton} ${activeView === "firebase" ? styles.active : ""}`}
-              onClick={() => setState({ activeView: "firebase" })}
-            >
-              Keşfet
-            </button>
+            <div className={`${styles.switchSlider} ${activeView === "firebase" ? styles.sliderRight : ""}`}></div>
+            <button className={`${styles.switchButton} ${activeView === "json" ? styles.active : ""}`} onClick={() => setState({ activeView: "json" })}>Eğlence</button>
+            <button className={`${styles.switchButton} ${activeView === "firebase" ? styles.active : ""}`} onClick={() => setState({ activeView: "firebase" })}>Keşfet</button>
           </div>
         </header>
 
@@ -353,9 +342,7 @@ const Home = () => {
 
         <footer className={styles.feedFooter}>
           {!loading && !isExhausted && currentFeed.length > 0 && (
-            <button onClick={loadMore} className={styles.loadMoreButton}>
-              Daha Fazla Göster
-            </button>
+            <button onClick={loadMore} className={styles.loadMoreButton}>Daha Fazla Göster</button>
           )}
           {isExhausted && <p className={styles.exhaustedMessage}>Başka gösterilecek gönderi yok.</p>}
           {loading && currentFeed.length > 0 && <div className={styles.loadingSpinner}></div>}

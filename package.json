@@ -53,8 +53,8 @@
     "eject": "react-scripts eject",
     "fetch-videos": "node src/scripts/fetchExplore.js",
     "fetch-reddit": "node src/scripts/fetchReddit.js",
-    "fetch-ai-images": "node src/scripts/fetchAiImages.js",
-    "start-all": "npm run fetch-videos && npm run fetch-reddit && npm run fetch-ai-images && npm run start"
+    "fetch-pinterest": "node src/scripts/fetchPinterest.js",
+    "start-all": "npm run fetch-videos && npm run fetch-reddit && npm run fetch-pinterest && npm run start"
   },
   "eslintConfig": {
     "extends": [

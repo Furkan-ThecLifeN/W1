@@ -141,7 +141,7 @@ async function fetchVideos(keyword, lang, region) {
 async function main() {
   console.log("🚀 Güncel popüler kısa videolar toplanıyor...");
 
-  const filePath = "./src/data/explore.json";
+  const filePath = "../../public/explore.json";
 
   try {
     if (await fs.pathExists(filePath)) {

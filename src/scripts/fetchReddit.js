@@ -209,7 +209,7 @@ async function fetchPostsForCategory(settings) {
  * Ana fonksiyon
  */
 async function main() {
-  const filePath = "./src/data/memes.json";
+  const filePath = "../../public/memes.json";
 
   try {
     if (await fs.pathExists(filePath)) {
