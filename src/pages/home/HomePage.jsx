@@ -102,7 +102,14 @@ const Home = () => {
     setState({ loading: true });
 
     try {
-      const fetchFS = async (ref, lastDocRef, exhausted, exhaustedKey, seenKey, type) => {
+      const fetchFS = async (
+        ref,
+        lastDocRef,
+        exhausted,
+        exhaustedKey,
+        seenKey,
+        type
+      ) => {
         if (exhausted) return [];
         const seenIds = getSeenIds(seenKey);
         let unseenDocs = [];
@@ -112,9 +119,18 @@ const Home = () => {
         while (unseenDocs.length === 0 && continueFetching && !localExhausted) {
           let q;
           if (lastDocRef.current) {
-            q = query(ref, orderBy("createdAt", "desc"), startAfter(lastDocRef.current), limit(FIREBASE_BATCH_SIZE));
+            q = query(
+              ref,
+              orderBy("createdAt", "desc"),
+              startAfter(lastDocRef.current),
+              limit(FIREBASE_BATCH_SIZE)
+            );
           } else {
-            q = query(ref, orderBy("createdAt", "desc"), limit(FIREBASE_BATCH_SIZE));
+            q = query(
+              ref,
+              orderBy("createdAt", "desc"),
+              limit(FIREBASE_BATCH_SIZE)
+            );
           }
           const snap = await getDocs(q);
 
@@ -126,7 +142,12 @@ const Home = () => {
           if (!snap.empty) {
             lastDocRef.current = snap.docs[snap.docs.length - 1];
             const filteredDocs = snap.docs
-              .map((doc) => ({ id: doc.id, ...doc.data(), type, source: "firebase" }))
+              .map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+                type,
+                source: "firebase",
+              }))
               .filter((doc) => !seenIds.has(doc.id));
 
             if (filteredDocs.length > 0) {
@@ -145,8 +166,22 @@ const Home = () => {
       };
 
       const [postsRes, feelingsRes] = await Promise.all([
-        fetchFS(collection(db, "globalPosts"), lastPostDocRef, postsExhausted, "postsExhausted", "seenFirebasePosts", "post"),
-        fetchFS(collection(db, "globalFeelings"), lastFeelingDocRef, feelingsExhausted, "feelingsExhausted", "seenFirebaseFeelings", "feeling"),
+        fetchFS(
+          collection(db, "globalPosts"),
+          lastPostDocRef,
+          postsExhausted,
+          "postsExhausted",
+          "seenFirebasePosts",
+          "post"
+        ),
+        fetchFS(
+          collection(db, "globalFeelings"),
+          lastFeelingDocRef,
+          feelingsExhausted,
+          "feelingsExhausted",
+          "seenFirebaseFeelings",
+          "feeling"
+        ),
       ]);
 
       const posts = postsRes.items || [];
@@ -170,7 +205,10 @@ const Home = () => {
           const fetchUsersPromises = [];
           for (let i = 0; i < uidsArray.length; i += 30) {
             const chunk = uidsArray.slice(i, i + 30);
-            const usersQuery = query(collection(db, "users"), where("uid", "in", chunk));
+            const usersQuery = query(
+              collection(db, "users"),
+              where("uid", "in", chunk)
+            );
             fetchUsersPromises.push(getDocs(usersQuery));
           }
           const usersSnaps = await Promise.all(fetchUsersPromises);
@@ -187,7 +225,12 @@ const Home = () => {
         newBatchWithUsers = preliminaryBatch.map((item) => {
           const fresh = usersCacheRef.current[item.uid];
           if (fresh) {
-            return { ...item, displayName: fresh.displayName, photoURL: fresh.photoURL, username: fresh.username };
+            return {
+              ...item,
+              displayName: fresh.displayName,
+              photoURL: fresh.photoURL,
+              username: fresh.username,
+            };
           }
           return item;
         });
@@ -202,7 +245,14 @@ const Home = () => {
     } finally {
       setState({ loading: false });
     }
-  }, [loading, postsExhausted, feelingsExhausted, firebaseFeed, initialLoadDone, setState]);
+  }, [
+    loading,
+    postsExhausted,
+    feelingsExhausted,
+    firebaseFeed,
+    initialLoadDone,
+    setState,
+  ]);
 
   const loadJsonOnce = useCallback(async () => {
     if (jsonCacheRef.current.loaded) return jsonCacheRef.current;
@@ -221,7 +271,13 @@ const Home = () => {
       ]);
       jsonCacheRef.current = { videos, tweets, memes, photos, loaded: true };
     } catch (e) {
-      jsonCacheRef.current = { videos: [], tweets: [], memes: [], photos: [], loaded: true };
+      jsonCacheRef.current = {
+        videos: [],
+        tweets: [],
+        memes: [],
+        photos: [],
+        loaded: true,
+      };
       console.error("JSON yükleme hatası", e);
     }
     return jsonCacheRef.current;
@@ -240,7 +296,12 @@ const Home = () => {
       const idStr = item.id != null ? item.id.toString() : null;
       if (idStr && seen.has(idStr)) continue;
       if (idStr) markAsSeen(seenKey, idStr);
-      result.push({ ...item, id: idStr || `${poolName}-${idx}`, type, source: "json" });
+      result.push({
+        ...item,
+        id: idStr || `${poolName}-${idx}`,
+        type,
+        source: "json",
+      });
     }
     jsonPointersRef.current[poolName] = idx;
     return result;
@@ -271,7 +332,10 @@ const Home = () => {
 
       const newBatch = sets;
       if (newBatch.length === 0) {
-        setState({ jsonExhausted: true, initialLoadDone: { ...initialLoadDone, json: true } });
+        setState({
+          jsonExhausted: true,
+          initialLoadDone: { ...initialLoadDone, json: true },
+        });
         return;
       }
 
@@ -285,7 +349,14 @@ const Home = () => {
     } finally {
       setState({ loading: false });
     }
-  }, [loading, jsonExhausted, jsonFeed, setState, loadJsonOnce, initialLoadDone]);
+  }, [
+    loading,
+    jsonExhausted,
+    jsonFeed,
+    setState,
+    loadJsonOnce,
+    initialLoadDone,
+  ]);
 
   useEffect(() => {
     if (!initialLoadDone.json) loadNextJsonBatch();
@@ -298,12 +369,21 @@ const Home = () => {
   }, [activeView, initialLoadDone.firebase, loadNextFirebaseBatch]);
 
   const currentFeed = activeView === "firebase" ? firebaseFeed : jsonFeed;
-  const isExhausted = activeView === "firebase" ? postsExhausted && feelingsExhausted : jsonExhausted;
-  const loadMore = activeView === "firebase" ? loadNextFirebaseBatch : loadNextJsonBatch;
+  const isExhausted =
+    activeView === "firebase"
+      ? postsExhausted && feelingsExhausted
+      : jsonExhausted;
+  const loadMore =
+    activeView === "firebase" ? loadNextFirebaseBatch : loadNextJsonBatch;
 
   const renderItem = (item) => {
     const uniqueKey = `${item.source}-${item.type}-${item.id}`;
-    if (activeView === "json" && (item.type === "photo" || item.type === "image")) return <PhotoCard key={uniqueKey} photo={item} />;
+
+    // Sadece photo → PhotoCard
+    if (activeView === "json" && item.type === "photo") {
+      return <PhotoCard key={uniqueKey} photo={item} />;
+    }
+
     switch (item.type) {
       case "video":
         return <VideoPostCard key={uniqueKey} data={item} />;
@@ -330,9 +410,27 @@ const Home = () => {
         <header className={styles.header}>
           <div className={styles.topCenterLogo}>W1</div>
           <div className={styles.feedSwitchContainer}>
-            <div className={`${styles.switchSlider} ${activeView === "firebase" ? styles.sliderRight : ""}`}></div>
-            <button className={`${styles.switchButton} ${activeView === "json" ? styles.active : ""}`} onClick={() => setState({ activeView: "json" })}>Eğlence</button>
-            <button className={`${styles.switchButton} ${activeView === "firebase" ? styles.active : ""}`} onClick={() => setState({ activeView: "firebase" })}>Keşfet</button>
+            <div
+              className={`${styles.switchSlider} ${
+                activeView === "firebase" ? styles.sliderRight : ""
+              }`}
+            ></div>
+            <button
+              className={`${styles.switchButton} ${
+                activeView === "json" ? styles.active : ""
+              }`}
+              onClick={() => setState({ activeView: "json" })}
+            >
+              Eğlence
+            </button>
+            <button
+              className={`${styles.switchButton} ${
+                activeView === "firebase" ? styles.active : ""
+              }`}
+              onClick={() => setState({ activeView: "firebase" })}
+            >
+              Keşfet
+            </button>
           </div>
         </header>
 
@@ -342,10 +440,18 @@ const Home = () => {
 
         <footer className={styles.feedFooter}>
           {!loading && !isExhausted && currentFeed.length > 0 && (
-            <button onClick={loadMore} className={styles.loadMoreButton}>Daha Fazla Göster</button>
+            <button onClick={loadMore} className={styles.loadMoreButton}>
+              Daha Fazla Göster
+            </button>
           )}
-          {isExhausted && <p className={styles.exhaustedMessage}>Başka gösterilecek gönderi yok.</p>}
-          {loading && currentFeed.length > 0 && <div className={styles.loadingSpinner}></div>}
+          {isExhausted && (
+            <p className={styles.exhaustedMessage}>
+              Başka gösterilecek gönderi yok.
+            </p>
+          )}
+          {loading && currentFeed.length > 0 && (
+            <div className={styles.loadingSpinner}></div>
+          )}
           <div className={styles.footerMain}>
             <Footer />
           </div>
