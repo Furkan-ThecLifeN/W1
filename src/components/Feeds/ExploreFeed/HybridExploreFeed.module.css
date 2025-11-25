@@ -49,7 +49,6 @@
   .feedWrapper {
     min-height: 100vh;
     align-items: center;
-    padding-bottom: 40px; /* ✅ Mobilde footer alanı koru */
   }
 
   .navButtons {
@@ -61,8 +60,8 @@
     right: 15px;
     transform: translateY(-50%);
   }
+  .footerWrapper {
+    margin-bottom: 20px;
+  }
 }
 
-@media (max-width: 1024px) {
-
-}

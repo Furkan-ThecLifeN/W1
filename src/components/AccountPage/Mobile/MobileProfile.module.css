@@ -272,6 +272,7 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 2px;
   margin: 5px;
+  margin-bottom: 20px;
 }
 
 .postItem {
@@ -466,6 +467,7 @@
   gap: 16px;
   padding: 16px;
   margin-top: 16px;
+  margin-bottom: 20px;
 }
 
 /* Tüm FeelingsBox kartları için (hem mini hem de normal) */
@@ -507,6 +509,7 @@
     justify-content: space-between; /* Kartlar arasında eşit boşluk */
     gap: 10px; /* Kartlar arasında eşit boşluk */
     padding: 10px;
+    margin-bottom: 20px;
   }
 
   .feedsGrid > * {

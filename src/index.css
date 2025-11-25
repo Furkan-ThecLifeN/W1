@@ -17,6 +17,7 @@ code {
   height: 100%;
   display: flex;
   flex-direction: column;
+  background-color: var(--color-black);
 }
 
 /* Genel CSS Reset (Sıfırlama) */

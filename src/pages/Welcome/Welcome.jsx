@@ -948,7 +948,9 @@ const Welcome = () => {
           </motion.div>
         </section>
 
-        <Footer />
+        <div className={styles.footerWelcome}>
+          <Footer />
+        </div>
       </div>
     </>
   );

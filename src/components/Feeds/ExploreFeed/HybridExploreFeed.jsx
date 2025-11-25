@@ -266,7 +266,7 @@ export default function HybridExploreFeed() {
           {isNextLoading ? <span style={{ fontSize: "12px" }}>Yükleniyor...</span> : <FiArrowDown size={32} />}
         </button>
       </div>
-      <footer className={styles.footer}>
+      <footer className={styles.footerWrapper}>
         <Footer />
       </footer>
     </div>
