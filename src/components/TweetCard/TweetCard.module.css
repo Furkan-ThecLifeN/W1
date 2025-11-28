@@ -82,6 +82,8 @@
   padding: 0 2px;
   word-break: break-word;
   text-align: start;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 /* ✅ GÜNCELLENDİ: Feelings Text */

@@ -199,6 +199,8 @@ const TweetCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
           onClick={
             needsTruncation ? () => setIsDescriptionModalOpen(true) : undefined
           }
+          // ✅ AŞAĞIDAKİ STYLE SATIRINI EKLEYİN:
+          style={{ whiteSpace: "pre-wrap" }}
         >
           {truncatedDescription}
         </div>
