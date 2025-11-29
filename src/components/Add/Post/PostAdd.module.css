@@ -465,6 +465,38 @@ body {
   }
 }
 
+/* PostAdd.module.css içine eklenecekler */
+.modalOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.modalContent {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.modalHeader {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;
+}
+.ruleItem { margin-bottom: 15px; }
+.ruleItem h4 { color: #333; margin-bottom: 5px; font-size: 1rem; }
+.ruleItem p { font-size: 0.9rem; color: #666; line-height: 1.4; }
+.warningText { color: #d93025; font-weight: bold; margin-top: 5px; font-size: 0.85rem; }
+.agreeButton {
+  width: 100%; padding: 10px; background: #0095f6; color: white;
+  border: none; border-radius: 6px; cursor: pointer; font-weight: bold;
+}
+
 /* Responsive Düzenlemeler (Eskiyle aynı, sadece renkler yeni) */
 @media (max-width: 767px) {
   .postCard {

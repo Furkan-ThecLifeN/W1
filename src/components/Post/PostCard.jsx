@@ -24,11 +24,20 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
 
-  const description = data.caption || "";
+  const description = data?.caption || "";
   const needsTruncation = description.length > TRUNCATE_LIMIT;
   const truncatedDescription = needsTruncation
     ? description.substring(0, TRUNCATE_LIMIT).trim() + "..."
     : description;
+
+  // Medya URL'sini ve tipini belirle
+  // Backend güncellendiği için mediaUrls öncelikli, yoksa imageUrls (geriye dönük uyumluluk)
+  const mediaUrl = data?.mediaUrls?.[0] || data?.imageUrls?.[0];
+  
+  // Eğer veritabanında mediaType varsa onu kullan, yoksa ve URL mp4 ise video kabul et
+  const isVideo = 
+    data?.mediaType === "video" || 
+    (typeof mediaUrl === "string" && /\.(mp4|webm|ogg|mov)$/i.test(mediaUrl));
 
   const getToken = async () => {
     try {
@@ -143,22 +152,50 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
   useEffect(() => {
     if (!data) return console.warn("PostCard: data yok!");
     if (!data.id) console.warn("PostCard: post id eksik!");
-    if (!data.caption) console.warn("PostCard: caption eksik!");
-    if (!data.imageUrls?.[0]) console.warn("PostCard: image yok!");
-  }, [data]);
+    // mediaUrl kontrolü (video veya resim)
+    if (!mediaUrl && !data.caption) console.warn("PostCard: içerik yok (medya veya metin)!");
+  }, [data, mediaUrl]);
 
   if (!data) return null;
 
+  // Medya İçeriği Render Fonksiyonu (Kod tekrarını önlemek için)
+  const renderMedia = (isMobile = false) => {
+    if (!mediaUrl) return null;
+    
+    const className = isMobile ? styles.post_image_mobile : styles.post_image;
+
+    if (isVideo) {
+      return (
+        <video
+          src={mediaUrl}
+          className={className}
+          controls
+          controlsList="nodownload" // İsteğe bağlı: indirmeyi zorlaştırmak için
+          playsInline
+          loop
+          // Eğer videonun otomatik sessiz başlamasını istersen aşağıdakileri açabilirsin:
+          // muted 
+          // autoPlay
+        />
+      );
+    }
+
+    return (
+      <img
+        src={mediaUrl}
+        alt="Post"
+        className={className}
+      />
+    );
+  };
+
   return (
     <>
+      {/* --- DESKTOP VIEW --- */}
       <div className={`${styles.post_card} ${styles.desktop}`}>
-        {data.imageUrls?.[0] && (
-          <img
-            src={data.imageUrls[0]}
-            alt="Post"
-            className={styles.post_image}
-          />
-        )}
+        {/* Medya Gösterimi (Resim veya Video) */}
+        {renderMedia(false)}
+        
         <div className={styles.post_overlay}>
           <div className={styles.post_header}>
             <div className={styles.user_info}>
@@ -232,6 +269,7 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
         </div>
       </div>
 
+      {/* --- MOBILE VIEW --- */}
       <div className={`${styles.post_card_mobile} ${styles.mobile}`}>
         <div className={styles.post_header_mobile}>
           <div className={styles.user_info}>
@@ -279,13 +317,10 @@ const PostCard = ({ data, followStatus = "none", onFollowStatusChange }) => {
             </div>
           </div>
         </div>
-        {data.imageUrls?.[0] && (
-          <img
-            src={data.imageUrls[0]}
-            alt="Post"
-            className={styles.post_image_mobile}
-          />
-        )}
+        
+        {/* Mobil Medya Gösterimi (Resim veya Video) */}
+        {renderMedia(true)}
+        
         <div className={styles.post_footer_mobile}>
           <p
             className={`${styles.post_text} ${
