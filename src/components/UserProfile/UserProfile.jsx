@@ -90,7 +90,6 @@ const UserProfile = () => {
 
   useEffect(() => {
     let mounted = true;
-    console.log("API BASE URL:", apiBaseUrl);
     const fetchProfileAndStatus = async () => {
       setLoading(true);
       setError(null);
