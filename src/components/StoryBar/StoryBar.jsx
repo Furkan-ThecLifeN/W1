@@ -3,12 +3,17 @@ import { useNavigate } from "react-router-dom";
 import styles from "./StoryBar.module.css";
 import StoryViewer from "../StoryViewer/StoryViewer";
 import { useAuth } from "../../context/AuthProvider";
-import { Plus, ChevronLeft, ChevronRight } from "lucide-react"; // Ok ikonları
+import { useUserData } from "../../hooks/useUserData";
+import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { useStoryStore } from "../../Store/useStoryStore";
 
 const StoryBar = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+
+  // 🔥 Firestore kullanıcı verisi (Güncel fotoURL buradan geliyor!)
+  const userData = useUserData(currentUser?.uid);
+
   const scrollRef = useRef(null);
 
   const {
@@ -24,38 +29,36 @@ const StoryBar = () => {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
+  // 🔥 feed + myStory yükleme
   useEffect(() => {
-    fetchStories(currentUser);
+    if (currentUser) fetchStories(currentUser);
   }, [currentUser, fetchStories]);
 
-  // Scroll durumunu kontrol et (Butonları göster/gizle)
+  // Scroll kontrolü
   const checkScroll = () => {
     if (scrollRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
       setCanScrollLeft(scrollLeft > 0);
-      // Hassasiyet için 1px tolerans
       setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
     }
   };
 
   useEffect(() => {
     checkScroll();
-    // Pencere boyutu değişirse tekrar kontrol et
     window.addEventListener("resize", checkScroll);
     return () => window.removeEventListener("resize", checkScroll);
-  }, [stories, myStory]); // Hikayeler değişince de kontrol et
+  }, [stories, myStory]);
 
   const scroll = (direction) => {
-    if (scrollRef.current) {
-      const { clientWidth } = scrollRef.current;
-      const scrollAmount = clientWidth / 2; // Yarım ekran kaydır
-      scrollRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      });
-      // Scroll işlemi bitince butonları güncelle (kısa gecikme ile)
-      setTimeout(checkScroll, 300);
-    }
+    if (!scrollRef.current) return;
+
+    const amount = scrollRef.current.clientWidth / 2;
+    scrollRef.current.scrollBy({
+      left: direction === "left" ? -amount : amount,
+      behavior: "smooth",
+    });
+
+    setTimeout(checkScroll, 300);
   };
 
   const handleMyStoryClick = () => {
@@ -74,49 +77,40 @@ const StoryBar = () => {
   };
 
   const getAllStories = () => {
-    if (myStory) {
-      return [myStory, ...stories];
-    }
-    return stories;
+    return myStory ? [myStory, ...stories] : stories;
+  };
+
+  const getMyStoryRingColor = () => {
+    if (!myStory) return "transparent";
+    if (myStory.allSeen) return "#555";
+    return "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)";
   };
 
   const showLoadingIndicator = loading && !isLoaded && stories.length === 0;
 
-  const getMyStoryRingColor = () => {
-    if (!myStory) return "transparent";
-    if (myStory.allSeen) return "#555555";
-    return "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)";
-  };
-
   return (
     <>
       <div className={styles.storyBarContainer}>
-        {/* Sol Ok (Sadece Masaüstünde ve kaydırılabiliyorsa görünür) */}
         {canScrollLeft && (
-          <button
-            className={`${styles.navButton} ${styles.navButtonLeft}`}
+          <button className={`${styles.navButton} ${styles.navButtonLeft}`}
             onClick={() => scroll("left")}
           >
             <ChevronLeft size={20} />
           </button>
         )}
 
-        <div
-          className={styles.storiesScroller}
-          ref={scrollRef}
-          onScroll={checkScroll}
-        >
-          {/* --- KENDİ HİKAYEM --- */}
+        <div className={styles.storiesScroller} ref={scrollRef} onScroll={checkScroll}>
+          
+          {/* 🔥 KENDİ HİKAYEM - Güncel fotoURL: userData.photoURL */}
           <div className={styles.storyItem} onClick={handleMyStoryClick}>
             <div className={styles.avatarWrapper}>
               <div
                 className={myStory ? styles.gradientRing : styles.noStoryRing}
                 style={myStory ? { background: getMyStoryRingColor() } : {}}
               >
-                {/* TASARIM BOZULMADAN: avatarInner'ın yerine PostCard avatarı ekledik */}
                 <div className={styles.avatarInnerFixed}>
                   <img
-                    src={currentUser?.photoURL || ""}
+                    src={userData?.photoURL || null}
                     alt="avatar"
                     className={styles.avatarFixed}
                   />
@@ -138,7 +132,7 @@ const StoryBar = () => {
             </span>
           </div>
 
-          {/* --- LOADING --- */}
+          {/* LOADING */}
           {showLoadingIndicator && (
             <div className={styles.loadingItem}>
               <div className={styles.loadingSkeletonCircle}></div>
@@ -146,20 +140,13 @@ const StoryBar = () => {
             </div>
           )}
 
-          {/* --- ARKADAŞLAR --- */}
+          {/* 🔥 TAKİP ETTİĞİM KİŞİLERİN HİKAYELERİ */}
           {stories.map((storyGroup, index) => {
-            let ringBackground;
-
-            if (storyGroup.allSeen) {
-              ringBackground = "#555555";
-            } else {
-              const hasCloseFriendStory = storyGroup.stories.some(
-                (s) => s.privacy === "close_friendships"
-              );
-              ringBackground = hasCloseFriendStory
-                ? "#4caf50" // Yeşil (Yakın Arkadaş)
-                : "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)"; // Instagram Gradient
-            }
+            let ringBg = storyGroup.allSeen
+              ? "#555"
+              : storyGroup.stories.some((s) => s.privacy === "close_friendships")
+              ? "#4caf50"
+              : "linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)";
 
             return (
               <div
@@ -168,10 +155,7 @@ const StoryBar = () => {
                 onClick={() => handleOtherStoryClick(index)}
               >
                 <div className={styles.avatarWrapper}>
-                  <div
-                    className={styles.gradientRing}
-                    style={{ background: ringBackground }}
-                  >
+                  <div className={styles.gradientRing} style={{ background: ringBg }}>
                     <div className={styles.avatarInner}>
                       <img
                         src={storyGroup.user.photoURL}
@@ -181,6 +165,7 @@ const StoryBar = () => {
                     </div>
                   </div>
                 </div>
+
                 <span
                   className={styles.username}
                   style={{ color: storyGroup.allSeen ? "#777" : "#fff" }}
@@ -192,10 +177,8 @@ const StoryBar = () => {
           })}
         </div>
 
-        {/* Sağ Ok */}
         {canScrollRight && (
-          <button
-            className={`${styles.navButton} ${styles.navButtonRight}`}
+          <button className={`${styles.navButton} ${styles.navButtonRight}`}
             onClick={() => scroll("right")}
           >
             <ChevronRight size={20} />
