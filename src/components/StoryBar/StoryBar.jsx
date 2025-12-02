@@ -91,19 +91,18 @@ const StoryBar = () => {
   return (
     <>
       <div className={styles.storyBarContainer}>
-        
         {/* Sol Ok (Sadece Masaüstünde ve kaydırılabiliyorsa görünür) */}
         {canScrollLeft && (
-          <button 
-            className={`${styles.navButton} ${styles.navButtonLeft}`} 
+          <button
+            className={`${styles.navButton} ${styles.navButtonLeft}`}
             onClick={() => scroll("left")}
           >
             <ChevronLeft size={20} />
           </button>
         )}
 
-        <div 
-          className={styles.storiesScroller} 
+        <div
+          className={styles.storiesScroller}
           ref={scrollRef}
           onScroll={checkScroll}
         >
@@ -114,22 +113,27 @@ const StoryBar = () => {
                 className={myStory ? styles.gradientRing : styles.noStoryRing}
                 style={myStory ? { background: getMyStoryRingColor() } : {}}
               >
-                <div className={styles.avatarInner}>
+                {/* TASARIM BOZULMADAN: avatarInner'ın yerine PostCard avatarı ekledik */}
+                <div className={styles.avatarInnerFixed}>
                   <img
-                    src={currentUser?.photoURL || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"}
-                    alt="Me"
-                    className={styles.avatarImg}
+                    src={currentUser?.photoURL || ""}
+                    alt="avatar"
+                    className={styles.avatarFixed}
                   />
                 </div>
               </div>
-              
+
               {!myStory && (
                 <div className={styles.plusBadge}>
                   <Plus size={14} color="#fff" />
                 </div>
               )}
             </div>
-            <span className={styles.username} style={{ color: myStory?.allSeen ? "#777" : "#fff" }}>
+
+            <span
+              className={styles.username}
+              style={{ color: myStory?.allSeen ? "#777" : "#fff" }}
+            >
               Your Story
             </span>
           </div>
@@ -149,8 +153,10 @@ const StoryBar = () => {
             if (storyGroup.allSeen) {
               ringBackground = "#555555";
             } else {
-              const hasCloseFriendStory = storyGroup.stories.some(s => s.privacy === "close_friendships");
-              ringBackground = hasCloseFriendStory 
+              const hasCloseFriendStory = storyGroup.stories.some(
+                (s) => s.privacy === "close_friendships"
+              );
+              ringBackground = hasCloseFriendStory
                 ? "#4caf50" // Yeşil (Yakın Arkadaş)
                 : "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)"; // Instagram Gradient
             }
@@ -162,7 +168,10 @@ const StoryBar = () => {
                 onClick={() => handleOtherStoryClick(index)}
               >
                 <div className={styles.avatarWrapper}>
-                  <div className={styles.gradientRing} style={{ background: ringBackground }}>
+                  <div
+                    className={styles.gradientRing}
+                    style={{ background: ringBackground }}
+                  >
                     <div className={styles.avatarInner}>
                       <img
                         src={storyGroup.user.photoURL}
@@ -172,7 +181,10 @@ const StoryBar = () => {
                     </div>
                   </div>
                 </div>
-                <span className={styles.username} style={{ color: storyGroup.allSeen ? "#777" : "#fff" }}>
+                <span
+                  className={styles.username}
+                  style={{ color: storyGroup.allSeen ? "#777" : "#fff" }}
+                >
                   {storyGroup.user.displayName?.split(" ")[0]}
                 </span>
               </div>
@@ -182,14 +194,13 @@ const StoryBar = () => {
 
         {/* Sağ Ok */}
         {canScrollRight && (
-          <button 
-            className={`${styles.navButton} ${styles.navButtonRight}`} 
+          <button
+            className={`${styles.navButton} ${styles.navButtonRight}`}
             onClick={() => scroll("right")}
           >
             <ChevronRight size={20} />
           </button>
         )}
-
       </div>
 
       {isViewerOpen && (
