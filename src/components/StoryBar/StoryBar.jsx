@@ -3,11 +3,8 @@ import { useNavigate } from "react-router-dom";
 import styles from "./StoryBar.module.css";
 import StoryViewer from "../StoryViewer/StoryViewer";
 import { useAuth } from "../../context/AuthProvider";
-import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight } from "lucide-react"; // Ok ikonları
 import { useStoryStore } from "../../Store/useStoryStore";
-
-// Varsayılan Avatar
-const DEFAULT_AVATAR = "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
 
 const StoryBar = () => {
   const { currentUser } = useAuth();
@@ -31,28 +28,32 @@ const StoryBar = () => {
     fetchStories(currentUser);
   }, [currentUser, fetchStories]);
 
+  // Scroll durumunu kontrol et (Butonları göster/gizle)
   const checkScroll = () => {
     if (scrollRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
       setCanScrollLeft(scrollLeft > 0);
+      // Hassasiyet için 1px tolerans
       setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
     }
   };
 
   useEffect(() => {
     checkScroll();
+    // Pencere boyutu değişirse tekrar kontrol et
     window.addEventListener("resize", checkScroll);
     return () => window.removeEventListener("resize", checkScroll);
-  }, [stories, myStory]);
+  }, [stories, myStory]); // Hikayeler değişince de kontrol et
 
   const scroll = (direction) => {
     if (scrollRef.current) {
       const { clientWidth } = scrollRef.current;
-      const scrollAmount = clientWidth / 2;
+      const scrollAmount = clientWidth / 2; // Yarım ekran kaydır
       scrollRef.current.scrollBy({
         left: direction === "left" ? -scrollAmount : scrollAmount,
         behavior: "smooth",
       });
+      // Scroll işlemi bitince butonları güncelle (kısa gecikme ile)
       setTimeout(checkScroll, 300);
     }
   };
@@ -87,14 +88,11 @@ const StoryBar = () => {
     return "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)";
   };
 
-  const handleImageError = (e) => {
-    e.target.src = DEFAULT_AVATAR;
-  };
-
   return (
     <>
       <div className={styles.storyBarContainer}>
         
+        {/* Sol Ok (Sadece Masaüstünde ve kaydırılabiliyorsa görünür) */}
         {canScrollLeft && (
           <button 
             className={`${styles.navButton} ${styles.navButtonLeft}`} 
@@ -117,13 +115,10 @@ const StoryBar = () => {
                 style={myStory ? { background: getMyStoryRingColor() } : {}}
               >
                 <div className={styles.avatarInner}>
-                  {/* 🔥 DÜZELTME: crossOrigin kaldırıldı, sadece referrerPolicy kaldı */}
                   <img
-                    src={currentUser?.photoURL || DEFAULT_AVATAR}
+                    src={currentUser?.photoURL || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"}
                     alt="Me"
                     className={styles.avatarImg}
-                    onError={handleImageError}
-                    referrerPolicy="no-referrer" 
                   />
                 </div>
               </div>
@@ -139,6 +134,7 @@ const StoryBar = () => {
             </span>
           </div>
 
+          {/* --- LOADING --- */}
           {showLoadingIndicator && (
             <div className={styles.loadingItem}>
               <div className={styles.loadingSkeletonCircle}></div>
@@ -155,8 +151,8 @@ const StoryBar = () => {
             } else {
               const hasCloseFriendStory = storyGroup.stories.some(s => s.privacy === "close_friendships");
               ringBackground = hasCloseFriendStory 
-                ? "#4caf50" 
-                : "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)";
+                ? "#4caf50" // Yeşil (Yakın Arkadaş)
+                : "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)"; // Instagram Gradient
             }
 
             return (
@@ -168,13 +164,10 @@ const StoryBar = () => {
                 <div className={styles.avatarWrapper}>
                   <div className={styles.gradientRing} style={{ background: ringBackground }}>
                     <div className={styles.avatarInner}>
-                      {/* 🔥 DÜZELTME: crossOrigin kaldırıldı */}
                       <img
-                        src={storyGroup.user.photoURL || DEFAULT_AVATAR}
+                        src={storyGroup.user.photoURL}
                         alt={storyGroup.user.username}
                         className={styles.avatarImg}
-                        onError={handleImageError}
-                        referrerPolicy="no-referrer"
                       />
                     </div>
                   </div>
@@ -187,6 +180,7 @@ const StoryBar = () => {
           })}
         </div>
 
+        {/* Sağ Ok */}
         {canScrollRight && (
           <button 
             className={`${styles.navButton} ${styles.navButtonRight}`} 
