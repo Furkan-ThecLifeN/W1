@@ -6,7 +6,7 @@ import { useAuth } from "../../context/AuthProvider";
 import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { useStoryStore } from "../../Store/useStoryStore";
 
-// ✅ GÜVENİLİR VARSAYILAN AVATAR (Pixabay yerine Wikimedia kullanıldı)
+// ✅ 1. ADIM: Güvenilir bir varsayılan resim (Yedek)
 const DEFAULT_AVATAR = "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
 
 const StoryBar = () => {
@@ -31,7 +31,6 @@ const StoryBar = () => {
     fetchStories(currentUser);
   }, [currentUser, fetchStories]);
 
-  // Scroll Butonlarını Kontrol Et
   const checkScroll = () => {
     if (scrollRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
@@ -88,17 +87,15 @@ const StoryBar = () => {
     return "linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)";
   };
 
-  // ✅ RESİM YÜKLEME HATASI YÖNETİMİ
-  // Eğer kullanıcının fotoğrafı veya varsayılan fotoğraf kırık gelirse burası çalışır
+  // ✅ 2. ADIM: Hata Yönetimi Fonksiyonu
   const handleImageError = (e) => {
-    e.target.src = DEFAULT_AVATAR;
+    e.target.src = DEFAULT_AVATAR; // Resim yüklenemezse varsayılanı göster
   };
 
   return (
     <>
       <div className={styles.storyBarContainer}>
         
-        {/* Sol Ok */}
         {canScrollLeft && (
           <button 
             className={`${styles.navButton} ${styles.navButtonLeft}`} 
@@ -113,7 +110,7 @@ const StoryBar = () => {
           ref={scrollRef}
           onScroll={checkScroll}
         >
-          {/* --- KENDİ HİKAYEM KISMI --- */}
+          {/* --- KENDİ HİKAYEM --- */}
           <div className={styles.storyItem} onClick={handleMyStoryClick}>
             <div className={styles.avatarWrapper}>
               <div
@@ -121,13 +118,14 @@ const StoryBar = () => {
                 style={myStory ? { background: getMyStoryRingColor() } : {}}
               >
                 <div className={styles.avatarInner}>
+                  {/* ✅ 3. ADIM: Resim etiketi güncellendi */}
                   <img
-                    // ✅ GÜNCELLENDİ: Daha güvenli kaynak kontrolü
-                    src={currentUser?.photoURL ? currentUser.photoURL : DEFAULT_AVATAR}
+                    src={currentUser?.photoURL || DEFAULT_AVATAR}
                     alt="Me"
                     className={styles.avatarImg}
-                    onError={handleImageError} // Resim yüklenemezse devreye girer
-                    referrerPolicy="no-referrer" // Bazı CDN engellemelerini aşmak için
+                    onError={handleImageError} // Kırık link kontrolü
+                    referrerPolicy="no-referrer" // 🔥 CANLI SİTE İÇİN KRİTİK AYAR
+                    crossOrigin="anonymous"      // CORS desteği için
                   />
                 </div>
               </div>
@@ -143,7 +141,6 @@ const StoryBar = () => {
             </span>
           </div>
 
-          {/* --- LOADING --- */}
           {showLoadingIndicator && (
             <div className={styles.loadingItem}>
               <div className={styles.loadingSkeletonCircle}></div>
@@ -173,12 +170,14 @@ const StoryBar = () => {
                 <div className={styles.avatarWrapper}>
                   <div className={styles.gradientRing} style={{ background: ringBackground }}>
                     <div className={styles.avatarInner}>
+                      {/* ✅ 4. ADIM: Arkadaşların resmi için de aynı ayar */}
                       <img
                         src={storyGroup.user.photoURL || DEFAULT_AVATAR}
                         alt={storyGroup.user.username}
                         className={styles.avatarImg}
-                        onError={handleImageError} // Arkadaşların resmi kırık gelirse
-                        referrerPolicy="no-referrer"
+                        onError={handleImageError}
+                        referrerPolicy="no-referrer" // Pinterest vb. engellerini aşar
+                        crossOrigin="anonymous"
                       />
                     </div>
                   </div>
@@ -191,7 +190,6 @@ const StoryBar = () => {
           })}
         </div>
 
-        {/* Sağ Ok */}
         {canScrollRight && (
           <button 
             className={`${styles.navButton} ${styles.navButtonRight}`} 
