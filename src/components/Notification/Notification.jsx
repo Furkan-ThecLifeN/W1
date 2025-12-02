@@ -31,6 +31,19 @@ const Notification = () => {
   const apiBaseUrl = process.env.REACT_APP_API_URL;
   const db = getFirestore();
 
+useEffect(() => {
+  localStorage.removeItem("notification-store");
+}, []);
+
+useEffect(() => {
+  if (!authLoading && currentUser && !isLoaded) {
+    fetchNotifications();
+    markNotificationsRead();
+  }
+}, [currentUser, authLoading, isLoaded]);
+
+
+
   // 🔹 Local notification-store'u temizleme
   const clearNotificationData = () => {
     try {

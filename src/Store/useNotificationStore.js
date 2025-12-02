@@ -8,7 +8,9 @@ export const useNotificationStore = create(
       unreadCount: 0,
       isLoaded: false,
       loading: false,
+
       setState: (newState) => set((state) => ({ ...state, ...newState })),
+
       reset: () =>
         set({
           notifications: [],
@@ -17,12 +19,13 @@ export const useNotificationStore = create(
           loading: false,
         }),
     }),
+
     {
       name: "notification-store",
+
+      // 🔥 sadece notifications kaydedilecek
       partialize: (state) => ({
         notifications: state.notifications,
-        unreadCount: state.unreadCount,
-        isLoaded: state.isLoaded,
       }),
     }
   )
