@@ -19,9 +19,9 @@ const ChatComponent = () => {
       </div>
 
       <div className={styles.storyAreaWrapper}>
-        {/* <div className={styles.storyArea} ref={storyRef}>
+        <div className={styles.storyArea} ref={storyRef}>
           <StoryBar currentUser={currentUser} />
-        </div> */}
+        </div>
       </div>
 
       <div className={styles.messageArea}>

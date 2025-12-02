@@ -1,147 +1,81 @@
 import React, { useState, useMemo } from "react";
-import styles from "./FeedsAdd.module.css";
-import {
-  FiArrowLeft,
-  FiSend,
-  FiCheck,
-  FiX,
-  FiGlobe,
-  FiUsers,
-  FiEye,
-  FiLock,
-  FiYoutube,
-  FiAlertCircle // Uyarı ikonu eklendi
-} from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { 
+  ArrowLeft, 
+  Send, 
+  X, 
+  Upload, 
+  Link as LinkIcon
+} from "lucide-react";
+import { FaYoutube } from "react-icons/fa";
+import styles from "./FeedsAdd.module.css";
 import { useAuth } from "../../../context/AuthProvider";
 import { useUser } from "../../../context/UserContext";
-import { motion } from "framer-motion";
 import { auth } from "../../../config/firebase-client";
+import Toast from "../../../Toast";
+import LoadingOverlay from "../../LoadingOverlay/LoadingOverlay";
 
-// ✅ ADSENSE İÇİN KRİTİK: Minimum içerik uzunluğu
-// 150-200 karakter, içeriği "Low Value Content" olmaktan kurtarır.
-const MIN_TEXT_LENGTH = 150;
+// Rules Modal
+const RulesModal = ({ onClose }) => (
+  <div className={styles.modalOverlay}>
+    <div className={styles.modalBox}>
+      <h3 className={styles.modalTitle}>Guidelines</h3>
+      <div className={styles.modalContent}>
+        <p>1. <strong>Ownership:</strong> Ensure you have the right to share this content.</p>
+        <p>2. <strong>Safety:</strong> No violence, hate speech, or illegal acts.</p>
+        <p>3. <strong>AdSense:</strong> Content must be advertiser-friendly.</p>
+      </div>
+      <button onClick={onClose} className={styles.modalBtn}>I Accept</button>
+    </div>
+  </div>
+);
 
-const FeedsAdd = ({ onClose }) => {
+const FeedsAdd = () => {
+  const navigate = useNavigate();
+  const { currentUser, showToast } = useAuth();
+  
   const [mediaUrl, setMediaUrl] = useState("");
   const [description, setDescription] = useState("");
-  // Değişken adını mantığa uygun güncelledik: rulesAccepted
-  const [rulesAccepted, setRulesAccepted] = useState(false);
   const [privacy, setPrivacy] = useState("public");
+  const [isTermsAccepted, setIsTermsAccepted] = useState(false);
+  const [showRules, setShowRules] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
 
-  const navigate = useNavigate();
-  const { currentUser } = useUser();
-  const { showToast } = useAuth();
-
+  // Extract ID
   const videoId = useMemo(() => {
-    const regex = /(?:youtube\.com\/shorts\/|youtu\.be\/)([\w-]{11})/;
+    const regex = /(?:youtube\.com\/shorts\/|youtu\.be\/|youtube\.com\/watch\?v=)([\w-]{11})/;
     const match = mediaUrl.match(regex);
     return match ? match[1] : null;
   }, [mediaUrl]);
 
-  // Kalan karakter sayısını hesapla
-  const charsLeft = MIN_TEXT_LENGTH - description.length;
-  const isDescriptionValid = description.length >= MIN_TEXT_LENGTH;
-
-  const canShare =
-    mediaUrl.trim() &&
-    isDescriptionValid && // Uzunluk kontrolü
-    rulesAccepted && // Yeni kural onayı
-    !loading;
-
-  const getPrivacyIcon = () => {
-    switch (privacy) {
-      case "public": return <FiGlobe size={16} />;
-      case "friends": return <FiUsers size={16} />;
-      case "close_friendships": return <FiEye size={16} />;
-      case "private": return <FiLock size={16} />;
-      default: return <FiGlobe size={16} />;
-    }
-  };
-
-  const getPrivacyText = () => {
-    switch (privacy) {
-      case "public": return "Herkese Açık";
-      case "friends": return "Sadece Arkadaşlar";
-      case "close_friendships": return "Yakın Arkadaşlar";
-      case "private": return "Sadece Ben";
-      default: return "Herkese Açık";
-    }
-  };
-
   const handleShare = async () => {
-    if (!mediaUrl.trim()) {
-      setError("Lütfen bir YouTube Shorts linki ekleyin.");
-      return;
-    }
-    
-    // ✅ YENİ KONTROL: Açıklama uzunluğu
-    if (!isDescriptionValid) {
-      setError(`Açıklama çok kısa. En az ${MIN_TEXT_LENGTH} karakter yazmalısınız.`);
-      showToast(`Lütfen en az ${MIN_TEXT_LENGTH} karakterlik bir açıklama yazın.`, "warning");
-      return;
-    }
-
-    if (!videoId) {
-      setError("Geçerli bir YouTube Shorts linki girin.");
-      return;
-    }
-    
-    if (!rulesAccepted) {
-      setError("Lütfen paylaşım kurallarını kabul edin.");
-      showToast("Kuralları onaylamanız gerekmektedir.", "error");
-      return;
-    }
-
-    if (!auth.currentUser) {
-      setError("Lütfen önce giriş yapın.");
-      return;
-    }
+    if (!currentUser) return showToast("Please login first.", "error");
+    if (!videoId) return showToast("Invalid YouTube link.", "error");
+    if (!isTermsAccepted) return showToast("Please accept guidelines.", "error");
 
     setLoading(true);
-    setError(null);
-
     try {
       const idToken = await auth.currentUser.getIdToken();
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/feeds/create`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${idToken}`,
-          },
-          body: JSON.stringify({
-            postText: description,
-            mediaUrl: mediaUrl,
-            rulesAccepted: rulesAccepted, // Backend'e yeni parametre adı gidiyor
-            privacy: privacy,
-          }),
-        }
-      );
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/feeds/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          postText: description,
+          mediaUrl: mediaUrl,
+          rulesAccepted: true,
+          privacy: privacy,
+        }),
+      });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Hata oluştu");
-      }
-
-      setSuccess(true);
-      setMediaUrl("");
-      setDescription("");
-      setRulesAccepted(false);
-      setPrivacy("public");
-      showToast("Feed başarıyla paylaşıldı!", "success");
-
-      setTimeout(() => {
-        if (typeof onClose === "function") onClose();
-        else navigate("/home");
-      }, 1500);
-    } catch (err) {
-      console.error("Feeds paylaşım hatası:", err);
-      setError("Paylaşım yapılamadı. Lütfen tekrar deneyin.");
+      if (!res.ok) throw new Error("Failed to publish.");
+      showToast("Published successfully!", "success");
+      setTimeout(() => navigate("/home"), 1000);
+    } catch (e) {
+      console.error(e);
+      showToast(e.message, "error");
     } finally {
       setLoading(false);
     }
@@ -149,130 +83,127 @@ const FeedsAdd = ({ onClose }) => {
 
   return (
     <div className={styles.container}>
-      <motion.div
-        className={styles.postCard}
-        initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 50, opacity: 0 }}
-      >
-        <div className={styles.postHeader}>
-          <button className={styles.backButton} onClick={() => navigate(-1)}>
-            <FiArrowLeft size={24} />
-          </button>
-          <h2 className={styles.title}>Yeni Feed Paylaş</h2>
-          <button
-            className={`${styles.shareButton} ${canShare ? styles.active : ""}`}
-            onClick={handleShare}
-            disabled={!canShare}
-          >
-            {loading ? "..." : <><FiSend size={18} /><span>Paylaş</span></>}
-          </button>
+      {loading && <LoadingOverlay />}
+      <Toast />
+      {showRules && <RulesModal onClose={() => setShowRules(false)} />}
+
+      <div className={styles.feedCard}>
+        
+        {/* === LEFT: MEDIA ZONE === */}
+        <div className={styles.mediaColumn}>
+          {videoId ? (
+            <div className={styles.videoContainer}>
+              <iframe
+                className={styles.videoFrame}
+                src={`https://www.youtube.com/embed/${videoId}`}
+                title="Preview"
+                allowFullScreen
+              />
+              <button className={styles.clearBtn} onClick={() => setMediaUrl("")}>
+                <X size={20} />
+              </button>
+            </div>
+          ) : (
+            <div className={styles.inputZone}>
+              <FaYoutube size={64} className={styles.zoneIcon} />
+              <div>
+                <h3 className={styles.zoneTitle}>Share a Short</h3>
+                <p className={styles.zoneDesc}>Paste your YouTube Shorts link below</p>
+              </div>
+              
+              <input 
+                type="text" 
+                className={styles.urlInput} 
+                placeholder="https://youtube.com/shorts/..."
+                value={mediaUrl}
+                onChange={(e) => setMediaUrl(e.target.value)}
+                autoFocus
+              />
+
+              <div className={styles.divider}><span>OR</span></div>
+
+              <button className={styles.galleryBtn} disabled>
+                <Upload size={18} /> Upload from Gallery 
+                <span className={styles.badge}>SOON</span>
+              </button>
+            </div>
+          )}
         </div>
 
-        <div className={styles.postContent}>
-          {/* Medya Bölümü (Aynı kaldı) */}
-          <div className={`${styles.mediaSection} ${videoId ? styles.mediaSectionVideo : ""}`}>
-            {videoId ? (
-              <div className={styles.videoPreviewContainer}>
-                <iframe
-                  className={styles.videoPreview}
-                  src={`https://www.youtube.com/embed/${videoId}`}
-                  title="YouTube preview"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
-                <button className={styles.removeVideoButton} onClick={() => setMediaUrl("")}>
-                  <FiX size={18} />
-                </button>
-              </div>
-            ) : (
-              <div className={styles.dropzone}>
-                <FiYoutube size={48} className={styles.dropzoneIcon} />
-                <p className={styles.dropzoneText}>YouTube Shorts linkini yapıştır</p>
-                <div className={styles.inputGroup}>
-                  <input
-                    type="text"
-                    value={mediaUrl}
-                    onChange={(e) => setMediaUrl(e.target.value)}
-                    placeholder="https://youtube.com/shorts/..."
-                    className={styles.inputField}
-                  />
-                </div>
-              </div>
-            )}
+        {/* === RIGHT: DETAILS === */}
+        <div className={styles.detailsColumn}>
+          <div className={styles.header}>
+            <button className={styles.backBtn} onClick={() => navigate(-1)}>
+              <ArrowLeft size={24} />
+            </button>
+            <span className={styles.headerTitle}>New Feed Post</span>
+            <div style={{width: 24}}></div>
           </div>
 
-          <div className={styles.detailsSection}>
-            <div className={styles.userInfoAndPrivacy}>
-               {/* Kullanıcı bilgileri aynı kaldı */}
-               <div className={styles.avatar}>
-                <img src={currentUser?.photoURL || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"} alt="avatar" className={styles.avatarImage} />
-               </div>
-               <div className={styles.userMeta}>
-                 <span className={styles.username}>{currentUser?.displayName}</span>
-                 {/* Gizlilik seçimi aynı kaldı... */}
-                 <div className={styles.privacySelector}>
-                    <div className={styles.privacyDisplay}>
-                        {getPrivacyIcon()}
-                        <span>{getPrivacyText()}</span>
-                    </div>
-                    <select className={styles.hiddenSelect} value={privacy} onChange={(e) => setPrivacy(e.target.value)}>
-                        <option value="public">Herkese Açık</option>
-                        <option value="friends">Sadece Arkadaşlar</option>
-                        <option value="close_friendships">Yakın Arkadaşlar</option>
-                        <option value="private">Sadece Ben</option>
-                    </select>
-                </div>
-               </div>
+          <div className={styles.formContent}>
+            
+            {/* User */}
+            <div className={styles.userRow}>
+              <img 
+                src={currentUser?.photoURL || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"} 
+                alt="Avatar" 
+                className={styles.avatar} 
+              />
+              <div className={styles.meta}>
+                <span className={styles.username}>{currentUser?.displayName || "User"}</span>
+                <select 
+                  className={styles.privacySelect}
+                  value={privacy}
+                  onChange={(e) => setPrivacy(e.target.value)}
+                >
+                  <option value="public">Public</option>
+                  <option value="friends">Friends</option>
+                  <option value="close_friendships">Close Friends</option>
+                  <option value="private">Only Me</option>
+                </select>
+              </div>
             </div>
 
-            {/* ✅ AÇIKLAMA ALANI GÜNCELLEMESİ */}
-            <div className={styles.inputGroup}>
-              <label htmlFor="description">
-                Açıklama <small style={{color: '#888', fontWeight: 'normal'}}>(Zorunlu)</small>
-              </label>
-              <textarea
-                id="description"
+            {/* Caption */}
+            <div className={styles.captionGroup}>
+              <textarea 
+                className={styles.textArea} 
+                placeholder="What's this video about?"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Bu video hakkında düşüncelerini, neden paylaştığını veya yorumunu detaylıca yaz..."
-                rows="6"
-                className={styles.textareaField}
               />
-              {/* Karakter Sayacı ve Uyarı */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px', fontSize: '12px' }}>
-                 <span style={{ color: charsLeft > 0 ? '#e74c3c' : '#2ecc71' }}>
-                    {charsLeft > 0 
-                      ? `${charsLeft} karakter daha yazmalısın (Kalite politikası)` 
-                      : <span style={{display:'flex', alignItems:'center', gap:'4px'}}><FiCheck/> Uygun uzunlukta</span>}
-                 </span>
-                 <span>{description.length} krktr</span>
+            </div>
+
+            {/* Rules */}
+            <div className={styles.rulesGroup} onClick={() => setIsTermsAccepted(!isTermsAccepted)}>
+              <input 
+                type="checkbox" 
+                className={styles.checkbox}
+                checked={isTermsAccepted}
+                onChange={() => {}} 
+              />
+              <div className={styles.rulesText}>
+                I agree to the <span className={styles.link} onClick={(e) => {
+                  e.stopPropagation();
+                  setShowRules(true);
+                }}>Community Guidelines</span> and confirm this content is safe.
               </div>
             </div>
 
-            {/* ✅ YENİ ONAY KUTUSU (Legal Uyumluluk İçin) */}
-            <div className={styles.checkboxGroup} style={{alignItems: 'flex-start'}}>
-              <input
-                type="checkbox"
-                id="rulesAccepted"
-                checked={rulesAccepted}
-                onChange={(e) => setRulesAccepted(e.target.checked)}
-                className={styles.checkboxField}
-                style={{marginTop: '4px'}}
-              />
-              <label htmlFor="rulesAccepted" style={{fontSize: '13px', lineHeight: '1.4', color: '#555'}}>
-                Bu içeriği <strong>YouTube Hizmet Şartları</strong>'na ve 'Embed' kurallarına uygun olarak paylaştığımı; 
-                videonun orijinal yayıncısının haklarına saygı duyduğumu ve 
-                paylaşımımda <strong>topluluk kurallarına aykırı</strong> bir unsur bulunmadığını kabul ediyorum.
-              </label>
-            </div>
+          </div>
 
-            {error && <p className={styles.errorMessage}><FiAlertCircle /> {error}</p>}
-            {success && <p className={styles.successMessage}><FiCheck /> Başarılı!</p>}
+          <div className={styles.footer}>
+            <button 
+              className={styles.publishBtn}
+              onClick={handleShare}
+              disabled={!videoId || !isTermsAccepted || loading}
+            >
+              {loading ? "Publishing..." : <><Send size={18} /> Publish Feed</>}
+            </button>
           </div>
         </div>
-      </motion.div>
+
+      </div>
     </div>
   );
 };

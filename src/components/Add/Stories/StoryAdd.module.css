@@ -1,0 +1,371 @@
+/* StoryAdd.module.css */
+
+:root {
+  /* --- FEEDSADD İLE AYNI RENK PALETİ --- */
+  --story-bg: #000000;          /* Sayfa Arka Planı */
+  --story-card-bg: #09090b;     /* Kart Arka Planı (Zinc 950) */
+  --story-input-bg: #18181b;    /* Input Arka Planı (Zinc 900) */
+  
+  --story-accent: #00aaff;      /* Vurgu: Parlak Mavi */
+  --story-accent-hover: #0088cc;
+  
+  --story-text-main: #ffffff;
+  --story-text-dim: #a1a1aa;
+  
+  --story-border: #27272a;      /* Kenarlıklar */
+  --story-danger: #ff0d00;      /* Kırmızı */
+  --story-success: #00e676;     /* Yeşil */
+}
+
+/* Sayfa Genel Yapısı */
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: var(--story-bg);
+  background-image: radial-gradient(circle at center, #111111 0%, #000000 100%);
+  font-family: 'Inter', sans-serif;
+  padding: 20px;
+}
+
+/* Telefon Görünümlü Kart */
+.storyCard {
+  width: 100%;
+  max-width: 450px; /* Telefon genişliği */
+  height: 85vh;     /* Ekranın %85'i */
+  max-height: 900px;
+  background-color: var(--story-card-bg);
+  border-radius: 24px;
+  border: 1px solid var(--story-border);
+  /* Hafif Mavi Gölge */
+  box-shadow: 0 0 40px rgba(0, 170, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  /* Üstten aşağı hafif karartma */
+  background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+}
+
+.backButton {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(5px);
+  transition: all 0.2s;
+}
+
+.backButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--color-white);
+}
+
+.headerTitle {
+  flex: 1;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  letter-spacing: 0.5px;
+}
+
+/* Preview Alanı (Ana Ekran) */
+.previewArea {
+  flex: 1;
+  background-color: #050505; /* Karttan biraz daha koyu */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Medya Görüntüleme */
+.mediaPreview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.clearButton {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  backdrop-filter: blur(4px);
+}
+
+.clearButton:hover {
+  background: var(--story-danger);
+  border-color: var(--story-danger);
+}
+
+/* Boş Durum (Input Alanı) */
+.inputContainer {
+  width: 85%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 25px;
+  z-index: 5;
+}
+
+.iconGroup {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 10px;
+  color: var(--color-white);
+  filter: drop-shadow(0 0 15px rgba(235, 235, 235, 0.251)); /* Neon etkisi */
+  opacity: 0.9;
+}
+
+.urlInput {
+  width: 100%;
+  padding: 16px;
+  background: var(--story-input-bg);
+  border: 1px solid var(--story-border);
+  border-radius: 16px;
+  color: white;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s ease-in-out;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.urlInput:focus {
+  border-color: var(--story-accent);
+  box-shadow: 0 0 0 4px rgba(39, 96, 109, 0.204);
+}
+
+/* Disabled Upload Button */
+.uploadDisabled {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed var(--story-border);
+  padding: 14px 25px;
+  border-radius: 12px;
+  color: var(--story-text-dim);
+  cursor: not-allowed;
+  font-size: 0.9rem;
+  margin-top: 10px;
+  transition: all 0.2s;
+}
+
+.uploadDisabled:hover {
+  border-color: var(--story-text-dim);
+  background: rgba(255,255,255,0.05);
+}
+
+.comingSoonBadge {
+  background: var(--story-danger);
+  color: #fff;
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Alt Kontrol Paneli */
+.controls {
+  padding: 30px 25px;
+  /* Alttan yukarı degrade */
+  background: linear-gradient(0deg, var(--story-card-bg) 30%, rgba(9,9,11,0.8) 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+/* Gizlilik Seçimi */
+.privacyGroup {
+  display: flex;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid var(--story-border);
+}
+
+.privacyBtn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--story-text-dim);
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  transition: all 0.3s;
+}
+
+.privacyBtn:hover {
+  color: white;
+  background: rgba(255,255,255,0.05);
+}
+
+.privacyBtn.active {
+  background: var(--story-input-bg);
+  color: var(--story-accent);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  border: 1px solid rgba(0, 170, 255, 0.2);
+}
+
+.privacyBtn.active.closeFriends {
+  color: var(--story-success); /* Yeşil */
+  border-color: rgba(0, 230, 118, 0.2);
+}
+
+/* Kurallar Onayı */
+.termsContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 5px;
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--story-accent);
+  margin-top: 2px;
+}
+
+.termsLabel {
+  font-size: 0.85rem;
+  color: var(--story-text-dim);
+  line-height: 1.4;
+}
+
+.link {
+  color: var(--story-accent);
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* Paylaş Butonu */
+.shareButton {
+  background: var(--story-accent);
+  color: white;
+  border: none;
+  padding: 16px;
+  border-radius: 16px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 20px rgba(0, 170, 255, 0.3);
+}
+
+.shareButton:disabled {
+  background: var(--story-border);
+  color: #555;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.shareButton:not(:disabled):hover {
+  background: var(--story-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 170, 255, 0.4);
+}
+
+/* Modal Stilleri */
+.modalOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+}
+
+.modalContent {
+  background: var(--story-card-bg);
+  padding: 30px;
+  border-radius: 24px;
+  max-width: 90%;
+  width: 420px;
+  border: 1px solid var(--story-border);
+  color: var(--story-text-main);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+}
+
+.modalHeader {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+}
+
+.modalHeader h3 { margin: 0; font-size: 1.2rem; color: var(--story-accent); }
+
+.modalBody h4 { color: white; margin-bottom: 5px; font-size: 1rem; }
+.modalBody p { font-size: 0.9rem; color: var(--story-text-dim); margin-bottom: 15px; line-height: 1.5; }
+
+.agreeButton {
+  width: 100%; padding: 14px; background: var(--story-accent); 
+  color: white; border: none; border-radius: 12px; font-weight: bold; margin-top: 10px; cursor: pointer;
+  transition: background 0.2s;
+}
+
+.agreeButton:hover { background: var(--story-accent-hover); }
+
+.closeModalButton { 
+  background: none; border: none; color: var(--story-text-dim); cursor: pointer; 
+  transition: color 0.2s;
+}
+
+.closeModalButton:hover { color: var(--story-danger); }

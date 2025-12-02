@@ -1,221 +1,137 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthProvider";
 import { useUser } from "../../../context/UserContext";
 import { getAuth } from "firebase/auth";
 import styles from "./FeelingsAdd.module.css";
-import { FiImage, FiSmile, FiMapPin, FiX, FiSend } from "react-icons/fi";
-import { IoMdClose } from "react-icons/io";
-import { RiQuillPenLine } from "react-icons/ri";
+// İkonlar Lucide'ye çevrildi (Diğer sayfalarla uyum için)
+import { X, Send, PenTool } from "lucide-react"; 
+import LoadingOverlay from "../../LoadingOverlay/LoadingOverlay";
+import Toast from "../../../Toast";
 
-// ✅ SABİT DEĞER: Maksimum karakter limiti
 const MAX_LENGTH = 3000;
 
 const FeelingsAdd = () => {
-  const { currentUser, loading } = useUser();
+  const { currentUser } = useUser();
   const { showToast } = useAuth();
   const navigate = useNavigate();
 
   const [postText, setPostText] = useState("");
-  const [images, setImages] = useState([]);
   const [privacy, setPrivacy] = useState("public");
-  const fileInputRef = useRef(null);
+  const [loading, setLoading] = useState(false);
 
-  // ✅ YENİ KONTROL: Paylaşım butonunun etkin olup olmadığını belirler
-  const isPostValid = postText.trim() || images.length > 0;
+  // Validasyonlar
+  const isPostValid = postText.trim().length > 0;
   const isTextOverLimit = postText.length > MAX_LENGTH;
-  const isButtonDisabled = !isPostValid || isTextOverLimit;
+  const isButtonDisabled = !isPostValid || isTextOverLimit || loading;
 
-  const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files);
-    const newImages = files.map((file) => ({
-      file,
-      preview: URL.createObjectURL(file),
-    }));
-    setImages((prev) => [...prev, ...newImages]);
-    // reset input to allow same-file re-upload if needed
-    e.target.value = null;
-  };
-
-  const removeImage = (index) => {
-    const updated = [...images];
-    URL.revokeObjectURL(updated[index].preview);
-    updated.splice(index, 1);
-    setImages(updated);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    // 1. KONTROL: Metin uzunluğunu kontrol et
-    if (isTextOverLimit) {
-      showToast(`Gönderi metni ${MAX_LENGTH} karakteri aşamaz.`, "error");
-      return;
-    }
-
-    if (!isPostValid) {
-      showToast("Lütfen bir metin girin veya bir görsel ekleyin.", "info");
-      return;
-    }
+  const handleSubmit = async () => {
+    if (isTextOverLimit) return showToast(`Text too long. Max ${MAX_LENGTH} chars.`, "error");
+    if (!isPostValid) return showToast("Please write something.", "info");
 
     const auth = getAuth();
-    const firebaseUser = auth.currentUser;
+    if (!auth.currentUser) return showToast("Please login first.", "error");
 
-    if (!firebaseUser) {
-      showToast("Paylaşım yapmak için lütfen giriş yapın.", "error");
-      return;
-    }
-
+    setLoading(true);
     try {
-      const token = await firebaseUser.getIdToken(true);
+      const token = await auth.currentUser.getIdToken(true);
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/feelings/share`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          postText,
+          images: [], // Feelings'de resim yoksa boş array
+          privacy,
+        }),
+      });
 
-      // API endpoint'inin doğru olduğundan emin olunuz
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/api/feelings/share`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            postText,
-            images: images.map((img) => img.file.name),
-            privacy,
-          }),
-        }
-      );
+      if (!res.ok) throw new Error("Failed to share.");
 
-      if (!response.ok) {
-        throw new Error("Gönderi paylaşılırken hata oluştu.");
-      }
-
-      showToast("Gönderiniz başarıyla paylaşıldı!", "success");
-      navigate("/home");
+      showToast("Feeling shared successfully!", "success");
+      setTimeout(() => navigate("/home"), 1000);
     } catch (error) {
-      console.error("Sharing error:", error);
-      showToast("Gönderi paylaşılırken bir hata oluştu.", "error");
+      console.error(error);
+      showToast("Error sharing feeling.", "error");
+    } finally {
+      setLoading(false);
     }
   };
-
-  if (loading || !currentUser) {
-    return <div>Yükleniyor...</div>;
-  }
 
   return (
     <div className={styles.feelings_add}>
+      {loading && <LoadingOverlay />}
+      <Toast />
+
       <div className={styles.postFormContainer}>
+        
+        {/* HEADER */}
         <div className={styles.postFormHeader}>
-          <button
-            className={styles.closeButton}
-            onClick={() => navigate(-1)}
-            aria-label="Kapat"
-          >
-            <IoMdClose size={22} />
+          <button className={styles.closeButton} onClick={() => navigate(-1)}>
+            <X size={24} />
           </button>
-
-          <h2 className={styles.formTitle}>Yeni Feelings Oluştur</h2>
-
+          <span className={styles.formTitle}>New Feeling</span>
           <button
-            className={`${styles.postButton} ${
-              isPostValid && !isTextOverLimit ? styles.active : ""
-            }`}
+            className={styles.postButton}
             onClick={handleSubmit}
             disabled={isButtonDisabled}
-            aria-disabled={isButtonDisabled}
           >
-            <FiSend size={18} />
-            <span className={styles.postButtonLabel}>Paylaş</span>
+            <Send size={18} />
+            <span className={styles.postButtonLabel}>Share</span>
           </button>
         </div>
 
         <div className={styles.postFormContent}>
+          
+          {/* USER INFO */}
           <div className={styles.userSection}>
             <div className={styles.avatar}>
               <img
-                src={
-                  currentUser?.photoURL ||
-                  "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
-                }
-                alt="User Avatar"
+                src={currentUser?.photoURL || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"}
+                alt="User"
                 className={styles.avatarImage}
               />
             </div>
             <div className={styles.userInfo}>
-              <span className={styles.username}>
-                {currentUser?.displayName || "Kullanıcı Adı"}
-              </span>
+              <span className={styles.username}>{currentUser?.displayName || "Guest"}</span>
               <div className={styles.privacySelector}>
                 <select
                   className={styles.privacySelect}
                   value={privacy}
                   onChange={(e) => setPrivacy(e.target.value)}
-                  aria-label="Gizlilik"
                 >
-                  <option value="public">Herkese Açık</option>
-                  <option value="friends">Sadece Arkadaşlar</option>
-                  <option value="close_friendships">Yakın Arkadaşlar</option>
-                  <option value="private">Sadece Ben</option>
+                  <option value="public">Public</option>
+                  <option value="friends">Friends Only</option>
+                  <option value="close_friendships">Close Friends</option>
+                  <option value="private">Only Me</option>
                 </select>
               </div>
             </div>
           </div>
 
-          <div className={styles.tabs}>
-            <div className={styles.tab}>
-              <RiQuillPenLine /> FeelingsAdd
-            </div>
-          </div>
-
+          {/* EDITOR */}
           <div className={styles.editorArea}>
+            <div className={styles.tabs}>
+              <PenTool size={16} /><span>Write your feelings</span>
+            </div>
             <textarea
               className={styles.postTextarea}
-              placeholder="Neler oluyor?"
+              placeholder="How are you feeling today?"
               value={postText}
               onChange={(e) => setPostText(e.target.value)}
-              maxLength={MAX_LENGTH}
               autoFocus
             />
-            {images.length > 0 && (
-              <div className={styles.imagePreviewContainer}>
-                {images.map((img, index) => (
-                  <div key={index} className={styles.imagePreviewWrapper}>
-                    <img
-                      src={img.preview}
-                      alt={`Preview ${index}`}
-                      className={styles.imagePreview}
-                    />
-                    <button
-                      className={styles.removeImageButton}
-                      onClick={() => removeImage(index)}
-                      aria-label="Görseli kaldır"
-                    >
-                      <FiX size={14} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
 
+          {/* FOOTER */}
           <div className={styles.postFormFooter}>
-            <div className={styles.rightActions}>
-              <div className={styles.characterCounter}>
-                <span
-                  className={`${styles.counter} ${
-                    postText.length > MAX_LENGTH ? styles.error : ""
-                  }`}
-                >
-                  {postText.length}/{MAX_LENGTH}
-                </span>
-              </div>
-            </div>
+            <span className={`${styles.characterCounter} ${isTextOverLimit ? styles.counterError : ''}`}>
+              {postText.length} / {MAX_LENGTH}
+            </span>
           </div>
-        </div>
 
-        <div className={styles.backgroundEffects}>
-          <div className={styles.gradientCircle1}></div>
-          <div className={styles.gradientCircle2}></div>
         </div>
       </div>
     </div>

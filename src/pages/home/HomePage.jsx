@@ -24,6 +24,8 @@ import MemePostCard from "../../components/MemePostCard/MemePostCard";
 import PhotoCard from "../../components/AIPhotoCard/AIPhotoCard";
 import Footer from "../../components/Footer/Footer";
 
+import PublicStoryBar from "../../components/PublicStoryBar/PublicStoryBar";
+
 import styles from "./HomePage.module.css";
 
 const FIFTEEN_DAYS_MS = 15 * 24 * 60 * 60 * 1000;
@@ -433,6 +435,10 @@ const Home = () => {
             </button>
           </div>
         </header>
+
+      <div style={{width: '100%', maxWidth: '900px', marginBottom: '10px'}}>
+         <PublicStoryBar />
+      </div>
 
         <section className={styles.feed}>
           {currentFeed.map((item) => renderItem(item))}

@@ -1,446 +1,516 @@
-/* FeedsAdd.module.css
-  Stiller, PostAdd.module.css dosyasındaki parlak mavi temayla 
-  birebir aynı olacak şekilde GÜNCELLENDİ.
-*/
+/* FeedsAdd.module.css */
 
-/* PostAdd.module.css'den kopyalanan renk paleti.
-  Bu dosyanın kendi kendine yetmesi için buraya eklendi.
-*/
 :root {
-  /* Parlak Mavi Tema */
-  --postadd-primary-blue: #00aaff; /* Ana parlak mavi */
-  --postadd-secondary-blue: #00c6ff; /* Gradientler için ikincil mavi */
+  /* --- YENİ RENK PALETİ --- */
+  --feed-bg: #000000; /* Sayfa Arka Planı: Tam Siyah */
+  --feed-card-bg: #09090b; /* Kart Arka Planı: Çok Koyu Gri (Zinc 950) */
+  --feed-input-bg: #18181b; /* Inputlar: Koyu Gri (Zinc 900) */
 
-  /* Arka Plan ve Kart Renkleri */
-  --postadd-bg-dark: #101014; /* Siyah ana arka plan */
-  --postadd-card-bg: #1a1d2e; /* Koyu, hafif mavi kart arka planı */
-  --postadd-input-bg: #25283a; /* Input/void alanı arka planı */
+  --feed-accent: #00aaff; /* Vurgu: Açık Parlak Mavi */
+  --feed-accent-hover: #0088cc; /* Vurgu Hover: Biraz daha koyu mavi */
 
-  /* Metin ve Nötr Renkler */
-  --postadd-text-light: #e0e0e0; /* Ana metin rengi */
-  --postadd-text-mid: #a0a0b0; /* İkincil, soluk metin */
+  --feed-text-main: #ffffff; /* Ana Metin: Beyaz */
+  --feed-text-dim: #a1a1aa; /* Soluk Metin: Gri */
 
-  /* Kenarlık ve Vurgu */
-  --postadd-border-accent: #00aaff; /* Vurgu kenarlığı (Ana mavi) */
-  --postadd-border-light: rgba(255, 255, 255, 0.1); /* Soluk kenarlık */
-
-  /* Diğer */
-  --postadd-danger: #ff4444; /* Hata/Silme rengi */
-  --postadd-success: #00c3ff; /* Başarı rengi (Mavi) */
-  --postadd-success-green: #00e676; /* Başarı (Yeşil) */
+  --feed-border: #27272a; /* Kenarlıklar: Koyu Gri */
+  --feed-danger: #ff0000; /* Tehlike/Silme: Canlı Kırmızı */
 }
 
-/* === Ana Konteyner === */
 .container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   padding: 20px;
-  box-sizing: border-box;
-  /* font-family: var(--font-main); -> Global fontunuzu korur */
-  background-color: var(--postadd-bg-dark); /* PostAdd stili */
+  background-color: var(--feed-bg);
+  /* Hafif bir mavi parlama ekleyelim, çok şık durur */
+  background-image: radial-gradient(circle at center, #111111 0%, #000000 100%);
+  font-family: "Inter", sans-serif;
 }
 
-/* === Post Kartı === */
-.postCard {
-  background-color: var(--postadd-card-bg); /* PostAdd stili */
-  border-radius: 20px; /* PostAdd stili (daha yuvarlak) */
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+/* KART YAPISI */
+.feedCard {
+  display: flex;
   width: 100%;
-  max-width: 900px;
-  z-index: 1;
+  max-width: 950px;
+  height: 600px;
+  background-color: var(--feed-card-bg);
+  border-radius: 24px;
+  border: 1px solid var(--feed-border);
+  /* Mavi hafif gölge */
+  box-shadow: 0 0 40px rgba(0, 170, 255, 0.05);
+  overflow: hidden;
+  position: relative;
+}
+
+/* === SOL TARAF: MEDYA ALANI === */
+.mediaColumn {
+  flex: 1.2;
+  background-color: #050505; /* Karttan bir tık daha koyu */
+  border-right: 1px solid var(--feed-border);
+  position: relative;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  border: 1px solid var(--postadd-border-accent); /* PostAdd stili */
-}
-
-/* === Başlık Alanı (PostAdd gibi Gradient) === */
-.postHeader {
-  display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  padding: 15px 25px;
-  /* PostAdd stili: Parlak mavi gradient */
-  background: linear-gradient(
-    90deg,
-    var(--postadd-primary-blue) 0%,
-    var(--postadd-secondary-blue) 100%
-  );
-  color: white; /* PostAdd stili */
-  position: relative;
-  border-bottom: none; /* Gradient olduğu için gerek yok */
+  overflow: hidden;
 }
 
-/* Başlıktaki Butonlar (PostAdd stili) */
-.backButton,
-.shareButton {
-  background: none; /* PostAdd stili */
+/* Video Önizleme */
+.videoContainer {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.videoFrame {
+  width: 100%;
+  height: 100%;
   border: none;
-  color: white; /* PostAdd stili */
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 1rem; /* PostAdd stili (biraz daha büyük) */
-  font-weight: 600;
-  padding: 8px 12px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(5px);
-}
-
-.backButton:hover {
-  background: rgba(255, 255, 255, 0.2); /* PostAdd stili */
-  transform: scale(1.05);
-}
-
-.shareButton {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--blur-bg);
-  color: var(--color-grey);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 8px 12px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 13px;
-  transition: all 0.3s ease-in-out;
-}
-
-/* Varsayılan hover (aktif değilken) */
-.shareButton:hover:not(:disabled) {
-  background: var(--gradient-button-hover);
-  color: var(--text-white);
-  transform: scale(1.05);
-}
-
-/* Active durumda */
-.shareButton.active {
-  background: var(--gradient-button);
-  color: var(--text-white);
-  border: 1px solid #2b8fdce2;
-  box-shadow: 0 6px 20px rgba(0, 170, 255, 0.25);
-  transform: translateY(-2px);
-}
-
-
-/* Disabled durumu */
-.shareButton:disabled {
-  opacity: 0.8;
-  cursor: not-allowed;
-}
-
-/* Başlık (PostAdd stili) */
-.title {
-  margin: 0;
-  font-size: 1.5rem; /* PostAdd stili */
-  font-weight: 700;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-  /* Gradient kaldırıldı, çünkü header zaten gradient */
-  background: none;
-  -webkit-background-clip: unset;
-  -webkit-text-fill-color: white;
-  color: white;
-}
-
-/* === İçerik Alanı === */
-.postContent {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  padding: 25px;
-}
-
-@media (min-width: 768px) {
-  .postContent {
-    flex-direction: row;
-  }
-}
-
-/* === 1. Sütun: Medya (PostAdd stili) === */
-.mediaSection {
-  flex: 1;
-  min-height: 300px;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--postadd-input-bg); /* PostAdd stili */
-  border-radius: 12px;
-  border: 1px dashed var(--postadd-border-accent); /* PostAdd stili */
-  padding: 20px;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.mediaSection.mediaSectionVideo {
-  padding: 0;
-  border: 1px solid var(--postadd-border-accent); /* PostAdd stili */
-  overflow: hidden;
-}
-
-.mediaSection:hover {
-  border-color: var(--postadd-secondary-blue); /* PostAdd stili */
-  box-shadow: 0 0 15px rgba(0, 198, 255, 0.3);
-}
-
-.dropzone {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  width: 100%;
-  height: 100%;
-  gap: 15px;
-  flex-grow: 1;
-}
-
-.dropzoneIcon {
-  color: var(--postadd-primary-blue); /* PostAdd stili */
-  opacity: 0.7;
-}
-
-.dropzoneText {
-  font-size: 1.1rem;
-  color: var(--postadd-text-mid); /* PostAdd stili */
-}
-
-/* === Video Önizleme Stilleri === */
-.videoPreviewContainer {
-  position: relative;
-  width: 100%;
-  padding-top: 56.25%;
-  height: 0;
-  border-radius: 12px;
-  overflow: hidden;
-  background: #000;
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.videoPreview {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.removeVideoButton {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  z-index: 10;
-}
-
-.removeVideoButton:hover {
-  background-color: var(--busy); /* PostAdd stili */
-}
-
-/* === 2. Sütun: Detaylar === */
-.detailsSection {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-/* Input Grupları */
-.inputGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 100%;
-}
-
-.inputGroup label,
-.checkboxGroup label {
-  color: var(--postadd-text-mid); /* PostAdd stili */
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-/* Input Alanları (PostAdd stili) */
-.inputField,
-.textareaField {
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 8px; /* PostAdd stili */
-  border: 1px solid var(--postadd-border-accent); /* PostAdd stili */
-  background: var(--postadd-input-bg); /* PostAdd stili */
-  color: var(--postadd-text-light); /* PostAdd stili */
-  font-size: 0.95rem;
-  outline: none;
-  transition: all 0.3s ease;
-  box-sizing: border-box;
-}
-
-.inputField::placeholder,
-.textareaField::placeholder {
-   color: var(--postadd-text-mid); /* PostAdd stili */
-}
-
-.inputField:focus,
-.textareaField:focus {
-  border-color: var(--postadd-secondary-blue); /* PostAdd stili */
-  box-shadow: 0 0 8px rgba(0, 198, 255, 0.4);
-}
-
-.textareaField {
-  resize: vertical;
-  min-height: 100px;
-}
-
-/* Kullanıcı Bilgisi ve Gizlilik (PostAdd stili) */
-.userInfoAndPrivacy {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--postadd-border-light); /* PostAdd stili */
-}
-
-.avatar {
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.avatarImage {
-  width: 100%;
-  height: 100%;
   object-fit: cover;
 }
 
-.userMeta {
+.clearBtn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgb(0, 0, 0);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.clearBtn:hover {
+  background: var(--feed-danger); /* Kırmızı */
+  border-color: var(--feed-danger);
+}
+
+/* Boş Durum (Input) */
+.inputZone {
+  width: 80%;
+  text-align: center;
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
-  gap: 4px;
+  align-items: center;
+  gap: 20px;
+}
+
+.zoneIcon {
+  color: var(--color-white); /* Mavi İkon */
+  opacity: 1;
+  filter: drop-shadow(0 0 15px rgba(237, 237, 237, 0.4)); /* Neon etkisi */
+}
+
+.zoneTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--feed-text-main);
+  margin-bottom: 5px;
+}
+
+.zoneDesc {
+  font-size: 0.9rem;
+  color: var(--feed-text-dim);
+  margin-bottom: 15px;
+}
+
+.urlInput {
+  width: 100%;
+  background: var(--feed-input-bg);
+  border: 1px solid var(--feed-border);
+  padding: 14px 16px;
+  border-radius: 12px;
+  color: white;
+  font-size: 0.9rem;
+  text-align: center;
+  outline: none;
+  transition: all 0.3s;
+}
+
+.urlInput:focus {
+  border-color: var(--feed-accent); /* Mavi Border */
+  box-shadow: 0 0 0 3px rgba(0, 170, 255, 0.15); /* Mavi Glow */
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  color: var(--feed-border);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--feed-border);
+}
+
+.divider span {
+  margin: 0 10px;
+  color: var(--feed-text-dim);
+}
+
+.galleryBtn {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: 1px dashed var(--feed-border);
+  border-radius: 12px;
+  color: var(--feed-text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: not-allowed;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.galleryBtn:hover {
+  border-color: var(--feed-text-dim);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.badge {
+  background: var(--feed-danger); /* Kırmızı Badge */
+  color: white;
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+/* === SAĞ TARAF: DETAYLAR === */
+.detailsColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--feed-card-bg);
+}
+
+/* Header */
+.header {
+  padding: 20px 25px;
+  border-bottom: 1px solid var(--feed-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  color: var(--feed-text-main);
+  cursor: pointer;
+  padding: 5px;
+  transition: all 0.2s;
+  border-radius: 50%;
+   display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.backBtn:hover {
+ background: rgba(255, 255, 255, 0.1);
+  border-color: var(--color-white);
+}
+
+.headerTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--feed-text-main);
+}
+
+/* Form İçeriği */
+.formContent {
+  flex: 1;
+  padding: 25px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+/* User Info Row */
+.userRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
 }
 
 .username {
+  font-size: 0.95rem;
   font-weight: 600;
-  font-size: 1.1rem; /* PostAdd stili */
-  color: var(--postadd-text-light); /* PostAdd stili */
+  color: var(--feed-text-main);
 }
 
-/* Gizlilik Seçici (PostAdd stili) */
-.privacySelector {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  background-color: var(--postadd-input-bg); /* PostAdd stili */
-  border-radius: 6px;
-  padding: 5px 10px;
+.privacySelect {
+  background: #141414;
+  border: 1px solid #1e1e1e;
+  color: #fff;
+  padding: 8px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  border: 1px solid var(--postadd-border-light); /* PostAdd stili */
+  font-size: 0.8rem;
+  appearance: none;
+  transition: all 0.5s ease-in-out;
 }
 
-.privacySelector:hover {
-  background-color: #3b3b63; /* PostAdd stili */
+.privacySelect:hover {
+  text-decoration: underline;
 }
 
-.privacyDisplay {
+.privacySelect:focus {
+  border-color: #5cc0e7;
+  box-shadow: 0 0 0 3px rgba(92, 192, 231, 0.12);
+}
+
+.privacySelect option {
+  color: #fff;
+  padding: 8px;
+  color: #fff !important;
+}
+
+.privacySelect option:hover {
+  background-color: #1b1b1b !important;
+  color: #fff;
+}
+
+/* Caption Area */
+.captionGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.textArea {
+  width: 100%;
+  flex: 1;
+  min-height: 120px;
+  background: var(--feed-input-bg);
+  border: 1px solid var(--feed-border);
+  border-radius: 12px;
+  padding: 15px;
+  color: var(--feed-text-main);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.textArea:focus {
+  border-color: var(--feed-accent); /* Mavi Focus */
+}
+
+.textArea::placeholder {
+  color: #555;
+}
+
+/* Rules Checkbox */
+.rulesGroup {
+  display: flex;
+  gap: 12px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.rulesGroup:hover {
+  border-color: var(--feed-border);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.checkbox {
+  margin-top: 3px;
+  accent-color: var(--feed-accent); /* Mavi Checkbox */
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.rulesText {
+  font-size: 0.8rem;
+  color: var(--feed-text-dim);
+  line-height: 1.4;
+}
+
+.link {
+  color: var(--feed-accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Footer Actions */
+.footer {
+  padding: 20px 25px;
+  border-top: 1px solid var(--feed-border);
+  background-color: var(--feed-card-bg);
+}
+
+.publishBtn {
+  width: 100%;
+  padding: 14px;
+  background: var(--feed-accent); /* Mavi Buton */
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.85rem;
-  color: var(--postadd-text-mid); /* PostAdd stili */
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(0, 170, 255, 0.3); /* Mavi Glow */
 }
 
-.hiddenSelect {
-  position: absolute;
+.publishBtn:hover:not(:disabled) {
+  background: var(--feed-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 170, 255, 0.4);
+}
+
+.publishBtn:disabled {
+  background: var(--feed-border);
+  color: #555;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Modal (Kırmızı Kapatma Butonu ile) */
+.modalOverlay {
+  position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
-}
-
-/* Checkbox (PostAdd stili) */
-.checkboxGroup {
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85); /* Daha koyu backdrop */
+  backdrop-filter: blur(8px);
+  z-index: 200;
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 10px;
-  font-size: 0.9rem;
-  color: var(--postadd-text-mid); /* PostAdd stili */
-  margin-top: -10px;
 }
 
-.checkboxField {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--postadd-primary-blue); /* PostAdd stili */
+.modalBox {
+  background: #121212;
+  border: 1px solid var(--feed-border);
+  padding: 30px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 450px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  position: relative;
 }
 
-/* Hata ve Başarı Mesajları (PostAdd stili) */
-.errorMessage,
-.successMessage {
+.modalHeader {
   display: flex;
-  align-items: center; /* 'align-itemsİ' düzeltildi */
-  gap: 8px;
-  padding: 10px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 500;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.closeModalButton {
+  background: none;
+  border: none;
+  color: var(--feed-text-dim);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.closeModalButton:hover {
+  color: var(--feed-danger); /* Hoverda Kırmızı */
+}
+
+.modalTitle {
+  color: var(--feed-accent);
+  font-size: 1.2rem;
   margin: 0;
 }
 
-.errorMessage {
-  background-color: rgba(255, 68, 68, 0.1);
-  color: var(--postadd-danger);
-  border: 1px solid var(--postadd-danger);
+.modalContent p {
+  color: var(--feed-text-dim);
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+  line-height: 1.5;
 }
 
-.successMessage {
-  background-color: rgba(0, 230, 118, 0.1); /* Yeşil başarı rengi */
-  color: var(--postadd-success-green);
-  border: 1px solid var(--postadd-success-green);
+.modalContent strong {
+  color: white;
 }
 
-/* === Responsive === */
-@media (max-width: 767px) {
-  .postCard {
-    width: 100%;
-    margin-top: 10px;
-    border-radius: 12px; /* Mobilde de uyumlu olsun */
+.modalBtn {
+  width: 100%;
+  padding: 12px;
+  background: var(--feed-accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: background 0.2s;
+}
+
+.modalBtn:hover {
+  background: var(--feed-accent-hover);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .feedCard {
+    flex-direction: column;
+    height: auto;
+    max-height: 90vh;
+    margin: 20px;
+    border-radius: 20px;
   }
-  .postHeader {
-    padding: 12px 15px;
+  .mediaColumn {
+    height: 250px;
+    border-right: none;
+    border-bottom: 1px solid var(--feed-border);
   }
-  .title {
-    font-size: 1.2rem; /* PostAdd mobil stili */
+  .detailsColumn {
+    flex: 1;
+    overflow: hidden;
   }
-  .backButton,
-  .shareButton {
-    padding: 6px 10px; /* PostAdd mobil stili */
-    font-size: 0.9rem;
+  .formContent {
+    gap: 15px;
+    padding: 20px;
   }
-  .postContent {
-    padding: 15px;
-  }
-  .mediaSection {
-    min-height: 250px;
+  .publishBtn {
+    padding: 12px;
   }
 }

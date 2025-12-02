@@ -1,4 +1,3 @@
-// Notification.jsx
 import React, { useEffect } from "react";
 import styles from "./Notification.module.css";
 import {
@@ -26,9 +25,9 @@ import {
 } from "firebase/firestore";
 
 const Notification = () => {
-  const { notifications, loading, isLoaded, setState, reset } =
-    useNotificationStore();
-  const { currentUser, showToast } = useAuth();
+  const { notifications, loading, isLoaded, setState, reset } = useNotificationStore();
+  // ✅ GÜNCELLEME: authLoading eklendi
+  const { currentUser, showToast, loading: authLoading } = useAuth();
   const apiBaseUrl = process.env.REACT_APP_API_URL;
   const db = getFirestore();
 
@@ -73,15 +72,18 @@ const Notification = () => {
     }
   };
 
-  // ========== Bildirimleri çek (Firestore) ==========
+  // ========== Bildirimleri çek (Firestore) - GÜNCELLENDİ ==========
   const fetchNotifications = async () => {
-    if (loading) return;
-    setState({ loading: true });
+    // 1. Auth yükleniyorsa veya zaten veri çekiliyorsa bekle
+    if (authLoading || loading) return;
 
+    // 2. Kullanıcı yoksa işlemi durdur (401 hatasını önler)
     if (!currentUser) {
       setState({ loading: false });
       return;
     }
+
+    setState({ loading: true });
 
     try {
       const notifRef = collection(
@@ -90,14 +92,18 @@ const Notification = () => {
         currentUser.uid,
         "notifications"
       );
+      // Not: Firestore'da orderBy ve where bazen index gerektirebilir.
+      // Basitlik için tümünü çekip JS tarafında sıralıyoruz.
       const querySnapshot = await getDocs(notifRef);
 
       const allNotifications = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-        createdAt: doc.data().createdAt.toDate().toISOString(),
+        // ✅ GÜNCELLEME: Optional chaining eklendi (?.)
+        createdAt: doc.data().createdAt?.toDate().toISOString(),
       }));
 
+      // Takip isteklerini tekilleştirme mantığı (Aynı kaldı)
       const uniqueFollowRequests = {};
       const otherNotifications = [];
 
@@ -131,8 +137,9 @@ const Notification = () => {
       });
     } catch (error) {
       console.error("Bildirimler getirilirken hata oluştu:", error);
-      showToast("Bildirimler yüklenirken bir sorun oluştu.", "error");
-      setState({ notifications: [], loading: false });
+      // Hata durumunda kullanıcıyı rahatsız etmemek için sessizce loading'i kapat
+      // showToast("Bildirimler yüklenirken bir sorun oluştu.", "error"); // Opsiyonel
+      setState({ loading: false });
     }
   };
 
@@ -208,10 +215,14 @@ const Notification = () => {
     }
   };
 
+  // ✅ GÜNCELLEME: useEffect bağımlılıkları ve koşulları
   useEffect(() => {
-    if (!isLoaded) fetchNotifications();
-    markNotificationsRead();
-  }, [currentUser]);
+    // Sadece kullanıcı ve auth yüklendiyse ve veri yoksa çek
+    if (!authLoading && currentUser && !isLoaded) {
+      fetchNotifications();
+      markNotificationsRead();
+    }
+  }, [currentUser, authLoading, isLoaded]); // fetchNotifications eklenebilir ama infinite loop olmamasına dikkat et
 
   return (
     <div className={styles.notification_page}>

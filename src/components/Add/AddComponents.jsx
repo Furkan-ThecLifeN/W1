@@ -31,7 +31,6 @@ const AddPage = () => {
       icon: <TbNumber24Small />,
       description: "24 saatlik hikaye paylaş",
       route: "story",
-      comingSoon: true,
     },
     {
       id: 2,

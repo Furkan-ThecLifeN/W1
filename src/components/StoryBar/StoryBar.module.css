@@ -1,244 +1,186 @@
-/* --- Genel Kapsayıcı ve Arkaplan --- */
-.appContainer {
-  background-color: #1f2937; /* bg-gray-800 */
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-}
+/* StoryBar.module.css */
 
 .storyBarContainer {
-  background-color: #060f14; /* bg-gray-900 */
-  color: white;
-  padding: 1.5rem;
-  border-radius: 1rem; /* rounded-2xl */
-  width: 100%;
-  max-width: 56rem; /* max-w-4xl */
-  margin: auto;
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); /* shadow-lg */
-}
-
-@media (max-width: 640px) {
-  .storyBarContainer {
-    padding: 1rem;
-  }
-}
-
-/* --- Başlık (Header) --- */
-.header {
+  background-color: #000000; /* Daha modern, tam siyah */
+  border: 1px solid #27272a; /* Hafif border */
+  border-radius: 12px;
+  padding: 16px 0; /* İç boşluk */
+  margin-bottom: 20px;
+  position: relative; /* Butonlar için relative */
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
+  /* Mobilde taşmayı önle */
+  max-width: 100%; 
+  overflow: hidden; 
 }
 
-.title {
-  font-size: 1.5rem; /* text-2xl */
-  font-weight: 700; /* font-bold */
-  letter-spacing: -0.025em; /* tracking-tight */
-  color: #f9fafb; /* text-gray-100 */
-}
-
-@media (max-width: 640px) {
-  .title {
-    font-size: 1.25rem; /* text-xl */
-  }
-}
-
-.navigation {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem; /* gap-2 */
-}
-
-.navButton {
-  padding: 0.5rem; /* p-2 */
-  background-color: #1f2937; /* bg-gray-800 */
-  border-radius: 9999px; /* rounded-full */
-  transition: background-color 0.2s;
-  border: none;
-  cursor: pointer;
-  color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.navButton:hover {
-  background-color: #374151; /* hover:bg-gray-700 */
-}
-
-.navButton:focus {
-  outline: 2px solid transparent;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 2px #3bbbf6; /* focus:ring-2 focus:ring-blue-500 */
-}
-
-
-/* --- Hikaye Kaydırma Alanı --- */
+/* Scroll Alanı */
 .storiesScroller {
   display: flex;
-  padding: 7px 0;
-  align-items: flex-start;
-  gap: 1rem; /* gap-4 */
+  gap: 16px;
   overflow-x: auto;
-  padding-bottom: 1rem;
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  padding: 0 16px; /* Yanlardan boşluk */
+  scroll-behavior: smooth;
+  /* Scrollbar Gizleme */
+  -ms-overflow-style: none;  
+  scrollbar-width: none;  
+  width: 100%;
 }
 
 .storiesScroller::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, and Opera */
+  display: none;
 }
 
+/* Navigation Butonları (Masaüstü) */
+.navButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  z-index: 10;
+  color: #000;
+  transition: all 0.2s;
+}
 
-/* --- Hikaye Öğeleri --- */
+.navButton:hover {
+  background-color: #fff;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.navButtonLeft { left: 8px; }
+.navButtonRight { right: 8px; }
+
+/* Mobilde Butonları Gizle */
+@media (max-width: 768px) {
+  .navButton { display: none; }
+  .storyBarContainer { 
+    background-color: transparent; 
+    border: none; 
+    padding: 10px 0;
+    margin-bottom: 10px;
+  }
+}
+
+/* --- Hikaye Öğesi --- */
 .storyItem {
-  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem; /* gap-2 */
-  width: 5rem; /* w-20 */
+  gap: 6px;
   cursor: pointer;
+  flex-shrink: 0; /* Küçülmeyi engelle */
+  width: 72px; /* Sabit genişlik hizalama için */
 }
 
-.storyName {
-  font-size: 0.75rem; /* text-xs */
-  color: #9ca3af; /* text-gray-400 */
+/* Avatar Wrapper (Halka + Resim) */
+.avatarWrapper {
+  position: relative;
+  width: 66px;
+  height: 66px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Renkli Halka */
+.gradientRing {
   width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  padding: 2px; /* Halka kalınlığı */
+  /* Gradient JS'den geliyor */
+}
+
+/* Gri Halka (Hikaye Yoksa) */
+.noStoryRing {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  padding: 2px;
+  background: #333; /* Sönük border */
+}
+
+/* Resim Çerçevesi (Siyah boşluk) */
+.avatarInner {
+  width: 100%;
+  height: 100%;
+  background-color: #000; /* Resim ile halka arasındaki boşluk rengi */
+  border-radius: 50%;
+  padding: 2px; /* Halka ile resim arasındaki boşluk */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* İsim */
+.username {
+  font-size: 0.75rem;
+  color: #fff;
   text-align: center;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-  transition: color 0.2s;
+  width: 100%;
+  font-weight: 500;
 }
 
-.storyItem:hover .storyName {
-  color: white;
-}
-
-/* "Senin Hikayen" Öğesi */
-.yourStoryAvatarContainer {
-  position: relative;
-}
-
-.yourStoryAvatar {
-  width: 4rem; /* w-16 */
-  height: 4rem; /* h-16 */
-  border-radius: 9999px; /* rounded-full */
-  object-fit: cover;
-  padding: 0.25rem; /* p-1 */
-  background-color: #111827; /* bg-gray-900 */
-}
-
-.addStoryButton {
+/* Artı Butonu */
+.plusBadge {
   position: absolute;
   bottom: 0;
   right: 0;
-  width: 1.5rem; /* w-6 */
-  height: 1.5rem; /* h-6 */
-  background-color: #3b82f6; /* bg-blue-500 */
-  border-radius: 9999px;
+  background-color: #0095f6; /* Instagram Mavisi */
+  border: 2px solid #000;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #111827; /* border-2 border-gray-900 */
-  transition: transform 0.2s;
 }
 
-.storyItem:hover .addStoryButton {
-  transform: scale(1.1);
-}
-
-/* Diğer Hikayeler */
-.gradientBorder {
+/* Skeleton Loading */
+.loadingItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
   width: 72px;
-  height: 72px;
-  border-radius: 9999px;
-  padding: 2px; /* p-0.5 */
-  background-image: linear-gradient(to top right, #facc15, #ef4444, #8b5cf6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.3s;
 }
 
-.gradientBorder:hover {
-  transform: scale(1.11);
+.loadingSkeletonCircle {
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #111 25%, #222 50%, #111 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
 }
 
-.storyAvatar {
-  width: 100%;
-  height: 100%;
-  border-radius: 9999px;
-  object-fit: cover;
-  border: 2px solid #111827; /* border-2 border-gray-900 */
+.loadingSkeletonText {
+  width: 50px;
+  height: 10px;
+  border-radius: 4px;
+  background: #222;
 }
 
-/* --- Story Viewer --- */
-.viewerOverlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-}
-
-.viewerContent {
-  position: relative;
-  width: 100%;
-  max-width: 28rem; /* max-w-md */
-  height: 90vh;
-  background-color: #1f2937; /* bg-gray-800 */
-  border-radius: 0.5rem; /* rounded-lg */
-  overflow: hidden;
-}
-
-.viewerImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.viewerHeader {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  padding: 1rem;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
-}
-
-.viewerUserInfo {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.viewerUserImg {
-  width: 2.5rem; /* w-10 */
-  height: 2.5rem; /* h-10 */
-  border-radius: 9999px;
-  border: 2px solid white;
-}
-
-.viewerUserName {
-  color: white;
-  font-weight: 700;
-}
-
-.viewerCloseButton {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  color: white;
-  z-index: 10;
-  background: none;
-  border: none;
-  cursor: pointer;
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }

@@ -23,7 +23,7 @@ import VocentraServerPage from "./pages/VocentraServerPage/VocentraServerPage";
 import VoCentraSettingsPage from "./pages/VoCentraSettingsPage/VoCentraSettingsPage";
 import PostAdd from "./components/Add/Post/PostAdd";
 import FeedsAdd from "./components/Add/Feeds/FeedsAdd";
-import StoryAdd from "./components/Add/Stories/StoriesAdd";
+import StoryAdd from "./components/Add/Stories/StoryAdd";
 import FeelingAdd from "./components/Add/Feelings/FeelingsAdd";
 import LiveStreamAdd from "./components/Add/LiveStream/LiveStream";
 import DraftsAdd from "./components/Add/Drafts/Drafts";

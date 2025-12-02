@@ -1,580 +1,450 @@
 /* PostAdd.module.css */
 
-/* İsteklerinize göre 'Postadd' ön eki ile
-  yeni bir mavi-odaklı renk paleti oluşturuldu.
-*/
 :root {
-  /* Parlak Mavi Tema */
-  --postadd-primary-blue: #00aaff; /* Ana parlak mavi */
-  --postadd-secondary-blue: #00c6ff; /* Gradientler için ikincil mavi */
-
-  /* Arka Plan ve Kart Renkleri */
-  --postadd-bg-dark: #101014; /* Siyah ana arka plan */
-  --postadd-card-bg: #1a1d2e; /* Koyu, hafif mavi kart arka planı */
-  --postadd-input-bg: #25283a; /* Input/void alanı arka planı */
-
-  /* Metin ve Nötr Renkler */
-  --postadd-text-light: #e0e0e0; /* Ana metin rengi (Eskisi gibi) */
-  --postadd-text-mid: #a0a0b0; /* İkincil, soluk metin */
-
-  /* Kenarlık ve Vurgu */
-  --postadd-border-accent: #00aaff; /* Vurgu kenarlığı (Ana mavi) */
-  --postadd-border-light: rgba(255, 255, 255, 0.1); /* Soluk kenarlık */
-
-  /* Parlama (Glow) Efekti */
-  --postadd-glow-start: rgba(0, 170, 255, 0.4);
-  --postadd-glow-end: rgba(0, 198, 255, 0.2);
-
-  /* Diğer */
-  --postadd-success: #00c3ff; /* Başarı rengi (İkincil mavi) */
-  --postadd-danger: #ff4444; /* Hata/Silme rengi */
+  --post-bg: #000000;
+  --post-card-bg: #09090b;
+  --post-input-bg: #18181b;
+  
+  --post-accent: #00aaff;      /* Parlak Mavi */
+  --post-accent-hover: #0088cc;
+  
+  --post-text-main: #ffffff;
+  --post-text-dim: #a1a1aa;
+  
+  --post-border: #27272a;
+  --post-danger: #ff0d00;      /* Kırmızı */
 }
 
-/* body varsayılanları */
-body {
-  background-color: var(--postadd-bg-dark);
-  color: var(--postadd-text-light);
-  font-family: "Inter", sans-serif; /* Daha modern bir font */
-}
-
-/* Ana Konteyner */
 .container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   padding: 20px;
-  box-sizing: border-box;
-  position: relative;
-  overflow: hidden;
-  background: var(--color-black);
+  background-color: var(--post-bg);
+  background-image: radial-gradient(circle at center, #111111 0%, #000000 100%);
+  font-family: 'Inter', sans-serif;
 }
 
-/* Arka Plan Parlama Efekti (Mavi) */
-.backgroundGlow {
-  position: absolute;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(
-    circle,
-    var(--postadd-glow-start) 0%,
-    var(--postadd-glow-end) 50%,
-    transparent 70% /* Daha keskin bir geçiş */
-  );
-  border-radius: 50%;
-  filter: blur(80px);
-  z-index: 0;
-  animation: pulseGlow 15s infinite alternate;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-@keyframes pulseGlow {
-  0% {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 0.7;
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1.1);
-    opacity: 0.9;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 0.7;
-  }
-}
-
-/* Post Kartı */
+/* KART YAPISI (Feed Card ile aynı) */
 .postCard {
-  background-color: var(--postadd-card-bg);
-  border-radius: 20px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-  width: 90%;
-  max-width: 900px;
-  z-index: 1;
   display: flex;
-  flex-direction: column;
+  width: 100%;
+  max-width: 950px;
+  height: 600px;
+  background-color: var(--post-card-bg);
+  border-radius: 24px;
+  border: 1px solid var(--post-border);
+  box-shadow: 0 0 40px rgba(0, 170, 255, 0.05);
   overflow: hidden;
-  border: 1px solid var(--postadd-border-accent);
-  animation: fadeIn 0.5s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Başlık Alanı (Mavi Gradient) */
-.postHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 25px;
-  /* İsteğiniz üzerine parlak mavi gradient */
-  background: linear-gradient(
-    90deg,
-    var(--postadd-primary-blue) 0%,
-    var(--postadd-secondary-blue) 100%
-  );
-  color: white;
   position: relative;
-  z-index: 2;
 }
 
-.backButton,
-.shareButton {
-  background: none;
-  border: none;
-  color: white;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 1rem;
-  font-weight: 600;
-  padding: 8px 12px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(5px); /* Hafif blur efekti */
-}
-
-.backButton:hover,
-.shareButton:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.2);
-  transform: scale(1.05);
-}
-
-.shareButton {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--blur-bg);
-  color: var(--color-grey);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 8px 12px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 13px;
-  transition: all 0.3s ease-in-out;
-}
-
-/* Varsayılan hover (aktif değilken) */
-.shareButton:hover:not(:disabled) {
-  background: var(--gradient-button-hover);
-  color: var(--text-white);
-}
-
-/* Active durumda */
-.shareButton.active {
-  background: var(--gradient-button);
-  color: var(--text-white);
-  border: 1px solid #2b8fdce2;
-  box-shadow: 0 6px 20px rgba(0, 170, 255, 0.25);
-  transform: translateY(-2px);
-}
-
-
-/* Disabled durumu */
-.shareButton:disabled {
-  opacity: 0.8;
-  cursor: not-allowed;
-}
-
-.title {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-/* İçerik Alanı */
-.postContent {
+/* === SOL TARAF: MEDYA ALANI (55%) === */
+.mediaColumn {
+  flex: 1.2;
+  background-color: #050505;
+  border-right: 1px solid var(--post-border);
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 25px;
-}
-
-@media (min-width: 768px) {
-  .postContent {
-    flex-direction: row;
-  }
-}
-
-/* Medya Yükleme Bölümü */
-.mediaUploadSection {
-  flex: 1;
-  min-height: 300px;
-  display: flex;
   justify-content: center;
   align-items: center;
-  background-color: var(--postadd-input-bg);
-  border-radius: 12px;
-  border: 1px dashed var(--postadd-border-accent);
-  position: relative;
   overflow: hidden;
-  transition: all 0.3s ease;
 }
 
-.mediaUploadSection:hover {
-  border-color: var(--postadd-secondary-blue);
-  box-shadow: 0 0 15px rgba(0, 198, 255, 0.3);
-}
-
-.mediaPreview {
+/* Medya Önizleme (Video veya Resim) */
+.previewContainer {
   width: 100%;
   height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
+  background: #000;
   position: relative;
 }
 
-.imageWrapper {
+.previewMedia {
   width: 100%;
   height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
+  object-fit: contain; /* Resmi kesmeden sığdır */
 }
 
-.uploadedImage {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  border-radius: 10px;
-}
-
-.removeImageButton {
+.clearBtn {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  background-color: rgba(0, 0, 0, 0.6);
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   color: white;
-  border: none;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s;
+  z-index: 10;
 }
 
-.removeImageButton:hover {
-  background-color: var(--postadd-danger);
+.clearBtn:hover {
+  background: var(--post-danger);
+  border-color: var(--post-danger);
 }
 
-.dropzone {
+/* Boş Durum (Input) */
+.inputZone {
+  width: 80%;
+  text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 15px;
-  padding: 20px;
-  text-align: center;
-  width: 100%;
-  height: 100%;
+  gap: 20px;
 }
 
-.dropzoneIcon {
-  color: var(--postadd-primary-blue); /* Mavi ikon */
-  opacity: 0.7;
+.zoneIcon {
+  color: var(--color-white);
+  opacity: 1;
+  filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.221));
 }
 
-.dropzoneText {
-  font-size: 1.1rem;
-  color: var(--postadd-text-mid); /* Soluk metin */
+.zoneTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--post-text-main);
+  margin-bottom: 5px;
+}
+
+.zoneDesc {
+  font-size: 0.9rem;
+  color: var(--post-text-dim);
+  margin-bottom: 15px;
 }
 
 .urlInput {
-  width: 80%;
-  padding: 10px 15px;
-  border: 1px solid var(--postadd-border-accent);
-  border-radius: 8px;
-  background-color: var(--postadd-input-bg);
-  color: var(--postadd-text-light);
-  font-size: 0.95rem;
-  transition: all 0.3s ease;
+  width: 100%;
+  background: var(--post-input-bg);
+  border: 1px solid var(--post-border);
+  padding: 14px 16px;
+  border-radius: 12px;
+  color: white;
+  font-size: 0.9rem;
+  text-align: center;
   outline: none;
-}
-
-.urlInput::placeholder {
-  color: var(--postadd-text-mid);
+  transition: all 0.3s;
 }
 
 .urlInput:focus {
-  border-color: var(--postadd-secondary-blue);
-  box-shadow: 0 0 8px rgba(0, 198, 255, 0.4);
+  border-color: var(--post-accent);
+  box-shadow: 0 0 0 3px rgba(0, 170, 255, 0.15);
 }
 
-/* Detaylar Bölümü */
-.detailsSection {
+.divider {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  color: var(--post-border);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--post-border);
+}
+
+.divider span { margin: 0 10px; color: var(--post-text-dim); }
+
+/* Devre Dışı Bırakılmış Buton */
+.disabledUploadBtn {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: 1px dashed var(--post-border);
+  border-radius: 12px;
+  color: var(--post-text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: not-allowed;
+  font-size: 0.9rem;
+  opacity: 0.6;
+  transition: all 0.2s;
+}
+
+.disabledUploadBtn:hover {
+  background: rgba(255,255,255,0.02);
+}
+
+.badge {
+  background: var(--post-danger);
+  color: white;
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* === SAĞ TARAF: DETAYLAR (45%) === */
+.detailsColumn {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  background-color: var(--post-card-bg);
 }
 
-.userInfoAndPrivacy {
+.header {
+  padding: 20px 25px;
+  border-bottom: 1px solid var(--post-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  color: var(--post-text-main);
+  cursor: pointer;
+  padding: 5px;
+  transition: all 0.2s;
+  border-radius: 50%;
   display: flex;
   align-items: center;
-  gap: 15px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid var(--postadd-border-light);
+  justify-content: center;
+}
+
+.backBtn:hover { 
+   background: rgba(255, 255, 255, 0.1);
+  border-color: var(--color-white);
+
+}
+
+.headerTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--post-text-main);
+}
+
+.formContent {
+  flex: 1;
+  padding: 25px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.userRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .avatar {
-  width: 50px;
-  height: 50px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.avatarImage {
-  width: 100%;
-  height: 100%;
   object-fit: cover;
 }
 
-.userMeta {
+.meta {
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
 }
 
 .username {
+  font-size: 0.95rem;
   font-weight: 600;
-  font-size: 1.1rem;
-  color: white;
+  color: var(--post-text-main);
 }
 
-.privacySelector {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  background-color: var(--postadd-input-bg);
-  border-radius: 6px;
-  padding: 5px 10px;
+.privacySelect {
+  background: #141414;
+  border: 1px solid #1e1e1e;
+  color: #fff;
+  padding: 8px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  border: 1px solid var(--postadd-border-light);
+  font-size: 0.8rem;
+  appearance: none;
+  transition: all 0.5s ease-in-out;
 }
 
-.privacySelector:hover {
-  background-color: #3b3b63;
+.privacySelect:hover {
+  text-decoration: underline;
 }
 
-.privacyDisplay {
+.privacySelect:focus {
+  border-color: #5cc0e7;
+  box-shadow: 0 0 0 3px rgba(92, 192, 231, 0.12);
+}
+
+.privacySelect option {
+  color: #fff;
+  padding: 8px;
+  color: #fff !important;
+}
+
+.privacySelect option:hover {
+  background-color: #1b1b1b !important;
+  color: #fff;
+}
+
+.captionGroup {
   display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.85rem;
-  color: var(--postadd-text-mid);
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
 }
 
-.hiddenSelect {
-  position: absolute;
-  top: 0;
-  left: 0;
+.textArea {
   width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
-}
-
-.captionInput {
-  width: 100%;
-  flex-grow: 1;
-  background-color: var(--postadd-input-bg);
-  border: 1px solid var(--postadd-border-accent);
+  flex: 1;
+  min-height: 120px;
+  background: var(--post-input-bg);
+  border: 1px solid var(--post-border);
   border-radius: 12px;
   padding: 15px;
-  color: var(--postadd-text-light);
-  font-size: 1rem;
-  resize: vertical;
-  min-height: 100px;
+  color: var(--post-text-main);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  resize: none;
   outline: none;
-  transition: all 0.3s ease;
+  transition: border-color 0.3s;
 }
 
-.captionInput::placeholder {
-  color: var(--postadd-text-mid);
+.textArea:focus {
+  border-color: var(--post-accent);
 }
 
-.captionInput:focus {
-  border-color: var(--postadd-secondary-blue);
-  box-shadow: 0 0 10px rgba(0, 198, 255, 0.4);
-}
+.textArea::placeholder { color: #555; }
 
-/* Post Aksiyon Butonları */
-.postActions {
+.rulesGroup {
   display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  padding-top: 15px;
-  border-top: 1px solid var(--postadd-border-light);
+  gap: 12px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
 }
 
-.actionButton {
-  background-color: var(--postadd-input-bg);
-  border: 1px solid var(--postadd-border-accent);
-  border-radius: 8px;
-  padding: 8px 15px;
-  color: var(--postadd-text-light); /* Açık renk metin */
+.rulesGroup:hover {
+  border-color: var(--post-border);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.checkbox {
+  margin-top: 3px;
+  accent-color: var(--post-accent);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.rulesText {
+  font-size: 0.8rem;
+  color: var(--post-text-dim);
+  line-height: 1.4;
+}
+
+.link {
+  color: var(--post-accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.footer {
+  padding: 20px 25px;
+  border-top: 1px solid var(--post-border);
+  background-color: var(--post-card-bg);
+}
+
+.publishBtn {
+  width: 100%;
+  padding: 14px;
+  background: var(--post-accent);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 600; /* Biraz daha kalın */
-  transition: all 0.3s ease;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(0, 170, 255, 0.3);
 }
 
-/* Butonlara gradient hover efekti (İsteğiniz üzerine) */
-.actionButton:hover {
-  background: linear-gradient(
-    90deg,
-    var(--postadd-primary-blue) 0%,
-    var(--postadd-secondary-blue) 100%
-  );
-  border-color: var(--postadd-secondary-blue);
-  color: white; /* Gradient üzerinde beyaz daha iyi durur */
+.publishBtn:hover:not(:disabled) {
+  background: var(--post-accent-hover);
   transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 170, 255, 0.2);
+  box-shadow: 0 6px 20px rgba(0, 170, 255, 0.4);
 }
 
-.actionText {
-  display: none;
+.publishBtn:disabled {
+  background: var(--post-border);
+  color: #555;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
-@media (min-width: 600px) {
-  .actionText {
-    display: inline;
-  }
-}
-
-/* PostAdd.module.css içine eklenecekler */
+/* Modal */
 .modalOverlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.7);
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(8px);
+  z-index: 200;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
 }
-.modalContent {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  max-width: 500px;
+
+.modalBox {
+  background: #121212;
+  border: 1px solid var(--post-border);
+  padding: 30px;
+  border-radius: 20px;
   width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
+  max-width: 450px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+  position: relative;
 }
+
 .modalHeader {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;
-}
-.ruleItem { margin-bottom: 15px; }
-.ruleItem h4 { color: #333; margin-bottom: 5px; font-size: 1rem; }
-.ruleItem p { font-size: 0.9rem; color: #666; line-height: 1.4; }
-.warningText { color: #d93025; font-weight: bold; margin-top: 5px; font-size: 0.85rem; }
-.agreeButton {
-  width: 100%; padding: 10px; background: #0095f6; color: white;
-  border: none; border-radius: 6px; cursor: pointer; font-weight: bold;
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
 }
 
-/* Responsive Düzenlemeler (Eskiyle aynı, sadece renkler yeni) */
-@media (max-width: 767px) {
-  .postCard {
-    width: 100%;
-    margin-top: 50px;
-  }
-  .postHeader {
-    padding: 10px 15px;
-  }
-  .title {
-    font-size: 1.2rem;
-  }
-  .backButton,
-  .shareButton {
-    padding: 6px 10px;
-    font-size: 0.9rem;
-  }
-  .postContent {
-    padding: 15px;
-  }
-  .mediaUploadSection {
-    min-height: 250px;
-  }
-  .dropzone {
-    gap: 10px;
-  }
-  .dropzoneIcon {
-    /* İkon boyutunu CSS ile değil, 
-       doğrudan icon component'ine (örn. 
-       FontAwesome) 'size' prop'u ile vermeniz daha iyi olur. 
-       Eğer bu bir <i> tagi ise font-size kullanabilirsiniz */
-    font-size: 40px;
-  }
-  .dropzoneText {
-    font-size: 1rem;
-  }
-  .urlInput {
-    width: 90%;
-  }
-  .userInfoAndPrivacy {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-    padding-bottom: 10px;
-  }
-  .avatar {
-    width: 40px;
-    height: 40px;
-  }
-  .username {
-    font-size: 1rem;
-  }
-  .privacySelector {
-    padding: 3px 8px;
-    font-size: 0.8rem;
-  }
-  .captionInput {
-    min-height: 80px;
-    padding: 10px;
-  }
-  .postActions {
-    justify-content: center;
-    gap: 5px;
-  }
-  .actionButton {
-    padding: 6px 10px;
-    font-size: 0.8rem;
-  }
+.closeModalButton {
+  background: none; border: none; color: var(--post-text-dim); cursor: pointer; transition: color 0.2s;
 }
 
-@media (max-width: 480px) {
-  .postActions {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  .actionButton {
-    flex-grow: 1;
-    text-align: center;
-    justify-content: center; /* İkonu ortalamak için */
-  }
+.closeModalButton:hover { color: var(--post-danger); }
+
+.modalTitle { color: var(--post-accent); font-size: 1.2rem; margin: 0; }
+.modalContent p { color: var(--post-text-dim); font-size: 0.9rem; margin-bottom: 12px; line-height: 1.5; }
+.modalBtn { 
+  width: 100%; padding: 12px; background: var(--post-accent); color: white; 
+  border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; 
+}
+.modalBtn:hover { background: var(--post-accent-hover); }
+
+@media (max-width: 900px) {
+  .postCard { flex-direction: column; height: auto; max-height: 90vh; margin: 20px; border-radius: 20px; }
+  .mediaColumn { height: 250px; border-right: none; border-bottom: 1px solid var(--post-border); }
+  .detailsColumn { flex: 1; overflow: hidden; }
+  .formContent { gap: 15px; padding: 20px; }
+  .publishBtn { padding: 12px; }
 }
