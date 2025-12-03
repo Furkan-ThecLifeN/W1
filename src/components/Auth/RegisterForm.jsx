@@ -9,7 +9,7 @@ import { FiMail, FiUser, FiLock, FiType } from "react-icons/fi"; // İkonlar ekl
 
 // Client-side validasyon regex'leri (Aynı)
 const isValidEmailFormat = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-const isValidUsernameFormat = (username) => /^[a-z0-9_.]{3,15}$/.test(username);
+const isValidUsernameFormat = (username) => /^[a-z0-9_.]{3,24}$/.test(username);
 const isValidPasswordFormat = (password) =>
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\-]).{8,}$/.test(
     password
@@ -45,9 +45,7 @@ const RegisterForm = ({ onRegisterSuccess, onShowLogin }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // ... (Mevcut handleSubmit fonksiyonunuzun başı) ...
-    // ... (Validasyon mantığı aynı kalacak) ...
+  
     const { email, username, displayName, password, confirmPassword } = formData;
     let valid = true;
     const newErrors = { email: "", username: "", password: "", confirmPassword: "", general: "" };
@@ -57,8 +55,8 @@ const RegisterForm = ({ onRegisterSuccess, onShowLogin }) => {
       valid = false;
     }
     if (!isValidUsernameFormat(username)) {
-      newErrors.username = "Kullanıcı adı 3-15 karakter, küçük harf, rakam, alt çizgi (_) veya nokta (.) içermelidir.";
-      valid = false;
+      newErrors.username = "Kullanıcı adı 3-24 karakter, küçük harf, rakam, alt çizgi (_) veya nokta (.) içermelidir.";
+  valid = false;
     }
     if (!isValidPasswordFormat(password)) {
       newErrors.password =

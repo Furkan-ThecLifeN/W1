@@ -9,6 +9,7 @@
   padding: 16px;
   box-sizing: border-box;
   color: var(--color-black);
+  border-right: 1px solid #090909;
 }
 
 /* İlerde eklenecek */
@@ -163,6 +164,21 @@
   top: 10px;
 }
 
+.statusMessage {
+  width: 100%;
+  text-align: center;
+  color: #ffffff; 
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;      
+  min-height: 200px;  
+  opacity: 0.8;
+}
+
+
 @media (max-width: 768px) {
   .lastMessage {
     max-width: 120px;
@@ -182,5 +198,6 @@
   .MessagesLeftBar {
     padding: 10px;
     max-width: 1024px;
+    border: none;
   }
 }

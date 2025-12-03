@@ -1,18 +1,30 @@
 /* StoryBar.module.css */
 
 .storyBarContainer {
-  background-color: #000000; /* Daha modern, tam siyah */
-  border: 1px solid #27272a; /* Hafif border */
+  background-color: #000000;
+  border: 1px solid #75d8ff;
   border-radius: 12px;
-  padding: 16px 0; /* İç boşluk */
+  padding: 16px 0;
   margin-bottom: 20px;
-  position: relative; /* Butonlar için relative */
+  position: relative;
   display: flex;
   align-items: center;
-  /* Mobilde taşmayı önle */
-  max-width: 100%; 
-  overflow: hidden; 
+  max-width: 100%;
+  overflow: hidden;
+  transition: all 0.25s ease-in-out;
+
+  /* Normal durum: çok hafif shadow */
+  box-shadow: 0 0 6px rgba(57, 182, 255, 0.151);
 }
+
+.storyBarContainer:hover {
+  border-color: #3bc7ff; /* Hover’da beyaz border */
+  box-shadow: 
+    0 0 10px rgba(0, 174, 255, 0.863), /* dış glow */
+    0 0 4px rgba(255, 255, 255, 0.897); /* hafif beyaz soft efekt */
+  transform: translateY(-1px); /* Minik yükselme efekti */
+}
+
 
 /* Scroll Alanı */
 .storiesScroller {

@@ -38,6 +38,7 @@
   scroll-behavior: smooth;
   padding-bottom: 4px;
   flex: 1;
+  padding: 12px;
 }
 
 .storyArea::-webkit-scrollbar {

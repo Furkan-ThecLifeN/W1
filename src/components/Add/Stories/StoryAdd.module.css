@@ -24,7 +24,6 @@
   align-items: center;
   min-height: 100vh;
   background-color: var(--story-bg);
-  background-image: radial-gradient(circle at center, #111111 0%, #000000 100%);
   font-family: "Inter", sans-serif;
   padding: 20px;
 }
