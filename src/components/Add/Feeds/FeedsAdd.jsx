@@ -11,6 +11,7 @@ import { FaYoutube } from "react-icons/fa";
 import styles from "./FeedsAdd.module.css";
 import { useAuth } from "../../../context/AuthProvider";
 import { useUser } from "../../../context/UserContext";
+import { useUserData } from "../../../hooks/useUserData"; // ✅ 1. Import Eklendi
 import { auth } from "../../../config/firebase-client";
 import Toast from "../../../Toast";
 import LoadingOverlay from "../../LoadingOverlay/LoadingOverlay";
@@ -33,6 +34,9 @@ const RulesModal = ({ onClose }) => (
 const FeedsAdd = () => {
   const navigate = useNavigate();
   const { currentUser, showToast } = useAuth();
+  
+  // ✅ 2. Firestore'dan güncel veriyi dinliyoruz
+  const userData = useUserData(currentUser?.uid);
   
   const [mediaUrl, setMediaUrl] = useState("");
   const [description, setDescription] = useState("");
@@ -144,13 +148,17 @@ const FeedsAdd = () => {
             
             {/* User */}
             <div className={styles.userRow}>
+              {/* ✅ 3. Güncel Profil Resmi */}
               <img 
-                src={currentUser?.photoURL || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"} 
+                src={userData?.photoURL || currentUser?.photoURL || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"} 
                 alt="Avatar" 
                 className={styles.avatar} 
               />
               <div className={styles.meta}>
-                <span className={styles.username}>{currentUser?.displayName || "User"}</span>
+                {/* ✅ 4. Güncel DisplayName */}
+                <span className={styles.username}>
+                    {userData?.displayName || currentUser?.displayName || "User"}
+                </span>
                 <select 
                   className={styles.privacySelect}
                   value={privacy}
