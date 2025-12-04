@@ -4,17 +4,16 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from "../../../context/UserContext";
 import { auth } from "../../../config/firebase-client";
 
-// ✅ Account Settings
+// Account Settings
 import ProfileSettings from "../SettingsSections/ProfileSettings/ProfileSettings";
 import AccountTypeSettings from "../SettingsSections/AccountTypeSettings/AccountTypeSettings";
 import LoginDeviceHistory from "../SettingsSections/LoginDeviceHistory/LoginDeviceHistory";
-/* import TwoFactorAuth from "../SettingsSections/TwoFactorAuth/TwoFactorAuth";
- */ import FreezeAccount from "../SettingsSections/FreezeAccount/FreezeAccount";
+import FreezeAccount from "../SettingsSections/FreezeAccount/FreezeAccount";
 import DeleteAccount from "../SettingsSections/DeleteAccount/DeleteAccount";
 import SecurityAlerts from "../SettingsSections/SecurityAlerts/SecurityAlerts";
 import LogoutAllDevices from "../SettingsSections/LogoutAllDevices/LogoutAllDevices";
 
-// ✅ Kullanıcı Bazlı Ayarlar
+// User-Based Settings
 import PrivacySettings from "../SettingsSections/PrivacySettings/PrivacySettings";
 import CloseFriends from "../SettingsSections/CloseFriends/CloseFriends";
 import NotificationsSettings from "../SettingsSections/NotificationsSettings/NotificationsSettings";
@@ -29,7 +28,7 @@ import HideLikes from "../SettingsSections/HideLikes/HideLikes";
 import ContentSensitivityFilter from "../SettingsSections/ContentSensitivityFilter/ContentSensitivityFilter";
 import CommentControls from "../SettingsSections/CommentControls/CommentControls";
 
-// ✅ Uygulama Bazlı Ayarlar
+// App Settings
 import ThemeAppearance from "../SettingsSections/ThemeAppearance/ThemeAppearance";
 import Languages from "../SettingsSections/Languages/Languages";
 import Licenses from "../SettingsSections/Licenses/Licenses";
@@ -37,7 +36,7 @@ import TermsAndConditions from "../SettingsSections/TermsAndConditions/TermsAndC
 import AboutApp from "../SettingsSections/AboutApp/AboutApp";
 import BugFeedback from "../SettingsSections/BugFeedback/BugFeedback";
 
-// ✅ İçerik Üreticisi Ayarları
+// Creator Settings
 import CreatorInsights from "../SettingsSections/CreatorInsights/CreatorInsights";
 import Accounts from "../SettingsSections/Accounts/Accounts";
 import ContentSchedule from "../SettingsSections/ContentSchedule/ContentSchedule";
@@ -46,43 +45,45 @@ import CommunityCompliance from "../SettingsSections/CommunityCompliance/Communi
 import LiveStreamSettings from "../SettingsSections/LiveStreamSettings/LiveStreamSettings";
 import Footer from "../../Footer/Footer";
 
+// COMPONENT MAP  
+// "Uygulama Hakkında" → REMOVED  
+// "Updates" → ADDED  
 const componentMap = {
   "Profile Settings": <ProfileSettings />,
-  "Hesap Türü (Bireysel / İşletme)": <AccountTypeSettings />,
-  "Giriş ve Cihaz Geçmişi": <LoginDeviceHistory />,
-  /* "İki Faktörlü Kimlik Doğrulama (2FA)": <TwoFactorAuth />,
-   */ "Hesap Dondurma / Geçici Olarak Devre Dışı Bırakma": <FreezeAccount />,
-  "Hesabı Kalıcı Olarak Sil": <DeleteAccount />,
-  "Hesap Güvenlik Uyarıları": <SecurityAlerts />,
-  "Oturumu Tüm Cihazlardan Kapat": <LogoutAllDevices />,
-  "Hesap Gizliliği": <PrivacySettings />,
-  "Yakın Arkadaşlıklar": <CloseFriends />,
-  Bildirimler: <NotificationsSettings />,
-  Engellenenler: <BlockedUsers />,
-  "Zaman Yönetimi": <TimeManagement />,
-  "Hareketler (Beğenmeler, Yorumlar, Etiketler, Zaman Geçirme Süresi)": (
-    <ActivityLog />
-  ),
-  "Gizlenenler / Kısıtlananlar": <HiddenRestricted />,
-  "Mesajlar ve Hikaye Yanıtları": <MessagesStoryReplies />,
-  "Etiketler ve Bahsetmeler": <TagsMentions />,
-  "Gizlenen Sözcükler": <HiddenWords />,
-  "Beğenmeleri Gizle": <HideLikes />,
-  "İçerik Hassasiyet Filtresi": <ContentSensitivityFilter />,
-  "Yorum Kontrolleri": <CommentControls />,
-  "Tema ve Görünüm": <ThemeAppearance />,
-  Diller: <Languages />,
-  Lisanslar: <Licenses />,
-  Sözleşme: <TermsAndConditions />,
-  "Uygulama Hakkında": <AboutApp />,
-  "Hata Bildirimi ve Geri Bildirim Gönder": <BugFeedback />,
-  // İçerik Üreticisi Ayarları (componentMap'te kalabilir, sorun olmaz)
-  "Account linking": <Accounts />,
-  "İstatistikler ve İçgörüler": <CreatorInsights />,
-  "Gelir ve Ödemeler": <EarningsPayments />,
-  "İçerik Yayın Takvimi": <ContentSchedule />,
-  "Topluluk Kuralları Uyumluluğu": <CommunityCompliance />,
-  "Canlı Yayın Ayarları": <LiveStreamSettings />,
+  "Account Type (Personal / Business)": <AccountTypeSettings />,
+  "Login & Device History": <LoginDeviceHistory />,
+  "Freeze / Temporarily Disable Account": <FreezeAccount />,
+  "Delete Account Permanently": <DeleteAccount />,
+  "Security Alerts": <SecurityAlerts />,
+  "Logout From All Devices": <LogoutAllDevices />,
+  "Privacy Settings": <PrivacySettings />,
+  "Close Friends": <CloseFriends />,
+  Notifications: <NotificationsSettings />,
+  "Blocked Users": <BlockedUsers />,
+  "Time Management": <TimeManagement />,
+  Activity: <ActivityLog />,
+  "Hidden / Restricted": <HiddenRestricted />,
+  "Messages & Story Replies": <MessagesStoryReplies />,
+  "Tags & Mentions": <TagsMentions />,
+  "Hidden Words": <HiddenWords />,
+  "Hide Likes": <HideLikes />,
+  "Content Sensitivity Filter": <ContentSensitivityFilter />,
+  "Comment Controls": <CommentControls />,
+  "Theme & Appearance": <ThemeAppearance />,
+  Languages: <Languages />,
+  Licenses: <Licenses />,
+  Terms: <TermsAndConditions />,
+
+  // UPDATED HERE
+  Updates: <AboutApp />,
+
+  "Bug Report & Feedback": <BugFeedback />,
+  "Account Linking": <Accounts />,
+  "Creator Insights": <CreatorInsights />,
+  "Earnings & Payments": <EarningsPayments />,
+  "Content Schedule": <ContentSchedule />,
+  "Community Compliance": <CommunityCompliance />,
+  "Live Stream Settings": <LiveStreamSettings />,
 };
 
 export default function SettingsScreen() {
@@ -91,86 +92,47 @@ export default function SettingsScreen() {
   const navigate = useNavigate();
   const { currentUser, setCurrentUser } = useUser();
 
-  // ✅ İstenen ayarlar gizlendi (yorum satırına alındı)
+  // BASE SECTIONS UPDATED  
+  // "Uygulama Hakkında" → REMOVED  
+  // "Updates" → ADDED ENGLISH  
   const baseSections = {
     "Account Settings": [
       "Profile Settings",
-      "Hesap Türü (Bireysel / İşletme)",
-      "Giriş ve Cihaz Geçmişi",
-      /* { name: "İki Faktörlü Kimlik Doğrulama (2FA)", isComingSoon: true }, */ // Gizlendi
-      "Hesap Dondurma / Geçici Olarak Devre Dışı Bırakma",
-      "Hesabı Kalıcı Olarak Sil",
-      /* { name: "Hesap Güvenlik Uyarıları", isComingSoon: true }, */ // Gizlendi
-      "Oturumu Tüm Cihazlardan Kapat",
+      "Account Type (Personal / Business)",
+      "Login & Device History",
+      "Freeze / Temporarily Disable Account",
+      "Delete Account Permanently",
+      "Logout From All Devices",
     ],
-    "Kullanıcı Bazlı Ayarlar": [
-      "Hesap Gizliliği",
-      "Yakın Arkadaşlıklar",
-      /* "Bildirimler", */ // Gizlendi
-      "Engellenenler",
-      /* "Zaman Yönetimi", */ // Gizlendi
-      /* {
-         name: "Hareketler (Beğenmeler, Yorumlar, Etiketler, Zaman Geçirme Süresi)",
-         isComingSoon: true,
-       }, */ // Gizlendi
-      /* { name: "Gizlenenler / Kısıtlananlar", isComingSoon: true }, */ // Gizlendi
-      "Mesajlar ve Hikaye Yanıtları",
-      /* "Etiketler ve Bahsetmeler", */ // Gizlendi
-      /* { name: "Gizlenen Sözcükler", isComingSoon: true }, */ // Gizlendi
-      /* "Beğenmeleri Gizle", */ // Gizlendi
-      /* { name: "İçerik Hassasiyet Filtresi", isComingSoon: true }, */ // Gizlendi
-      /* "Yorum Kontrolleri", */ // Gizlendi
+    "User Settings": [
+      "Privacy Settings",
+      "Close Friends",
+      "Blocked Users",
+      "Messages & Story Replies",
     ],
-    "Uygulama Bazlı Ayarlar": [
-      /* { name: "Tema ve Görünüm", isComingSoon: true }, */ // Gizlendi
-      /* { name: "Diller", isComingSoon: true }, */ // Gizlendi
-      "Lisanslar",
-      "Sözleşme",
-      "Uygulama Hakkında",
-      "Hata Bildirimi ve Geri Bildirim Gönder",
+    "App Settings": [
+      "Licenses",
+      "Terms",
+      "Updates", // NEW
+      "Bug Report & Feedback",
     ],
   };
 
-  // Bu bölüm (creatorSections) artık kullanılmıyor ama ileride
-  // kolayca aktif edebilmek için burada durabilir.
-  const creatorSections = {
-    "İçerik Üreticisi Ayarları": [
-      "Account linking",
-      { name: "İstatistikler ve İçgörüler", isComingSoon: true },
-      { name: "Gelir ve Ödemeler", isComingSoon: true },
-      { name: "İçerik Yayın Takvimi", isComingSoon: true },
-      { name: "Topluluk Kuralları Uyumluluğu", isComingSoon: true },
-      { name: "Canlı Yayın Ayarları", isComingSoon: true },
-    ],
-  };
-
-  // ✅ "İçerik Üreticisi Ayarları" bölümünü tamamen gizlemek için
-  // sections değişkenini direkt baseSections'a eşitliyoruz.
   const sections = baseSections;
-
-  // ESKİ KOD (İçerik üreticisi ayarlarını gösteriyordu):
-  /*
-  const sections =
-    currentUser?.accountType === "business"
-      ? { ...baseSections, ...creatorSections }
-      : baseSections;
-  */
 
   const handleLogout = async () => {
     try {
       await auth.signOut();
       setCurrentUser(null);
       navigate("/auth");
-      console.log("Çıkış işlemi başarılı.");
+      console.log("Logout successful.");
     } catch (error) {
-      console.error("Çıkış sırasında hata oluştu:", error);
+      console.error("Logout error:", error);
     }
   };
 
   const handleItemClick = (item) => {
-    if (item.isComingSoon) {
-      return;
-    }
+    if (item.isComingSoon) return;
     setSelected(item.name || item);
   };
 
@@ -190,7 +152,7 @@ export default function SettingsScreen() {
         <div className={styles.searchContainer}>
           <input
             type="text"
-            placeholder="Ayarlarda ara..."
+            placeholder="Search settings..."
             className={styles.searchInput}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -206,6 +168,7 @@ export default function SettingsScreen() {
               <h3 className={styles.sectionTitle}>
                 <span className={styles.titleDecorator}>//</span> {section}
               </h3>
+
               <div className={styles.sectionItems}>
                 {items.map((item) => {
                   const itemName = typeof item === "string" ? item : item.name;
@@ -225,9 +188,11 @@ export default function SettingsScreen() {
                           <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
                         </svg>
                       </span>
+
                       <span className={styles.buttonText}>{itemName}</span>
+
                       {isComingSoon && (
-                        <span className={styles.comingSoonTag}>Yakında</span>
+                        <span className={styles.comingSoonTag}>Coming Soon</span>
                       )}
                     </button>
                   );
@@ -241,7 +206,7 @@ export default function SettingsScreen() {
           <svg className={styles.logoutIcon} viewBox="0 0 24 24">
             <path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" />
           </svg>
-          Hesaptan Çıkış
+          Logout
         </button>
       </div>
 
@@ -252,19 +217,20 @@ export default function SettingsScreen() {
               <h2 className={styles.detailTitle}>{selected}</h2>
               <div className={styles.detailDecorator}></div>
             </div>
-            <div className={styles.detailBody}>{componentMap[selected]}</div>
+            <div className={styles.detailBody}>
+              {componentMap[selected]}
+            </div>
           </div>
         ) : (
           <div className={styles.placeholderContent}>
-            <div className={styles.placeholderIllustration}>
-              W1
-            </div>
-            <h3 className={styles.placeholderTitle}>Bir ayar seçin</h3>
+            <div className={styles.placeholderIllustration}>W1</div>
+            <h3 className={styles.placeholderTitle}>Select a setting</h3>
             <p className={styles.placeholderText}>
-              Detayları burada görüntüleyin ve düzenleyin
+              View and edit details here.
             </p>
           </div>
         )}
+
         <div className={styles.footerWrapper}>
           <Footer />
         </div>

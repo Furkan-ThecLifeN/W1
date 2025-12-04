@@ -1,128 +1,215 @@
 .container {
-  background: var(--special-background03);
+  min-height: 100vh;
+  padding: 4rem 2rem;
+  background-color: #000000; /* Zifiri siyah arka plan */
+  color: #f1f5f9; /* Sayfa genelindeki metinler açık gri/beyaz */
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Header Alanı */
+.header {
+  text-align: center;
+  max-width: 800px;
+  margin-bottom: 4rem;
+  z-index: 1;
+}
+
+.badgeContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.secureBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  /* Rozet artık koyu cam (dark glass) görünümünde */
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.4rem 1rem;
+  border-radius: 99px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #4ade80; /* İkon ve yazı için parlak yeşil */
+  backdrop-filter: blur(10px);
+}
+
+.lockIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 1rem;
+  /* Başlık Siyah üzerinde Beyaz-Gri Gradyan */
+  background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: #94a3b8; /* Arka plan siyah olduğu için açık gri */
+  line-height: 1.6;
+}
+
+/* Grid Yapısı */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 2rem;
+  width: 100%;
+  max-width: 1200px;
+  z-index: 1;
+}
+
+/* Kart Tasarımı */
+.card {
+  /* Kartlar Beyaz (İsteğin üzerine) */
+  background: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Hafif sınır */
+  border-radius: 1.25rem;
   padding: 2rem;
-  border-radius: 1.5rem;
-  box-shadow: 0 0 20px rgba(0, 170, 255, 0.15);
-  backdrop-filter: var(--backdrop-filter);
-  color: var(--text-white);
-  max-width: 900px;
-  margin: auto;
-  margin-top: 3rem;
-  font-family: var(--font-main);
+  text-decoration: none;
+  
+  /* Kart içi metin rengini koyu yapıyoruz çünkü kart beyaz */
+  color: #0f172a; 
+  
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  
+  /* Siyah zemin üzerinde beyaz kartın hafif parlaması */
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+}
+
+/* Kartın soluna ince renkli bir çizgi */
+.card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: var(--accent-color);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  /* Hover durumunda daha belirgin gölge */
+  box-shadow: 0 20px 25px -5px rgba(255, 255, 255, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  /* Sınır rengini lisans rengi yap */
+  border-color: var(--accent-color);
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.shortName {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.5rem;
+  letter-spacing: 0.05em;
+  /* Arka plan rengi JS'den geliyor ama yazı rengini koyu tutuyoruz */
+}
+
+.externalLinkIcon {
+  width: 20px;
+  height: 20px;
+  color: #94a3b8;
+  transition: color 0.2s;
+}
+
+.card:hover .externalLinkIcon {
+  color: var(--accent-color);
+}
+
+.cardTitle {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin: 0 0 0.75rem 0;
+  color: #000000; /* Başlık simsiyah */
+}
+
+.cardDescription {
+  font-size: 0.95rem;
+  color: #475569; /* Açıklama koyu gri (okunabilirlik için) */
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  flex-grow: 1;
+}
+
+/* Etiketler (Permissions) */
+.tagsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.tag {
+  font-size: 0.75rem;
+  background-color: #f1f5f9; /* Çok açık gri zemin */
+  color: #334155; /* Koyu metin */
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-weight: 600;
+  border: 1px solid #e2e8f0;
+}
+
+.cardFooter {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--accent-color);
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transform: translateX(-10px);
   transition: all 0.3s ease;
 }
 
-.header {
+.card:hover .cardFooter {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Footer */
+.footer {
+  margin-top: 5rem;
   text-align: center;
-  margin-bottom: 2.5rem;
-}
-
-.header h1 {
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: var(--color-white);
-  margin-bottom: 0.5rem;
-}
-
-.header p {
-  font-size: 1.1rem;
-  color: var(--color-grey);
-  margin: 0;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 1.8rem;
-}
-
-.card {
-  background: var(--secondary-bg);
-  border-radius: 1rem;
-  padding: 1.6rem 2rem;
-  color: var(--text-white);
-  text-decoration: none;
-  box-shadow: 0 0 12px rgba(0, 170, 255, 0.15);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  cursor: pointer;
-}
-
-.card:hover,
-.card:focus {
-  transform: translateY(-6px);
-  box-shadow: 0 0 40px rgba(0, 170, 255, 0.4);
-  outline: none;
-}
-
-.licenseHeader {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 0.8rem;
-}
-
-.licenseShortName {
-  font-size: 1.6rem;
-  font-weight: 900;
-  color: var(--color-blue);
-  background: rgba(0, 170, 255, 0.15);
-  padding: 0.4rem 0.75rem;
-  border-radius: 0.6rem;
-  user-select: none;
-}
-
-.card h2 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 0;
-  color: var(--text-white);
-}
-
-.card p {
-  font-size: 1rem;
-  color: var(--color-grey);
-  flex-grow: 1;
-  line-height: 1.4;
-  margin-bottom: 1.2rem;
-}
-
-.linkText {
-  align-self: flex-end;
-  font-weight: 600;
-  color: var(--color-blue);
-  font-size: 0.95rem;
-  user-select: none;
-  transition: color 0.3s ease;
-}
-
-.card:hover .linkText {
-  color: #00ccff;
+  font-size: 0.85rem;
+  color: #64748b; /* Siyah üzerinde okunabilir orta gri */
+  z-index: 1;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .container {
-    margin: 2rem 1rem;
-    padding: 1.5rem 1.5rem;
+  .title {
+    font-size: 2rem;
   }
-
   .grid {
     grid-template-columns: 1fr;
-  }
-
-  .licenseShortName {
-    font-size: 1.3rem;
-    padding: 0.3rem 0.6rem;
-  }
-
-  .card h2 {
-    font-size: 1.1rem;
-  }
-
-  .card p {
-    font-size: 0.9rem;
   }
 }
