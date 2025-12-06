@@ -65,7 +65,7 @@ const RightSidebar = () => {
 
           <div className={RightSidebarStyle.comingSoonWrapper}>
             <span className={RightSidebarStyle.comingSoonText}>W1</span>
-            <span className={RightSidebarStyle.comingSoonText}>Coming Soon</span>
+            <span className={RightSidebarStyle.comingSoonText}>Open Beta</span>
           </div>
 
           {/* ✨ Reklam Alanı (Bu bölüm artık dikeyde esneyecek) */}
