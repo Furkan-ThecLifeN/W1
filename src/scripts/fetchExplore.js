@@ -1,90 +1,104 @@
 import axios from "axios";
 import fs from "fs-extra";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+
 dotenv.config();
+
+// Fix: gerçek path oluşturma
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const filePath = path.join(__dirname, "..", "..", "public", "explore.json");
 
 const API_KEY = process.env.YOUTUBE_API_KEY;
 
 // 🇹🇷 Türkçe (%85)
 const TURKISH_KEYWORDS = [
-  // 🎮 Oyun ağırlıklı (%30)
-  "valorant komik anlar türkçe",
-  "valorant kısa edit 2025 türkçe",
-  "valorant meme türkiye",
-  "cs2 komik anlar türkçe",
-  "cs2 one tap highlights türkiye",
-  "cs2 funny moments türkçe",
-  "valorant troll anlar türkçe",
-  "valorant clutch highlights 2025 türkiye",
-  "cs2 efsane anlar 2025 türkçe",
+  // 🎮 Valorant & CS2 Yayıncıları – %40
+  "elraenn valorant komik anlar 2025",
+  "elraenn kısa edit yeni",
+  "elraenn twitch komik klip 2025",
+  "rreane komik klipler 2025",
+  "rreane valorant clutch kısa",
+  "cordi komik anlar 2025",
+  "cordi edit valorant kısa",
+  "wtcn komik anlar kısa 2025",
+  "wtcn cs2 funny clips türkçe",
+  "wtcn ekip komik kısa",
+  "ferit valorant funny moments 2025",
+  "ferit komik cs2 kısa",
+  "jahrein komik twitch klip 2025",
+  "jahrein kısa edit 2025",
+  "miafitz komik klip kısa",
+  "kaanflix komik anlar yeni kısa",
+  "mitrain komik anlar kısa 2025",
+  "berkakan komik klipler kısa",
+  "laz ali komik twitch klip 2025",
 
-  // 🎥 Elraenn ve Ekip Editleri (%30)
-  "elraenn komik anlar edit 2025",
-  "elraenn valorant edit türkiye",
-  "rreane kısa edit 2025",
-  "rreane komik anlar kısa",
-  "cordi valorant komik kısa",
-  "cordi edit 2025 türkiye",
-  "wtcn funny moments türkiye",
-  "ferit valorant edit 2025",
-  "ferit komik anlar kısa",
-  "jahrein valorant kısa video",
-  "jahrein komik edit 2025",
+  // 🎮 Genel oyun komik – %20
+  "valorant komik kısa video 2025",
+  "valorant meme edit türkçe",
+  "valorant troll moments türkçe",
+  "cs2 komik kısa anlar türkçe",
+  "cs2 clutch edit kısa",
+  "pubg funny moments türkçe 2025",
+  "fortnite komik türkçe kısa",
+  "gta 5 komik anlar türkçe kısa",
+  "rocket league funny short türkçe",
 
-  // 🎬 Diğer Yayıncı Editleri (%15)
-  "miafitz kısa edit",
-  "kaanflix komik kısa anlar",
-  "pelin funny short türkiye",
-  "mithrain clutch anlar 2025",
-  "mithrain komik kısa edit 2025",
+  // 😂 Komik – Popüler – %15
+  "komik kısa video 2025 türkçe",
+  "günlük hayat komik kısa anlar",
+  "trend komik kısa video türkiye",
+  "tiktok komik montaj 2025 türkçe",
+  "edit komik kısa türkçe",
+  "hehe funny türkçe video kısa",
+  "kedi komik kısa video türkçe",
+  "köpek komik kısa video türkçe",
+  "whatsapp komik video kısa",
+  "meme komik kısa video türkçe",
 
-  // 🏍 Motor (%15)
-  "motor vlog türkiye",
-  "bmw motor vlog türkiye",
-  "motor kazaları komik türkiye",
-  "superbike kısa video türkiye",
-  "süpersport motor edit 2025",
+  // 🏍 Motor (%5)
+  "motor vlog kısa türkiye 2025",
+  "bmw motor edit kısa türkçe",
+  "süpersport komik kısa video",
 
-  // 🚗 Araba (azaltılmış, %5)
-  "modifiye araba vlog türkçe",
-  "araba komik kısa anlar türkiye",
-  "drift kısa video türkiye",
+  // 🚗 Araba (%3)
+  "araba komik kısa video türkçe",
+  "drift komik kısa video 2025",
 
-  // 💡 Diğer (%5)
-  "komik tiktok montaj türkçe",
-  "günlük hayat komik kısa video türkiye",
-  "teknoloji gelişmeleri 2025 türkiye",
-  "yapay zeka haberleri türkiye",
+  // 💡 Teknoloji (%2)
+  "yapay zeka komik kısa video türkçe",
+  "teknoloji gelişmeleri kısa türkçe"
 ];
 
 // 🌍 İngilizce (%15)
 const ENGLISH_KEYWORDS = [
-  // 🎮 Oyun
-  "valorant funny shorts 2025",
-  "valorant meme edit 2025",
-  "cs2 short highlights 2025",
-  "cs2 funny short clips",
-  "fortnite best short moments",
+  // 🎮
+  "valorant funny clips short 2025",
+  "valorant meme edit funny 2025",
+  "valorant twitch clips short",
+  "cs2 short highlights funny",
+  "cs2 meme clips short",
+  "fortnite funny shorts 2025",
+  "gta 5 funny shorts new",
+  "pubg funny short moments english",
 
-  // 🎥 Streamer Edits (Mixed)
-  "elraenn valorant edit short",
-  "rreane funny moments short",
-  "twitch funny streamer clips 2025",
-  "valorant streamer edits 2025",
-  "funny gaming montage 2025",
+  // 😂
+  "funny memes 2025 shorts",
+  "viral funny short video 2025",
+  "daily funny moments shorts",
+  "relatable memes short 2025",
+  "funny tiktok compilation short",
 
-  // 🏍 Motor
-  "motorbike vlog short 2025",
+  // 🧪
+  "ai funny short clip",
+  "technology funny short 2025",
+  "science weird moments short",
 
-  // 😂 Meme / Edit
-  "funny memes shorts 2025",
-  "daily funny short moments",
-  "relatable meme short video",
-
-  // 💡 Teknoloji
-  "ai innovation short 2025",
-  "science short clip 2025",
-  "technology funny moments 2025",
+  // 🏍
+  "motorcycle short vlog funny",
 ];
 
 const MAX_RESULTS = 25;
@@ -93,9 +107,22 @@ let allVideos = [];
 let idCounter = 1;
 
 const bannedWords = [
-  "hindi", "indian", "pakistan", "urdu", "arabic",
-  "music video", "official trailer", "karaoke", "song",
-  "asmr", "reaction", "live", "full", "hour", "cover", "official"
+  "hindi",
+  "indian",
+  "pakistan",
+  "urdu",
+  "arabic",
+  "music video",
+  "official trailer",
+  "karaoke",
+  "song",
+  "asmr",
+  "reaction",
+  "live",
+  "full",
+  "hour",
+  "cover",
+  "official",
 ];
 
 async function fetchVideos(keyword, lang, region) {
@@ -141,8 +168,7 @@ async function fetchVideos(keyword, lang, region) {
 async function main() {
   console.log("🚀 Güncel popüler kısa videolar toplanıyor...");
 
-  const filePath = "../../public/explore.json";
-
+  // Dosya varsa oku
   try {
     if (await fs.pathExists(filePath)) {
       const content = await fs.readFile(filePath, "utf8");
@@ -150,17 +176,10 @@ async function main() {
         const existingData = JSON.parse(content);
         allVideos = Array.isArray(existingData) ? existingData : [];
         idCounter = allVideos.length > 0 ? Math.max(...allVideos.map(v => v.id)) + 1 : 1;
-      } else {
-        allVideos = [];
-        idCounter = 1;
       }
-    } else {
-      await fs.ensureFile(filePath);
-      allVideos = [];
-      idCounter = 1;
     }
   } catch {
-    console.warn("⚠️ JSON okunamadı, sıfırdan başlatılıyor...");
+    console.log("⚠️ JSON okunamadı, sıfırdan başlatılıyor...");
     allVideos = [];
     idCounter = 1;
   }
@@ -171,7 +190,6 @@ async function main() {
   for (const keyword of TURKISH_KEYWORDS) {
     if (videosFetched >= DAILY_LIMIT * 0.85) break;
     const videos = await fetchVideos(keyword, "tr", "TR");
-
     for (const v of videos) {
       if (videosFetched >= DAILY_LIMIT * 0.85) break;
       allVideos.push(v);
@@ -179,11 +197,10 @@ async function main() {
     }
   }
 
-  // 🌍 Yabancı videolar (%15)
+  // 🌍 İngilizce videolar (%15)
   for (const keyword of ENGLISH_KEYWORDS) {
     if (videosFetched >= DAILY_LIMIT) break;
     const videos = await fetchVideos(keyword, "en", "US");
-
     for (const v of videos) {
       if (videosFetched >= DAILY_LIMIT) break;
       allVideos.push(v);
@@ -191,7 +208,7 @@ async function main() {
     }
   }
 
-  await fs.ensureDir("./src/data");
+  await fs.ensureFile(filePath);
   await fs.writeJson(filePath, allVideos, { spaces: 2 });
 
   console.log(`✅ ${videosFetched} yeni kısa video eklendi. Toplam: ${allVideos.length}`);

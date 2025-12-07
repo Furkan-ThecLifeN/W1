@@ -1,77 +1,141 @@
 import axios from "axios";
 import fs from "fs-extra";
 import dotenv from "dotenv";
+import path from "path";
 dotenv.config();
 
 const CATEGORIES = {
   turkish: [
-    // Orijinaller
     "Turkey", "Turkiye", "elraenn", "twitchclips",
     "burdurland", "hort", "ZargoryanGalaksisi",
-    
-    // Yeni Eklenen Popüler Türkçe Subreddit'ler
-    "KGBTR", // (Not: Popülerliği yüksek, filtrelerden geçebilen içerik olabilir)
-    "TurkeyJerky", // Meme
-    "akagas", // Genel
-    "Jaharia", // Yayıncı
-    "PqueeN", // Yayıncı
-    "veYakinEvren", // Nerd kültürü, oyun
-    "SorReddite", // Metin tabanlı gönderiler için harika
-    "trgamers", // Oyuncu
-    "gecekeyfi", // Genel
-    "Ankara", // Resim/Metin
-    "istanbul", // Resim/Metin
-    "Izmir", // Resim/Metin
-    "Galatasaray", // Spor/Resim
-    "FenerbahceSK", // Spor/Resim
-    "besiktas" // Spor/Resim
+    "KGBTR", "TurkeyJerky", "akagas", "Jaharia",
+    "PqueeN", "veYakinEvren", "SorReddite",
+    "trgamers", "gecekeyfi", "Ankara",
+    "istanbul", "Izmir", "Galatasaray",
+    "FenerbahceSK", "besiktas"
   ],
   english: [
-    // Orijinaller
-    "memes", "funny", "gaming", "dankmemes", "wholesomememes",
-    "VALORANT", "cs2", "leagueoflegends", "gtaonline",
-    "pics", "gifs", "Unexpected", "me_irl",
-    
-    // Yeni Eklenen Popüler İngilizce Subreddit'ler
-    "aww", // Sevimli hayvanlar (Resim/Video)
-    "MadeMeSmile", // Mutlu edici (Resim/Video)
-    "interestingasfuck", // (Resim/Video)
-    "Damnthatsinteresting", // (Resim/Video)
-    "nextfuckinglevel", // (Video)
-    "BeAmazed", // (Resim/Video)
-    "mildlyinteresting", // (Resim)
-    "oddlysatisfying", // (Video/Gif)
-    "dataisbeautiful", // (Resim)
-    "Art", // (Resim)
-    "food", // (Resim)
-    "pUbG", // Oyun
-    "pcmasterrace", // (Resim/Meme)
-    "Minecraft", // Oyun (Resim/Video)
-    "Whatcouldgowrong", // (Video/Gif)
-    "therewasanattempt", // (Video/Gif)
-    "IdiotsInCars", // (Video/Gif)
-    "AnimalsBeingDerps", // (Resim/Video)
-    "EldenRing", // Oyun
-    "Overwatch" // Oyun
-  ]
+    "memes", "funny", "gaming", "dankmemes",
+    "wholesomememes", "VALORANT", "cs2",
+    "leagueoflegends", "gtaonline", "pics",
+    "gifs", "Unexpected", "me_irl", "aww",
+    "MadeMeSmile", "interestingasfuck",
+    "Damnthatsinteresting", "nextfuckinglevel",
+    "BeAmazed", "mildlyinteresting",
+    "oddlysatisfying", "dataisbeautiful",
+    "Art", "food", "pUbG", "pcmasterrace",
+    "Minecraft", "Whatcouldgowrong",
+    "therewasanattempt", "IdiotsInCars",
+    "AnimalsBeingDerps", "EldenRing",
+    "Overwatch"
+  ],
 };
 
+// Ayarlar
 const TOTAL_TARGET_POSTS = 200;
 const TURKISH_CONTENT_RATIO = 0.7;
 const LIMIT_PER_SUB = 100;
 
+// Global değişkenler
 let allPosts = [];
 let idCounter = 1;
 let existingPostPermalinks = new Set();
 
 const bannedWords = [
-  "nsfw", "18+", "porn", "politic", "gore", "blood", "violence",
-  "trump", "israel", "palestine", "war", "death"
+  "nsfw", "18+", "porn", "politic", "gore",
+  "blood", "violence", "trump", "israel",
+  "palestine", "war", "death"
 ];
 
-/**
- * Reddit'ten gönderileri çeker (daha fazla tür destekler)
- */
+// 🔥 Tüm türleri destekleyen gelişmiş Reddit post parser
+function parsePost(p, subreddit) {
+  const base = {
+    title: p.title,
+    author: p.author,
+    subreddit,
+    ups: p.ups,
+    permalink: p.permalink,
+    createdAt: new Date(p.created_utc * 1000).toISOString(),
+    seen: false,
+  };
+
+  // Direct image
+  if (p.url_overridden_by_dest?.match(/\.(jpg|jpeg|png|gif)$/i)) {
+    return { ...base, type: "image", url: p.url_overridden_by_dest };
+  }
+
+  // GIFV → MP4
+  if (p.url_overridden_by_dest?.endsWith(".gifv")) {
+    return {
+      ...base,
+      type: "video",
+      url: p.url_overridden_by_dest.replace(".gifv", ".mp4"),
+    };
+  }
+
+  // Reddit video
+  if (p.is_video && p.media?.reddit_video) {
+    const v = p.media.reddit_video.fallback_url;
+    const audio = v.replace(/DASH_[\d_]+\.mp4/, "DASH_audio.mp4");
+
+    return {
+      ...base,
+      type: "video",
+      url: v,
+      audio_url: audio,
+      is_reddit_video: true,
+    };
+  }
+
+  // Rich video fallback
+  if (p.post_hint === "rich:video" && p.preview?.reddit_video_preview) {
+    return {
+      ...base,
+      type: "video",
+      url: p.preview.reddit_video_preview.fallback_url,
+      audio_url: null,
+      is_reddit_video: false,
+    };
+  }
+
+  // Gallery (çoklu resim)
+  if (p.gallery_data && p.media_metadata) {
+    const images = Object.values(p.media_metadata)
+      .map(i => i.s?.u?.replace(/&amp;/g, "&"))
+      .filter(Boolean);
+
+    if (images.length) {
+      return { ...base, type: "gallery", images };
+    }
+  }
+
+  // Preview image fallback
+  if (p.preview?.images?.[0]?.source?.url) {
+    return {
+      ...base,
+      type: "image",
+      url: p.preview.images[0].source.url.replace(/&amp;/g, "&"),
+    };
+  }
+
+  // Self post
+  if (p.is_self && p.selftext?.length > 20) {
+    return { ...base, type: "text", text: p.selftext };
+  }
+
+  // External link (imgur/giphy/youtube)
+  if (p.post_hint === "link" && p.url_overridden_by_dest) {
+    return {
+      ...base,
+      type: "external",
+      url: p.url_overridden_by_dest,
+    };
+  }
+
+  return null;
+}
+
+// Reddit'ten gönderi çek
 async function fetchRedditPosts(subreddit, min_upvotes) {
   const url = `https://www.reddit.com/r/${subreddit}/top.json?limit=${LIMIT_PER_SUB}&t=year`;
 
@@ -81,151 +145,69 @@ async function fetchRedditPosts(subreddit, min_upvotes) {
       timeout: 8000
     });
 
-    // 1. Temel kurallara göre ön filtreleme yap
-    const potentialPosts = data.data.children.filter(post =>
+    const filtered = data.data.children.filter(post =>
       post.data.ups >= min_upvotes &&
-      !bannedWords.some(word => post.data.title.toLowerCase().includes(word)) &&
+      !bannedWords.some(w => post.data.title.toLowerCase().includes(w)) &&
       !existingPostPermalinks.has(post.data.permalink)
     );
 
-    // 2. Desteklenen türleri işle ve yapılandır
-    const processedPosts = potentialPosts.map(post => {
-      const postData = post.data;
-      
-      // Tüm gönderi türleri için temel nesne
-      const basePost = {
-        title: postData.title,
-        author: postData.author,
-        subreddit,
-        ups: postData.ups,
-        permalink: postData.permalink,
-        createdAt: new Date(postData.created_utc * 1000).toISOString(),
-        seen: false,
-      };
+    const posts = filtered
+      .map(p => parsePost(p.data, subreddit))
+      .filter(Boolean);
 
-      // TÜR 1: Resim (jpg, png, gif)
-      if (postData.url_overridden_by_dest?.match(/\.(jpg|png|gif)$/)) {
-        return {
-          ...basePost,
-          type: "image",
-          url: postData.url_overridden_by_dest,
-        };
-      }
+    return posts;
 
-      // TÜR 2: Reddit Videosu (v.redd.it)
-      if (postData.is_video && postData.media?.reddit_video) {
-        const videoUrl = postData.media.reddit_video.fallback_url;
-        // Reddit videoları sesi ayrı dosyada tutar, tahmin yürüt
-        const audioUrl = videoUrl.includes("DASH_")
-          ? videoUrl.replace(/DASH_[\d_]+\.mp4/, 'DASH_audio.mp4')
-          : null;
-
-        return {
-          ...basePost,
-          type: "video",
-          url: videoUrl,
-          audio_url: audioUrl,
-          is_reddit_video: true,
-        };
-      }
-      
-      // TÜR 3: Zengin Video (Gfycat, Imgur GIFV vb.)
-      if (postData.post_hint === 'rich:video' && postData.preview?.reddit_video_preview) {
-         return {
-            ...basePost,
-            type: "video",
-            url: postData.preview.reddit_video_preview.fallback_url,
-            audio_url: null, // Bunlar genellikle sessizdir
-            is_reddit_video: false,
-         };
-      }
-
-      // TÜR 4: Metin Gönderisi (self-post)
-      const minTextLength = 10;
-      const maxTextLength = 3000;
-      if (
-        postData.is_self &&
-        postData.selftext &&
-        postData.selftext.length >= minTextLength &&
-        postData.selftext.length <= maxTextLength
-      ) {
-        return {
-          ...basePost,
-          type: "text",
-          text: postData.selftext,
-        };
-      }
-      
-      // Desteklenmeyen tür (örn: dış link, galeri)
-      return null;
-    });
-
-    // 3. Null olanları (desteklenmeyen türler) filtrele
-    return processedPosts.filter(post => post !== null);
-
-  } catch (error) {
-    if (error.response?.status === 429) {
-      console.warn(`⚠️ Rate limit (r/${subreddit}) — atlanıyor.`);
-      return [];
-    }
-    console.warn(`⚠️ r/${subreddit} hatası: ${error.message}`);
+  } catch (err) {
+    console.warn(`⚠️ r/${subreddit} hata: ${err.message}`);
     return [];
   }
 }
 
-/**
- * Belirli kategori için gönderi çeker
- */
-async function fetchPostsForCategory(settings) {
-  const { subreddits, targetCount, categoryName, minUpvotes } = settings;
-  let categoryPosts = [];
+// Belirli kategori için gönderi topla
+async function fetchPostsForCategory({ subreddits, targetCount, categoryName, minUpvotes }) {
+  console.log(`\n--- ${categoryName} Başlıyor (${targetCount}) ---`);
 
-  console.log(`\n--- 🎯 '${categoryName}' Kategorisi Başlatılıyor (Hedef: ${targetCount}) ---`);
+  let list = [];
 
-  // Subreddit listesini karıştırarak her seferinde farklı bir sırayla başla
   for (const sub of subreddits.sort(() => 0.5 - Math.random())) {
-    if (categoryPosts.length >= targetCount) break;
+    if (list.length >= targetCount) break;
 
-    console.log(`📥 [${categoryName}] r/${sub} (${categoryPosts.length}/${targetCount})`);
+    console.log(`📥 r/${sub} (${list.length}/${targetCount})`);
+
     const fetched = await fetchRedditPosts(sub, minUpvotes);
 
     for (const post of fetched) {
-      if (categoryPosts.length >= targetCount) break;
-      
-      // fetchRedditPosts içinde permalink zaten kontrol edildi ama garanti olsun
-      if (!existingPostPermalinks.has(post.permalink)) { 
-        post.id = idCounter++; // ✅ her gönderiye id ver
-        categoryPosts.push(post);
+      if (list.length >= targetCount) break;
+
+      if (!existingPostPermalinks.has(post.permalink)) {
+        post.id = idCounter++;
+        list.push(post);
         existingPostPermalinks.add(post.permalink);
       }
     }
   }
 
-  console.log(`✅ ${categoryName}: ${categoryPosts.length} gönderi toplandı.`);
-  return categoryPosts;
+  console.log(`✔ ${categoryName} tamamlandı → ${list.length}`);
+  return list;
 }
 
-/**
- * Ana fonksiyon
- */
+// Ana program
 async function main() {
-  const filePath = "../../public/memes.json";
+  const filePath = path.resolve(process.cwd(), "public", "memes.json");
 
+  // Var olan dosya varsa yükle
   try {
     if (await fs.pathExists(filePath)) {
       const content = await fs.readFile(filePath, "utf8");
       if (content.trim()) {
         allPosts = JSON.parse(content);
-        const lastId = Math.max(...allPosts.map(p => p.id || 0), 0);
-        idCounter = lastId + 1;
+        idCounter = Math.max(...allPosts.map(p => p.id || 0), 0) + 1;
         existingPostPermalinks = new Set(allPosts.map(p => p.permalink));
-        console.log(`📂 Mevcut kayıt bulundu. Son id: ${lastId}. Toplam: ${allPosts.length} gönderi.`);
+        console.log(`📂 Mevcut ${allPosts.length} gönderi bulundu. Son ID: ${idCounter - 1}`);
       }
     }
-  } catch(e) {
-    console.warn("Mevcut 'memes.json' okunamadı veya bozuk:", e.message);
-    allPosts = [];
-    idCounter = 1;
+  } catch (e) {
+    console.warn("⚠ memes.json okunamadı. Yeni oluşturulacak.");
   }
 
   const turkishTarget = Math.floor(TOTAL_TARGET_POSTS * TURKISH_CONTENT_RATIO);
@@ -245,63 +227,49 @@ async function main() {
     minUpvotes: 150,
   };
 
-  console.log(`🚀 Hedef: ${TOTAL_TARGET_POSTS} yeni gönderi (${turkishTarget} TR / ${englishTarget} EN)\n`);
+  console.log(`\n🚀 Hedef: ${TOTAL_TARGET_POSTS} gönderi (TR: ${turkishTarget} | EN: ${englishTarget})\n`);
 
-  const [turkishPosts, englishPosts] = await Promise.all([
+  const [tr, en] = await Promise.all([
     fetchPostsForCategory(turkishSettings),
-    fetchPostsForCategory(englishSettings)
+    fetchPostsForCategory(englishSettings),
   ]);
 
-  // Yeni toplanan tüm gönderileri birleştir
-  let newPosts = [...turkishPosts, ...englishPosts];
-  let totalFetched = newPosts.length;
+  let newPosts = [...tr, ...en];
+  console.log(`\n🔍 Toplam yeni gönderi: ${newPosts.length}`);
 
-  console.log(`\n🔍 Toplam alınan gönderi: ${totalFetched}`);
+  // Eksikleri tamamla
+  if (newPosts.length < TOTAL_TARGET_POSTS) {
+    console.log(`🔁 Eksik var. Tamamlanıyor...`);
 
-  // Eksik gönderi varsa tamamla (DÜZELTME BURADA)
-  if (totalFetched < TOTAL_TARGET_POSTS) {
-    console.log(`🔁 Eksik gönderi (${totalFetched}/${TOTAL_TARGET_POSTS}), tamamlanıyor...`);
     const allSubs = [...CATEGORIES.turkish, ...CATEGORIES.english];
-    
+
     for (const sub of allSubs.sort(() => 0.5 - Math.random())) {
-      if (totalFetched >= TOTAL_TARGET_POSTS) break;
-      
-      // Tamamlama için upvote eşiğini düşür
-      const fetched = await fetchRedditPosts(sub, 20); 
-      
+      if (newPosts.length >= TOTAL_TARGET_POSTS) break;
+
+      const fetched = await fetchRedditPosts(sub, 20);
+
       for (const post of fetched) {
-        if (totalFetched >= TOTAL_TARGET_POSTS) break;
-        
+        if (newPosts.length >= TOTAL_TARGET_POSTS) break;
         if (!existingPostPermalinks.has(post.permalink)) {
-          post.id = idCounter++; // ✅ id ekle
-          newPosts.push(post); // ✅ 'newPosts' dizisine ekle (allPosts yerine)
+          post.id = idCounter++;
+          newPosts.push(post);
           existingPostPermalinks.add(post.permalink);
-          totalFetched++;
         }
       }
     }
-    console.log(`Tamamlama sonrası toplam yeni gönderi: ${totalFetched}`);
   }
 
-  if (newPosts.length === 0) {
-     console.log("\nHiç yeni gönderi bulunamadı. Kayıt işlemi atlanıyor.");
-     return;
-  }
+  // Birleştir
+  const finalPosts = [...allPosts, ...newPosts];
 
-  // ✅ Eski ve yeni gönderileri birleştir
-  const combinedPosts = [...allPosts, ...newPosts];
+  // ID garantisi
+  finalPosts.forEach((p, i) => p.id = p.id ?? i + 1);
 
-  // ID'si olmayan (çok eski veriden kalma) varsa diye ID garantisi sağla
-  const finalPosts = combinedPosts.map((p, i) => ({
-    ...p,
-    id: p.id ?? (i + 1), 
-  }));
-
-  await fs.ensureDir("./src/data");
+  await fs.ensureFile(filePath);
   await fs.writeJson(filePath, finalPosts, { spaces: 2 });
 
-  console.log(`\n✅ ${newPosts.length} yeni gönderi başarıyla toplandı ve kaydedildi!`);
-  console.log(`Toplam gönderi sayısı: ${finalPosts.length}`);
+  console.log(`\n🎉 ${newPosts.length} yeni gönderi kaydedildi.`);
+  console.log(`📌 Toplam gönderi: ${finalPosts.length}\n`);
 }
 
 main().catch(console.error);
