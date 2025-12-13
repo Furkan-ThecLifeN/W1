@@ -13,14 +13,12 @@ import AuthPage from "./pages/AuthPage/AuthPage";
 import Notifications from "./pages/Notification/NotificationPage";
 import Messages from "./pages/MessagePage/MessagesPage";
 import Discover from "./pages/Discover/Discover";
-import DataDiscover from "./pages/DataTestPage/DataTestPage";
 import SavedPage from "./pages/SavedPage/SavedPage";
 import ProfilePage from "./pages/Account/ProfilePage";
 import SettingsPage from "./pages/Settings/SettingsPage";
 import StoryAddPage from "./pages/AddPage/AddPage";
 import VoCentra from "./pages/VocentraPage/VocentraPage";
-import VocentraServerPage from "./pages/VocentraServerPage/VocentraServerPage";
-import VoCentraSettingsPage from "./pages/VoCentraSettingsPage/VoCentraSettingsPage";
+import ChannelsPage from "./pages/VocentraPage/ChannelsPage/ChannelsPage";
 import PostAdd from "./components/Add/Post/PostAdd";
 import FeedsAdd from "./components/Add/Feeds/FeedsAdd";
 import StoryAdd from "./components/Add/Stories/StoryAdd";
@@ -37,7 +35,6 @@ import CookiePolicy from "./pages/CookiePolicy/CookiePolicy";
 import Terms from "./pages/Terms/Terms";
 import HelpCenter from "./pages/HelpCenter/HelpCenter";
 import Welcome from "./pages/Welcome/Welcome";
-
 
 // ===============================
 // 🔹 Uygulama Ana İçeriği
@@ -76,9 +73,8 @@ const AppContent = () => {
       <Route path="/discover" element={<Discover />} />
       <Route path="/saved" element={<SavedPage />} />
       <Route path="/vocentra" element={<VoCentra />} />
+      <Route path="/server/:serverId" element={<ChannelsPage />} />
       <Route path="/search" element={<MobileSearchPage />} />
-      <Route path="/server/:serverName" element={<VocentraServerPage />} />
-      <Route path="/vosettings" element={<VoCentraSettingsPage />} />
       <Route path="/account" element={<ProfilePage />} />
       <Route path="/profile/:username" element={<UserProfile />} />
       <Route path="/create" element={<StoryAddPage />} />

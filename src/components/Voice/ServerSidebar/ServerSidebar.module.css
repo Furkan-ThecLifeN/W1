@@ -1,0 +1,162 @@
+:root {
+  --sl-bg-main: #020202;
+  --sl-serverlist-bg-card: #ffffff;
+  --sl-text-main: #fff;
+  --sl-text-muted: #999;
+  --sl-primary: #1aabe0;
+  --sl-danger: #ff4d4d;
+}
+
+/* SIDEBAR ROOT */
+.sidebar {
+  width: 100%;
+  min-width: 250px;
+  background: var(--sl-bg-main);
+  height: 97%;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+}
+
+/* HEADER CARD */
+.headerCard {
+  background: var(--sl-serverlist-bg-card);
+  padding: 16px 20px;
+  border-radius: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.07);
+  transition: 0.25s ease;
+}
+
+.headerCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 28px rgba(255, 255, 255, 0.12);
+}
+
+.title {
+  color: #000;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+/* CREATE BUTTON */
+.createBtn {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: #24c4ff;
+  color: #e5e5e5;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: 0.25s;
+}
+
+.createBtn:hover {
+  background: #020202;
+  box-shadow: 0 0 12px rgba(51, 215, 255, 0.4);
+}
+
+/* SERVER LIST */
+.serverList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.serverItem {
+  display: flex;
+  align-items: center;
+  background: #121212;
+  padding: 12px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: 0.25s ease;
+  position: relative;
+  border: 1px solid #1a1a1a;
+  min-width: 225px;
+}
+
+.serverItem:hover {
+  background: #1c1c1c;
+  transform: translateX(4px);
+  border-color: #ffffff;
+}
+
+/* AVATAR */
+.avatarWrapper {
+  position: relative;
+  margin-right: 14px;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  object-fit: cover;
+}
+
+.initialAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: #1f1f1f;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+/* BADGE */
+.badge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background: var(--sl-danger);
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+/* INFO */
+.info {
+  flex: 1;
+}
+
+.serverName {
+  color: var(--sl-text-main);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.meta {
+  color: var(--sl-text-muted);
+  font-size: 0.8rem;
+}
+
+.voice {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #404040;
+}
+
+/* MUTE ICON */
+.muted {
+  color: var(--sl-danger);
+  opacity: 0.8;
+}

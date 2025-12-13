@@ -1,0 +1,16 @@
+.bar { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: rgba(10, 10, 10, 0.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-radius: 100px; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5); z-index: 100; transition: all 0.3s ease; }
+.bar:hover { border-color: rgba(255, 255, 255, 0.15); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7); }
+
+.button { width: 50px; height: 50px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; background-color: var(--bg-surface); color: var(--text-main); cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
+.button::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); opacity: 0; transition: opacity 0.2s; }
+.button:hover { transform: translateY(-3px); background-color: #1a1a1a; color: #fff; }
+.button:hover::after { opacity: 1; }
+
+/* Aktif Durumlar */
+.activeScreen { background-color: var(--accent-blue) !important; color: #000 !important; box-shadow: 0 0 20px var(--accent-glow); }
+.activeChat { background-color: var(--text-main) !important; color: #000 !important; }
+.micOff { background-color: #ff2a2a !important; color: white !important; box-shadow: 0 0 15px rgba(255, 42, 42, 0.3); }
+
+/* Ayrıl Butonu */
+.hangUp { margin-left: 8px; background-color: rgba(255, 42, 42, 0.15); color: #ff2a2a; width: 60px; border-radius: 30px; }
+.hangUp:hover { background-color: #ff2a2a; color: white; box-shadow: 0 0 20px rgba(255, 42, 42, 0.4); }

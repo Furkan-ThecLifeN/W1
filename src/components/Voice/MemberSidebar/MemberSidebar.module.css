@@ -1,0 +1,188 @@
+/* MEMBER SIDEBAR CONTAINER */
+.memberSidebar {
+  width: 100%;
+  max-width: 320px;
+  height: 97%;
+  display: flex;
+  flex-direction: column;
+  background: #020202;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+  font-family: "Inter", sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ======================================= */
+/* NEW HEADER (Search Yerine)              */
+/* ======================================= */
+
+.headerWrapper {
+  padding: 20px 24px;
+  z-index: 5;
+  background: rgba(2, 2, 2, 0.6);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 70px;
+  margin: 10px;
+  border-radius: 12px;
+  border: 1px solid #535353;
+}
+
+.headerTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.headerIcon {
+  color: #8899a6;
+  font-size: 1.1rem;
+}
+
+.headerTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+
+/* ======================================= */
+/* MEMBER LIST SCROLL AREA                 */
+/* ======================================= */
+
+.memberScroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 14px;
+}
+
+.memberScroll::-webkit-scrollbar {
+  width: 4px;
+}
+.memberScroll::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+
+/* ROLE CATEGORIES */
+.roleGroup {
+  margin-bottom: 24px;
+}
+
+.roleHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 6px;
+  color: #667788; /* Biraz daha okunabilir gri */
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.roleCount {
+  font-size: 0.65rem;
+  color: #555;
+}
+
+/* MEMBER ITEM CARD */
+.memberItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  border: 1px solid transparent;
+  background: transparent;
+}
+
+.memberItem:hover {
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateX(-2px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* AVATAR AREA */
+.avatarWrapper {
+  position: relative;
+}
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 2px solid transparent;
+  transition: 0.2s;
+  background: #1a1a1a;
+}
+
+.memberItem:hover .avatar {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* STATUS DOTS */
+.statusDot {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 3px solid #020202;
+  z-index: 2;
+}
+
+.online { background: #00ff9d; box-shadow: 0 0 8px rgba(0, 255, 157, 0.4); }
+.idle { background: #ffaa00; }
+.dnd { background: #ff4444; }
+.offline { background: #555; border: 3px solid #020202; }
+
+/* MEMBER INFO TEXT */
+.memberInfo {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.memberName {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e1e1e1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.memberItem:hover .memberName {
+  color: #fff;
+}
+
+.memberStatusMsg {
+  font-size: 0.75rem;
+  color: #667788;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+/* Rich Presence Colors */
+.playing { color: #35c6ff; } 
+.listening { color: #1db954; }
+
+/* OWNER CROWN ICON */
+.ownerIcon {
+  color: #ffcc00;
+  margin-left: 6px;
+  font-size: 0.8rem;
+}

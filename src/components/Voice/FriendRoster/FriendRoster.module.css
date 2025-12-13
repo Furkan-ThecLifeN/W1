@@ -1,0 +1,391 @@
+/* ========================================= */
+/* 1. MAIN LAYOUT (Ana Düzen)                */
+/* ========================================= */
+
+.wrapper {
+  width: 100%;
+  max-width: 2000px;
+  height: 97%;
+  padding: 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: rgb(2, 2, 2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+
+/* ========================================= */
+/* 2. HEADER AREA (Başlık Alanı)             */
+/* ========================================= */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 20px;
+  color: #fff; /* text-primary */
+}
+
+/* Sol Grup: İkon + Başlık */
+.leftGroup {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.headerIconBox {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 1.2rem;
+}
+
+.leftGroup h2 {
+  font-size: 1.4rem;
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+/* Sağ Grup: Tabs */
+.rightGroup {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 280px;
+}
+
+/* ========================================= */
+/* 3. CONTROLS & SEARCH (Kontroller)         */
+/* ========================================= */
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.searchBox {
+  width: 100%;
+  position: relative;
+}
+
+.searchBox input {
+  width: 100%;
+  padding: 14px 14px 14px 42px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: #fff;
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.searchBox input:focus {
+  border-color: #00aaff; /* color-blue */
+  box-shadow: 0 0 15px rgba(0, 170, 255, 0.15);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #b5b8c1; /* text-secondary */
+  font-size: 1rem;
+}
+
+/* ========================================= */
+/* 4. TABS (Sekmeler)                        */
+/* ========================================= */
+
+.tabs {
+  display: flex;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+
+  /* Ortalama ve Genişlik Ayarları */
+  max-width: 280px;
+  width: 100%;
+}
+
+.tabButton {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.25s ease;
+}
+
+.tabButton:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ACTIVE */
+.activeTab {
+  background: #fefefe;
+  color: #000000;
+  box-shadow: 0 4px 12px rgba(0, 170, 255, 0.3);
+}
+
+/* ========================================= */
+/* 5. USER LIST CONTAINER (Liste Alanı)      */
+/* ========================================= */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  padding-right: 4px;
+  height: 100%;
+}
+
+.list::-webkit-scrollbar {
+  width: 5px;
+}
+.list::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+
+.empty {
+  color: #b5b8c1;
+  text-align: center;
+  margin-top: 30px;
+  font-size: 0.9rem;
+}
+
+/* ========================================= */
+/* 6. USER CARD (Kullanıcı Kartı)            */
+/* ========================================= */
+
+.userCard {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-radius: 16px;
+  background: transparent;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.userCard:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Avatar Alanı */
+.avatarWrap {
+  position: relative;
+  margin-right: 16px;
+  flex-shrink: 0;
+}
+
+.avatarWrap img {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px; /* Squircle şekli */
+  object-fit: cover;
+}
+
+/* İsim Baş Harfi (Resim yoksa) */
+.initialAvatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: linear-gradient(
+    135deg,
+    #2193b0,
+    #6dd5ed
+  ); /* Special Background 13 */
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Kullanıcı Bilgileri */
+.info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.name {
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.msg {
+  color: #b5b8c1;
+  font-size: 0.8rem;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ========================================= */
+/* 7. STATUS INDICATORS (Durumlar)           */
+/* ========================================= */
+
+.dot {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 3px solid #0f0f10; /* Cutout efekti için arka plan rengi */
+}
+
+.online {
+  background: #4ade80;
+}
+.busy {
+  background: #ef4444;
+}
+.idle {
+  background: #facc15;
+}
+.offline {
+  background: #71717a;
+}
+
+/* ========================================= */
+/* 8. ACTIONS & POPUP MENU (Aksiyonlar)      */
+/* ========================================= */
+
+.actionArea {
+  position: relative;
+}
+
+.moreBtn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  color: #b5b8c1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  transition: all 0.2s;
+}
+
+.moreBtn:hover,
+.btnActive {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* Beyaz Popup Menü */
+.popupMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  width: 160px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  padding: 6px;
+  z-index: 50;
+  animation: slideIn 0.2s ease-out;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Popup Üçgen Ok */
+.popupMenu::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  right: 12px;
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  transform: rotate(45deg);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-left: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Menü Öğeleri */
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #333;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.menuItem:hover {
+  background: #f0f9ff; /* Açık mavi hover */
+  color: #00aaff;
+}
+
+.menuIcon {
+  font-size: 0.95rem;
+  color: #8899a6;
+}
+
+.menuItem:hover .menuIcon {
+  color: #00aaff;
+}
+
+/* Tehlikeli İşlem (Engelle) */
+.dangerItem:hover {
+  background: #fff0f0;
+  color: #ef4444;
+}
+
+.dangerItem:hover .menuIcon {
+  color: #ef4444;
+}

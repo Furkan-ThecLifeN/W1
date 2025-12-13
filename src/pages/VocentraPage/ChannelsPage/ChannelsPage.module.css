@@ -1,0 +1,84 @@
+/* === GENEL SAYFA LAYOUT === */
+.pageLayout {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  background-color: #020202;
+  overflow: hidden;
+}
+
+
+/* SOL — GLOBAL APP SIDEBAR */
+.appSidebar {
+  width: 80px; /* Masaüstü sabit genişlik */
+  flex-shrink: 0;
+  height: 100%;
+  z-index: 50;
+}
+
+/* ANA SAHNE (ChannelSidebar + Chat + RightPanel) */
+.mainStage {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* CHANNELS İÇERİK ALANI */
+.innerStage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  gap: 12px;
+  padding: 10px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* === PAGE İÇİ: ChannelSidebar, Chat, RightPanel === */
+
+/* Sağ Panel — Vocentra ile aynı */
+.rightPanel {
+  width: 300px;
+  flex-shrink: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  background: #020202;
+  color: white;
+}
+
+/* MOBILE — <1024px */
+@media (max-width: 1024px) {
+  .pageLayout {
+    flex-direction: column;
+  }
+
+  .appSidebar {
+    display: none;
+    width: 0;
+  }
+
+  .mainStage {
+    height: calc(100% - 60px);
+    width: 100%;
+  }
+
+  .rightPanel {
+    display: none;
+  }
+
+  .mobileNavWrapper {
+    height: 60px;
+    flex-shrink: 0;
+    width: 100%;
+    z-index: 100;
+  }
+}
