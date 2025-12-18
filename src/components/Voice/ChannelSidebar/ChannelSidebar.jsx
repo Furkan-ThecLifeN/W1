@@ -1,18 +1,70 @@
 import React, { useState, useEffect } from "react";
 import {
-  FaChevronDown, FaHashtag, FaVolumeUp, FaCog, FaMicrophone,
-  FaHeadphones, FaPhoneSlash, FaPlus, FaMicrophoneSlash, FaLock
+  FaChevronDown,
+  FaHashtag,
+  FaVolumeUp,
+  FaCog,
+  FaMicrophone,
+  FaHeadphones,
+  FaPhoneSlash,
+  FaPlus,
+  FaMicrophoneSlash,
+  FaLock,
 } from "react-icons/fa";
 import { useUserStore } from "../../../Store/useUserStore";
 import { getAuth } from "firebase/auth";
 import styles from "./ChannelSidebar.module.css";
 import { useWebRTC } from "../../../hooks/useWebRTC";
 
-// --- MODAL & BİLEŞEN IMPORTLARI ---
-import VoiceUserCard from "../Modals/VoiceUserCard/VoiceUserCard"; 
+// --- MODALLAR ---
+import VoiceUserCard from "../Modals/VoiceUserCard/VoiceUserCard";
 import SettingsModal from "../Modals/SettingsModal/SettingsModal";
-import CreateTextChannelModal from "../Modals/CreateTextChannelModal/CreateTextChannelModal";
 import VoiceRoomSettingsModal from "../Modals/VoiceRoomSettingsModal/VoiceRoomSettingsModal";
+import CreateChannelModal from "../Modals/CreateChannelModal/CreateChannelModal";
+
+// 🔥 YENİ: CSS-in-JSX ile Yazılmış Özel Buton Bileşeni
+const AddButton = ({ onClick }) => {
+  const [hover, setHover] = useState(false);
+
+  const btnStyle = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "26px",
+    height: "26px",
+    borderRadius: "50%",
+    marginLeft: "auto",
+    cursor: "pointer",
+    // Normalde şeffaf, hover olunca Gradient Neon
+    background: hover
+      ? "linear-gradient(135deg, #5865F2, #9b59b6)"
+      : "rgba(255, 255, 255, 0.08)",
+    // Hover olunca parlama efekti (Glow)
+    boxShadow: hover
+      ? "0 0 12px rgba(88, 101, 242, 0.8), 0 0 4px rgba(255, 255, 255, 0.5)"
+      : "none",
+    border: hover ? "1px solid transparent" : "1px solid rgba(255,255,255,0.1)",
+    transition: "all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)",
+    transform: hover ? "scale(1.1) rotate(90deg)" : "scale(1) rotate(0deg)", // Dönme efekti ekledim
+  };
+
+  return (
+    <div
+      style={btnStyle}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      title="Yeni Kanal Oluştur"
+    >
+      <FaPlus
+        style={{ color: "white", fontSize: "10px", pointerEvents: "none" }}
+      />
+    </div>
+  );
+};
 
 const ChannelSidebar = ({
   serverInfo,
@@ -25,165 +77,182 @@ const ChannelSidebar = ({
   // --- STATE ---
   const [collapsed, setCollapsed] = useState({ text: false, voice: false });
   const [voiceStates, setVoiceStates] = useState({});
-  const [tempChannels, setTempChannels] = useState([]);
+  const [localChannels, setLocalChannels] = useState([]);
 
-  // Socket Auth Durumu
+  // Socket & Auth
   const [socketReady, setSocketReady] = useState(false);
-
   const [userStatuses, setUserStatuses] = useState({});
   const [localStatus, setLocalStatus] = useState({ muted: false, deaf: false });
 
-  // Modal State'leri
+  // Modallar
   const [showSettings, setShowSettings] = useState(false);
-  const [showCreateText, setShowCreateText] = useState(false);
   const [showVoiceRoomSettings, setShowVoiceRoomSettings] = useState(false);
   const [selectedVoiceRoom, setSelectedVoiceRoom] = useState(null);
+
+  // ✅ Create Modal State
+  const [createModal, setCreateModal] = useState({ show: false, type: "text" });
 
   const currentServerId = serverInfo?.id || serverInfo?.firebaseServerId;
   const { currentUser, fetchCurrentUser } = useUserStore();
 
   const {
-    joinVoiceChannel, leaveVoiceChannel, activeVoiceChannel,
-    localStream, remoteStreams, toggleMic, toggleDeaf,
-    inputDevices, outputDevices, selectedMic, selectedSpeaker,
-    switchMicrophone, switchSpeaker,
+    joinVoiceChannel,
+    leaveVoiceChannel,
+    activeVoiceChannel,
+    localStream,
+    remoteStreams,
+    toggleMic,
+    toggleDeaf,
+    inputDevices,
+    outputDevices,
+    selectedMic,
+    selectedSpeaker,
+    switchMicrophone,
+    switchSpeaker,
   } = useWebRTC(socket, currentUser);
 
-  // --- AUTH & INIT ---
+  // 🔥 PERMISSION CHECK (TEK KAYNAK)
+  const canManageChannels =
+    serverInfo?.permissions?.includes("ADMIN") ||
+    serverInfo?.permissions?.includes("MANAGE_CHANNELS");
+
+  // --- KANALLARI BİRLEŞTİRME ---
+  useEffect(() => {
+    if (serverInfo?.channels && serverInfo.channels.length > 0) {
+      setLocalChannels(serverInfo.channels);
+    } else if (textChannels.length > 0 || voiceChannels.length > 0) {
+      const merged = [
+        ...textChannels.map((c) => ({ ...c, type: "text" })),
+        ...voiceChannels.map((c) => ({ ...c, type: "voice" })),
+      ];
+      const unique = [
+        ...new Map(
+          merged.map((item) => [item.channelId || item.id, item])
+        ).values(),
+      ];
+      setLocalChannels(unique);
+    }
+  }, [serverInfo, textChannels, voiceChannels]);
+
+  // --- AUTH ---
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = auth.onAuthStateChanged((u) => {
       if (u) {
         fetchCurrentUser();
         if (socket && socket.readyState === 1 && currentServerId) {
-          // Auth mesajı gönderiyoruz
-          socket.send(JSON.stringify({
-            type: "AUTH",
-            userId: u.uid,
-            serverIds: [currentServerId],
-          }));
-          // Geçici olarak frontend'de ready true yapabiliriz veya backend cevabını bekleyebiliriz.
-          // Eğer backend "AUTH_OK" göndermiyorsa burayı true yapman gerekebilir:
-          // setSocketReady(true); 
+          socket.send(
+            JSON.stringify({
+              type: "AUTH",
+              userId: u.uid,
+              serverIds: [currentServerId],
+            })
+          );
         }
       }
     });
     return () => unsubscribe();
   }, [fetchCurrentUser, socket, currentServerId]);
 
-  // --- SOCKET EVENT LISTENER ---
+  // --- SOCKET ---
   useEffect(() => {
     if (!socket) return;
-    
-    // Socket open olduğunda veya bağlandığında ready state kontrolü
-    if (socket.readyState === 1) {
-        // Eğer backend AUTH_OK göndermiyorsa, butonun çalışması için varsayılan true yapabilirsin
-        // setSocketReady(true); 
-    }
 
     const handleMsg = (e) => {
       try {
         const msg = JSON.parse(e.data);
-
-        // 1. Auth Başarılı (Socket tam hazır)
-        if (msg.type === "AUTH_OK") {
-            setSocketReady(true);
-        }
-
-        // 2. Ses Odası Kullanıcıları
+        if (msg.type === "AUTH_OK") setSocketReady(true);
         if (msg.type === "VOICE_STATE_UPDATE") {
           setVoiceStates((prev) => {
             const cur = prev[msg.channelId] || [];
-            if (msg.action === "joined") return { ...prev, [msg.channelId]: [...new Set([...cur, msg.userId])] };
-            else return { ...prev, [msg.channelId]: cur.filter((uid) => uid !== msg.userId) };
+            if (msg.action === "joined")
+              return {
+                ...prev,
+                [msg.channelId]: [...new Set([...cur, msg.userId])],
+              };
+            else
+              return {
+                ...prev,
+                [msg.channelId]: cur.filter((uid) => uid !== msg.userId),
+              };
           });
         }
-
-        // 3. Kanal İşlemleri
         if (msg.type === "CHANNEL_LIFECYCLE") {
+          if (msg.serverId !== currentServerId) return;
           if (msg.action === "created") {
-            setTempChannels((p) => {
-              if (p.find((c) => c.channelId === msg.channelData.id)) return p;
-              return [...p, {
-                channelId: msg.channelData.id,
-                name: msg.channelData.name,
-                type: msg.channelData.type,
-                ownerId: msg.channelData.owner,
-                locked: msg.channelData.locked,
-              }];
+            setLocalChannels((prev) => {
+              if (prev.find((c) => c.channelId === msg.channelData.channelId))
+                return prev;
+              return [...prev, msg.channelData];
             });
-            if (msg.channelData.owner === currentUser?.uid) {
-              joinVoiceChannel(currentServerId, msg.channelData.id);
-            }
           } else if (msg.action === "deleted") {
-            setTempChannels((p) => p.filter((c) => c.channelId !== msg.channelData.id));
-            if (selectedVoiceRoom?.channelId === msg.channelData.id) {
-              setShowVoiceRoomSettings(false);
-              setSelectedVoiceRoom(null);
-            }
-          } else if (msg.action === "updated") {
-            setTempChannels((prev) =>
-              prev.map((c) => c.channelId === msg.channelData.id ? { ...c, ...msg.channelData } : c)
+            setLocalChannels((prev) =>
+              prev.filter((c) => c.channelId !== msg.channelData.id)
             );
-            if (selectedVoiceRoom?.channelId === msg.channelData.id) {
-              setSelectedVoiceRoom((prev) => ({ ...prev, ...msg.channelData }));
-            }
+          } else if (msg.action === "updated") {
+            setLocalChannels((prev) =>
+              prev.map((c) =>
+                c.channelId === msg.channelData.id
+                  ? { ...c, ...msg.channelData }
+                  : c
+              )
+            );
           }
         }
-
-        // 4. Sync
-        if (msg.type === "SYNC_TEMP_CHANNELS") {
-          setTempChannels(msg.channels.map((c) => ({
-            channelId: c.id, name: c.name, type: c.type, ownerId: c.owner, locked: c.locked,
-          })));
-        }
-
-        // 5. Status
         if (msg.type === "USER_STATUS_UPDATE") {
-          setUserStatuses((prev) => ({ ...prev, [msg.userId]: { muted: msg.muted, deaf: msg.deaf } }));
+          setUserStatuses((prev) => ({
+            ...prev,
+            [msg.userId]: { muted: msg.muted, deaf: msg.deaf },
+          }));
         }
-      } catch (err) { console.error(err); }
+      } catch (err) {
+        console.error(err);
+      }
     };
     socket.addEventListener("message", handleMsg);
     return () => socket.removeEventListener("message", handleMsg);
-  }, [socket, selectedVoiceRoom, currentUser, currentServerId, joinVoiceChannel]);
+  }, [socket, currentServerId]);
 
   // --- ACTIONS ---
-  
-  const createTempVoice = () => {
-    // Tıklanınca kontrol et, eğer hazır değilse uyarı ver veya işlem yapma
-    if (!socket || socket.readyState !== 1) {
-        console.warn("Socket bağlı değil.");
-        return;
+  const handleOpenCreateModal = (type) => {
+    const currentCount = localChannels.filter((c) => c.type === type).length;
+    if (type === "text" && currentCount >= 3) {
+      alert("Maksimum Text Kanalı sınırına ulaştınız.");
+      return;
     }
-    // Auth kontrolü: Backend AUTH_OK göndermiyorsa bu kontrolü kaldırabilirsin.
-    if (!socketReady) {
-        console.warn("Socket Auth bekleniyor..."); 
-        // Eğer backend AUTH_OK atmıyorsa burayı geçici olarak bypass et:
-        // socketReady kontrolünü kaldırıp direkt gönder.
+    if (type === "voice" && currentCount >= 5) {
+      alert("Maksimum Ses Kanalı sınırına ulaştınız.");
+      return;
     }
-    
-    socket.send(JSON.stringify({ type: "JOIN_VOICE", serverId: currentServerId, channelId: "VOICE_MASTER" }));
-  };
-
-  const createTempText = (name) => {
-    if (!socket || socket.readyState !== 1) return;
-    socket.send(JSON.stringify({ type: "CREATE_TEMP_TEXT_CHANNEL", serverId: currentServerId, name }));
-    setShowCreateText(false);
+    setCreateModal({ show: true, type });
   };
 
   const handleLockRoom = () => {
     if (!socket || !selectedVoiceRoom) return;
-    socket.send(JSON.stringify({ type: "LOCK_VOICE_CHANNEL", serverId: currentServerId, channelId: selectedVoiceRoom.channelId }));
+    socket.send(
+      JSON.stringify({
+        type: "LOCK_VOICE_CHANNEL",
+        serverId: currentServerId,
+        channelId: selectedVoiceRoom.channelId,
+      })
+    );
   };
 
   const handleRenameRoom = (newName) => {
     if (!socket || !selectedVoiceRoom) return;
-    socket.send(JSON.stringify({ type: "RENAME_VOICE_CHANNEL", serverId: currentServerId, channelId: selectedVoiceRoom.channelId, newName }));
+    socket.send(
+      JSON.stringify({
+        type: "RENAME_VOICE_CHANNEL",
+        serverId: currentServerId,
+        channelId: selectedVoiceRoom.channelId,
+        newName,
+      })
+    );
   };
 
   const handleVoiceClick = (ch) => {
-    if (ch.locked && ch.ownerId !== currentUser?.uid) {
+    // 🔥 GÜVENLİK GÜNCELLEMESİ: isOwner yerine canManageChannels kontrolü
+    if (ch.locked && !canManageChannels) {
       alert("Bu oda kilitli!");
       return;
     }
@@ -194,9 +263,13 @@ const ChannelSidebar = ({
       setVoiceStates((prev) => {
         const newState = { ...prev };
         Object.keys(newState).forEach((key) => {
-          newState[key] = newState[key].filter((uid) => uid !== currentUser.uid);
+          newState[key] = newState[key].filter(
+            (uid) => uid !== currentUser.uid
+          );
         });
-        newState[cid] = [...new Set([...(newState[cid] || []), currentUser.uid])];
+        newState[cid] = [
+          ...new Set([...(newState[cid] || []), currentUser.uid]),
+        ];
         return newState;
       });
     }
@@ -204,99 +277,152 @@ const ChannelSidebar = ({
 
   // --- UI HELPERS ---
   const toggle = (cat) => setCollapsed((p) => ({ ...p, [cat]: !p[cat] }));
-  
   const handleToggleMute = () => {
     const newMuted = !localStatus.muted;
     setLocalStatus({ ...localStatus, muted: newMuted });
     toggleMic(newMuted);
     broadcastStatus({ ...localStatus, muted: newMuted });
   };
-
   const handleToggleDeaf = () => {
     const newDeaf = !localStatus.deaf;
     setLocalStatus({ muted: newDeaf, deaf: newDeaf });
     toggleDeaf(newDeaf);
     broadcastStatus({ muted: newDeaf, deaf: newDeaf });
   };
-
   const broadcastStatus = (status) => {
     if (socket && currentUser && activeVoiceChannel) {
-      socket.send(JSON.stringify({ type: "USER_STATUS_UPDATE", userId: currentUser.uid, ...status }));
+      socket.send(
+        JSON.stringify({
+          type: "USER_STATUS_UPDATE",
+          userId: currentUser.uid,
+          ...status,
+        })
+      );
       setUserStatuses((prev) => ({ ...prev, [currentUser.uid]: status }));
     }
   };
-
   const handleDisconnect = (e) => {
     e.stopPropagation();
     leaveVoiceChannel();
     if (currentUser?.uid && activeVoiceChannel) {
       setVoiceStates((prev) => {
         const newState = { ...prev };
-        if (newState[activeVoiceChannel]) newState[activeVoiceChannel] = newState[activeVoiceChannel].filter((uid) => uid !== currentUser.uid);
+        if (newState[activeVoiceChannel])
+          newState[activeVoiceChannel] = newState[activeVoiceChannel].filter(
+            (uid) => uid !== currentUser.uid
+          );
         return newState;
       });
       setLocalStatus({ muted: false, deaf: false });
     }
   };
 
-  const allTextChannels = [...textChannels, ...tempChannels.filter((c) => c.type === "text")];
-  const allVoiceChannels = [...(voiceChannels.length ? voiceChannels : [{ channelId: "v1", name: "Lobby" }]), ...tempChannels.filter((c) => c.type === "voice")];
+  const displayedTextChannels = localChannels.filter((c) => c.type === "text");
+  const displayedVoiceChannels = localChannels.filter(
+    (c) => c.type === "voice"
+  );
 
   if (!serverInfo) return <div className={styles.glassSidebar}>Loading...</div>;
 
   return (
     <div className={styles.glassSidebar}>
-      
-      {/* --- MODALLAR --- */}
+      {/* MODALLAR */}
       {showSettings && (
         <SettingsModal
           onClose={() => setShowSettings(false)}
-          devices={{ inputs: inputDevices, outputs: outputDevices, selectedMic, selectedSpeaker }}
+          devices={{
+            inputs: inputDevices,
+            outputs: outputDevices,
+            selectedMic,
+            selectedSpeaker,
+          }}
           actions={{ switchMicrophone, switchSpeaker }}
         />
       )}
-      {showCreateText && (
-        <CreateTextChannelModal onClose={() => setShowCreateText(false)} onCreate={createTempText} />
+
+      {createModal.show && (
+        <CreateChannelModal
+          onClose={() => setCreateModal({ show: false, type: "text" })}
+          serverId={currentServerId}
+          type={createModal.type}
+          onCreated={(newChannel) => {
+            setLocalChannels((prev) => {
+              if (prev.find((c) => c.channelId === newChannel.channelId))
+                return prev;
+              return [...prev, newChannel];
+            });
+          }}
+        />
       )}
+
       {showVoiceRoomSettings && selectedVoiceRoom && (
         <VoiceRoomSettingsModal
           channel={selectedVoiceRoom}
-          onClose={() => { setShowVoiceRoomSettings(false); setSelectedVoiceRoom(null); }}
+          onClose={() => {
+            setShowVoiceRoomSettings(false);
+            setSelectedVoiceRoom(null);
+          }}
           onLock={handleLockRoom}
           onRename={handleRenameRoom}
         />
       )}
 
-      {/* --- HEADER --- */}
+      {/* HEADER */}
       <div className={styles.premiumHeader}>
         <div className={styles.headerInner}>
-          <img src={serverInfo.img || serverInfo.icon || "https://via.placeholder.com/50"} alt="S" className={styles.serverImg} />
-          <div className={styles.headerInfo}><h1 className={styles.serverTitle}>{serverInfo.name}</h1></div>
+          <img
+            src={
+              serverInfo.img ||
+              serverInfo.icon ||
+              "https://via.placeholder.com/50"
+            }
+            alt="S"
+            className={styles.serverImg}
+          />
+          <div className={styles.headerInfo}>
+            <h1 className={styles.serverTitle}>{serverInfo.name}</h1>
+          </div>
         </div>
       </div>
 
       <div className={styles.channelScroll}>
-        {/* --- TEXT KANALLARI --- */}
+        {/* --- TEXT ZONES --- */}
         <div className={styles.categoryWrapper}>
           <div className={styles.categoryTitle} onClick={() => toggle("text")}>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div
+              style={{ display: "flex", alignItems: "center", width: "100%" }}
+            >
               <span className={styles.catName}>TEXT ZONES</span>
-              <div onClick={(e) => { e.stopPropagation(); setShowCreateText(true); }} className={styles.addBtnWrapper}><FaPlus className={styles.addBtnIcon} /></div>
+              {/* 🔥 GÜNCEL: Sadece yetkili (Admin/Manage Channels) ise göster */}
+              {canManageChannels && (
+                <AddButton onClick={() => handleOpenCreateModal("text")} />
+              )}
             </div>
-            <FaChevronDown className={`${styles.chevron} ${collapsed.text ? styles.rotated : ""}`} />
+            <FaChevronDown
+              className={`${styles.chevron} ${
+                collapsed.text ? styles.rotated : ""
+              }`}
+            />
           </div>
           {!collapsed.text && (
             <div className={styles.channelList}>
-              {allTextChannels.map((ch, i) => {
+              {displayedTextChannels.map((ch, i) => {
                 const k = ch.channelId || ch.id || `txt-${i}`;
-                const isTemp = k.toString().startsWith("temp_text_");
                 return (
-                  <div key={k} className={`${styles.channelItem} ${activeChannelId === k ? styles.activeItem : ""}`} onClick={() => onChannelSelect(ch)}>
+                  <div
+                    key={k}
+                    className={`${styles.channelItem} ${
+                      activeChannelId === k ? styles.activeItem : ""
+                    }`}
+                    onClick={() => onChannelSelect(ch)}
+                  >
                     <div className={styles.channelLeft}>
-                      <FaHashtag className={styles.iconHash} style={{ color: isTemp ? "#facc15" : "" }} />
-                      <span className={styles.chName} style={{ color: isTemp ? "#fef08a" : "" }}>{ch.name}</span>
+                      <FaHashtag className={styles.iconHash} />
+                      <span className={styles.chName}>{ch.name}</span>
                     </div>
-                    {activeChannelId === k && <div className={styles.activeGlowBar}></div>}
+                    {activeChannelId === k && (
+                      <div className={styles.activeGlowBar}></div>
+                    )}
                   </div>
                 );
               })}
@@ -304,66 +430,81 @@ const ChannelSidebar = ({
           )}
         </div>
 
-        {/* --- VOICE KANALLARI --- */}
+        {/* --- VOICE PODS --- */}
         <div className={styles.categoryWrapper}>
           <div className={styles.categoryTitle} onClick={() => toggle("voice")}>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div
+              style={{ display: "flex", alignItems: "center", width: "100%" }}
+            >
               <span className={styles.catName}>VOICE PODS</span>
-              <div onClick={(e) => { e.stopPropagation(); setShowSettings(true); }} className={styles.settingsBtnWrapper}><FaCog className={styles.addBtnIcon} /></div>
+              {/* 🔥 GÜNCEL: Sadece yetkili ise oluşturma butonu göster */}
+              {canManageChannels && (
+                <AddButton onClick={() => handleOpenCreateModal("voice")} />
+              )}
+              {/* Ayarlar Butonu */}
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowSettings(true);
+                }}
+                className={styles.settingsBtnWrapper}
+                title="Ayarlar"
+                // 🔥 FIX: Margin bug düzeltildi
+                style={{ marginLeft: canManageChannels ? "5px" : "auto" }}
+              >
+                <FaCog className={styles.addBtnIcon} />
+              </div>
             </div>
-            <FaChevronDown className={`${styles.chevron} ${collapsed.voice ? styles.rotated : ""}`} />
+            <FaChevronDown
+              className={`${styles.chevron} ${
+                collapsed.voice ? styles.rotated : ""
+              }`}
+            />
           </div>
           {!collapsed.voice && (
             <div className={styles.channelList}>
-              
-              {/* ✅ YENİ ODA OLUŞTUR BUTONU - DÜZELTİLDİ */}
-              {/* Artık socketReady olmasa bile görünüyor ama sönük duruyor */}
-              <div
-                className={`${styles.channelItem} ${styles.voiceItem}`}
-                style={{ 
-                    // Socket hazırsa %90 opak, değilse %40 (sönük)
-                    opacity: socketReady ? 0.9 : 0.4, 
-                    border: "1px dashed rgba(255,255,255,0.2)", 
-                    marginBottom: "5px",
-                    // Hazır değilse tıklanamaz imleci
-                    cursor: socketReady ? "pointer" : "not-allowed" 
-                }}
-                onClick={(e) => { 
-                    e.stopPropagation(); 
-                    // Sadece hazırsa çalıştır
-                    if(socketReady) createTempVoice(); 
-                }}
-              >
-                <div className={styles.channelLeft}>
-                  <FaPlus className={styles.iconVol} style={{ fontSize: "0.9rem" }} />
-                  <span className={styles.chName} style={{ fontStyle: "italic" }}>
-                    {socketReady ? "Yeni Oda Oluştur" : "Bağlanıyor..."}
-                  </span>
-                </div>
-              </div>
-
-              {/* MEVCUT SES KANALLARI */}
-              {allVoiceChannels.map((ch, i) => {
+              {displayedVoiceChannels.map((ch, i) => {
                 const k = ch.channelId || ch.id || `vc-${i}`;
                 const usrs = voiceStates[k] || [];
                 const act = activeVoiceChannel === k;
-                const isTemp = ch.type === "voice" && k.toString().startsWith("temp_");
-                const isOwner = isTemp && ch.ownerId === currentUser?.uid;
                 const isLocked = ch.locked;
-                const wrapperClass = usrs.length > 0 || act ? `${styles.voiceWrapper} ${styles.voiceWrapperActive}` : styles.voiceWrapper;
-
+                const wrapperClass =
+                  usrs.length > 0 || act
+                    ? `${styles.voiceWrapper} ${styles.voiceWrapperActive}`
+                    : styles.voiceWrapper;
                 return (
                   <div key={k} className={wrapperClass}>
-                    <div className={`${styles.channelItem} ${styles.voiceItem} ${act ? styles.activeItem : ""}`} onClick={() => handleVoiceClick(ch)}>
+                    <div
+                      className={`${styles.channelItem} ${styles.voiceItem} ${
+                        act ? styles.activeItem : ""
+                      }`}
+                      onClick={() => handleVoiceClick(ch)}
+                    >
                       <div className={styles.channelLeft}>
-                        {isLocked ? <FaLock className={styles.iconVol} style={{ color: "#ff4d4d" }} /> : <FaVolumeUp className={styles.iconVol} style={{ color: isTemp ? "#facc15" : "" }} />}
-                        <span className={styles.chName} style={{ color: isTemp ? "#fef08a" : "" }}>{ch.name}</span>
+                        {isLocked ? (
+                          <FaLock
+                            className={styles.iconVol}
+                            style={{ color: "#ff4d4d" }}
+                          />
+                        ) : (
+                          <FaVolumeUp className={styles.iconVol} />
+                        )}
+                        <span className={styles.chName}>{ch.name}</span>
                       </div>
-                      {isOwner && (
+                      {/* 🔥 GÜNCEL: Voice Channel Settings sadece yetkiliye görünür */}
+                      {canManageChannels && (
                         <FaCog
                           className={styles.voiceSettingsIcon}
-                          style={{ marginLeft: "auto", color: "#ccc", cursor: "pointer" }}
-                          onClick={(e) => { e.stopPropagation(); setSelectedVoiceRoom(ch); setShowVoiceRoomSettings(true); }}
+                          style={{
+                            marginLeft: "auto",
+                            color: "#ccc",
+                            cursor: "pointer",
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedVoiceRoom(ch);
+                            setShowVoiceRoomSettings(true);
+                          }}
                         />
                       )}
                     </div>
@@ -371,7 +512,14 @@ const ChannelSidebar = ({
                       <div className={styles.voiceUserContainer}>
                         {usrs.map((uid) => {
                           const isMe = currentUser?.uid === uid;
-                          return <VoiceUserCard key={uid} userId={uid} status={userStatuses[uid]} stream={isMe ? localStream : remoteStreams[uid]} />;
+                          return (
+                            <VoiceUserCard
+                              key={uid}
+                              userId={uid}
+                              status={userStatuses[uid]}
+                              stream={isMe ? localStream : remoteStreams[uid]}
+                            />
+                          );
                         })}
                       </div>
                     )}
@@ -383,30 +531,72 @@ const ChannelSidebar = ({
         </div>
       </div>
 
-      {/* --- KULLANICI KONTROL PANELİ (ALT) --- */}
+      {/* CONTROL DECK */}
       <div className={styles.controlDeck}>
         <div className={styles.deckGlass}>
           {currentUser ? (
             <div className={styles.userProfile}>
               <div className={styles.avatarContainer}>
-                <img src={currentUser.photoURL || "https://via.placeholder.com/50"} alt="Av" className={styles.avatarImg} />
-                <div className={`${styles.onlineBadge} ${currentUser.status === "online" ? styles.statusOnline : styles.statusOffline}`}></div>
+                <img
+                  src={
+                    currentUser.photoURL || "https://via.placeholder.com/50"
+                  }
+                  alt="Av"
+                  className={styles.avatarImg}
+                />
+                <div
+                  className={`${styles.onlineBadge} ${
+                    currentUser.status === "online"
+                      ? styles.statusOnline
+                      : styles.statusOffline
+                  }`}
+                ></div>
               </div>
-              <div className={styles.userInfo}><span className={styles.uName}>{currentUser.displayName}</span></div>
+              <div className={styles.userInfo}>
+                <span className={styles.uName}>{currentUser.displayName}</span>
+              </div>
             </div>
-          ) : <div className={styles.userInfo}>Loading...</div>}
-
+          ) : (
+            <div className={styles.userInfo}>Loading...</div>
+          )}
           <div className={styles.deckActions}>
-            <button className={`${styles.deckBtn} ${localStatus.muted ? styles.btnActive : ""}`} onClick={handleToggleMute}>
-              {localStatus.muted ? <FaMicrophoneSlash className={styles.iconRed} /> : <FaMicrophone />}
+            <button
+              className={`${styles.deckBtn} ${
+                localStatus.muted ? styles.btnActive : ""
+              }`}
+              onClick={handleToggleMute}
+            >
+              {localStatus.muted ? (
+                <FaMicrophoneSlash className={styles.iconRed} />
+              ) : (
+                <FaMicrophone />
+              )}
             </button>
-            <button className={`${styles.deckBtn} ${localStatus.deaf ? styles.btnActive : ""}`} onClick={handleToggleDeaf}>
-              <FaHeadphones className={localStatus.deaf ? styles.iconRed : ""} />
+            <button
+              className={`${styles.deckBtn} ${
+                localStatus.deaf ? styles.btnActive : ""
+              }`}
+              onClick={handleToggleDeaf}
+            >
+              <FaHeadphones
+                className={localStatus.deaf ? styles.iconRed : ""}
+              />
             </button>
             {activeVoiceChannel ? (
-              <button className={styles.deckBtn} onClick={handleDisconnect} style={{ color: "#ff4d4d" }}><FaPhoneSlash /></button>
+              <button
+                className={styles.deckBtn}
+                onClick={handleDisconnect}
+                style={{ color: "#ff4d4d" }}
+              >
+                <FaPhoneSlash />
+              </button>
             ) : (
-              <button className={styles.deckBtn} onClick={() => setShowSettings(true)}><FaCog /></button>
+              <button
+                className={styles.deckBtn}
+                onClick={() => setShowSettings(true)}
+              >
+                <FaCog />
+              </button>
             )}
           </div>
         </div>

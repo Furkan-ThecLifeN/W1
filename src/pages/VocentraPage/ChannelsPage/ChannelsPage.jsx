@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom"; 
-import { useServerStore } from "../../../Store/useServerStore"; 
+import { useParams } from "react-router-dom";
+import { useServerStore } from "../../../Store/useServerStore";
 import Sidebar from "../../../components/LeftSideBar/Sidebar";
 import BottomNav from "../../../components/BottomNav/BottomNav";
 import ChannelSidebar from "../../../components/Voice/ChannelSidebar/ChannelSidebar";
@@ -10,19 +10,19 @@ import styles from "./ChannelsPage.module.css";
 import { getAuth } from "firebase/auth";
 
 const ChannelsPage = () => {
-  const { serverId } = useParams(); 
-  
-  const { 
-    servers, 
-    serverDetails, 
-    fetchUserServers, 
-    fetchServerDetails, 
-    setActiveServer 
+  const { serverId } = useParams();
+
+  const {
+    servers,
+    serverDetails,
+    fetchUserServers,
+    fetchServerDetails,
+    setActiveServer,
   } = useServerStore();
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
   const [activeTextChannel, setActiveTextChannel] = useState(null);
-  
+
   // 🔌 1. SOCKET STATE'İ OLUŞTUR
   const [socket, setSocket] = useState(null);
   const socketRef = useRef(null); // Ref ile bağlantıyı takip et
@@ -62,14 +62,23 @@ const ChannelsPage = () => {
         if (servers.length === 0) fetchUserServers();
         if (serverId) {
           setActiveServer(serverId);
-          fetchServerDetails(serverId); 
+          fetchServerDetails(serverId);
         }
       }
     });
     return () => unsubscribe();
-  }, [serverId, servers.length, fetchUserServers, fetchServerDetails, setActiveServer]);
+  }, [
+    serverId,
+    servers.length,
+    fetchUserServers,
+    fetchServerDetails,
+    setActiveServer,
+  ]);
 
-  const activeServerLite = servers.find(s => s.id === serverId) || { name: "Yükleniyor...", img: "" };
+  const activeServerLite = servers.find((s) => s.id === serverId) || {
+    name: "Yükleniyor...",
+    img: "",
+  };
   const activeServerHeavy = serverDetails[serverId] || { channels: [] };
 
   useEffect(() => {
@@ -81,7 +90,9 @@ const ChannelsPage = () => {
   useEffect(() => {
     if (activeServerHeavy.channels && activeServerHeavy.channels.length > 0) {
       if (!activeTextChannel) {
-        const firstText = activeServerHeavy.channels.find(c => c.type === 'text');
+        const firstText = activeServerHeavy.channels.find(
+          (c) => c.type === "text"
+        );
         if (firstText) setActiveTextChannel(firstText);
       }
     }
@@ -101,15 +112,27 @@ const ChannelsPage = () => {
 
       <main className={styles.mainStage}>
         <div className={styles.innerStage}>
-          
           {/* 👇 SOCKET PROP OLARAK BURAYA EKLENDİ */}
           <ChannelSidebar
-            serverInfo={activeServerLite}
-            textChannels={activeServerHeavy.channels ? activeServerHeavy.channels.filter(c => c.type === 'text') : []}
-            voiceChannels={activeServerHeavy.channels ? activeServerHeavy.channels.filter(c => c.type === 'voice') : []}
-            activeChannelId={activeTextChannel?.channelId || activeTextChannel?.id}
+            serverInfo={{
+              ...activeServerLite,
+              ...activeServerHeavy,
+            }}
+            textChannels={
+              activeServerHeavy.channels
+                ? activeServerHeavy.channels.filter((c) => c.type === "text")
+                : []
+            }
+            voiceChannels={
+              activeServerHeavy.channels
+                ? activeServerHeavy.channels.filter((c) => c.type === "voice")
+                : []
+            }
+            activeChannelId={
+              activeTextChannel?.channelId || activeTextChannel?.id
+            }
             onChannelSelect={setActiveTextChannel}
-            socket={socket} 
+            socket={socket}
           />
 
           <ChatArea

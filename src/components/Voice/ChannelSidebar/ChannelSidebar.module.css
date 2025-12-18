@@ -105,26 +105,22 @@
   transform: rotate(-90deg);
 }
 
-/* EKLEME BUTONU (+ İkonu) */
-.addBtnWrapper {
+/* Kategori Başlığı Düzeni (Eğer yoksa bunu da güncelle) */
+.categoryTitle {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 4px;
-  border-radius: 4px;
+  justify-content: space-between;
+  padding: 10px 8px;
   cursor: pointer;
-  transition: 0.2s;
-  margin-left: 4px;
-  color: #bbb;
+  color: #8e9297;
+  font-weight: 700;
+  font-size: 0.75rem;
+  transition: color 0.2s;
+  user-select: none;
 }
 
-.addBtnWrapper:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
-}
-
-.addBtnIcon {
-  font-size: 0.8rem;
+.categoryTitle:hover {
+  color: #dcddde;
 }
 
 /* AYARLAR BUTONU (Dişli) */

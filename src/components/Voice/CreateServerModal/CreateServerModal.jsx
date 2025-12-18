@@ -1,6 +1,12 @@
 import React, { useState } from "react";
-import { FaCamera, FaGamepad, FaUsers, FaBriefcase, FaGraduationCap } from "react-icons/fa";
-import { getAuth } from "firebase/auth"; 
+import {
+  FaCamera,
+  FaGamepad,
+  FaUsers,
+  FaBriefcase,
+  FaGraduationCap,
+} from "react-icons/fa";
+import { getAuth } from "firebase/auth";
 import styles from "./CreateServerModal.module.css";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
@@ -11,7 +17,7 @@ const CreateServerModal = ({ onClose, onCreate }) => {
   const [imageUrl, setImageUrl] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const [rulesAccepted, setRulesAccepted] = useState(false);
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
 
@@ -34,22 +40,22 @@ const CreateServerModal = ({ onClose, onCreate }) => {
     try {
       const auth = getAuth();
       const currentUser = auth.currentUser;
-      
+
       if (!currentUser) throw new Error("Lütfen önce giriş yapın.");
-      
+
       const token = await currentUser.getIdToken();
 
       const response = await fetch(`${API_URL}/api/servers`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           name: serverName,
           category: category,
           icon: imagePreview || null,
-        })
+        }),
       });
 
       const data = await response.json();
@@ -60,12 +66,11 @@ const CreateServerModal = ({ onClose, onCreate }) => {
 
       // Başarılı olduğunda parent'a (ServerSidebar) veriyi gönder
       if (onCreate) {
-        onCreate(data);
+        onCreate({ server: data });
       }
-      
+
       // Modalı kapat
       onClose();
-
     } catch (err) {
       console.error("Sunucu kurma hatası:", err);
       setErrorMsg(err.message);
@@ -76,14 +81,20 @@ const CreateServerModal = ({ onClose, onCreate }) => {
 
   return (
     <div className={styles.overlay} onClick={!isLoading ? onClose : null}>
-      <div className={styles.modalContainer} onClick={(e) => e.stopPropagation()}>
-        
+      <div
+        className={styles.modalContainer}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* SOL PANEL */}
         <div className={styles.leftPanel}>
           <div className={styles.uploadWrapper}>
             <label className={styles.uploadBox}>
               {imagePreview ? (
-                <img src={imagePreview} alt="Preview" className={styles.previewImg} />
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className={styles.previewImg}
+                />
               ) : (
                 <>
                   <FaCamera className={styles.cameraIcon} />
@@ -111,26 +122,37 @@ const CreateServerModal = ({ onClose, onCreate }) => {
 
         {/* SAĞ PANEL */}
         <div className={styles.rightPanel}>
-          
           <div className={styles.formHeader}>
             <span className={styles.stepTitle}>ADIM 1 / 1</span>
             <h2 className={styles.mainTitle}>Sunucu Detayları</h2>
           </div>
 
-          <form id="createForm" onSubmit={handleSubmit} className={styles.formContent}>
-            
+          <form
+            id="createForm"
+            onSubmit={handleSubmit}
+            className={styles.formContent}
+          >
             {errorMsg && (
-              <div style={{ backgroundColor: "rgba(255, 80, 80, 0.1)", color: "#ff5050", padding: "10px", borderRadius: "5px", marginBottom: "10px", fontSize: "0.9rem" }}>
+              <div
+                style={{
+                  backgroundColor: "rgba(255, 80, 80, 0.1)",
+                  color: "#ff5050",
+                  padding: "10px",
+                  borderRadius: "5px",
+                  marginBottom: "10px",
+                  fontSize: "0.9rem",
+                }}
+              >
                 ⚠️ {errorMsg}
               </div>
             )}
 
             <div className={styles.inputGroup}>
               <label className={styles.label}>SUNUCU ADI</label>
-              <input 
-                type="text" 
-                className={styles.input} 
-                placeholder="Örn: Gece Oyuncuları" 
+              <input
+                type="text"
+                className={styles.input}
+                placeholder="Örn: Gece Oyuncuları"
                 value={serverName}
                 onChange={(e) => setServerName(e.target.value)}
                 autoFocus
@@ -142,19 +164,38 @@ const CreateServerModal = ({ onClose, onCreate }) => {
             <div className={styles.inputGroup}>
               <label className={styles.label}>KATEGORİ</label>
               <div className={styles.categoryGrid}>
-                {['gaming', 'community', 'work', 'study'].map((cat) => (
-                  <div 
+                {["gaming", "community", "work", "study"].map((cat) => (
+                  <div
                     key={cat}
-                    className={`${styles.catCard} ${category === cat ? styles.active : ''}`}
+                    className={`${styles.catCard} ${
+                      category === cat ? styles.active : ""
+                    }`}
                     onClick={() => !isLoading && setCategory(cat)}
-                    style={{ opacity: isLoading ? 0.7 : 1, cursor: isLoading ? 'default' : 'pointer' }}
+                    style={{
+                      opacity: isLoading ? 0.7 : 1,
+                      cursor: isLoading ? "default" : "pointer",
+                    }}
                   >
-                    {cat === 'gaming' && <FaGamepad className={styles.catIcon} />}
-                    {cat === 'community' && <FaUsers className={styles.catIcon} />}
-                    {cat === 'work' && <FaBriefcase className={styles.catIcon} />}
-                    {cat === 'study' && <FaGraduationCap className={styles.catIcon} />}
+                    {cat === "gaming" && (
+                      <FaGamepad className={styles.catIcon} />
+                    )}
+                    {cat === "community" && (
+                      <FaUsers className={styles.catIcon} />
+                    )}
+                    {cat === "work" && (
+                      <FaBriefcase className={styles.catIcon} />
+                    )}
+                    {cat === "study" && (
+                      <FaGraduationCap className={styles.catIcon} />
+                    )}
                     <span className={styles.catName}>
-                      {cat === 'gaming' ? 'Oyun' : cat === 'community' ? 'Topluluk' : cat === 'work' ? 'İş / Ofis' : 'Eğitim'}
+                      {cat === "gaming"
+                        ? "Oyun"
+                        : cat === "community"
+                        ? "Topluluk"
+                        : cat === "work"
+                        ? "İş / Ofis"
+                        : "Eğitim"}
                     </span>
                   </div>
                 ))}
@@ -163,29 +204,43 @@ const CreateServerModal = ({ onClose, onCreate }) => {
 
             <div className={styles.inputGroup}>
               <label className={styles.label}>TOPLULUK KURALLARI</label>
-              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                <input 
+              <div
+                style={{ display: "flex", gap: "10px", alignItems: "center" }}
+              >
+                <input
                   type="checkbox"
                   checked={rulesAccepted}
                   onChange={(e) => setRulesAccepted(e.target.checked)}
                   disabled={isLoading}
                   style={{ width: "18px", height: "18px", cursor: "pointer" }}
                 />
-               <span style={{ color: "#bbb", fontSize: "0.85rem", lineHeight: "1.4" }}>
-                  Topluluk kurallarını, saygı ilkelerini kabul ediyorum ve sunucu içerisinde
-                  davranış kurallarına uyacağımı ve uygulayacağımı onaylıyorum.
+                <span
+                  style={{
+                    color: "#bbb",
+                    fontSize: "0.85rem",
+                    lineHeight: "1.4",
+                  }}
+                >
+                  Topluluk kurallarını, saygı ilkelerini kabul ediyorum ve
+                  sunucu içerisinde davranış kurallarına uyacağımı ve
+                  uygulayacağımı onaylıyorum.
                 </span>
               </div>
             </div>
           </form>
 
           <div className={styles.footer}>
-            <button type="button" onClick={onClose} className={styles.btnCancel} disabled={isLoading}>
+            <button
+              type="button"
+              onClick={onClose}
+              className={styles.btnCancel}
+              disabled={isLoading}
+            >
               Vazgeç
             </button>
-            <button 
-              type="submit" 
-              form="createForm" 
+            <button
+              type="submit"
+              form="createForm"
               className={styles.btnCreate}
               disabled={!serverName || !rulesAccepted || isLoading}
             >

@@ -1,99 +1,133 @@
 import { create } from "zustand";
-import { db, auth } from "../config/firebase-client"; 
+import { db, auth } from "../config/firebase-client";
 import { collection, getDocs } from "firebase/firestore";
-import axios from "axios"; 
+import axios from "axios";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
 
 export const useServerStore = create((set, get) => ({
-  servers: [], 
-  activeServerId: null, 
-  serverDetails: {}, // Cache: { "serverID": { channels: [] } }
-  
+  servers: [],
+  activeServerId: null,
+  serverDetails: {},
+
   isLoading: false,
-  isLoaded: false, 
+  isLoaded: false,
   error: null,
 
+  /* --------------------------------------------------
+     KULLANICININ SUNUCULARINI GETİR
+  -------------------------------------------------- */
   fetchUserServers: async () => {
-    if (get().isLoaded) return; // Cache varsa tekrar okuma yapma
+    if (get().isLoaded) return;
+
     set({ isLoading: true, error: null });
 
     try {
       const user = auth.currentUser;
       if (!user) return;
 
-      const querySnapshot = await getDocs(collection(db, "users", user.uid, "joinedServers"));
-      
-      const userServers = querySnapshot.docs.map(doc => ({
+      const snap = await getDocs(
+        collection(db, "users", user.uid, "joinedServers")
+      );
+
+      const servers = snap.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data(),
+        name: doc.data().name,
+        icon: doc.data().icon || null,
+        role: doc.data().role || "member",
+        unread: 0,
         activeVoice: 0,
-        unread: 0 
       }));
 
-      set({ servers: userServers, isLoaded: true, isLoading: false });
-
-    } catch (error) {
-      console.error("Sunucular yüklenirken hata:", error);
-      set({ error: error.message, isLoading: false });
+      set({
+        servers,
+        isLoaded: true,
+        isLoading: false,
+      });
+    } catch (err) {
+      console.error("Sunucular alınamadı:", err);
+      set({ error: err.message, isLoading: false });
     }
   },
 
-  // ✅ Sunucu Detaylarını Çeken Fonksiyon
+  /* --------------------------------------------------
+     SUNUCU DETAYLARI (CACHE'Lİ)
+  -------------------------------------------------- */
   fetchServerDetails: async (serverId) => {
-    // 1. CACHE KONTROLÜ: Eğer veri zaten varsa API'ye gitme (0 Maliyet)
+    if (!serverId) return;
+
     if (get().serverDetails[serverId]) {
       set({ activeServerId: serverId });
       return;
     }
 
     try {
-      // Token Al
       const user = auth.currentUser;
       if (!user) return;
+
       const token = await user.getIdToken();
-      
-      // 2. BACKEND İSTEĞİ (Artık 404 vermeyecek)
-      const response = await axios.get(`${API_URL}/api/servers/${serverId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
 
-      const fullData = response.data; 
+      const res = await axios.get(
+        `${API_URL}/api/servers/${serverId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-      // 3. STORE GÜNCELLEME (Cache'e ekle)
+      const data = res.data;
+
       set((state) => ({
         activeServerId: serverId,
         serverDetails: {
           ...state.serverDetails,
-          [serverId]: fullData 
-        }
+          [serverId]: {
+            ...data,
+          },
+        },
       }));
-
-    } catch (error) {
-      console.error("Sunucu detayları alınamadı:", error);
+    } catch (err) {
+      console.error("Sunucu detay hatası:", err);
     }
   },
 
-  addServer: (newServer) => {
+  /* --------------------------------------------------
+     YENİ SUNUCU EKLE (CREATE SERVER RESPONSE UYUMLU)
+  -------------------------------------------------- */
+  addServer: (response) => {
+    if (!response?.serverId) return;
+
     set((state) => ({
-      servers: [...state.servers, {
-        id: newServer.serverId, 
-        name: newServer.server.name,
-        img: newServer.server.icon || null, 
-        activeVoice: 0,
-        unread: 0,
-        role: "owner"
-      }],
-      activeServerId: newServer.serverId,
+      servers: [
+        ...state.servers,
+        {
+          id: response.serverId,
+          name: response.name,
+          icon: response.icon || null,
+          role: "owner",
+          unread: 0,
+          activeVoice: 0,
+        },
+      ],
+      activeServerId: response.serverId,
       serverDetails: {
         ...state.serverDetails,
-        [newServer.serverId]: {
-          channels: newServer.channels || [] 
-        }
-      }
+        [response.serverId]: {
+          channels: response.channels || [],
+          roles: response.roles || [],
+          permissions: response.permissions || ["ADMIN"],
+        },
+      },
     }));
   },
 
   setActiveServer: (serverId) => set({ activeServerId: serverId }),
-  reset: () => set({ servers: [], isLoaded: false, activeServerId: null, serverDetails: {} })
+
+  reset: () =>
+    set({
+      servers: [],
+      activeServerId: null,
+      serverDetails: {},
+      isLoaded: false,
+      error: null,
+    }),
 }));

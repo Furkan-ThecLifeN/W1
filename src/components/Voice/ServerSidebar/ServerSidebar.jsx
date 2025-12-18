@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { FaPlus } from "react-icons/fa";
-import { RiSignalTowerFill } from "react-icons/ri";
 import styles from "./ServerSidebar.module.css";
 import CreateServerModal from "../CreateServerModal/CreateServerModal";
 import { useServerStore } from "../../../Store/useServerStore";
@@ -12,13 +11,14 @@ const ServerSidebar = () => {
     servers,
     activeServerId,
     fetchUserServers,
-    fetchServerDetails, // ✅ Detay çekici
+    fetchServerDetails,
     addServer,
     isLoading,
   } = useServerStore();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const navigate = useNavigate(); // ✅
+  const navigate = useNavigate();
+
   const getInitial = (name) => (name ? name.charAt(0).toUpperCase() : "?");
 
   useEffect(() => {
@@ -29,10 +29,10 @@ const ServerSidebar = () => {
     return () => unsubscribe();
   }, [fetchUserServers]);
 
-  // ✅ Tıklama Fonksiyonu (DÜZELTİLDİ)
   const handleServerClick = (serverId) => {
+    if (!serverId) return;
     fetchServerDetails(serverId);
-    navigate(`/server/${serverId}`); // ✅ URL değişmeli
+    navigate(`/server/${serverId}`);
   };
 
   const handleServerCreated = (backendResponse) => {
@@ -57,36 +57,40 @@ const ServerSidebar = () => {
           {isLoading && servers.length === 0 ? (
             <div style={{ color: "white", padding: "20px" }}>...</div>
           ) : (
-            servers.map((server) => (
-              <div
-                key={server.id}
-                className={`${styles.serverItem} ${
-                  server.id === activeServerId ? styles.active : ""
-                }`}
-                // ✅ ARTIK ÇALIŞACAK
-                onClick={() => handleServerClick(server.id)}
-              >
-                <div className={styles.avatarWrapper}>
-                  {server.img || server.icon ? (
-                    <img
-                      src={server.img || server.icon}
-                      className={styles.avatar}
-                      alt={server.name}
-                    />
-                  ) : (
-                    <div className={styles.initialAvatar}>
-                      {getInitial(server.name)}
-                    </div>
-                  )}
-                  {server.unread > 0 && (
-                    <span className={styles.badge}>{server.unread}</span>
-                  )}
-                </div>
+            servers.map((server) => {
+              const serverId = server.id || server._id;
+              if (!serverId) return null;
 
-                {/* Hover Tooltip (İsteğe bağlı) */}
-                <div className={styles.tooltip}>{server.name}</div>
-              </div>
-            ))
+              return (
+                <div
+                  key={serverId}
+                  className={`${styles.serverItem} ${
+                    serverId === activeServerId ? styles.active : ""
+                  }`}
+                  onClick={() => handleServerClick(serverId)}
+                >
+                  <div className={styles.avatarWrapper}>
+                    {server.img || server.icon ? (
+                      <img
+                        src={server.img || server.icon}
+                        className={styles.avatar}
+                        alt={server.name}
+                      />
+                    ) : (
+                      <div className={styles.initialAvatar}>
+                        {getInitial(server.name)}
+                      </div>
+                    )}
+
+                    {server.unread > 0 && (
+                      <span className={styles.badge}>{server.unread}</span>
+                    )}
+                  </div>
+
+                  <div className={styles.tooltip}>{server.name}</div>
+                </div>
+              );
+            })
           )}
         </div>
       </aside>
