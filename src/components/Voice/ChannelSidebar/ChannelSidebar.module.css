@@ -1,4 +1,4 @@
-/* MAIN CONTAINER */
+/* MAIN */
 .glassSidebar {
   width: 100%;
   max-width: 280px;
@@ -14,17 +14,13 @@
   position: relative;
 }
 
-/* ======================================= */
-/* PREMIUM WHITE HEADER                    */
-/* ======================================= */
-
 .premiumHeader {
   padding: 20px;
   z-index: 5;
 }
 
 .headerInner {
-  background: #f0f0f0; /* İstenilen BEYAZ Arka Plan */
+  background: #f0f0f0;
   padding: 12px;
   border-radius: 16px;
   display: flex;
@@ -55,10 +51,7 @@
   letter-spacing: -0.5px;
 }
 
-/* ======================================= */
-/* CHANNEL LIST SCROLL AREA                */
-/* ======================================= */
-
+/* SCROLL */
 .channelScroll {
   flex: 1;
   overflow-y: auto;
@@ -69,12 +62,13 @@
 .channelScroll::-webkit-scrollbar {
   width: 4px;
 }
+
 .channelScroll::-webkit-scrollbar-thumb {
   background: #333;
   border-radius: 4px;
 }
 
-/* CATEGORY STYLES */
+/* CATEGORY */
 .categoryWrapper {
   margin-bottom: 24px;
 }
@@ -85,12 +79,12 @@
   align-items: center;
   padding: 8px 4px;
   cursor: pointer;
-  color: #555; /* Daha koyu gri */
+  color: #555;
   font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 1.5px;
   transition: 0.2s;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03); /* Alt çizgi detayı */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
   margin-bottom: 8px;
 }
 
@@ -106,20 +100,59 @@
   transition: transform 0.3s ease;
   font-size: 0.7rem;
 }
+
 .rotated {
   transform: rotate(-90deg);
 }
 
-/* CHANNEL ITEMS */
+/* EKLEME BUTONU (+ İkonu) */
+.addBtnWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: 0.2s;
+  margin-left: 4px;
+  color: #bbb;
+}
+
+.addBtnWrapper:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.addBtnIcon {
+  font-size: 0.8rem;
+}
+
+/* AYARLAR BUTONU (Dişli) */
+.settingsBtnWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #bbb;
+  transition: 0.2s;
+  margin-left: 5px;
+}
+
+.settingsBtnWrapper:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* ITEMS */
 .channelList {
   display: flex;
   flex-direction: column;
   gap: 6px;
   position: relative;
-  padding-left: 12px; /* Çizgi için boşluk */
 }
 
-/* Design Detail: Flow Line (Dikey Çizgi) */
 .flowLine {
   position: absolute;
   left: 0;
@@ -141,7 +174,7 @@
   color: #8899a6;
   transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   border: 1px solid transparent;
-  background: rgba(255, 255, 255, 0.01); /* Çok hafif dolgu */
+  background: rgba(255, 255, 255, 0.01);
 }
 
 .channelLeft {
@@ -150,7 +183,6 @@
   gap: 12px;
 }
 
-/* Icons */
 .iconHash,
 .iconVol {
   font-size: 1.1rem;
@@ -164,7 +196,6 @@
   transition: 0.2s;
 }
 
-/* Hover Effect */
 .channelItem:hover {
   background: rgba(255, 255, 255, 0.06);
   color: #e1e1e1;
@@ -176,7 +207,6 @@
   color: #ddd;
 }
 
-/* Active State */
 .activeItem {
   color: #fff !important;
   border: 1px solid rgba(255, 255, 255, 0.56);
@@ -199,7 +229,6 @@
   border-radius: 4px;
 }
 
-/* Badges */
 .badgeNew {
   font-size: 9px;
   background: #35c6ff;
@@ -210,28 +239,146 @@
   box-shadow: 0 0 10px rgba(0, 170, 255, 0.4);
 }
 
-.userCountBadge {
+/* VOICE USERS CARD DESIGN */
+.voiceWrapper {
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  margin-bottom: 2px;
+}
+
+.voiceWrapperActive {
+  background: #040404;
+  padding: 10px 6px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.voiceUserContainer {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 0;
+  gap: 6px;
+}
+
+/* GÜNCELLENMİŞ KART (SAĞ İKONLAR İÇİN) */
+.voiceUserCard {
+  background: rgba(30, 31, 34, 0.6);
+  padding: 4px 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  transition: all 0.2s ease;
+  cursor: default;
+  width: 95%;
+  margin: 0 auto;
+}
+
+.voiceUserCard:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.cardInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* İkonları en sağa iter */
+  width: 100%;
+}
+
+.leftSection {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+}
+
+/* AVATAR */
+.avatarWrapper {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  padding: 2px;
+}
+
+.miniAvatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #2b2d31;
+  transition: border-color 0.1s ease;
+}
+
+.avatarSpeaking {
+  border-color: #4ade80 !important;
+  box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.3);
+}
+
+/* İSİM VE DURUM */
+.userInfoCol {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 1.2;
+}
+
+.voiceUserName {
+  font-size: 0.85rem;
+  color: #f2f3f5;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+
+.voiceStatusRow {
   display: flex;
   align-items: center;
   gap: 4px;
-  background: #111;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  border: 1px solid #333;
 }
 
-.countDot {
-  width: 6px;
-  height: 6px;
-  background: #00ff9d;
-  border-radius: 50%;
+.voiceUserStatus {
+  font-size: 0.65rem;
+  color: #4ade80;
+  font-weight: 500;
 }
 
-/* ======================================= */
-/* USER CONTROL DECK (Footer)              */
-/* ======================================= */
+.statusIcon {
+  font-size: 0.6rem;
+  color: #4ade80;
+}
 
+/* SAĞDAKİ DURUM İKONLARI (YENİ) */
+.rightIcons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.statusIconBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #2b2d31;
+  border-radius: 4px;
+  width: 24px; /* Kutu boyutu */
+  height: 24px;
+}
+
+.miniStatusIcon {
+  font-size: 14px; /* İkon boyutu büyütüldü */
+  color: #ff4d4d;
+}
+
+.loadingCard {
+  font-size: 0.7rem;
+  color: #666;
+  padding-left: 30px;
+}
+
+/* FOOTER */
 .controlDeck {
   padding: 10px;
   z-index: 10;
@@ -241,8 +388,7 @@
 .deckGlass {
   background: var(--color-black);
   backdrop-filter: blur(16px);
-  border: 1px solid #1a1a1a;
-  border-color: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 16px;
   padding: 10px;
   display: flex;
@@ -260,9 +406,9 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  flex: 1;          
-  min-width: 0;     
-  margin-right: 8px; 
+  flex: 1;
+  min-width: 0;
+  margin-right: 8px;
 }
 
 .avatarContainer {
@@ -294,24 +440,13 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  overflow: hidden; 
+  overflow: hidden;
 }
 
 .uName {
   font-size: 0.85rem;
   font-weight: 700;
   color: #fff;
-  white-space: nowrap;     
-  overflow: hidden;        
-  text-overflow: ellipsis;
-  display: block;           
-}
-
-.uId {
-  font-size: 0.7rem;
-  color: #777;
-  
-  /* ✅ YENİ EKLENENLER (ID'yi Kısaltma): */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -321,7 +456,7 @@
 .deckActions {
   display: flex;
   gap: 4px;
-  flex-shrink: 0; /* Butonların sıkışmasını engelle */
+  flex-shrink: 0;
 }
 
 .deckBtn {
@@ -345,11 +480,171 @@
 }
 
 .statusOnline {
-  background-color: #3ba55c; /* Discord Yeşili */
-  box-shadow: 0 0 0 2px #18191c; /* Avatarın arka plan rengiyle aynı border efekti */
+  background-color: #3ba55c;
+  box-shadow: 0 0 0 2px #18191c;
 }
 
 .statusOffline {
-  background-color: #747f8d; /* Gri */
+  background-color: #747f8d;
   box-shadow: 0 0 0 2px #18191c;
+}
+
+.iconRed {
+  color: #ff4d4d !important;
+}
+
+.btnActive {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* AYARLAR MODALI STİLLERİ */
+.settingsOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.settingsModal {
+  background: #1e1f22;
+  padding: 20px;
+  border-radius: 12px;
+  width: 320px;
+  border: 1px solid #333;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.modalTitle {
+  color: #fff;
+  font-size: 1rem;
+  margin-bottom: 15px;
+  font-weight: 700;
+  border-bottom: 1px solid #333;
+  padding-bottom: 10px;
+  margin-top: 0;
+}
+
+.settingGroup {
+  margin-bottom: 15px;
+}
+
+.settingLabel {
+  display: block;
+  color: #bbb;
+  font-size: 0.75rem;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.deviceSelect {
+  width: 100%;
+  padding: 8px;
+  background: #111;
+  border: 1px solid #333;
+  color: #fff;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.deviceSelect:focus {
+  border-color: #5865f2;
+}
+
+.closeBtn {
+  width: 100%;
+  padding: 8px;
+  background: #5865f2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+.closeBtn:hover {
+  background: #4752c4;
+}
+
+/* TEXT KANAL MODAL STİLLERİ (YENİ) */
+.createChannelOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.createChannelModal {
+  background: #313338;
+  padding: 24px;
+  border-radius: 8px;
+  width: 400px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+}
+
+.modalHeader {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.modalInput {
+  width: 100%;
+  padding: 10px;
+  background: #1e1f22;
+  border: none;
+  border-radius: 4px;
+  color: #dbdee1;
+  font-size: 1rem;
+  margin-bottom: 20px;
+  outline: none;
+}
+
+.modalInput:focus {
+  background: #1e1f22;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btnCancel {
+  background: transparent;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 8px 16px;
+}
+
+.btnCreate {
+  background: #5865f2;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btnCreate:hover {
+  background: #4752c4;
 }
