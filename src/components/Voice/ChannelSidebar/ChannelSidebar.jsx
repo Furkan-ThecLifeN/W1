@@ -7,7 +7,6 @@ import {
   FaMicrophone,
   FaHeadphones,
   FaPhoneSlash,
-  FaPlus,
   FaMicrophoneSlash,
   FaLock,
 } from "react-icons/fa";
@@ -16,55 +15,13 @@ import { getAuth } from "firebase/auth";
 import styles from "./ChannelSidebar.module.css";
 import { useWebRTC } from "../../../hooks/useWebRTC";
 
-// --- MODALLAR ---
+// --- MODALS ---
 import VoiceUserCard from "../Modals/VoiceUserCard/VoiceUserCard";
 import SettingsModal from "../Modals/SettingsModal/SettingsModal";
 import VoiceRoomSettingsModal from "../Modals/VoiceRoomSettingsModal/VoiceRoomSettingsModal";
 import CreateChannelModal from "../Modals/CreateChannelModal/CreateChannelModal";
-
-// 🔥 YENİ: CSS-in-JSX ile Yazılmış Özel Buton Bileşeni
-const AddButton = ({ onClick }) => {
-  const [hover, setHover] = useState(false);
-
-  const btnStyle = {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "26px",
-    height: "26px",
-    borderRadius: "50%",
-    marginLeft: "auto",
-    cursor: "pointer",
-    // Normalde şeffaf, hover olunca Gradient Neon
-    background: hover
-      ? "linear-gradient(135deg, #5865F2, #9b59b6)"
-      : "rgba(255, 255, 255, 0.08)",
-    // Hover olunca parlama efekti (Glow)
-    boxShadow: hover
-      ? "0 0 12px rgba(88, 101, 242, 0.8), 0 0 4px rgba(255, 255, 255, 0.5)"
-      : "none",
-    border: hover ? "1px solid transparent" : "1px solid rgba(255,255,255,0.1)",
-    transition: "all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)",
-    transform: hover ? "scale(1.1) rotate(90deg)" : "scale(1) rotate(0deg)", // Dönme efekti ekledim
-  };
-
-  return (
-    <div
-      style={btnStyle}
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick();
-      }}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      title="Yeni Kanal Oluştur"
-    >
-      <FaPlus
-        style={{ color: "white", fontSize: "10px", pointerEvents: "none" }}
-      />
-    </div>
-  );
-};
+import AddButton from "../Modals/AddButton/AddButton";
+import TextChannelSettingsModal from "../Modals/TextChannelSettingsModal/TextChannelSettingsModal"; // New Import
 
 const ChannelSidebar = ({
   serverInfo,
@@ -84,12 +41,14 @@ const ChannelSidebar = ({
   const [userStatuses, setUserStatuses] = useState({});
   const [localStatus, setLocalStatus] = useState({ muted: false, deaf: false });
 
-  // Modallar
+  // Modals
   const [showSettings, setShowSettings] = useState(false);
   const [showVoiceRoomSettings, setShowVoiceRoomSettings] = useState(false);
+  const [showTextChannelSettings, setShowTextChannelSettings] = useState(false); // New State
   const [selectedVoiceRoom, setSelectedVoiceRoom] = useState(null);
+  const [selectedTextChannel, setSelectedTextChannel] = useState(null); // New State
 
-  // ✅ Create Modal State
+  // Create Modal State
   const [createModal, setCreateModal] = useState({ show: false, type: "text" });
 
   const currentServerId = serverInfo?.id || serverInfo?.firebaseServerId;
@@ -111,12 +70,12 @@ const ChannelSidebar = ({
     switchSpeaker,
   } = useWebRTC(socket, currentUser);
 
-  // 🔥 PERMISSION CHECK (TEK KAYNAK)
+  // PERMISSION CHECK
   const canManageChannels =
     serverInfo?.permissions?.includes("ADMIN") ||
     serverInfo?.permissions?.includes("MANAGE_CHANNELS");
 
-  // --- KANALLARI BİRLEŞTİRME ---
+  // --- CHANNEL MERGING ---
   useEffect(() => {
     if (serverInfo?.channels && serverInfo.channels.length > 0) {
       setLocalChannels(serverInfo.channels);
@@ -187,12 +146,12 @@ const ChannelSidebar = ({
             });
           } else if (msg.action === "deleted") {
             setLocalChannels((prev) =>
-              prev.filter((c) => c.channelId !== msg.channelData.id)
+              prev.filter((c) => (c.channelId || c.id) !== msg.channelData.id)
             );
           } else if (msg.action === "updated") {
             setLocalChannels((prev) =>
               prev.map((c) =>
-                c.channelId === msg.channelData.id
+                (c.channelId || c.id) === msg.channelData.id
                   ? { ...c, ...msg.channelData }
                   : c
               )
@@ -227,13 +186,14 @@ const ChannelSidebar = ({
     setCreateModal({ show: true, type });
   };
 
-  const handleLockRoom = () => {
+  const handleLockRoom = (isLocked) => {
     if (!socket || !selectedVoiceRoom) return;
     socket.send(
       JSON.stringify({
         type: "LOCK_VOICE_CHANNEL",
         serverId: currentServerId,
         channelId: selectedVoiceRoom.channelId,
+        locked: isLocked
       })
     );
   };
@@ -250,8 +210,33 @@ const ChannelSidebar = ({
     );
   };
 
+  // Logic for renaming Text Channel
+  const handleRenameTextChannel = (newName) => {
+    if (!socket || !selectedTextChannel) return;
+    socket.send(
+      JSON.stringify({
+        type: "RENAME_TEXT_CHANNEL",
+        serverId: currentServerId,
+        channelId: selectedTextChannel.channelId || selectedTextChannel.id,
+        newName,
+      })
+    );
+  };
+
+  // Logic for deleting Text Channel
+  const handleDeleteTextChannel = () => {
+    if (!socket || !selectedTextChannel) return;
+    socket.send(
+      JSON.stringify({
+        type: "DELETE_TEXT_CHANNEL",
+        serverId: currentServerId,
+        channelId: selectedTextChannel.channelId || selectedTextChannel.id,
+      })
+    );
+    setShowTextChannelSettings(false);
+  };
+
   const handleVoiceClick = (ch) => {
-    // 🔥 GÜVENLİK GÜNCELLEMESİ: isOwner yerine canManageChannels kontrolü
     if (ch.locked && !canManageChannels) {
       alert("Bu oda kilitli!");
       return;
@@ -263,7 +248,7 @@ const ChannelSidebar = ({
       setVoiceStates((prev) => {
         const newState = { ...prev };
         Object.keys(newState).forEach((key) => {
-          newState[key] = newState[key].filter(
+          newState[key] = (newState[key] || []).filter(
             (uid) => uid !== currentUser.uid
           );
         });
@@ -326,7 +311,7 @@ const ChannelSidebar = ({
 
   return (
     <div className={styles.glassSidebar}>
-      {/* MODALLAR */}
+      {/* MODALS */}
       {showSettings && (
         <SettingsModal
           onClose={() => setShowSettings(false)}
@@ -364,6 +349,20 @@ const ChannelSidebar = ({
           }}
           onLock={handleLockRoom}
           onRename={handleRenameRoom}
+          onDelete={() => { /* Add Delete Voice Logic */ }}
+        />
+      )}
+
+      {/* NEW TEXT CHANNEL SETTINGS MODAL */}
+      {showTextChannelSettings && selectedTextChannel && (
+        <TextChannelSettingsModal
+          channel={selectedTextChannel}
+          onClose={() => {
+            setShowTextChannelSettings(false);
+            setSelectedTextChannel(null);
+          }}
+          onRename={handleRenameTextChannel}
+          onDelete={handleDeleteTextChannel}
         />
       )}
 
@@ -371,11 +370,7 @@ const ChannelSidebar = ({
       <div className={styles.premiumHeader}>
         <div className={styles.headerInner}>
           <img
-            src={
-              serverInfo.img ||
-              serverInfo.icon ||
-              "https://via.placeholder.com/50"
-            }
+            src={serverInfo.img || serverInfo.icon || "https://via.placeholder.com/50"}
             alt="S"
             className={styles.serverImg}
           />
@@ -389,20 +384,13 @@ const ChannelSidebar = ({
         {/* --- TEXT ZONES --- */}
         <div className={styles.categoryWrapper}>
           <div className={styles.categoryTitle} onClick={() => toggle("text")}>
-            <div
-              style={{ display: "flex", alignItems: "center", width: "100%" }}
-            >
+            <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
               <span className={styles.catName}>TEXT ZONES</span>
-              {/* 🔥 GÜNCEL: Sadece yetkili (Admin/Manage Channels) ise göster */}
               {canManageChannels && (
                 <AddButton onClick={() => handleOpenCreateModal("text")} />
               )}
             </div>
-            <FaChevronDown
-              className={`${styles.chevron} ${
-                collapsed.text ? styles.rotated : ""
-              }`}
-            />
+            <FaChevronDown className={`${styles.chevron} ${collapsed.text ? styles.rotated : ""}`} />
           </div>
           {!collapsed.text && (
             <div className={styles.channelList}>
@@ -411,18 +399,25 @@ const ChannelSidebar = ({
                 return (
                   <div
                     key={k}
-                    className={`${styles.channelItem} ${
-                      activeChannelId === k ? styles.activeItem : ""
-                    }`}
+                    className={`${styles.channelItem} ${activeChannelId === k ? styles.activeItem : ""}`}
                     onClick={() => onChannelSelect(ch)}
                   >
                     <div className={styles.channelLeft}>
                       <FaHashtag className={styles.iconHash} />
                       <span className={styles.chName}>{ch.name}</span>
                     </div>
-                    {activeChannelId === k && (
-                      <div className={styles.activeGlowBar}></div>
-                    )}
+                    {/* ADDED SETTINGS ICON FOR TEXT CHANNELS */}
+                    {canManageChannels && (
+                        <FaCog
+                          className={styles.voiceSettingsIcon}
+                          style={{ marginLeft: "auto", color: "#ccc", cursor: "pointer" }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedTextChannel(ch);
+                            setShowTextChannelSettings(true);
+                          }}
+                        />
+                      )}
                   </div>
                 );
               })}
@@ -433,33 +428,24 @@ const ChannelSidebar = ({
         {/* --- VOICE PODS --- */}
         <div className={styles.categoryWrapper}>
           <div className={styles.categoryTitle} onClick={() => toggle("voice")}>
-            <div
-              style={{ display: "flex", alignItems: "center", width: "100%" }}
-            >
+            <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
               <span className={styles.catName}>VOICE PODS</span>
-              {/* 🔥 GÜNCEL: Sadece yetkili ise oluşturma butonu göster */}
               {canManageChannels && (
                 <AddButton onClick={() => handleOpenCreateModal("voice")} />
               )}
-              {/* Ayarlar Butonu */}
               <div
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowSettings(true);
                 }}
                 className={styles.settingsBtnWrapper}
-                title="Ayarlar"
-                // 🔥 FIX: Margin bug düzeltildi
+                title="Settings"
                 style={{ marginLeft: canManageChannels ? "5px" : "auto" }}
               >
                 <FaCog className={styles.addBtnIcon} />
               </div>
             </div>
-            <FaChevronDown
-              className={`${styles.chevron} ${
-                collapsed.voice ? styles.rotated : ""
-              }`}
-            />
+            <FaChevronDown className={`${styles.chevron} ${collapsed.voice ? styles.rotated : ""}`} />
           </div>
           {!collapsed.voice && (
             <div className={styles.channelList}>
@@ -468,38 +454,27 @@ const ChannelSidebar = ({
                 const usrs = voiceStates[k] || [];
                 const act = activeVoiceChannel === k;
                 const isLocked = ch.locked;
-                const wrapperClass =
-                  usrs.length > 0 || act
-                    ? `${styles.voiceWrapper} ${styles.voiceWrapperActive}`
-                    : styles.voiceWrapper;
+                const wrapperClass = usrs.length > 0 || act
+                  ? `${styles.voiceWrapper} ${styles.voiceWrapperActive}`
+                  : styles.voiceWrapper;
                 return (
                   <div key={k} className={wrapperClass}>
                     <div
-                      className={`${styles.channelItem} ${styles.voiceItem} ${
-                        act ? styles.activeItem : ""
-                      }`}
+                      className={`${styles.channelItem} ${styles.voiceItem} ${act ? styles.activeItem : ""}`}
                       onClick={() => handleVoiceClick(ch)}
                     >
                       <div className={styles.channelLeft}>
                         {isLocked ? (
-                          <FaLock
-                            className={styles.iconVol}
-                            style={{ color: "#ff4d4d" }}
-                          />
+                          <FaLock className={styles.iconVol} style={{ color: "#ff4d4d" }} />
                         ) : (
                           <FaVolumeUp className={styles.iconVol} />
                         )}
                         <span className={styles.chName}>{ch.name}</span>
                       </div>
-                      {/* 🔥 GÜNCEL: Voice Channel Settings sadece yetkiliye görünür */}
                       {canManageChannels && (
                         <FaCog
                           className={styles.voiceSettingsIcon}
-                          style={{
-                            marginLeft: "auto",
-                            color: "#ccc",
-                            cursor: "pointer",
-                          }}
+                          style={{ marginLeft: "auto", color: "#ccc", cursor: "pointer" }}
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedVoiceRoom(ch);
@@ -538,19 +513,11 @@ const ChannelSidebar = ({
             <div className={styles.userProfile}>
               <div className={styles.avatarContainer}>
                 <img
-                  src={
-                    currentUser.photoURL || "https://via.placeholder.com/50"
-                  }
-                  alt="Av"
+                  src={currentUser.photoURL || "https://via.placeholder.com/50"}
+                  alt="Avatar"
                   className={styles.avatarImg}
                 />
-                <div
-                  className={`${styles.onlineBadge} ${
-                    currentUser.status === "online"
-                      ? styles.statusOnline
-                      : styles.statusOffline
-                  }`}
-                ></div>
+                <div className={`${styles.onlineBadge} ${currentUser.status === "online" ? styles.statusOnline : styles.statusOffline}`}></div>
               </div>
               <div className={styles.userInfo}>
                 <span className={styles.uName}>{currentUser.displayName}</span>
@@ -561,40 +528,27 @@ const ChannelSidebar = ({
           )}
           <div className={styles.deckActions}>
             <button
-              className={`${styles.deckBtn} ${
-                localStatus.muted ? styles.btnActive : ""
-              }`}
+              className={`${styles.deckBtn} ${localStatus.muted ? styles.btnActive : ""}`}
               onClick={handleToggleMute}
             >
-              {localStatus.muted ? (
-                <FaMicrophoneSlash className={styles.iconRed} />
-              ) : (
-                <FaMicrophone />
-              )}
+              {localStatus.muted ? <FaMicrophoneSlash className={styles.iconRed} /> : <FaMicrophone />}
             </button>
             <button
-              className={`${styles.deckBtn} ${
-                localStatus.deaf ? styles.btnActive : ""
-              }`}
+              className={`${styles.deckBtn} ${localStatus.deaf ? styles.btnActive : ""}`}
               onClick={handleToggleDeaf}
             >
-              <FaHeadphones
-                className={localStatus.deaf ? styles.iconRed : ""}
-              />
+              <FaHeadphones className={localStatus.deaf ? styles.iconRed : ""} />
             </button>
             {activeVoiceChannel ? (
               <button
                 className={styles.deckBtn}
                 onClick={handleDisconnect}
-                style={{ color: "#ff4d4d" }}
+                style={{ color: "#f70303ff" }}
               >
                 <FaPhoneSlash />
               </button>
             ) : (
-              <button
-                className={styles.deckBtn}
-                onClick={() => setShowSettings(true)}
-              >
+              <button className={styles.deckBtn} onClick={() => setShowSettings(true)}>
                 <FaCog />
               </button>
             )}

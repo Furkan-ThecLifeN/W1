@@ -1,0 +1,222 @@
+/* ================= ANİMASYONLAR ================= */
+
+@keyframes fadeIn {
+  from { opacity: 0; backdrop-filter: blur(0); }
+  to { opacity: 1; backdrop-filter: blur(8px); }
+}
+
+@keyframes slideUp {
+  from { transform: scale(0.95) translateY(30px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@keyframes borderGlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ================= OVERLAY ================= */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5000;
+  animation: fadeIn 0.3s ease-out forwards;
+  
+}
+
+/* ================= MODAL ================= */
+
+.modal {
+  background: #000;
+  width: 560px;
+  max-width: 95%;
+  border-radius: 18px;
+  border: 1px solid #1e1e1e;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.35s cubic-bezier(0.16,1,0.3,1) forwards;
+  position: relative;
+  overflow: hidden; /* 🔥 KRİTİK */
+}
+
+.modal::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+
+  background: linear-gradient(
+    90deg,
+    #5865f2,
+    #9b59b6,
+    #5865f2
+  );
+  background-size: 200% 100%;
+  animation: borderGlow 3s linear infinite;
+
+  border-radius: 18px 18px 0 0; /* 🔥 KÖŞELER EĞİLDİ */
+}
+
+
+/* ================= HEADER ================= */
+
+.header {
+  padding: 28px 28px 18px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.header > div:first-child {
+  max-width: calc(100% - 56px);
+}
+
+.title {
+  color: #fff;
+  font-size: 1.65rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.subTitle {
+  margin-top: 6px;
+  color: #8e9297;
+  font-size: 0.95rem;
+}
+
+/* Close Button – SABİT, BOZULMAZ */
+
+.closeBtnWrapper {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  background: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.closeBtnWrapper:hover {
+  background: #b5b5b5;
+}
+
+/* ================= CONTENT ================= */
+
+.content {
+  padding: 22px 28px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.label {
+  color: #b9bbbe;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+
+/* ================= CUSTOM SELECT ================= */
+
+.selectWrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Select Header */
+
+.selectContainer {
+  height: 52px;
+  background: #09090b;
+  border: 1px solid #2e2e2e;
+  border-radius: 10px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.selectContainer:hover {
+  border-color: #444;
+}
+
+.inputIcon {
+  color: #5865f2;
+  font-size: 1.2rem;
+  margin-right: 14px;
+}
+
+.selectedText {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ================= DROPDOWN ================= */
+/* NORMAL FLOW → MODAL BÜYÜR */
+
+.dropdown {
+  margin-top: 8px;
+  background: #000;
+  border: 1px solid #2e2e2e;
+  border-radius: 10px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+/* Option */
+
+.option {
+  padding: 14px 16px;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.option:hover {
+  background: #2a2a2a;
+}
+
+/* ================= FOOTER ================= */
+
+.footer {
+  padding: 18px 28px;
+  background: #050505;
+  border-top: 1px solid #1a1a1a;
+  border-radius: 0 0 18px 18px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.actionBtn {
+  background: linear-gradient(135deg,#5865f2,#4752c4);
+  color: #fff;
+  border: none;
+  padding: 12px 42px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.actionBtn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}

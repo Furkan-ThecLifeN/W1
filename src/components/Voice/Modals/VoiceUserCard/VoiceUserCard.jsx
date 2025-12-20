@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaSignal, FaMicrophoneSlash, FaHeadphones } from "react-icons/fa";
 import { useUserStore } from "../../../../Store/useUserStore";
 import useAudioAnalysis from "../../../../hooks/useAudioAnalysis";
-import styles from "../../ChannelSidebar/ChannelSidebar.module.css";
+import styles from "./VoiceUserCard.module.css";
 
 const VoiceUserCard = ({ userId, status, stream }) => {
   const { getUserProfile, usersCache, currentUser } = useUserStore();

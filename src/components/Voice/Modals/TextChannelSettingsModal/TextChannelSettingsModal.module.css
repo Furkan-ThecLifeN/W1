@@ -1,0 +1,213 @@
+/* Animasyonlar */
+@keyframes fadeIn {
+    from { opacity: 0; backdrop-filter: blur(0px); }
+    to { opacity: 1; backdrop-filter: blur(5px); }
+}
+
+@keyframes slideUp {
+    from { transform: scale(0.95) translateY(20px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@keyframes gradientMove {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 100% 0%; }
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease forwards;
+}
+
+.modal {
+    background-color: #000000;
+    width: 440px;
+    max-width: 90%;
+    border-radius: 12px;
+    border: 1px solid #1e1e1e;
+    box-shadow: 0 0 30px rgba(88, 165, 242, 0.15); 
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    position: relative;
+}
+
+/* Üst Taraftaki Renkli Çizgi */
+.modal::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, #5865F2, #9b59b6, #5865F2);
+    background-size: 200% 100%;
+    animation: gradientMove 3s linear infinite;
+}
+
+.header {
+    padding: 24px 24px 10px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.title {
+    color: #ffffff;
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 0;
+}
+
+.subTitle {
+    color: #8a8e94;
+    font-size: 0.85rem;
+    marginTop: 8px;
+}
+
+.closeBtnIcon {
+    color: #72767d;
+    cursor: pointer;
+    background: #111;
+    padding: 5px;
+    border-radius: 50%;
+    transition: 0.2s;
+}
+
+.closeBtnIcon:hover {
+    color: #fff;
+    background: #222;
+}
+
+.content {
+    padding: 20px 24px;
+}
+
+.label {
+    display: block;
+    color: #b9bbbe;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+}
+
+.inputActionRow {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.inputWrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: #09090b;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 10px 15px;
+    transition: 0.3s;
+}
+
+.inputWrapper:focus-within {
+    border-color: #5865F2;
+    box-shadow: 0 0 10px rgba(88, 101, 242, 0.2);
+}
+
+.icon {
+    color: #58bff2;
+    margin-right: 12px;
+}
+
+.input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    outline: none;
+    width: 100%;
+    font-size: 0.95rem;
+}
+
+.saveBtn {
+    background: linear-gradient(135deg, #5865F2, #4752c4);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.saveBtn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+.dangerZone {
+    margin-top: 25px;
+    background: rgba(255, 77, 77, 0.05);
+    border: 1px solid rgba(255, 77, 77, 0.2);
+    padding: 12px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dangerText {
+    color: #fb1414;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.deleteBtn {
+    background: #f71e1e;
+    color: #fff;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.8rem;
+    transition: 0.2s;
+}
+
+.deleteBtn:hover {
+    filter: brightness(1.1);
+}
+
+.footer {
+    background-color: #050505;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid #1a1a1a;
+}
+
+.closeBtn {
+    background: transparent;
+    color: #aaa;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: 0.2s;
+}
+
+.closeBtn:hover {
+    color: #fff;
+}

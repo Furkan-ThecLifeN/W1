@@ -1,0 +1,110 @@
+/* Animasyonlar */
+@keyframes fadeIn {
+    from { opacity: 0; backdrop-filter: blur(0px); }
+    to { opacity: 1; backdrop-filter: blur(5px); }
+}
+
+@keyframes slideUp {
+    from { transform: scale(0.95) translateY(20px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@keyframes gradientMove {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 100% 0%; }
+}
+
+.createChannelOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease forwards;
+}
+
+.createChannelModal {
+    background-color: #000000;
+    width: 440px;
+    max-width: 90%;
+    border-radius: 12px;
+    border: 1px solid #1e1e1e;
+    box-shadow: 0 0 30px rgba(88, 165, 242, 0.15); 
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    position: relative;
+}
+
+/* Üst Taraftaki Premium Renkli Çizgi */
+.createChannelModal::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, #5865F2, #9b59b6, #5865F2);
+    background-size: 200% 100%;
+    animation: gradientMove 3s linear infinite;
+}
+
+.settingLabel {
+    display: block;
+    color: #b9bbbe;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+}
+
+.btnCreate {
+    background: linear-gradient(135deg, #5865F2, #4752c4);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 15px rgba(88, 101, 242, 0.3);
+}
+
+.btnCreate:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+.btnCancel {
+    background: #111;
+    color: #fff;
+    border: 1px solid #333;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btnCancel:hover {
+    background: #e30c0c;
+    border-color: #f71313;
+}
+
+.closeBtn:hover {
+    color: #fff !important;
+}
+
+/* Input Focus Efekti */
+.modalInput:focus-within {
+    border-color: #5865F2;
+}

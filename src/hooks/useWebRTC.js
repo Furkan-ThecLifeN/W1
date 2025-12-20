@@ -29,16 +29,28 @@ export const useWebRTC = (socket, currentUser) => {
 
     const getDevices = async () => {
       try {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          stream.getTracks().forEach(t => t.stop());
-        } catch {}
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+
+        const activeTrack = stream.getAudioTracks()[0];
+        const activeDeviceId = activeTrack.getSettings().deviceId;
 
         const devices = await navigator.mediaDevices.enumerateDevices();
         if (!isMounted) return;
 
-        setInputDevices(devices.filter(d => d.kind === "audioinput"));
-        setOutputDevices(devices.filter(d => d.kind === "audiooutput"));
+        const inputs = devices.filter((d) => d.kind === "audioinput");
+        const outputs = devices.filter((d) => d.kind === "audiooutput");
+
+        setInputDevices(inputs);
+        setOutputDevices(outputs);
+
+        // 🔥 GERÇEK DEFAULT MİKROFONU SET ET
+        if (activeDeviceId) {
+          setSelectedMic(activeDeviceId);
+        }
+
+        stream.getTracks().forEach((t) => t.stop());
       } catch (err) {
         console.error("Cihaz alınamadı:", err);
       }
@@ -57,36 +69,29 @@ export const useWebRTC = (socket, currentUser) => {
   // 2️⃣ MİKROFON / KULAKLIK
   // ======================================================
   const switchMicrophone = async (deviceId) => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          deviceId: deviceId === "default" ? undefined : { exact: deviceId },
-        },
-      });
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        deviceId: deviceId === "default" ? undefined : { exact: deviceId },
+      },
+    });
 
-      const newTrack = stream.getAudioTracks()[0];
+    const newTrack = stream.getAudioTracks()[0];
 
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach(t => t.stop());
-      }
+    localStreamRef.current?.getTracks().forEach((t) => t.stop());
+    localStreamRef.current = stream;
+    setLocalStream(stream);
 
-      localStreamRef.current = stream;
-      setLocalStream(stream);
+    Object.values(peersRef.current).forEach((peer) => {
+      const sender = peer.getSenders().find((s) => s.track?.kind === "audio");
+      sender?.replaceTrack(newTrack);
+    });
 
-      Object.values(peersRef.current).forEach(peer => {
-        const sender = peer.getSenders().find(s => s.track?.kind === "audio");
-        if (sender) sender.replaceTrack(newTrack);
-      });
-
-      setSelectedMic(deviceId);
-    } catch (err) {
-      console.error("Mikrofon değiştirilemedi:", err);
-    }
+    setSelectedMic(deviceId);
   };
 
   const switchSpeaker = (deviceId) => {
     setSelectedSpeaker(deviceId);
-    document.querySelectorAll("audio").forEach(audio => {
+    document.querySelectorAll("audio").forEach((audio) => {
       if (typeof audio.setSinkId === "function") {
         audio.setSinkId(deviceId).catch(() => {});
       }
@@ -94,17 +99,15 @@ export const useWebRTC = (socket, currentUser) => {
   };
 
   const toggleMic = (isMuted) => {
-    localStreamRef.current?.getAudioTracks().forEach(
-      track => (track.enabled = !isMuted)
-    );
+    localStreamRef.current
+      ?.getAudioTracks()
+      .forEach((track) => (track.enabled = !isMuted));
   };
 
   const toggleDeaf = (isDeaf) => {
     toggleMic(isDeaf);
-    Object.values(remoteStreams).forEach(stream =>
-      stream.getAudioTracks().forEach(
-        track => (track.enabled = !isDeaf)
-      )
+    Object.values(remoteStreams).forEach((stream) =>
+      stream.getAudioTracks().forEach((track) => (track.enabled = !isDeaf))
     );
   };
 
@@ -117,9 +120,8 @@ export const useWebRTC = (socket, currentUser) => {
 
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
-          deviceId: selectedMic !== "default"
-            ? { exact: selectedMic }
-            : undefined,
+          deviceId:
+            selectedMic !== "default" ? { exact: selectedMic } : undefined,
         },
       });
 
@@ -127,11 +129,13 @@ export const useWebRTC = (socket, currentUser) => {
       setLocalStream(stream);
 
       if (socket?.readyState === 1) {
-        socket.send(JSON.stringify({
-          type: "JOIN_VOICE",
-          serverId,
-          channelId,
-        }));
+        socket.send(
+          JSON.stringify({
+            type: "JOIN_VOICE",
+            serverId,
+            channelId,
+          })
+        );
 
         if (channelId !== "VOICE_MASTER") {
           setActiveVoiceChannel(channelId);
@@ -143,11 +147,11 @@ export const useWebRTC = (socket, currentUser) => {
   };
 
   const leaveVoiceChannel = () => {
-    localStreamRef.current?.getTracks().forEach(t => t.stop());
+    localStreamRef.current?.getTracks().forEach((t) => t.stop());
     localStreamRef.current = null;
     setLocalStream(null);
 
-    Object.values(peersRef.current).forEach(p => p.close());
+    Object.values(peersRef.current).forEach((p) => p.close());
     peersRef.current = {};
     setRemoteStreams({});
 
@@ -167,23 +171,25 @@ export const useWebRTC = (socket, currentUser) => {
     const peer = new RTCPeerConnection(ICE_SERVERS);
     peersRef.current[targetUserId] = peer;
 
-    localStreamRef.current?.getTracks().forEach(track =>
-      peer.addTrack(track, localStreamRef.current)
-    );
+    localStreamRef.current
+      ?.getTracks()
+      .forEach((track) => peer.addTrack(track, localStreamRef.current));
 
     peer.onicecandidate = (e) => {
       if (e.candidate && socket) {
-        socket.send(JSON.stringify({
-          type: "WEBRTC_SIGNAL",
-          targetUserId,
-          signal: { type: "candidate", candidate: e.candidate },
-        }));
+        socket.send(
+          JSON.stringify({
+            type: "WEBRTC_SIGNAL",
+            targetUserId,
+            signal: { type: "candidate", candidate: e.candidate },
+          })
+        );
       }
     };
 
     peer.ontrack = (e) => {
       const stream = e.streams[0];
-      setRemoteStreams(prev => ({ ...prev, [targetUserId]: stream }));
+      setRemoteStreams((prev) => ({ ...prev, [targetUserId]: stream }));
 
       let audio = document.getElementById(`audio-${targetUserId}`);
       if (!audio) {
@@ -200,13 +206,15 @@ export const useWebRTC = (socket, currentUser) => {
     };
 
     if (initiateOffer) {
-      peer.createOffer().then(offer => {
+      peer.createOffer().then((offer) => {
         peer.setLocalDescription(offer);
-        socket.send(JSON.stringify({
-          type: "WEBRTC_SIGNAL",
-          targetUserId,
-          signal: { type: "offer", sdp: offer },
-        }));
+        socket.send(
+          JSON.stringify({
+            type: "WEBRTC_SIGNAL",
+            targetUserId,
+            signal: { type: "offer", sdp: offer },
+          })
+        );
       });
     }
 
@@ -220,11 +228,13 @@ export const useWebRTC = (socket, currentUser) => {
       await peer.setRemoteDescription(new RTCSessionDescription(signal.sdp));
       const answer = await peer.createAnswer();
       await peer.setLocalDescription(answer);
-      socket.send(JSON.stringify({
-        type: "WEBRTC_SIGNAL",
-        targetUserId: senderId,
-        signal: { type: "answer", sdp: answer },
-      }));
+      socket.send(
+        JSON.stringify({
+          type: "WEBRTC_SIGNAL",
+          targetUserId: senderId,
+          signal: { type: "answer", sdp: answer },
+        })
+      );
     }
 
     if (signal.type === "answer") {
@@ -247,7 +257,7 @@ export const useWebRTC = (socket, currentUser) => {
         const msg = JSON.parse(event.data);
 
         if (msg.type === "VOICE_EXISTING_USERS") {
-          msg.users.forEach(uid => createPeer(uid, true));
+          msg.users.forEach((uid) => createPeer(uid, true));
         }
 
         if (msg.type === "WEBRTC_SIGNAL") {
@@ -257,11 +267,13 @@ export const useWebRTC = (socket, currentUser) => {
         // 🔥 VOICEMASTER → OTOMATİK ODAYA TAŞI
         if (msg.type === "AUTO_JOIN_VOICE") {
           if (serverIDRef) {
-            socket.send(JSON.stringify({
-              type: "JOIN_VOICE",
-              serverId: serverIDRef,
-              channelId: msg.channelId,
-            }));
+            socket.send(
+              JSON.stringify({
+                type: "JOIN_VOICE",
+                serverId: serverIDRef,
+                channelId: msg.channelId,
+              })
+            );
             setActiveVoiceChannel(msg.channelId);
           }
         }

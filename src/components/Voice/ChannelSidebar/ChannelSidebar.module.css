@@ -77,19 +77,20 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 4px;
+  padding: 10px 8px;
   cursor: pointer;
-  color: #555;
+  color: #8e9297;
+  font-weight: 700;
   font-size: 0.75rem;
-  font-weight: 800;
   letter-spacing: 1.5px;
-  transition: 0.2s;
+  transition: color 0.2s;
+  user-select: none;
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
   margin-bottom: 8px;
 }
 
 .categoryTitle:hover {
-  color: #fff;
+  color: #dcddde;
 }
 
 .catName {
@@ -99,31 +100,14 @@
 .chevron {
   transition: transform 0.3s ease;
   font-size: 0.7rem;
+  margin-left: 10px;
 }
 
 .rotated {
   transform: rotate(-90deg);
 }
 
-/* Kategori Başlığı Düzeni (Eğer yoksa bunu da güncelle) */
-.categoryTitle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 8px;
-  cursor: pointer;
-  color: #8e9297;
-  font-weight: 700;
-  font-size: 0.75rem;
-  transition: color 0.2s;
-  user-select: none;
-}
-
-.categoryTitle:hover {
-  color: #dcddde;
-}
-
-/* AYARLAR BUTONU (Dişli) */
+/* SETTINGS GEAR ICON */
 .settingsBtnWrapper {
   display: flex;
   align-items: center;
@@ -141,22 +125,12 @@
   color: #fff;
 }
 
-/* ITEMS */
+/* CHANNEL LIST ITEMS */
 .channelList {
   display: flex;
   flex-direction: column;
   gap: 6px;
   position: relative;
-}
-
-.flowLine {
-  position: absolute;
-  left: 0;
-  top: 4px;
-  bottom: 4px;
-  width: 2px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), transparent);
-  border-radius: 2px;
 }
 
 .channelItem {
@@ -198,11 +172,6 @@
   transform: translateX(4px);
 }
 
-.channelItem:hover .iconHash,
-.channelItem:hover .iconVol {
-  color: #ddd;
-}
-
 .activeItem {
   color: #fff !important;
   border: 1px solid rgba(255, 255, 255, 0.56);
@@ -214,28 +183,17 @@
   filter: drop-shadow(0 0 5px rgba(8, 173, 255, 0.5));
 }
 
-.activeGlowBar {
-  position: absolute;
-  left: -2px;
-  top: 20%;
-  height: 60%;
-  width: 4px;
-  background: var(--color-blue);
-  box-shadow: 0 0 10px #0099ff;
-  border-radius: 4px;
+.voiceSettingsIcon {
+  font-size: 0.9rem;
+  opacity: 0.6;
+  transition: opacity 0.2s;
 }
 
-.badgeNew {
-  font-size: 9px;
-  background: #35c6ff;
-  color: #ffffff;
-  padding: 2px 6px;
-  border-radius: 20px;
-  font-weight: 800;
-  box-shadow: 0 0 10px rgba(0, 170, 255, 0.4);
+.voiceSettingsIcon:hover {
+  opacity: 1;
 }
 
-/* VOICE USERS CARD DESIGN */
+/* VOICE CHANNEL WRAPPERS */
 .voiceWrapper {
   display: flex;
   flex-direction: column;
@@ -258,123 +216,7 @@
   gap: 6px;
 }
 
-/* GÜNCELLENMİŞ KART (SAĞ İKONLAR İÇİN) */
-.voiceUserCard {
-  background: rgba(30, 31, 34, 0.6);
-  padding: 4px 6px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  transition: all 0.2s ease;
-  cursor: default;
-  width: 95%;
-  margin: 0 auto;
-}
-
-.voiceUserCard:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.cardInner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between; /* İkonları en sağa iter */
-  width: 100%;
-}
-
-.leftSection {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  overflow: hidden;
-}
-
-/* AVATAR */
-.avatarWrapper {
-  position: relative;
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-  padding: 2px;
-}
-
-.miniAvatar {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #2b2d31;
-  transition: border-color 0.1s ease;
-}
-
-.avatarSpeaking {
-  border-color: #4ade80 !important;
-  box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.3);
-}
-
-/* İSİM VE DURUM */
-.userInfoCol {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  line-height: 1.2;
-}
-
-.voiceUserName {
-  font-size: 0.85rem;
-  color: #f2f3f5;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100px;
-}
-
-.voiceStatusRow {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.voiceUserStatus {
-  font-size: 0.65rem;
-  color: #4ade80;
-  font-weight: 500;
-}
-
-.statusIcon {
-  font-size: 0.6rem;
-  color: #4ade80;
-}
-
-/* SAĞDAKİ DURUM İKONLARI (YENİ) */
-.rightIcons {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.statusIconBox {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #2b2d31;
-  border-radius: 4px;
-  width: 24px; /* Kutu boyutu */
-  height: 24px;
-}
-
-.miniStatusIcon {
-  font-size: 14px; /* İkon boyutu büyütüldü */
-  color: #ff4d4d;
-}
-
-.loadingCard {
-  font-size: 0.7rem;
-  color: #666;
-  padding-left: 30px;
-}
-
-/* FOOTER */
+/* FOOTER / CONTROL DECK */
 .controlDeck {
   padding: 10px;
   z-index: 10;
@@ -382,7 +224,7 @@
 }
 
 .deckGlass {
-  background: var(--color-black);
+  background: #000;
   backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 16px;
@@ -426,10 +268,17 @@
   right: -2px;
   width: 12px;
   height: 12px;
-  background: #00aaff;
   border: 2px solid #1a1a1a;
   border-radius: 50%;
-  box-shadow: 0 0 5px #00aaff;
+}
+
+.statusOnline {
+  background-color: #3ba55c;
+  box-shadow: 0 0 5px #3ba55c;
+}
+
+.statusOffline {
+  background-color: #747f8d;
 }
 
 .userInfo {
@@ -475,172 +324,10 @@
   transform: translateY(-2px);
 }
 
-.statusOnline {
-  background-color: #3ba55c;
-  box-shadow: 0 0 0 2px #18191c;
-}
-
-.statusOffline {
-  background-color: #747f8d;
-  box-shadow: 0 0 0 2px #18191c;
-}
-
 .iconRed {
-  color: #ff4d4d !important;
+  color: var(--busy);
 }
 
 .btnActive {
   background: rgba(255, 255, 255, 0.1);
-}
-
-/* AYARLAR MODALI STİLLERİ */
-.settingsOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 1000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.settingsModal {
-  background: #1e1f22;
-  padding: 20px;
-  border-radius: 12px;
-  width: 320px;
-  border: 1px solid #333;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-}
-
-.modalTitle {
-  color: #fff;
-  font-size: 1rem;
-  margin-bottom: 15px;
-  font-weight: 700;
-  border-bottom: 1px solid #333;
-  padding-bottom: 10px;
-  margin-top: 0;
-}
-
-.settingGroup {
-  margin-bottom: 15px;
-}
-
-.settingLabel {
-  display: block;
-  color: #bbb;
-  font-size: 0.75rem;
-  margin-bottom: 6px;
-  font-weight: 600;
-}
-
-.deviceSelect {
-  width: 100%;
-  padding: 8px;
-  background: #111;
-  border: 1px solid #333;
-  color: #fff;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  outline: none;
-}
-
-.deviceSelect:focus {
-  border-color: #5865f2;
-}
-
-.closeBtn {
-  width: 100%;
-  padding: 8px;
-  background: #5865f2;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-  margin-top: 10px;
-}
-
-.closeBtn:hover {
-  background: #4752c4;
-}
-
-/* TEXT KANAL MODAL STİLLERİ (YENİ) */
-.createChannelOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.7);
-  z-index: 2000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.createChannelModal {
-  background: #313338;
-  padding: 24px;
-  border-radius: 8px;
-  width: 400px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-}
-
-.modalHeader {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #fff;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.modalInput {
-  width: 100%;
-  padding: 10px;
-  background: #1e1f22;
-  border: none;
-  border-radius: 4px;
-  color: #dbdee1;
-  font-size: 1rem;
-  margin-bottom: 20px;
-  outline: none;
-}
-
-.modalInput:focus {
-  background: #1e1f22;
-}
-
-.modalActions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
-
-.btnCancel {
-  background: transparent;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-  padding: 8px 16px;
-}
-
-.btnCreate {
-  background: #5865f2;
-  color: #fff;
-  border: none;
-  padding: 8px 20px;
-  border-radius: 4px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btnCreate:hover {
-  background: #4752c4;
 }
