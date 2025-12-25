@@ -216,118 +216,153 @@
   gap: 6px;
 }
 
-/* FOOTER / CONTROL DECK */
+/* ================= CONTROL DECK (FOOTER) ================= */
 .controlDeck {
   padding: 10px;
-  z-index: 10;
-  margin-top: auto;
-}
-
-.deckGlass {
-  background: #000;
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 16px;
-  padding: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  transition: all 0.2s ease-in-out;
-}
-
-.deckGlass:hover {
-  border: 1px solid rgba(255, 255, 255, 0.74);
-}
-
-.userProfile {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-  min-width: 0;
-  margin-right: 8px;
-}
-
-.avatarContainer {
-  position: relative;
-  flex-shrink: 0;
-}
-
-.avatarImg {
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  border: 2px solid #1a1a1a;
-  object-fit: cover;
-}
-
-.onlineBadge {
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 12px;
-  height: 12px;
-  border: 2px solid #1a1a1a;
-  border-radius: 50%;
-}
-
-.statusOnline {
-  background-color: #3ba55c;
-  box-shadow: 0 0 5px #3ba55c;
-}
-
-.statusOffline {
-  background-color: #747f8d;
-}
-
-.userInfo {
   display: flex;
   flex-direction: column;
-  min-width: 0;
-  overflow: hidden;
+  align-items: center;
+  gap: 0; /* Kutular birbirine yapışık/bağlantılı görünsün diye */
+  margin-top: auto;
+  width: 100%;
 }
 
-.uName {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: block;
+/* Üst Kutu (Aksiyonlar) */
+.actionLayer {
+  width: 95%;
+  background: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none; /* Alt kutuyla birleşme efekti */
+  border-radius: 12px 12px 0 0;
+  padding: 8px 12px;
+  box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.3);
 }
 
-.deckActions {
+.actionInner {
   display: flex;
-  gap: 4px;
-  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-around;
+  gap: 8px;
 }
 
-.deckBtn {
+/* Alt Kutu (Profil) */
+.profileLayer {
+  width: 100%;
+  background: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  position: relative;
+  z-index: 2;
+}
+
+/* Buton Stilleri */
+.actionBtn {
   background: transparent;
   border: none;
-  color: #aaa;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  color: #b5bac1;
+  font-size: 1.1rem;
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 8px;
   cursor: pointer;
-  transition: 0.2s;
+  transition: all 0.2s ease;
 }
 
-.deckBtn:hover {
+.actionBtn:hover {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
-  transform: translateY(-2px);
 }
 
-.iconRed {
-  color: var(--busy);
+.btnActiveRed {
+  color: #ff0004;
+  background: rgba(183, 0, 3, 0.1);
 }
 
-.btnActive {
+.disconnectBtn {
+  color: #ff0004;
+}
+
+.disconnectBtn:hover {
+  background: #ff0004;
+  color: #fff;
+}
+
+.actionDivider {
+  width: 1px;
+  height: 20px;
   background: rgba(255, 255, 255, 0.1);
+  margin: 0 4px;
+}
+
+/* Profil Detayları */
+.userProfile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.avatarWrapper {
+  position: relative;
+  width: 38px;
+  height: 38px;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%; /* Daha modern yuvarlak avatar */
+  object-fit: cover;
+  border: 2px solid #1e1f22;
+}
+
+.statusDot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #000;
+}
+
+.online {
+  background: #23a559;
+  box-shadow: 0 0 8px #23a559;
+}
+.offline {
+  background: #80848e;
+}
+
+.userText {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.userName {
+  color: #f2f3f5;
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.userStatusText {
+  color: #949ba4;
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.loadingProfile {
+  color: #949ba4;
+  font-size: 0.8rem;
+  font-style: italic;
 }

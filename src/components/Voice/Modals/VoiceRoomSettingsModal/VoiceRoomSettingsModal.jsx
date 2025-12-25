@@ -1,92 +1,165 @@
 import React, { useState } from "react";
 import styles from "./VoiceRoomSettingsModal.module.css";
-import { FaTimes, FaEdit, FaLock, FaUnlock, FaTrash } from "react-icons/fa";
+import { FaTimes, FaTrash, FaCheckCircle, FaExclamationTriangle, FaLock, FaUnlock, FaSave, FaVolumeUp } from "react-icons/fa";
+import ConfirmModal from "../../../ConfirmModal/ConfirmModal";
+import axios from "axios";
+import { getAuth } from "firebase/auth";
 
-const VoiceRoomSettingsModal = ({ channel, onClose, onLock, onRename, onDelete }) => {
-  const [name, setName] = useState(channel.name);
+const VoiceRoomSettingsModal = ({ channel, serverId, onClose, onDeleted }) => {
+  const [newName, setNewName] = useState(channel.name);
+  const [isLocked, setIsLocked] = useState(channel.locked || false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [localMessage, setLocalMessage] = useState({ text: "", type: "" });
+
+  const getAuthHeader = async () => {
+    const auth = getAuth();
+    const token = await auth.currentUser.getIdToken();
+    return { headers: { Authorization: `Bearer ${token}` } };
+  };
+
+  const showStatus = (text, type) => {
+    setLocalMessage({ text, type });
+    if (type === "success") setTimeout(onClose, 2000);
+    else setTimeout(() => setLocalMessage({ text: "", type: "" }), 3000);
+  };
+
+  const handleUpdate = async (updateData) => {
+    setLoading(true);
+    try {
+      const headers = await getAuthHeader();
+      const cid = channel.channelId || channel.id;
+      
+      await axios.patch(
+        `http://localhost:3001/api/servers/${serverId}/channels/${cid}`,
+        updateData,
+        headers
+      );
+      
+      showStatus("Ayarlar kaydedildi.", "success");
+    } catch (err) {
+      showStatus("Ayarlar kaydedilemedi.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setLoading(true);
+    try {
+      const headers = await getAuthHeader();
+      const cid = channel.channelId || channel.id;
+      await axios.delete(
+        `http://localhost:3001/api/servers/${serverId}/channels/${cid}`,
+        headers
+      );
+      onDeleted?.(cid);
+      showStatus("Ses kanalı silindi.", "success");
+    } catch {
+      showStatus("Kanal silinemedi.", "error");
+    } finally {
+      setLoading(false);
+      setIsConfirmOpen(false);
+    }
+  };
 
   return (
-    <div className={styles.createChannelOverlay} onClick={onClose}>
-      <div className={styles.createChannelModal} onClick={(e) => e.stopPropagation()}>
-        
-        {/* Header Bölümü */}
-        <div className={styles.modalHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 24px 10px 24px' }}>
-          <div>
-            <h3 style={{ color: '#fff', fontSize: '1.5rem', fontWeight: '800', margin: 0 }}>Oda Ayarları</h3>
-            <p style={{ color: '#8a8e94', fontSize: '0.85rem', marginTop: '8px' }}>Kanal ismini ve erişimini yönet.</p>
+    <>
+      <div className={styles.createChannelOverlay} onClick={onClose}>
+        <div className={styles.createChannelModal} onClick={(e) => e.stopPropagation()}>
+          <div className={styles.modalHeader}>
+            <div className={styles.headerTitleGroup}>
+              <FaVolumeUp className={styles.headerIcon} />
+              <div>
+                <h3>Kanal Ayarları</h3>
+                <p>{channel.name} ses odasını düzenle.</p>
+              </div>
+            </div>
+            <div className={styles.closeBtnWrapper} onClick={onClose}>
+                <FaTimes />
+            </div>
           </div>
-          <FaTimes 
-            style={{ color: '#72767d', cursor: 'pointer', background: '#111', padding: '5px', borderRadius: '50%' }} 
-            onClick={onClose} 
-          />
-        </div>
 
-        <div style={{ padding: '20px 24px' }}>
-          {/* Oda İsmi Grubu */}
-          <div className={styles.settingGroup}>
-            <label className={styles.settingLabel}>ODA İSMİ</label>
-            <div style={{ display: "flex", gap: "10px", alignItems: 'center' }}>
-              <div style={{ 
-                flex: 1, 
-                display: 'flex', 
-                alignItems: 'center', 
-                background: '#09090b', 
-                border: '1px solid #333', 
-                borderRadius: '8px', 
-                padding: '10px 15px' 
-              }}>
-                <FaEdit style={{ color: '#58bff2ff', marginRight: '12px' }} />
+          <div className={styles.modalBody}>
+            {localMessage.text && (
+              <div className={`${styles.statusBox} ${localMessage.type === "success" ? styles.success : styles.error}`}>
+                {localMessage.type === "success" ? <FaCheckCircle /> : <FaExclamationTriangle />}
+                {localMessage.text}
+              </div>
+            )}
+
+            {/* İSİM GÜNCELLEME */}
+            <div className={styles.inputSection}>
+              <label className={styles.inputLabel}>ODA ADI</label>
+              <div className={styles.inputWrapper}>
                 <input
-                  className={styles.modalInput}
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  style={{ background: 'transparent', border: 'none', color: '#fff', outline: 'none', width: '100%' }}
+                  type="text"
+                  className={styles.modernInput}
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
                 />
               </div>
-              <button className={styles.btnCreate} onClick={() => onRename(name)}>
-                Kaydet
-              </button>
-            </div>
-          </div>
-
-          {/* Gizlilik Grubu */}
-          <div className={styles.settingGroup} style={{ marginTop: "25px", borderTop: "1px solid #1a1a1a", paddingTop: "20px" }}>
-            <label className={styles.settingLabel}>GİZLİLİK VE YÖNETİM</label>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: '#111', padding: '12px', borderRadius: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                {channel.locked ? <FaLock style={{ color: '#f72828ff' }} /> : <FaUnlock style={{ color: '#58bff2ff' }} />}
-                <span style={{ color: "#ccc", fontSize: "0.9rem" }}>Odayı Kilitle</span>
-              </div>
               <button
-                className={channel.locked ? styles.btnCancel : styles.btnCreate}
-                onClick={() => onLock(!channel.locked)}
-                style={{ width: "110px", fontSize: '0.8rem' }}
+                className={styles.saveButton}
+                onClick={() => handleUpdate({ name: newName })}
+                disabled={loading || newName === channel.name}
               >
-                {channel.locked ? "KİLİDİ AÇ" : "KİLİTLE"}
+                <FaSave /> {loading ? "Kaydediliyor..." : "İsmi Kaydet"}
+              </button>
+            </div>
+
+            <div className={styles.separator} />
+
+            {/* KİLİTLEME ALANI */}
+            <div className={`${styles.statusCard} ${isLocked ? styles.lockedCard : styles.unlockedCard}`}>
+                <div className={styles.cardInfo}>
+                    <div className={styles.cardHeader}>
+                        {isLocked ? <FaLock /> : <FaUnlock />}
+                        <span>{isLocked ? "Oda Kilitli" : "Oda Herkese Açık"}</span>
+                    </div>
+                    <p>Kilitli odalara sadece yönetici yetkisi olanlar katılabilir.</p>
+                </div>
+                <button 
+                  className={styles.actionBtn} 
+                  onClick={() => {
+                    const newState = !isLocked;
+                    setIsLocked(newState);
+                    handleUpdate({ locked: newState });
+                  }}
+                >
+                  {isLocked ? "Kilidi Aç" : "Odayı Kilitle"}
+                </button>
+            </div>
+
+            <div className={styles.dangerZone}>
+              <div className={styles.dangerHeader}>
+                <FaExclamationTriangle className={styles.dangerIcon} />
+                <div className={styles.dangerHeaderText}>
+                    <h4>Ses Kanalını Sil</h4>
+                    <p>"{channel.name}" odasını sildiğinizde tüm ayarlar kalıcı olarak silinir.</p>
+                </div>
+              </div>
+              <button className={styles.deleteButton} onClick={() => setIsConfirmOpen(true)} disabled={loading}>
+                <FaTrash size={14} /> Kanalı Sil
               </button>
             </div>
           </div>
 
-          {/* Tehlikeli Bölge (Oda Silme) */}
-          <div style={{ marginTop: '20px', background: 'rgba(255, 77, 77, 0.05)', border: '1px solid rgba(255, 77, 77, 0.2)', padding: '12px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-             <div style={{ color: '#fb1414ff', fontSize: '0.85rem', fontWeight: '600' }}>Kanalı Kalıcı Olarak Sil</div>
-             <button 
-                onClick={() => { if(window.confirm("Bu odayı silmek istediğine emin misin?")) onDelete(); }}
-                style={{ background: '#f71e1eff', color: '#fff', border: 'none', padding: '8px 15px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem' }}
-             >
-                <FaTrash size={12} /> Sil
-             </button>
+          <div className={styles.modalFooter}>
+            <button className={styles.closeBtn} onClick={onClose}>İptal</button>
           </div>
-        </div>
-
-        {/* Footer Bölümü */}
-        <div style={{ backgroundColor: "#050505", padding: "16px 24px", display: "flex", justifyContent: "flex-end", borderTop: "1px solid #1a1a1a" }}>
-          <button className={styles.closeBtn} onClick={onClose} style={{ background: 'transparent', color: '#aaa', border: 'none', cursor: 'pointer' }}>
-            Kapat
-          </button>
         </div>
       </div>
-    </div>
+
+      <ConfirmModal
+        isOpen={isConfirmOpen}
+        title="Kanalı Sil"
+        message={`"${channel.name}" ses kanalını silmek istediğinden emin misin?`}
+        onConfirm={handleDelete}
+        onCancel={() => setIsConfirmOpen(false)}
+        type="danger"
+      />
+    </>
   );
 };
 

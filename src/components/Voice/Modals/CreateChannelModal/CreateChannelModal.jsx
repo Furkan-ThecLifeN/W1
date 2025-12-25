@@ -1,6 +1,11 @@
 import React, { useState } from "react";
-import styles from "./CreateChannelModal.module.css"; 
-import { FaTimes, FaHashtag, FaVolumeUp, FaExclamationCircle } from "react-icons/fa";
+import styles from "./CreateChannelModal.module.css";
+import {
+  FaTimes,
+  FaHashtag,
+  FaVolumeUp,
+  FaExclamationCircle,
+} from "react-icons/fa";
 import { getAuth } from "firebase/auth";
 import axios from "axios";
 
@@ -10,72 +15,74 @@ const CreateChannelModal = ({ onClose, serverId, type, onCreated }) => {
   const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!name.trim()) return;
+  e.preventDefault();
+  if (!name.trim() || loading) return;
 
-    setLoading(true);
-    setError(null);
+  setLoading(true);
+  try {
+    const auth = getAuth();
+    const token = await auth.currentUser.getIdToken();
 
-    try {
-      const auth = getAuth();
-      const token = await auth.currentUser.getIdToken();
+    const res = await axios.post(
+      `http://localhost:3001/api/servers/${serverId}/channels`,
+      { name: name.trim(), type },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
-      // Backend portun 3001 ise burası doğru. Değilse düzelt.
-      const res = await axios.post(
-        `http://localhost:3001/api/servers/${serverId}/channels`,
-        { name: name, type: type },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (onCreated) onCreated(res.data.channel);
-      onClose();
-
-    } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.error || "Kanal oluşturulamadı.");
-    } finally {
-      setLoading(false);
+    // Backend'den gelen gerçek veriyi sidebar'a bildir
+    if (res.data?.channel) {
+      onCreated?.(res.data.channel); 
     }
-  };
-
+    onClose();
+  } catch (err) {
+    setError(err.response?.data?.error || "Kanal oluşturulamadı.");
+  } finally {
+    setLoading(false);
+  }
+};
   const Icon = type === "text" ? FaHashtag : FaVolumeUp;
-  const titleText = type === "text" ? "Metin Kanalı" : "Ses Kanalı";
-  const subText = type === "text" 
-    ? "# genel-sohbet gibi bir isim ver." 
-    : "Sesli sohbet odana havalı bir isim ver.";
 
   return (
     <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        
+      <div
+        className={styles.modal}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* HEADER */}
         <div className={styles.header}>
           <div>
-            <h3 className={styles.title}>{titleText}</h3>
-            <p className={styles.subTitle}>{subText}</p>
+            <h3 className={styles.title}>
+              {type === "text" ? "Metin Kanalı" : "Ses Kanalı"}
+            </h3>
+            <p className={styles.subTitle}>
+              {type === "text"
+                ? "# genel-sohbet gibi bir isim ver."
+                : "Sesli sohbet odana havalı bir isim ver."}
+            </p>
           </div>
+
           <FaTimes className={styles.closeBtn} onClick={onClose} />
         </div>
 
+        {/* CONTENT */}
         <div className={styles.content}>
           <form onSubmit={handleSubmit}>
             <div className={styles.inputGroup}>
               <label className={styles.label}>KANAL ADI</label>
-              
+
               <div className={styles.inputWrapper}>
                 <Icon className={styles.icon} />
-                <input 
-                  type="text" 
-                  value={name} 
+                <input
+                  className={styles.input}
+                  value={name}
                   onChange={(e) => {
-                    // Discord tarzı: boşluk yok, küçük harf
                     let val = e.target.value.toLowerCase();
-                    if(type === "text") val = val.replace(/\s+/g, '-');
+                    if (type === "text") val = val.replace(/\s+/g, "-");
                     setName(val);
-                  }} 
+                  }}
                   placeholder={type === "text" ? "yeni-kanal" : "Sohbet Odası"}
                   maxLength={25}
                   autoFocus
-                  className={styles.input}
                 />
               </div>
 
@@ -85,23 +92,28 @@ const CreateChannelModal = ({ onClose, serverId, type, onCreated }) => {
                 </div>
               )}
             </div>
+
+            {/* FOOTER */}
+            <div className={styles.footer}>
+              <button
+                type="button"
+                className={styles.cancelBtn}
+                onClick={onClose}
+                disabled={loading}
+              >
+                Vazgeç
+              </button>
+
+              <button
+                type="submit"
+                className={styles.createBtn}
+                disabled={loading || !name.trim()}
+              >
+                {loading ? "Oluşturuluyor..." : "Oluştur"}
+              </button>
+            </div>
           </form>
         </div>
-
-        <div className={styles.footer}>
-          <button type="button" onClick={onClose} className={styles.cancelBtn}>
-            Vazgeç
-          </button>
-          <button 
-            type="submit" 
-            disabled={loading || !name} 
-            className={styles.createBtn}
-            onClick={handleSubmit}
-          >
-            {loading ? "Oluşturuluyor..." : "Oluştur"}
-          </button>
-        </div>
-
       </div>
     </div>
   );

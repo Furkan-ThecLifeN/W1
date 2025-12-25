@@ -10,18 +10,18 @@ import {
   FaMicrophoneSlash,
   FaLock,
 } from "react-icons/fa";
+import { MdScreenShare } from "react-icons/md";
 import { useUserStore } from "../../../Store/useUserStore";
-import { getAuth } from "firebase/auth";
+import { useServerStore } from "../../../Store/useServerStore"; // ✅ Eklendi
 import styles from "./ChannelSidebar.module.css";
 import { useWebRTC } from "../../../hooks/useWebRTC";
 
-// --- MODALS ---
 import VoiceUserCard from "../Modals/VoiceUserCard/VoiceUserCard";
 import SettingsModal from "../Modals/SettingsModal/SettingsModal";
 import VoiceRoomSettingsModal from "../Modals/VoiceRoomSettingsModal/VoiceRoomSettingsModal";
 import CreateChannelModal from "../Modals/CreateChannelModal/CreateChannelModal";
 import AddButton from "../Modals/AddButton/AddButton";
-import TextChannelSettingsModal from "../Modals/TextChannelSettingsModal/TextChannelSettingsModal"; // New Import
+import TextChannelSettingsModal from "../Modals/TextChannelSettingsModal/TextChannelSettingsModal";
 
 const ChannelSidebar = ({
   serverInfo,
@@ -31,28 +31,23 @@ const ChannelSidebar = ({
   onChannelSelect,
   socket,
 }) => {
-  // --- STATE ---
   const [collapsed, setCollapsed] = useState({ text: false, voice: false });
   const [voiceStates, setVoiceStates] = useState({});
   const [localChannels, setLocalChannels] = useState([]);
-
-  // Socket & Auth
   const [socketReady, setSocketReady] = useState(false);
   const [userStatuses, setUserStatuses] = useState({});
   const [localStatus, setLocalStatus] = useState({ muted: false, deaf: false });
 
-  // Modals
   const [showSettings, setShowSettings] = useState(false);
   const [showVoiceRoomSettings, setShowVoiceRoomSettings] = useState(false);
-  const [showTextChannelSettings, setShowTextChannelSettings] = useState(false); // New State
+  const [showTextChannelSettings, setShowTextChannelSettings] = useState(false);
   const [selectedVoiceRoom, setSelectedVoiceRoom] = useState(null);
-  const [selectedTextChannel, setSelectedTextChannel] = useState(null); // New State
-
-  // Create Modal State
+  const [selectedTextChannel, setSelectedTextChannel] = useState(null);
   const [createModal, setCreateModal] = useState({ show: false, type: "text" });
 
   const currentServerId = serverInfo?.id || serverInfo?.firebaseServerId;
   const { currentUser, fetchCurrentUser } = useUserStore();
+  const { updateServerChannel } = useServerStore(); // ✅ Global store aksiyonu
 
   const {
     joinVoiceChannel,
@@ -70,94 +65,128 @@ const ChannelSidebar = ({
     switchSpeaker,
   } = useWebRTC(socket, currentUser);
 
-  // PERMISSION CHECK
   const canManageChannels =
     serverInfo?.permissions?.includes("ADMIN") ||
     serverInfo?.permissions?.includes("MANAGE_CHANNELS");
 
-  // --- CHANNEL MERGING ---
   useEffect(() => {
-    if (serverInfo?.channels && serverInfo.channels.length > 0) {
-      setLocalChannels(serverInfo.channels);
-    } else if (textChannels.length > 0 || voiceChannels.length > 0) {
-      const merged = [
+    fetchCurrentUser();
+  }, [fetchCurrentUser]);
+
+  useEffect(() => {
+    if (!serverInfo) return;
+
+    let incoming = [];
+    if (Array.isArray(serverInfo.channels) && serverInfo.channels.length > 0) {
+      incoming = serverInfo.channels;
+    } else {
+      incoming = [
         ...textChannels.map((c) => ({ ...c, type: "text" })),
         ...voiceChannels.map((c) => ({ ...c, type: "voice" })),
       ];
-      const unique = [
-        ...new Map(
-          merged.map((item) => [item.channelId || item.id, item])
-        ).values(),
-      ];
-      setLocalChannels(unique);
     }
-  }, [serverInfo, textChannels, voiceChannels]);
 
-  // --- AUTH ---
-  useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = auth.onAuthStateChanged((u) => {
-      if (u) {
-        fetchCurrentUser();
-        if (socket && socket.readyState === 1 && currentServerId) {
-          socket.send(
-            JSON.stringify({
-              type: "AUTH",
-              userId: u.uid,
-              serverIds: [currentServerId],
-            })
-          );
+    setLocalChannels((prev) => {
+      const channelMap = new Map();
+      prev.forEach((c) => {
+        const id = c.channelId || c.id;
+        if (id) channelMap.set(id, c);
+      });
+      incoming.forEach((c) => {
+        const id = c.channelId || c.id;
+        if (id) {
+          const existing = channelMap.get(id);
+          channelMap.set(id, { ...existing, ...c });
         }
-      }
+      });
+      return Array.from(channelMap.values());
     });
-    return () => unsubscribe();
-  }, [fetchCurrentUser, socket, currentServerId]);
+  }, [currentServerId, serverInfo, textChannels, voiceChannels]);
 
-  // --- SOCKET ---
+  // --- 3. SOCKET LISTENERS (REAL-TIME STATE & UI SYNC) ---
   useEffect(() => {
     if (!socket) return;
 
     const handleMsg = (e) => {
       try {
         const msg = JSON.parse(e.data);
-        if (msg.type === "AUTH_OK") setSocketReady(true);
-        if (msg.type === "VOICE_STATE_UPDATE") {
-          setVoiceStates((prev) => {
-            const cur = prev[msg.channelId] || [];
-            if (msg.action === "joined")
-              return {
-                ...prev,
-                [msg.channelId]: [...new Set([...cur, msg.userId])],
-              };
-            else
-              return {
-                ...prev,
-                [msg.channelId]: cur.filter((uid) => uid !== msg.userId),
-              };
+
+        // --- AUTH ---
+        if (msg.type === "AUTH_OK") {
+          setSocketReady(true);
+          return;
+        }
+
+        // --- KANAL GÜNCELLEMELERİ (CREATE / DELETE / UPDATE) ---
+        if (msg.type === "CHANNEL_LIFECYCLE_UPDATE") {
+          const { action, channel, serverId } = msg;
+
+          // Başka bir sunucuya aitse ignore et
+          if (serverId && serverId !== currentServerId) return;
+
+          // Backend hem channelId hem id gönderebilir, ikisini de kontrol et
+          const incomingId = channel.channelId || channel.id;
+          if (!incomingId) return;
+
+          // ✅ GLOBAL STORE GÜNCELLEMESİ: Modalların ve genel sistemin veriyi görmesi için
+          if (action === "updated") {
+            updateServerChannel(currentServerId, channel);
+          }
+
+          setLocalChannels((prev) => {
+            // CREATE: Listeye ekle (Mevcutsa ekleme)
+            if (action === "created") {
+              if (prev.some((c) => (c.channelId || c.id) === incomingId))
+                return prev;
+              return [...prev, channel];
+            }
+
+            // DELETE: Listeden çıkar
+            if (action === "deleted") {
+              return prev.filter((c) => (c.channelId || c.id) !== incomingId);
+            }
+
+            // UPDATE: İsmi, locked durumunu ve diğer tüm verileri anlık güncelle
+            if (action === "updated") {
+              return prev.map((oldChannel) => {
+                const oldId = oldChannel.channelId || oldChannel.id;
+                if (oldId === incomingId) {
+                  // ✅ Referansı yenileyerek React'ı render'a zorluyoruz
+                  return { ...oldChannel, ...channel };
+                }
+                return oldChannel;
+              });
+            }
+
+            return prev;
           });
         }
-        if (msg.type === "CHANNEL_LIFECYCLE") {
-          if (msg.serverId !== currentServerId) return;
-          if (msg.action === "created") {
-            setLocalChannels((prev) => {
-              if (prev.find((c) => c.channelId === msg.channelData.channelId))
-                return prev;
-              return [...prev, msg.channelData];
-            });
-          } else if (msg.action === "deleted") {
-            setLocalChannels((prev) =>
-              prev.filter((c) => (c.channelId || c.id) !== msg.channelData.id)
-            );
-          } else if (msg.action === "updated") {
-            setLocalChannels((prev) =>
-              prev.map((c) =>
-                (c.channelId || c.id) === msg.channelData.id
-                  ? { ...c, ...msg.channelData }
-                  : c
-              )
-            );
-          }
+
+        // --- SES ODASI DURUMLARI ---
+        if (msg.type === "VOICE_STATE_UPDATE") {
+          const roomKey = msg.channelId || msg.id;
+          const { userId, action } = msg;
+          if (!roomKey || !userId || !action) return;
+
+          setVoiceStates((prev) => {
+            const currentUsers = prev[roomKey] || [];
+
+            if (action === "joined") {
+              if (currentUsers.includes(userId)) return prev;
+              return { ...prev, [roomKey]: [...currentUsers, userId] };
+            }
+
+            if (action === "left") {
+              return {
+                ...prev,
+                [roomKey]: currentUsers.filter((id) => id !== userId),
+              };
+            }
+            return prev;
+          });
         }
+
+        // --- KULLANICI DURUM GÜNCELLEMELERİ (MUTE/DEAF) ---
         if (msg.type === "USER_STATUS_UPDATE") {
           setUserStatuses((prev) => ({
             ...prev,
@@ -165,75 +194,28 @@ const ChannelSidebar = ({
           }));
         }
       } catch (err) {
-        console.error(err);
+        console.error("Socket Error:", err);
       }
     };
+
     socket.addEventListener("message", handleMsg);
     return () => socket.removeEventListener("message", handleMsg);
-  }, [socket, currentServerId]);
+  }, [socket, currentServerId, updateServerChannel]);
 
-  // --- ACTIONS ---
-  const handleOpenCreateModal = (type) => {
-    const currentCount = localChannels.filter((c) => c.type === type).length;
-    if (type === "text" && currentCount >= 3) {
-      alert("Maksimum Text Kanalı sınırına ulaştınız.");
-      return;
-    }
-    if (type === "voice" && currentCount >= 5) {
-      alert("Maksimum Ses Kanalı sınırına ulaştınız.");
-      return;
-    }
-    setCreateModal({ show: true, type });
+  const handleToggleMute = () => {
+    if (localStatus.deaf) return;
+    const newMuted = !localStatus.muted;
+    setLocalStatus((p) => ({ ...p, muted: newMuted }));
+    toggleMic(newMuted);
+    broadcastStatus({ ...localStatus, muted: newMuted });
   };
 
-  const handleLockRoom = (isLocked) => {
-    if (!socket || !selectedVoiceRoom) return;
-    socket.send(
-      JSON.stringify({
-        type: "LOCK_VOICE_CHANNEL",
-        serverId: currentServerId,
-        channelId: selectedVoiceRoom.channelId,
-        locked: isLocked
-      })
-    );
-  };
-
-  const handleRenameRoom = (newName) => {
-    if (!socket || !selectedVoiceRoom) return;
-    socket.send(
-      JSON.stringify({
-        type: "RENAME_VOICE_CHANNEL",
-        serverId: currentServerId,
-        channelId: selectedVoiceRoom.channelId,
-        newName,
-      })
-    );
-  };
-
-  // Logic for renaming Text Channel
-  const handleRenameTextChannel = (newName) => {
-    if (!socket || !selectedTextChannel) return;
-    socket.send(
-      JSON.stringify({
-        type: "RENAME_TEXT_CHANNEL",
-        serverId: currentServerId,
-        channelId: selectedTextChannel.channelId || selectedTextChannel.id,
-        newName,
-      })
-    );
-  };
-
-  // Logic for deleting Text Channel
-  const handleDeleteTextChannel = () => {
-    if (!socket || !selectedTextChannel) return;
-    socket.send(
-      JSON.stringify({
-        type: "DELETE_TEXT_CHANNEL",
-        serverId: currentServerId,
-        channelId: selectedTextChannel.channelId || selectedTextChannel.id,
-      })
-    );
-    setShowTextChannelSettings(false);
+  const handleToggleDeaf = () => {
+    const newDeaf = !localStatus.deaf;
+    const newMuted = newDeaf ? true : localStatus.muted;
+    setLocalStatus({ muted: newMuted, deaf: newDeaf });
+    toggleDeaf(newDeaf);
+    broadcastStatus({ muted: newMuted, deaf: newDeaf });
   };
 
   const handleVoiceClick = (ch) => {
@@ -241,39 +223,31 @@ const ChannelSidebar = ({
       alert("Bu oda kilitli!");
       return;
     }
-    const cid = ch.channelId || ch.id;
-    if (!socket || !currentServerId || activeVoiceChannel === cid) return;
-    joinVoiceChannel(currentServerId, cid);
-    if (currentUser?.uid) {
-      setVoiceStates((prev) => {
-        const newState = { ...prev };
-        Object.keys(newState).forEach((key) => {
-          newState[key] = (newState[key] || []).filter(
-            (uid) => uid !== currentUser.uid
-          );
-        });
-        newState[cid] = [
-          ...new Set([...(newState[cid] || []), currentUser.uid]),
-        ];
-        return newState;
-      });
-    }
+    const channelId = ch.channelId || ch.id;
+    if (!socket || !currentServerId || !currentUser) return;
+    if (activeVoiceChannel === channelId) return;
+    setVoiceStates((prev) => {
+      const cur = prev[channelId] || [];
+      if (cur.includes(currentUser.uid)) return prev;
+      return { ...prev, [channelId]: [...cur, currentUser.uid] };
+    });
+    joinVoiceChannel(currentServerId, channelId);
   };
 
-  // --- UI HELPERS ---
-  const toggle = (cat) => setCollapsed((p) => ({ ...p, [cat]: !p[cat] }));
-  const handleToggleMute = () => {
-    const newMuted = !localStatus.muted;
-    setLocalStatus({ ...localStatus, muted: newMuted });
-    toggleMic(newMuted);
-    broadcastStatus({ ...localStatus, muted: newMuted });
+  const handleDisconnect = (e) => {
+    e.stopPropagation();
+    if (activeVoiceChannel && currentUser) {
+      setVoiceStates((prev) => ({
+        ...prev,
+        [activeVoiceChannel]: (prev[activeVoiceChannel] || []).filter(
+          (uid) => uid !== currentUser.uid
+        ),
+      }));
+    }
+    leaveVoiceChannel();
+    setLocalStatus({ muted: false, deaf: false });
   };
-  const handleToggleDeaf = () => {
-    const newDeaf = !localStatus.deaf;
-    setLocalStatus({ muted: newDeaf, deaf: newDeaf });
-    toggleDeaf(newDeaf);
-    broadcastStatus({ muted: newDeaf, deaf: newDeaf });
-  };
+
   const broadcastStatus = (status) => {
     if (socket && currentUser && activeVoiceChannel) {
       socket.send(
@@ -286,32 +260,18 @@ const ChannelSidebar = ({
       setUserStatuses((prev) => ({ ...prev, [currentUser.uid]: status }));
     }
   };
-  const handleDisconnect = (e) => {
-    e.stopPropagation();
-    leaveVoiceChannel();
-    if (currentUser?.uid && activeVoiceChannel) {
-      setVoiceStates((prev) => {
-        const newState = { ...prev };
-        if (newState[activeVoiceChannel])
-          newState[activeVoiceChannel] = newState[activeVoiceChannel].filter(
-            (uid) => uid !== currentUser.uid
-          );
-        return newState;
-      });
-      setLocalStatus({ muted: false, deaf: false });
-    }
-  };
 
+  const toggle = (cat) => setCollapsed((p) => ({ ...p, [cat]: !p[cat] }));
   const displayedTextChannels = localChannels.filter((c) => c.type === "text");
   const displayedVoiceChannels = localChannels.filter(
     (c) => c.type === "voice"
   );
 
-  if (!serverInfo) return <div className={styles.glassSidebar}>Loading...</div>;
+  if (!serverInfo)
+    return <div className={styles.glassSidebar}>Yükleniyor...</div>;
 
   return (
     <div className={styles.glassSidebar}>
-      {/* MODALS */}
       {showSettings && (
         <SettingsModal
           onClose={() => setShowSettings(false)}
@@ -324,53 +284,50 @@ const ChannelSidebar = ({
           actions={{ switchMicrophone, switchSpeaker }}
         />
       )}
-
       {createModal.show && (
         <CreateChannelModal
           onClose={() => setCreateModal({ show: false, type: "text" })}
           serverId={currentServerId}
           type={createModal.type}
-          onCreated={(newChannel) => {
+          onCreated={(newCh) => {
             setLocalChannels((prev) => {
-              if (prev.find((c) => c.channelId === newChannel.channelId))
-                return prev;
-              return [...prev, newChannel];
+              const id = newCh.channelId || newCh.id;
+              if (prev.some((c) => (c.channelId || c.id) === id)) return prev;
+              return [...prev, newCh];
             });
           }}
         />
       )}
-
       {showVoiceRoomSettings && selectedVoiceRoom && (
         <VoiceRoomSettingsModal
           channel={selectedVoiceRoom}
+          serverId={currentServerId}
           onClose={() => {
             setShowVoiceRoomSettings(false);
             setSelectedVoiceRoom(null);
           }}
-          onLock={handleLockRoom}
-          onRename={handleRenameRoom}
-          onDelete={() => { /* Add Delete Voice Logic */ }}
+          onDeleted={(id) =>
+            setLocalChannels((p) =>
+              p.filter((c) => (c.channelId || c.id) !== id)
+            )
+          }
         />
       )}
-
-      {/* NEW TEXT CHANNEL SETTINGS MODAL */}
       {showTextChannelSettings && selectedTextChannel && (
         <TextChannelSettingsModal
           channel={selectedTextChannel}
+          serverId={currentServerId}
           onClose={() => {
             setShowTextChannelSettings(false);
             setSelectedTextChannel(null);
           }}
-          onRename={handleRenameTextChannel}
-          onDelete={handleDeleteTextChannel}
         />
       )}
 
-      {/* HEADER */}
       <div className={styles.premiumHeader}>
         <div className={styles.headerInner}>
           <img
-            src={serverInfo.img || serverInfo.icon || "https://via.placeholder.com/50"}
+            src={serverInfo.icon || "https://via.placeholder.com/50"}
             alt="S"
             className={styles.serverImg}
           />
@@ -381,43 +338,55 @@ const ChannelSidebar = ({
       </div>
 
       <div className={styles.channelScroll}>
-        {/* --- TEXT ZONES --- */}
         <div className={styles.categoryWrapper}>
           <div className={styles.categoryTitle} onClick={() => toggle("text")}>
-            <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+            <div
+              style={{ display: "flex", alignItems: "center", width: "100%" }}
+            >
               <span className={styles.catName}>TEXT ZONES</span>
               {canManageChannels && (
-                <AddButton onClick={() => handleOpenCreateModal("text")} />
+                <AddButton
+                  onClick={() => setCreateModal({ show: true, type: "text" })}
+                />
               )}
             </div>
-            <FaChevronDown className={`${styles.chevron} ${collapsed.text ? styles.rotated : ""}`} />
+            <FaChevronDown
+              className={`${styles.chevron} ${
+                collapsed.text ? styles.rotated : ""
+              }`}
+            />
           </div>
           {!collapsed.text && (
             <div className={styles.channelList}>
-              {displayedTextChannels.map((ch, i) => {
-                const k = ch.channelId || ch.id || `txt-${i}`;
+              {displayedTextChannels.map((ch) => {
+                const id = ch.channelId || ch.id;
                 return (
                   <div
-                    key={k}
-                    className={`${styles.channelItem} ${activeChannelId === k ? styles.activeItem : ""}`}
+                    key={id}
+                    className={`${styles.channelItem} ${
+                      activeChannelId === id ? styles.activeItem : ""
+                    }`}
                     onClick={() => onChannelSelect(ch)}
                   >
                     <div className={styles.channelLeft}>
                       <FaHashtag className={styles.iconHash} />
                       <span className={styles.chName}>{ch.name}</span>
                     </div>
-                    {/* ADDED SETTINGS ICON FOR TEXT CHANNELS */}
                     {canManageChannels && (
-                        <FaCog
-                          className={styles.voiceSettingsIcon}
-                          style={{ marginLeft: "auto", color: "#ccc", cursor: "pointer" }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedTextChannel(ch);
-                            setShowTextChannelSettings(true);
-                          }}
-                        />
-                      )}
+                      <FaCog
+                        className={styles.voiceSettingsIcon}
+                        style={{
+                          marginLeft: "auto",
+                          color: "#ccc",
+                          cursor: "pointer",
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedTextChannel(ch);
+                          setShowTextChannelSettings(true);
+                        }}
+                      />
+                    )}
                   </div>
                 );
               })}
@@ -425,13 +394,16 @@ const ChannelSidebar = ({
           )}
         </div>
 
-        {/* --- VOICE PODS --- */}
         <div className={styles.categoryWrapper}>
           <div className={styles.categoryTitle} onClick={() => toggle("voice")}>
-            <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+            <div
+              style={{ display: "flex", alignItems: "center", width: "100%" }}
+            >
               <span className={styles.catName}>VOICE PODS</span>
               {canManageChannels && (
-                <AddButton onClick={() => handleOpenCreateModal("voice")} />
+                <AddButton
+                  onClick={() => setCreateModal({ show: true, type: "voice" })}
+                />
               )}
               <div
                 onClick={(e) => {
@@ -445,57 +417,77 @@ const ChannelSidebar = ({
                 <FaCog className={styles.addBtnIcon} />
               </div>
             </div>
-            <FaChevronDown className={`${styles.chevron} ${collapsed.voice ? styles.rotated : ""}`} />
+            <FaChevronDown
+              className={`${styles.chevron} ${
+                collapsed.voice ? styles.rotated : ""
+              }`}
+            />
           </div>
           {!collapsed.voice && (
             <div className={styles.channelList}>
-              {displayedVoiceChannels.map((ch, i) => {
-                const k = ch.channelId || ch.id || `vc-${i}`;
-                const usrs = voiceStates[k] || [];
-                const act = activeVoiceChannel === k;
-                const isLocked = ch.locked;
-                const wrapperClass = usrs.length > 0 || act
-                  ? `${styles.voiceWrapper} ${styles.voiceWrapperActive}`
-                  : styles.voiceWrapper;
+              {displayedVoiceChannels.map((ch) => {
+                const k = ch.channelId || ch.id;
+                const usersInRoom = voiceStates[k] || [];
+                const isActive = activeVoiceChannel === k;
                 return (
-                  <div key={k} className={wrapperClass}>
+                  <div
+                    key={k}
+                    className={
+                      usersInRoom.length > 0 || isActive
+                        ? `${styles.voiceWrapper} ${styles.voiceWrapperActive}`
+                        : styles.voiceWrapper
+                    }
+                  >
                     <div
-                      className={`${styles.channelItem} ${styles.voiceItem} ${act ? styles.activeItem : ""}`}
+                      className={`${styles.channelItem} ${styles.voiceItem} ${
+                        isActive ? styles.activeItem : ""
+                      }`}
                       onClick={() => handleVoiceClick(ch)}
                     >
                       <div className={styles.channelLeft}>
-                        {isLocked ? (
-                          <FaLock className={styles.iconVol} style={{ color: "#ff4d4d" }} />
-                        ) : (
-                          <FaVolumeUp className={styles.iconVol} />
-                        )}
+                        <FaVolumeUp className={styles.iconVol} />
                         <span className={styles.chName}>{ch.name}</span>
                       </div>
-                      {canManageChannels && (
-                        <FaCog
-                          className={styles.voiceSettingsIcon}
-                          style={{ marginLeft: "auto", color: "#ccc", cursor: "pointer" }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedVoiceRoom(ch);
-                            setShowVoiceRoomSettings(true);
-                          }}
-                        />
-                      )}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          marginLeft: "auto",
+                        }}
+                      >
+                        {ch.locked && (
+                          <FaLock
+                            style={{ color: "#ff4d4d", fontSize: "12px" }}
+                          />
+                        )}
+                        {canManageChannels && (
+                          <FaCog
+                            className={styles.voiceSettingsIcon}
+                            style={{ color: "#ccc", cursor: "pointer" }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedVoiceRoom(ch);
+                              setShowVoiceRoomSettings(true);
+                            }}
+                          />
+                        )}
+                      </div>
                     </div>
-                    {usrs.length > 0 && (
+                    {usersInRoom.length > 0 && (
                       <div className={styles.voiceUserContainer}>
-                        {usrs.map((uid) => {
-                          const isMe = currentUser?.uid === uid;
-                          return (
-                            <VoiceUserCard
-                              key={uid}
-                              userId={uid}
-                              status={userStatuses[uid]}
-                              stream={isMe ? localStream : remoteStreams[uid]}
-                            />
-                          );
-                        })}
+                        {usersInRoom.map((uid) => (
+                          <VoiceUserCard
+                            key={uid}
+                            userId={uid}
+                            status={userStatuses[uid]}
+                            stream={
+                              currentUser?.uid === uid
+                                ? localStream
+                                : remoteStreams[uid]
+                            }
+                          />
+                        ))}
                       </div>
                     )}
                   </div>
@@ -506,53 +498,91 @@ const ChannelSidebar = ({
         </div>
       </div>
 
-      {/* CONTROL DECK */}
+      {/* CONTROL DECK (FOOTER) */}
       <div className={styles.controlDeck}>
-        <div className={styles.deckGlass}>
+        {/* ÜST KATMAN: SES VE AKSİYON KONTROLLERİ */}
+        <div className={styles.actionLayer}>
+          <div className={styles.actionInner}>
+            <button
+              className={`${styles.actionBtn} ${
+                localStatus.muted ? styles.btnActiveRed : ""
+              }`}
+              onClick={handleToggleMute}
+              title={localStatus.muted ? "Sesi Aç" : "Sustur"}
+            >
+              {localStatus.muted ? <FaMicrophoneSlash /> : <FaMicrophone />}
+            </button>
+            <button
+              className={`${styles.actionBtn} ${
+                localStatus.deaf ? styles.btnActiveRed : ""
+              }`}
+              onClick={handleToggleDeaf}
+              title={
+                localStatus.deaf ? "Sağırlaştırıcıyı Kapat" : "Sağırlaştır"
+              }
+            >
+              <FaHeadphones />
+            </button>
+
+            {/* Ekran Paylaşma Butonu (Statik eklendi, fonksiyonu hook'una bağlayabilirsin) */}
+            <button className={styles.actionBtn} title="Ekran Paylaş">
+              <MdScreenShare  />
+            </button>
+
+            <div className={styles.actionDivider} />
+
+            {activeVoiceChannel ? (
+              <button
+                className={`${styles.actionBtn} ${styles.disconnectBtn}`}
+                onClick={handleDisconnect}
+                title="Bağlantıyı Kes"
+              >
+                <FaPhoneSlash />
+              </button>
+            ) : (
+              <button
+                className={styles.actionBtn}
+                onClick={() => setShowSettings(true)}
+                title="Ayarlar"
+              >
+                <FaCog />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* ALT KATMAN: PROFİL KARTI */}
+        <div className={styles.profileLayer}>
           {currentUser ? (
             <div className={styles.userProfile}>
-              <div className={styles.avatarContainer}>
+              <div className={styles.avatarWrapper}>
                 <img
                   src={currentUser.photoURL || "https://via.placeholder.com/50"}
                   alt="Avatar"
                   className={styles.avatarImg}
                 />
-                <div className={`${styles.onlineBadge} ${currentUser.status === "online" ? styles.statusOnline : styles.statusOffline}`}></div>
+                <div
+                  className={`${styles.statusDot} ${
+                    currentUser.status === "online"
+                      ? styles.online
+                      : styles.offline
+                  }`}
+                ></div>
               </div>
-              <div className={styles.userInfo}>
-                <span className={styles.uName}>{currentUser.displayName}</span>
+              <div className={styles.userText}>
+                <span className={styles.userName}>
+                  {currentUser.displayName?.length > 21
+                    ? `${currentUser.displayName.slice(0, 21)}...`
+                    : currentUser.displayName}
+                </span>
+                <span className={styles.userStatusText}>
+                  {currentUser.status === "online" ? "Çevrimiçi" : "Çevrimdışı"}
+                </span>
               </div>
             </div>
           ) : (
-            <div className={styles.userInfo}>Loading...</div>
+            <div className={styles.loadingProfile}>Yükleniyor...</div>
           )}
-          <div className={styles.deckActions}>
-            <button
-              className={`${styles.deckBtn} ${localStatus.muted ? styles.btnActive : ""}`}
-              onClick={handleToggleMute}
-            >
-              {localStatus.muted ? <FaMicrophoneSlash className={styles.iconRed} /> : <FaMicrophone />}
-            </button>
-            <button
-              className={`${styles.deckBtn} ${localStatus.deaf ? styles.btnActive : ""}`}
-              onClick={handleToggleDeaf}
-            >
-              <FaHeadphones className={localStatus.deaf ? styles.iconRed : ""} />
-            </button>
-            {activeVoiceChannel ? (
-              <button
-                className={styles.deckBtn}
-                onClick={handleDisconnect}
-                style={{ color: "#f70303ff" }}
-              >
-                <FaPhoneSlash />
-              </button>
-            ) : (
-              <button className={styles.deckBtn} onClick={() => setShowSettings(true)}>
-                <FaCog />
-              </button>
-            )}
-          </div>
         </div>
       </div>
     </div>

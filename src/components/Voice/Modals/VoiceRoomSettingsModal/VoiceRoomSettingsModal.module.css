@@ -1,6 +1,6 @@
-/* Animasyonlar */
+/* ================= ANIMATIONS ================= */
 @keyframes fadeIn {
-    from { opacity: 0; backdrop-filter: blur(0px); }
+    from { opacity: 0; backdrop-filter: blur(0); }
     to { opacity: 1; backdrop-filter: blur(5px); }
 }
 
@@ -14,13 +14,11 @@
     100% { background-position: 100% 0%; }
 }
 
+/* ================= OVERLAY ================= */
 .createChannelOverlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.8);
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
     z-index: 2000;
     display: flex;
     align-items: center;
@@ -28,83 +26,286 @@
     animation: fadeIn 0.3s ease forwards;
 }
 
+/* ================= MODAL ================= */
 .createChannelModal {
-    background-color: #000000;
-    width: 440px;
+    background: #020202;
+    width: 460px;
     max-width: 90%;
-    border-radius: 12px;
-    border: 1px solid #1e1e1e;
-    box-shadow: 0 0 30px rgba(88, 165, 242, 0.15); 
+    border-radius: 16px;
+    border: 1px solid #2b2d31;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     position: relative;
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Üst Taraftaki Premium Renkli Çizgi */
 .createChannelModal::before {
     content: "";
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, #5865F2, #9b59b6, #5865F2);
+    height: 3px;
+    background: linear-gradient(90deg, #5865f2, #9b59b6, #5865f2);
     background-size: 200% 100%;
     animation: gradientMove 3s linear infinite;
+    z-index: 2;
 }
 
-.settingLabel {
-    display: block;
-    color: #b9bbbe;
-    font-size: 0.75rem;
+/* ================= HEADER ================= */
+.modalHeader {
+    padding: 32px 24px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.headerTitleGroup {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.headerIcon {
+    font-size: 24px;
+    color: #80848e;
+}
+
+.modalHeader h3 {
+    color: #f2f3f5;
+    font-size: 1.4rem;
     font-weight: 700;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-    letter-spacing: 1px;
+    margin: 0;
+    letter-spacing: -0.5px;
 }
 
-.btnCreate {
-    background: linear-gradient(135deg, #5865F2, #4752c4);
+.modalHeader p {
+    color: #949ba4;
+    font-size: 0.9rem;
+    margin-top: 4px;
+}
+
+.closeBtnWrapper {
+    color: #b5bac1;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    transition: all 0.2s;
+}
+
+.closeBtnWrapper:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    transform: rotate(90deg);
+}
+
+/* ================= BODY ================= */
+.modalBody {
+    padding: 10px 24px 32px;
+}
+
+.inputSection {
+    margin-bottom: 24px;
+}
+
+.inputLabel {
+    display: block;
+    color: #b5bac1;
+    font-size: 0.75rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.modernInput {
+    width: 100%;
+    background: #1e1f22;
+    border: 1px solid #1e1f22;
+    padding: 12px;
+    border-radius: 8px;
+    color: #dbdee1;
+    font-size: 1rem;
+    transition: all 0.2s;
+    outline: none;
+}
+
+.modernInput:focus {
+    border-color: #08a7f4;
+    box-shadow: 0 0 0 4px rgba(88, 196, 242, 0.15);
+}
+
+.saveButton {
+    width: 100%;
+    margin-top: 16px;
+    padding: 12px;
+    background: #08a7f4;
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-size: 0.9rem;
+    border-radius: 8px;
     font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     cursor: pointer;
     transition: all 0.2s;
-    box-shadow: 0 4px 15px rgba(88, 101, 242, 0.3);
 }
 
-.btnCreate:hover {
-    filter: brightness(1.1);
+.saveButton:hover:not(:disabled) {
+    background: #0095e0;
     transform: translateY(-1px);
 }
 
-.btnCancel {
-    background: #111;
+.separator {
+    height: 1px;
+    background: #2b2d31;
+    margin: 24px 0;
+}
+
+/* ================= STATUS CARDS (LOCK) ================= */
+.statusCard {
+    padding: 16px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.lockedCard {
+    background: rgba(242, 63, 66, 0.05);
+    border: 1px solid rgba(242, 63, 66, 0.2);
+}
+
+.unlockedCard {
+    background: rgba(35, 165, 89, 0.05);
+    border: 1px solid rgba(35, 165, 89, 0.2);
+}
+
+.cardInfo .cardHeader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
     color: #fff;
-    border: 1px solid #333;
-    padding: 10px 20px;
+    margin-bottom: 4px;
+}
+
+.lockedCard .cardHeader svg { color: #f23f42; }
+.unlockedCard .cardHeader svg { color: #23a559; }
+
+.cardInfo p {
+    color: #949ba4;
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+.actionBtn {
+    padding: 8px 16px;
     border-radius: 6px;
-    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    background: #374a71;
+    color: #fff;
+    border: none;
+}
+
+.actionBtn:hover {
+    background: #355ba8;
+}
+
+/* ================= DANGER ZONE ================= */
+.dangerZone {
+    background: #020202;
+    border: 1px solid rgba(242, 63, 66, 0.15);
+    padding: 20px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.dangerHeader {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.dangerIcon {
+    color: #f23f42;
+    font-size: 20px;
+}
+
+.dangerHeaderText h4 {
+    color: #f23f42;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.dangerHeaderText p {
+    color: #949ba4;
+    font-size: 0.8rem;
+    margin: 4px 0 0 0;
+}
+
+.deleteButton {
+    background: transparent;
+    color: #ff0004;
+    border: 1px solid #ea2529;
+    padding: 10px;
+    border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
-.btnCancel:hover {
-    background: #e30c0c;
-    border-color: #f71313;
+.deleteButton:hover {
+    background: #ff0004;
+    color: white;
 }
 
-.closeBtn:hover {
-    color: #fff !important;
+/* ================= STATUS BOXES ================= */
+.statusBox {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
 }
 
-/* Input Focus Efekti */
-.modalInput:focus-within {
-    border-color: #5865F2;
+.success { background: rgba(35, 165, 89, 0.1); color: #23a559; border: 1px solid rgba(35, 165, 89, 0.2); }
+.error { background: rgba(242, 63, 66, 0.1); color: #f23f42; border: 1px solid rgba(242, 63, 66, 0.2); }
+
+/* ================= FOOTER ================= */
+.modalFooter {
+    padding: 16px 24px;
+    background: #060606;
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid #1a1a1a;
 }
+
+.closeBtn {
+    background: transparent;
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+}
+
+.closeBtn:hover { text-decoration: underline; }

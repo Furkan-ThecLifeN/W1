@@ -172,12 +172,10 @@
 
 /* Footer */
 .footer {
-  background-color: #050505;
   padding: 16px 24px;
   display: flex;
   justify-content: flex-end;
   gap: 15px;
-  border-top: 1px solid #1a1a1a;
 }
 
 .cancelBtn {

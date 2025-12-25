@@ -9,27 +9,19 @@ export const useServerStore = create((set, get) => ({
   servers: [],
   activeServerId: null,
   serverDetails: {},
-
   isLoading: false,
   isLoaded: false,
   error: null,
 
-  /* --------------------------------------------------
-     KULLANICININ SUNUCULARINI GETİR
-  -------------------------------------------------- */
   fetchUserServers: async () => {
     if (get().isLoaded) return;
-
     set({ isLoading: true, error: null });
-
     try {
       const user = auth.currentUser;
       if (!user) return;
-
       const snap = await getDocs(
         collection(db, "users", user.uid, "joinedServers")
       );
-
       const servers = snap.docs.map((doc) => ({
         id: doc.id,
         name: doc.data().name,
@@ -38,64 +30,58 @@ export const useServerStore = create((set, get) => ({
         unread: 0,
         activeVoice: 0,
       }));
-
-      set({
-        servers,
-        isLoaded: true,
-        isLoading: false,
-      });
+      set({ servers, isLoaded: true, isLoading: false });
     } catch (err) {
       console.error("Sunucular alınamadı:", err);
       set({ error: err.message, isLoading: false });
     }
   },
 
-  /* --------------------------------------------------
-     SUNUCU DETAYLARI (CACHE'Lİ)
-  -------------------------------------------------- */
   fetchServerDetails: async (serverId) => {
     if (!serverId) return;
-
     if (get().serverDetails[serverId]) {
       set({ activeServerId: serverId });
       return;
     }
-
     try {
       const user = auth.currentUser;
       if (!user) return;
-
       const token = await user.getIdToken();
-
-      const res = await axios.get(
-        `${API_URL}/api/servers/${serverId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      const data = res.data;
-
+      const res = await axios.get(`${API_URL}/api/servers/${serverId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       set((state) => ({
         activeServerId: serverId,
-        serverDetails: {
-          ...state.serverDetails,
-          [serverId]: {
-            ...data,
-          },
-        },
+        serverDetails: { ...state.serverDetails, [serverId]: res.data },
       }));
     } catch (err) {
       console.error("Sunucu detay hatası:", err);
     }
   },
 
-  /* --------------------------------------------------
-     YENİ SUNUCU EKLE (CREATE SERVER RESPONSE UYUMLU)
-  -------------------------------------------------- */
+  // ✅ YENİ: Socket veya Modaldan gelen kanal güncellemelerini global store'a işler
+  updateServerChannel: (serverId, updatedChannel) => {
+    set((state) => {
+      const details = state.serverDetails[serverId];
+      if (!details) return state;
+
+      const channelId = updatedChannel.channelId || updatedChannel.id;
+      const updatedChannels = details.channels.map((ch) =>
+        (ch.channelId || ch.id) === channelId
+          ? { ...ch, ...updatedChannel }
+          : ch
+      );
+
+      return {
+        serverDetails: {
+          ...state.serverDetails,
+          [serverId]: { ...details, channels: updatedChannels },
+        },
+      };
+    });
+  },
   addServer: (response) => {
     if (!response?.serverId) return;
-
     set((state) => ({
       servers: [
         ...state.servers,
@@ -121,7 +107,6 @@ export const useServerStore = create((set, get) => ({
   },
 
   setActiveServer: (serverId) => set({ activeServerId: serverId }),
-
   reset: () =>
     set({
       servers: [],
