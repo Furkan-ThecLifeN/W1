@@ -1,19 +1,37 @@
 /* ================= ANİMASYONLAR ================= */
 
 @keyframes fadeIn {
-  from { opacity: 0; backdrop-filter: blur(0); }
-  to { opacity: 1; backdrop-filter: blur(8px); }
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(8px);
+  }
 }
 
 @keyframes slideUp {
-  from { transform: scale(0.95) translateY(30px); opacity: 0; }
-  to { transform: scale(1) translateY(0); opacity: 1; }
+  from {
+    transform: scale(0.95) translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes borderGlow {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 /* ================= OVERLAY ================= */
@@ -21,13 +39,12 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.85);
+  background: rgba(0, 0, 0, 0.85);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 5000;
   animation: fadeIn 0.3s ease-out forwards;
-  
 }
 
 /* ================= MODAL ================= */
@@ -40,7 +57,7 @@
   border: 1px solid #1e1e1e;
   display: flex;
   flex-direction: column;
-  animation: slideUp 0.35s cubic-bezier(0.16,1,0.3,1) forwards;
+  animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   position: relative;
   overflow: hidden; /* 🔥 KRİTİK */
 }
@@ -53,18 +70,12 @@
   width: 100%;
   height: 3px;
 
-  background: linear-gradient(
-    90deg,
-    #5865f2,
-    #9b59b6,
-    #5865f2
-  );
+  background: linear-gradient(90deg, #5865f2, #9b59b6, #5865f2);
   background-size: 200% 100%;
   animation: borderGlow 3s linear infinite;
 
   border-radius: 18px 18px 0 0; /* 🔥 KÖŞELER EĞİLDİ */
 }
-
 
 /* ================= HEADER ================= */
 
@@ -154,7 +165,7 @@
 }
 
 .inputIcon {
-  color: #5865f2;
+  color: #00abff;
   font-size: 1.2rem;
   margin-right: 14px;
 }
@@ -205,7 +216,7 @@
 }
 
 .actionBtn {
-  background: linear-gradient(135deg,#5865f2,#4752c4);
+  background: linear-gradient(135deg, #58a3f2, #479bc4);
   color: #fff;
   border: none;
   padding: 12px 42px;

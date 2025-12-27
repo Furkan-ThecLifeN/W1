@@ -57,6 +57,7 @@
   overflow-y: auto;
   padding: 10px 14px;
   z-index: 1;
+  margin-bottom: 70px; /* Footer alanı için pay bırakıldı */
 }
 
 .channelScroll::-webkit-scrollbar {
@@ -105,24 +106,6 @@
 
 .rotated {
   transform: rotate(-90deg);
-}
-
-/* SETTINGS GEAR ICON */
-.settingsBtnWrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  border-radius: 4px;
-  cursor: pointer;
-  color: #bbb;
-  transition: 0.2s;
-  margin-left: 5px;
-}
-
-.settingsBtnWrapper:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
 }
 
 /* CHANNEL LIST ITEMS */
@@ -180,7 +163,6 @@
 .activeItem .iconHash,
 .activeItem .iconVol {
   color: #ffffff;
-  filter: drop-shadow(0 0 5px rgba(8, 173, 255, 0.5));
 }
 
 .voiceSettingsIcon {
@@ -218,24 +200,40 @@
 
 /* ================= CONTROL DECK (FOOTER) ================= */
 .controlDeck {
+  position: absolute; /* En alta sabitlemek için */
+  bottom: 0;
+  left: 0;
+  width: 100%;
   padding: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0; /* Kutular birbirine yapışık/bağlantılı görünsün diye */
-  margin-top: auto;
-  width: 100%;
+  z-index: 10;
+  background: linear-gradient(to top, #020202 80%, transparent); /* Listeyle yumuşak geçiş */
 }
 
-/* Üst Kutu (Aksiyonlar) */
+/* Üst Kutu (Aksiyonlar) - Animasyonlu Panel */
 .actionLayer {
   width: 95%;
   background: #000000;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-bottom: none; /* Alt kutuyla birleşme efekti */
-  border-radius: 12px 12px 0 0;
+  border-radius: 12px;
   padding: 8px 12px;
+  margin-bottom: 6px;
   box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.3);
+  
+  /* Animasyon Başlangıç Durumu */
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Ses kanalındayken aktifleşen sınıf */
+.layerActive {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 .actionInner {
@@ -245,21 +243,59 @@
   gap: 8px;
 }
 
-/* Alt Kutu (Profil) */
+/* Profil Kutusu (Alt Tabaka) */
 .profileLayer {
   width: 100%;
   background: #000000;
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 16px;
-  padding: 10px 14px;
+  padding: 10px 12px;
   display: flex;
   align-items: center;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   position: relative;
-  z-index: 2;
+  z-index: 11; 
+  transition: all 0.5s ease-in-out;
 }
 
-/* Buton Stilleri */
+.profileLayer:hover {
+  border-color: rgba(255, 255, 255, 0.892);
+}
+
+.userProfileContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* İsim ve Ayar butonunu ayırmak için */
+  width: 100%;
+}
+
+.userProfile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.profileSettingsBtn {
+  background: transparent;
+  border: none;
+  color: #b5bac1;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.3s ease-in-out;
+}
+
+.profileSettingsBtn:hover {
+  color: #fff;
+  transform: rotate(90deg); /* Hafif modern bir efekt */
+}
+
+/* Buton Stilleri (Ortak) */
 .actionBtn {
   background: transparent;
   border: none;
@@ -294,21 +330,7 @@
   color: #fff;
 }
 
-.actionDivider {
-  width: 1px;
-  height: 20px;
-  background: rgba(255, 255, 255, 0.1);
-  margin: 0 4px;
-}
-
-/* Profil Detayları */
-.userProfile {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-}
-
+/* Profil Detayları Ek Stilleri */
 .avatarWrapper {
   position: relative;
   width: 38px;
@@ -318,7 +340,7 @@
 .avatarImg {
   width: 100%;
   height: 100%;
-  border-radius: 50%; /* Daha modern yuvarlak avatar */
+  border-radius: 50%;
   object-fit: cover;
   border: 2px solid #1e1f22;
 }
@@ -333,13 +355,8 @@
   border: 2px solid #000;
 }
 
-.online {
-  background: #23a559;
-  box-shadow: 0 0 8px #23a559;
-}
-.offline {
-  background: #80848e;
-}
+.online { background: #23a559; box-shadow: 0 0 8px #23a559; }
+.offline { background: #80848e; }
 
 .userText {
   display: flex;
@@ -352,17 +369,10 @@
   font-size: 0.88rem;
   font-weight: 700;
   line-height: 1.2;
-  white-space: nowrap;
 }
 
 .userStatusText {
   color: #949ba4;
   font-size: 0.72rem;
   font-weight: 500;
-}
-
-.loadingProfile {
-  color: #949ba4;
-  font-size: 0.8rem;
-  font-style: italic;
 }
